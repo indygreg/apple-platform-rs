@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    'apple-bom',
     'apple-bundles',
     'apple-codesign',
     'apple-flat-package',

@@ -1,0 +1,13 @@
+[package]
+name = "apple-bom"
+version = "0.1.0-pre"
+authors = ["Gregory Szorc <gregory.szorc@gmail.com>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Apple Bill of Materials (BOM) data format"
+keywords = ["bom", "apple", "macos", "pkg"]
+homepage = "https://github.com/indygreg/apple-platform-rs"
+repository = "https://github.com/indygreg/apple-platform-rs.git"
+readme = "README.md"
+
+[dependencies]
