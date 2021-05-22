@@ -12,5 +12,6 @@ readme = "README.md"
 
 [dependencies]
 chrono = "0.4"
+crc32fast = "1.2"
 scroll = { version ="0.11", features = ["derive"] }
 thiserror = "1.0"

@@ -37,6 +37,7 @@ name = "apple-bom"
 version = "0.1.0-pre"
 dependencies = [
  "chrono",
+ "crc32fast",
  "scroll",
  "thiserror",
 ]
