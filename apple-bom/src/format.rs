@@ -689,7 +689,7 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockPathRecord<'a> 
 
 /// Block type for various variables describing a collection/tree of paths.
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+#[derive(Clone, Copy, Default, Debug, SizeWith)]
 pub struct BomBlockTree {
     /// Always `tree`.
     pub tree: [u8; 4],
@@ -708,6 +708,39 @@ pub struct BomBlockTree {
 
     /// Unknown.
     pub a: u8,
+}
+
+impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockTree {
+    type Error = Error;
+
+    fn try_from_ctx(data: &'a [u8], le: scroll::Endian) -> Result<(Self, usize), Self::Error> {
+        let offset = &mut 4;
+
+        let tree: [u8; 4] = [data[0], data[1], data[2], data[3]];
+        let version = data.gread_with(offset, le)?;
+        let block_paths_index = data.gread_with(offset, le)?;
+        let block_size = data.gread_with(offset, le)?;
+        let path_count = data.gread_with(offset, le)?;
+        let a = data.gread_with(offset, le)?;
+
+        if &tree != b"tree" {
+            return Err(Error::Scroll(scroll::Error::Custom(
+                "bad tree magic".into(),
+            )));
+        }
+
+        Ok((
+            Self {
+                tree,
+                version,
+                block_paths_index,
+                block_size,
+                path_count,
+                a,
+            },
+            *offset,
+        ))
+    }
 }
 
 impl BomBlockTree {
@@ -826,6 +859,12 @@ pub enum BomBlock<'a> {
 impl<'a> BomBlock<'a> {
     /// Attempt to resolve an instance from a [ParsedBom] and block index number.
     pub fn try_parse(bom: &'a ParsedBom, index: usize) -> Result<Self, Error> {
+        if index == 1 {
+            if let Ok(info) = bom.block_as_bom_info(index) {
+                return Ok(Self::BomInfo(info));
+            }
+        }
+
         // Multiple block types may parse correctly. Our strategy to tease out
         // false positives is to recursively examine the parsed block and verify
         // all parts parse.
@@ -844,6 +883,12 @@ impl<'a> BomBlock<'a> {
         if let Ok(vindex) = bom.block_as_vindex(index) {
             if vindex.tree(bom).is_ok() {
                 return Ok(Self::VIndex(vindex));
+            }
+        }
+
+        if let Ok(index) = bom.block_as_path_info_index(index) {
+            if index.path_record(bom).is_ok() {
+                return Ok(Self::PathInfoIndex(index));
             }
         }
 
@@ -870,10 +915,6 @@ impl<'a> BomBlock<'a> {
 
         if let Ok(info) = bom.block_as_bom_info(index) {
             return Ok(Self::BomInfo(info));
-        }
-
-        if let Ok(index) = bom.block_as_path_info_index(index) {
-            return Ok(Self::PathInfoIndex(index));
         }
 
         Err(Error::UnknownBlockType)
