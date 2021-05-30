@@ -11,7 +11,10 @@ mod format;
 mod path;
 
 use {
-    crate::{error::Error, format::ParsedBom},
+    crate::{
+        error::Error,
+        format::{BomBlock, ParsedBom},
+    },
     clap::{value_parser, Arg, ArgAction, Command},
     std::path::PathBuf,
 };
@@ -35,6 +38,7 @@ fn main_impl() -> BomResult<()> {
             Arg::new("action")
                 .action(ArgAction::Set)
                 .value_parser([
+                    "blocks",
                     "bom-info",
                     "header",
                     "hl-index",
@@ -60,6 +64,19 @@ fn main_impl() -> BomResult<()> {
     let bom = ParsedBom::parse(&bom_data)?;
 
     match action.as_str() {
+        "blocks" => {
+            println!("{} total blocks", bom.header.number_of_blocks);
+            for i in 0..bom.header.number_of_blocks as usize + 1 {
+                match BomBlock::try_parse(&bom, i) {
+                    Ok(block) => {
+                        println!("#{}: {:?}", i, block);
+                    }
+                    Err(_) => {
+                        println!("#{}: (unknown) {}", i, hex::encode(bom.block_data(i)?));
+                    }
+                }
+            }
+        }
         "bom-info" => {
             println!("{:#?}", bom.bom_info()?);
         }

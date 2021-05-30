@@ -18,6 +18,7 @@ path = "src/dumpbom.rs"
 clap = "4.0"
 chrono = "0.4"
 crc32fast = "1.2"
+hex = "0.4"
 scroll = { version ="0.11", features = ["derive"] }
 simple-file-manifest = "0.11"
 thiserror = "1.0"

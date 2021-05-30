@@ -770,6 +770,63 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomVarsIndex {
     }
 }
 
+/// Enumeration over known block types.
+#[derive(Clone, Debug)]
+pub enum BomBlock<'a> {
+    BomInfo(BomBlockBomInfo),
+    File(BomBlockFile<'a>),
+    PathInfoIndex(BomBlockPathInfoIndex),
+    PathRecord(BomBlockPathRecord<'a>),
+    Paths(BomBlockPaths),
+    Tree(BomBlockTree),
+    VIndex(BomBlockVIndex),
+}
+
+impl<'a> BomBlock<'a> {
+    /// Attempt to resolve an instance from a [ParsedBom] and block index number.
+    pub fn try_parse(bom: &'a ParsedBom<'a>, index: usize) -> Result<Self, Error> {
+        // Multiple block types may parse correctly. Our strategy to tease out
+        // false positives is to recursively examine the parsed block and verify
+        // all parts parse.
+        if let Ok(tree) = bom.block_as_tree(index) {
+            if tree.paths(bom).is_ok() {
+                return Ok(Self::Tree(tree));
+            }
+        }
+
+        if let Ok(paths) = bom.block_as_paths(index) {
+            if paths.iter_path_entries(bom).all(|x| x.is_ok()) {
+                return Ok(Self::Paths(paths));
+            }
+        }
+
+        if let Ok(vindex) = bom.block_as_vindex(index) {
+            if vindex.tree(bom).is_ok() {
+                return Ok(Self::VIndex(vindex));
+            }
+        }
+
+        // Path records are quite large.
+        if let Ok(record) = bom.block_as_path_record(index) {
+            return Ok(Self::PathRecord(record));
+        }
+
+        if let Ok(file) = bom.block_as_file(index) {
+            return Ok(Self::File(file));
+        }
+
+        if let Ok(info) = bom.block_as_bom_info(index) {
+            return Ok(Self::BomInfo(info));
+        }
+
+        if let Ok(index) = bom.block_as_path_info_index(index) {
+            return Ok(Self::PathInfoIndex(index));
+        }
+
+        Err(Error::UnknownBlockType)
+    }
+}
+
 /// Parsed BOM data structure.
 ///
 /// Instances hold references to the data they are backed by.

@@ -28,4 +28,7 @@ pub enum Error {
 
     #[error("bad arguments: {0}")]
     CliBadArgs(String),
+
+    #[error("unknown block type")]
+    UnknownBlockType,
 }

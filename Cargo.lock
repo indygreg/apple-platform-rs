@@ -39,6 +39,7 @@ dependencies = [
  "chrono",
  "clap",
  "crc32fast",
+ "hex",
  "scroll",
  "simple-file-manifest",
  "thiserror",
