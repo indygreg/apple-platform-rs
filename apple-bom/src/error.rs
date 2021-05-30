@@ -25,4 +25,7 @@ pub enum Error {
 
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
+
+    #[error("bad arguments: {0}")]
+    CliBadArgs(String),
 }

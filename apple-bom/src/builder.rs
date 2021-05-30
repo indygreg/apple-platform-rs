@@ -7,7 +7,10 @@
 // except according to those terms.
 
 use {
-    crate::{BomPath, BomPathType, Error},
+    crate::{
+        error::Error,
+        path::{BomPath, BomPathType},
+    },
     chrono::{DateTime, Utc},
     simple_file_manifest::{S_IFDIR, S_IRGRP, S_IROTH, S_IRUSR, S_IWUSR, S_IXGRP, S_IXUSR},
     std::{collections::BTreeMap, io::Read, path::Path},

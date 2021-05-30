@@ -72,7 +72,10 @@
 //! Unknown. Its block data is [BomBlockTree].
 
 use {
-    crate::{BomPath, BomPathType, Error},
+    crate::{
+        error::Error,
+        path::{BomPath, BomPathType},
+    },
     scroll::{Pread, SizeWith},
     std::{borrow::Cow, collections::HashMap, ffi::CStr},
 };

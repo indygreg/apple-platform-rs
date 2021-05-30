@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 use {
-    crate::Error,
+    crate::error::Error,
     chrono::{DateTime, TimeZone, Utc},
     simple_file_manifest::{
         S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR,
