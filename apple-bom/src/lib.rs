@@ -25,20 +25,11 @@ pub use format::ParsedBom;
 
 use {
     chrono::{DateTime, TimeZone, Utc},
+    simple_file_manifest::{
+        S_IFDIR, S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR,
+    },
     std::{collections::BTreeMap, io::Read, path::Path},
 };
-
-const S_IFDIR: u16 = 0o40000;
-
-const S_IRUSR: u16 = 0o400;
-const S_IWUSR: u16 = 0o200;
-const S_IXUSR: u16 = 0o100;
-const S_IRGRP: u16 = 0o040;
-const S_IWGRP: u16 = 0o020;
-const S_IXGRP: u16 = 0o010;
-const S_IROTH: u16 = 0o004;
-const S_IWOTH: u16 = 0o002;
-const S_IXOTH: u16 = 0o001;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -189,47 +180,47 @@ impl BomPath {
             BomPathType::Other(_) => '?',
         });
 
-        mode.push(if self.file_mode & S_IRUSR != 0 {
+        mode.push(if self.file_mode as u32 & S_IRUSR != 0 {
             'r'
         } else {
             '-'
         });
-        mode.push(if self.file_mode & S_IWUSR != 0 {
+        mode.push(if self.file_mode as u32 & S_IWUSR != 0 {
             'w'
         } else {
             '-'
         });
-        mode.push(if self.file_mode & S_IXUSR != 0 {
+        mode.push(if self.file_mode as u32 & S_IXUSR != 0 {
             'x'
         } else {
             '-'
         });
-        mode.push(if self.file_mode & S_IRGRP != 0 {
+        mode.push(if self.file_mode as u32 & S_IRGRP != 0 {
             'r'
         } else {
             '-'
         });
-        mode.push(if self.file_mode & S_IWGRP != 0 {
+        mode.push(if self.file_mode as u32 & S_IWGRP != 0 {
             'w'
         } else {
             '-'
         });
-        mode.push(if self.file_mode & S_IXGRP != 0 {
+        mode.push(if self.file_mode as u32 & S_IXGRP != 0 {
             'x'
         } else {
             '-'
         });
-        mode.push(if self.file_mode & S_IROTH != 0 {
+        mode.push(if self.file_mode as u32 & S_IROTH != 0 {
             'r'
         } else {
             '-'
         });
-        mode.push(if self.file_mode & S_IWOTH != 0 {
+        mode.push(if self.file_mode as u32 & S_IWOTH != 0 {
             'w'
         } else {
             '-'
         });
-        mode.push(if self.file_mode & S_IXOTH != 0 {
+        mode.push(if self.file_mode as u32 & S_IXOTH != 0 {
             'x'
         } else {
             '-'
@@ -376,16 +367,16 @@ impl Default for BomBuilder {
             default_uid: 0,
             default_gid: 0,
             // -rw-r--r--
-            default_mode_file: S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH,
+            default_mode_file: (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) as u16,
             // drwxr-xr-x
-            default_mode_dir: S_IFDIR
+            default_mode_dir: (S_IFDIR
                 | S_IRUSR
                 | S_IWUSR
                 | S_IXUSR
                 | S_IRGRP
                 | S_IXGRP
                 | S_IROTH
-                | S_IXGRP,
+                | S_IXGRP) as u16,
         }
     }
 }
