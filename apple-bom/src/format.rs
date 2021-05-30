@@ -41,8 +41,10 @@
 //! * [BomBlockFile]
 //! * [BomBlockPathInfoIndex]
 //! * [BomBlockPathRecord]
+//! * [BomBlockPathRecordPointer]
 //! * [BomBlockPaths]
 //! * [BomBlockTree]
+//! * [BomBlockTreePointer]
 //! * [BomBlockVIndex]
 //!
 //! See the documentation for each type for more details.
@@ -315,6 +317,26 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockFile<'a> {
             },
             data.len(),
         ))
+    }
+}
+
+/// A pointer to a block index holding a [BomBlockPathRecord].
+///
+/// We're unsure what this block type is used for. But instances appear to
+/// follow [BomBlockTree] and [BomBlockPaths] entries for every given path.
+/// Maybe it allows instances of [BomBlockTree] to easily obtain a reference
+/// back to the [BomBlockPathRecord] since this pointer appears to always exist
+/// at block index [BomBlockTree::block_paths_index] + 1.
+#[repr(C)]
+#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+pub struct BomBlockPathRecordPointer {
+    /// Block index of corresponding [BomBlockPathRecord].
+    pub block_path_record_index: u32,
+}
+
+impl BomBlockPathRecordPointer {
+    pub fn path_record<'a>(&self, bom: &'a ParsedBom) -> Result<BomBlockPathRecord<'a>, Error> {
+        bom.block_as_path_record(self.block_path_record_index as _)
     }
 }
 
@@ -714,6 +736,23 @@ impl BomBlockTree {
     }
 }
 
+/// A pointer to a block index holding a [BomBlockTree].
+///
+/// We're unsure what this block type is used for. But instances appear to
+/// follow [BomBlockPaths] / [BomBlockPathRecordPointer] entries for every given path.
+#[repr(C)]
+#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+pub struct BomBlockTreePointer {
+    /// Block index of corresponding [BomBlockTree].
+    pub block_tree_index: u32,
+}
+
+impl BomBlockTreePointer {
+    pub fn tree(&self, bom: &ParsedBom) -> Result<BomBlockTree, Error> {
+        bom.block_as_tree(self.block_tree_index as _)
+    }
+}
+
 /// Block type for the `VIndex` variable data.
 ///
 /// We don't know much about this data structure.
@@ -777,14 +816,16 @@ pub enum BomBlock<'a> {
     File(BomBlockFile<'a>),
     PathInfoIndex(BomBlockPathInfoIndex),
     PathRecord(BomBlockPathRecord<'a>),
+    PathRecordPointer(BomBlockPathRecordPointer),
     Paths(BomBlockPaths),
     Tree(BomBlockTree),
+    TreePointer(BomBlockTreePointer),
     VIndex(BomBlockVIndex),
 }
 
 impl<'a> BomBlock<'a> {
     /// Attempt to resolve an instance from a [ParsedBom] and block index number.
-    pub fn try_parse(bom: &'a ParsedBom<'a>, index: usize) -> Result<Self, Error> {
+    pub fn try_parse(bom: &'a ParsedBom, index: usize) -> Result<Self, Error> {
         // Multiple block types may parse correctly. Our strategy to tease out
         // false positives is to recursively examine the parsed block and verify
         // all parts parse.
@@ -803,6 +844,18 @@ impl<'a> BomBlock<'a> {
         if let Ok(vindex) = bom.block_as_vindex(index) {
             if vindex.tree(bom).is_ok() {
                 return Ok(Self::VIndex(vindex));
+            }
+        }
+
+        if let Ok(pointer) = bom.block_as_path_record_pointer(index) {
+            if pointer.path_record(bom).is_ok() {
+                return Ok(Self::PathRecordPointer(pointer));
+            }
+        }
+
+        if let Ok(pointer) = bom.block_as_tree_pointer(index) {
+            if pointer.tree(bom).is_ok() {
+                return Ok(Self::TreePointer(pointer));
             }
         }
 
@@ -947,6 +1000,14 @@ impl<'a> ParsedBom<'a> {
         self.block_data(index)?.pread_with(0, scroll::BE)
     }
 
+    /// Attempt to resolve a block at an index as a [BomBlockPathRecordPointer].
+    pub fn block_as_path_record_pointer(
+        &self,
+        index: usize,
+    ) -> Result<BomBlockPathRecordPointer, Error> {
+        Ok(self.block_data(index)?.pread_with(0, scroll::BE)?)
+    }
+
     /// Attempt to resolve a block at an index as a [BomBlockPaths].
     pub fn block_as_paths(&self, index: usize) -> Result<BomBlockPaths, Error> {
         let data = self.block_data(index)?;
@@ -957,6 +1018,11 @@ impl<'a> ParsedBom<'a> {
     pub fn block_as_tree(&self, index: usize) -> Result<BomBlockTree, Error> {
         let data = self.block_data(index)?;
         Ok(data.pread_with(0, scroll::BE)?)
+    }
+
+    /// Attempt to resolve a block at an index as a [BomBlockTreePointer].
+    pub fn block_as_tree_pointer(&self, index: usize) -> Result<BomBlockTreePointer, Error> {
+        Ok(self.block_data(index)?.pread_with(0, scroll::BE)?)
     }
 
     /// Attempt to resolve a block at an index as a [BomBlockVIndex].
