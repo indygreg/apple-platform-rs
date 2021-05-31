@@ -38,6 +38,7 @@ fn main_impl() -> BomResult<()> {
             Arg::new("action")
                 .action(ArgAction::Set)
                 .value_parser([
+                    "blocks-index",
                     "blocks",
                     "bom-info",
                     "header",
@@ -64,6 +65,12 @@ fn main_impl() -> BomResult<()> {
     let bom = ParsedBom::parse(&bom_data)?;
 
     match action.as_str() {
+        "blocks-index" => {
+            println!("{} total blocks", bom.blocks.count);
+            for (i, entry) in bom.blocks.blocks.iter().enumerate() {
+                println!("#{}: {:?}", i, entry);
+            }
+        }
         "blocks" => {
             println!("{} total blocks", bom.header.number_of_blocks);
             for i in 0..bom.header.number_of_blocks as usize + 1 {

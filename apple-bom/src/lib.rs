@@ -26,4 +26,5 @@ pub use error::Error;
 pub mod format;
 pub use format::ParsedBom;
 pub mod path;
+
 pub use path::{BomPath, BomPathType};

@@ -112,6 +112,28 @@
 //! Both [BomBlockFile] and [BomBlockPathInfoIndex] are pointed to by entries
 //! in [BomBlockPaths]. [BomBlockPathInfoIndex] points to the block index of
 //! the [BomBlockPathRecord] it is describing.
+//!
+//! These [BomBlockPathRecord], [BomBlockFile], and [BomBlockPathInfoIndex]
+//! triplets repeat for every path described in the [BomBlockPaths].
+//!
+//! Multiple [BomBlockPaths] may be necessary to hold all file records. These
+//! blocks may be located in the middle of the aforementioned sequence of
+//! path blocks. The block order doesn't appear to be strict. For example,
+//! single [BomBlockPaths] referencing blocks both before and after the
+//! current block can occur.
+//!
+//! Following the final [BomBlockPathInfoIndex] are tuples of [BomBlockTree],
+//! [BomBlockPaths], [BomBlockPathRecordPointer], [BomBlockTreePointer]. The
+//! purpose of these is not fully known. The [BomBlockPaths] records always
+//! appear to be empty. There appears to be a [BomBlockPathRecordPointer] for
+//! every path in the BOM.
+//!
+//! The order of the blocks in the payload and in the blocks index may not
+//! match. For example, Apple's BOM creation puts blocks with low block
+//! numbers such as [BomBlockBomInfo] (block #1) and the [BomBlockPaths]
+//! structures towards the end of the payload. It is likely that *index* data
+//! is buffered and then written out at the end, once the state of the world
+//! is fully known.
 
 use {
     crate::{
@@ -382,9 +404,11 @@ impl BomBlockPathRecordPointer {
 
 /// Block type describing a collection of paths.
 ///
-/// Internally this stores a collection [BomPathsEntry] describing each tracked
-/// path. These are pointers to [BomBlockPathInfoIndex] and [BomBlockFile] blocks
-/// further describing each path.
+/// Instances come in 2 flavors, denoted by [Self::is_path_info]. If this field
+/// is `1`, the [BomPathsEntry] instances describe specific tracked poths by
+/// pointing to blocks with [BomBlockPathInfoIndex] and [BomBlockFile] that
+/// describe each path. If `0`, the [BomPathsEntry] is a pointer to another
+/// [BomBlockPaths] instance.
 ///
 /// Each logical path appears to have an internal numeric identifier uniquely
 /// describing the path. This *path ID* is used for paths to refer to each
@@ -398,7 +422,7 @@ pub struct BomBlockPaths {
     /// 0 means it is a pointer to [BomBlockPaths].
     pub is_path_info: u16,
 
-    /// The number of paths tracked by this data structure.
+    /// The number of [BomPathsEntry] in this data structure.
     pub count: u16,
 
     /// Block index of [BomBlockPaths] that is after this one.
@@ -454,6 +478,11 @@ impl BomBlockPaths {
     }
 
     /// Obtain resolved records for each path defined on this instance.
+    ///
+    /// This will only yield records for the current block.
+    ///
+    /// See [BomBlockTree::bom_paths] for logic that iterates over paths
+    /// across multiple block records.
     pub fn iter_path_entries<'a, 'b: 'a>(
         &'a self,
         bom: &'b ParsedBom,
@@ -463,87 +492,6 @@ impl BomBlockPaths {
             .iter()
             .enumerate()
             .map(move |(i, _)| self.path_entry_at(bom, i))
-    }
-
-    /// Attempt to resolve records for a path given its internal path ID.
-    pub fn path_entry_with_path_id<'a>(
-        &self,
-        bom: &'a ParsedBom,
-        path_id: u32,
-    ) -> Result<(BomBlockFile<'a>, BomBlockPathRecord<'a>), Error> {
-        for entry in self.iter_path_entries(bom) {
-            let (i, file, record) = entry?;
-
-            if i == path_id {
-                return Ok((file, record));
-            }
-        }
-
-        Err(Error::BadIndex)
-    }
-
-    /// Obtain a [HashMap] mapping the internal path ID to its records.
-    ///
-    /// Since records refer to the internal path ID, this can help with
-    /// batch lookups.
-    pub fn path_entries_by_id<'a>(
-        &self,
-        bom: &'a ParsedBom,
-    ) -> Result<HashMap<u32, (BomBlockFile<'a>, BomBlockPathRecord<'a>)>, Error> {
-        let mut res = HashMap::with_capacity(self.paths.len());
-
-        for entry in self.iter_path_entries(bom) {
-            let (i, file, record) = entry?;
-            res.insert(i, (file, record));
-        }
-
-        Ok(res)
-    }
-
-    /// Resolve the file name for an entry at an index.
-    pub fn string_file_name_at(&self, bom: &ParsedBom, index: usize) -> Result<String, Error> {
-        let file = self.file_at(bom, index)?;
-
-        Ok(file.string_file_name())
-    }
-
-    fn resolve_full_filename(&self, bom: &ParsedBom, file: &BomBlockFile) -> Result<String, Error> {
-        let mut file = file.clone();
-        let mut filename = file.string_file_name();
-
-        while file.parent_path_id != 0 {
-            file = self.path_entry_with_path_id(bom, file.parent_path_id)?.0;
-            filename = format!("{}/{}", file.string_file_name(), filename);
-        }
-
-        Ok(filename)
-    }
-
-    /// Attempt to resolve the full path for an entry at an index.
-    ///
-    /// This may fail if this instance is not the *root* paths block.
-    pub fn full_path_at(&self, bom: &ParsedBom, index: usize) -> Result<String, Error> {
-        self.resolve_full_filename(bom, &self.file_at(bom, index)?)
-    }
-
-    /// Attempt to resolve the full path for an entry given a path ID.
-    pub fn full_path_with_path_id(&self, bom: &ParsedBom, path_id: u32) -> Result<String, Error> {
-        self.resolve_full_filename(bom, &self.path_entry_with_path_id(bom, path_id)?.0)
-    }
-
-    /// Resolve each path to a [BomPath].
-    ///
-    /// This may fail if this isn't a root [BomBlockPaths].
-    pub fn iter_bom_paths<'a, 'b: 'a>(
-        &'a self,
-        bom: &'b ParsedBom,
-    ) -> impl Iterator<Item = Result<BomPath, Error>> + 'a {
-        self.iter_path_entries(bom).map(move |entry| {
-            let (_, file, record) = entry?;
-            let filename = self.resolve_full_filename(bom, &file)?;
-
-            BomPath::from_record(filename, &record)
-        })
     }
 }
 
@@ -810,11 +758,44 @@ impl BomBlockTree {
         Ok(paths)
     }
 
-    /// Obtain [BomPath] in this tree.
+    /// Resolve all [BomPath] in this tree.
+    ///
+    /// This contains the logic for iterating over multiple [BomBlockPaths] instances.
     pub fn bom_paths(&self, bom: &ParsedBom) -> Result<Vec<BomPath>, Error> {
-        self.root_paths(bom)?
-            .iter_bom_paths(bom)
-            .collect::<Result<Vec<_>, Error>>()
+        let mut res = Vec::with_capacity(self.path_count as _);
+
+        let mut paths = self.root_paths(bom)?;
+        let mut files_by_id = HashMap::with_capacity(res.capacity());
+
+        loop {
+            for entry in paths.iter_path_entries(bom) {
+                let (path_id, file, record) = entry?;
+
+                // The full filename is resolved by traversing the file's parent path ID until
+                // we get to a root.
+                let mut resolve_file = &file;
+                let mut filename = file.string_file_name();
+
+                while resolve_file.parent_path_id != 0 {
+                    resolve_file = files_by_id
+                        .get(&resolve_file.parent_path_id)
+                        .ok_or(Error::BadIndex)?;
+                    filename = format!("{}/{}", resolve_file.string_file_name(), filename);
+                }
+
+                res.push(BomPath::from_record(filename, &record)?);
+
+                files_by_id.insert(path_id, file);
+            }
+
+            if paths.next_paths_block_index != 0 {
+                paths = bom.block_as_paths(paths.next_paths_block_index as _)?;
+            } else {
+                break;
+            }
+        }
+
+        Ok(res)
     }
 }
 
@@ -941,6 +922,15 @@ impl<'a> BomBlock<'a> {
             }
         }
 
+        // Path records are quite large.
+        if let Ok(record) = bom.block_as_path_record(index) {
+            return Ok(Self::PathRecord(record));
+        }
+
+        if let Ok(file) = bom.block_as_file(index) {
+            return Ok(Self::File(file));
+        }
+
         if let Ok(pointer) = bom.block_as_path_record_pointer(index) {
             if pointer.path_record(bom).is_ok() {
                 return Ok(Self::PathRecordPointer(pointer));
@@ -951,15 +941,6 @@ impl<'a> BomBlock<'a> {
             if pointer.tree(bom).is_ok() {
                 return Ok(Self::TreePointer(pointer));
             }
-        }
-
-        // Path records are quite large.
-        if let Ok(record) = bom.block_as_path_record(index) {
-            return Ok(Self::PathRecord(record));
-        }
-
-        if let Ok(file) = bom.block_as_file(index) {
-            return Ok(Self::File(file));
         }
 
         if let Ok(info) = bom.block_as_bom_info(index) {
@@ -1107,7 +1088,7 @@ impl<'a> ParsedBom<'a> {
     /// Attempt to resolve a black at an index as a [BomBlockTree].
     pub fn block_as_tree(&self, index: usize) -> Result<BomBlockTree, Error> {
         let data = self.block_data(index)?;
-        Ok(data.pread_with(0, scroll::BE)?)
+        data.pread_with(0, scroll::BE)
     }
 
     /// Attempt to resolve a block at an index as a [BomBlockTreePointer].
