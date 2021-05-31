@@ -140,13 +140,18 @@ use {
         error::Error,
         path::{BomPath, BomPathType},
     },
-    scroll::{Pread, SizeWith},
-    std::{borrow::Cow, collections::HashMap, ffi::CStr},
+    scroll::{IOwrite, Pread, Pwrite, SizeWith},
+    std::{
+        borrow::Cow,
+        collections::HashMap,
+        ffi::CStr,
+        io::{Cursor, Write},
+    },
 };
 
 /// The header for a BOM file.
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+#[derive(Clone, Copy, Default, Debug, IOwrite, Pread, Pwrite, SizeWith)]
 pub struct BomHeader {
     /// Format magic. Always `BOMStore`
     pub magic: [u8; 8],
@@ -217,6 +222,26 @@ pub struct BomBlocksIndex {
     pub blocks: Vec<BomBlocksEntry>,
 }
 
+impl BomBlocksIndex {
+    /// Write this data structure to a writer.
+    pub fn write(&self, writer: &mut impl Write) -> Result<(), Error> {
+        writer.iowrite_with(self.count, scroll::BE)?;
+
+        for entry in &self.blocks {
+            writer.iowrite_with(*entry, scroll::BE)?;
+        }
+
+        Ok(())
+    }
+
+    /// Serialize this data structure to bytes.
+    pub fn to_vec(&self) -> Result<Vec<u8>, Error> {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        self.write(&mut writer)?;
+        Ok(writer.into_inner())
+    }
+}
+
 impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlocksIndex {
     type Error = Error;
 
@@ -238,7 +263,7 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlocksIndex {
 ///
 /// This type is part of [BomBlocksIndex].
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+#[derive(Clone, Copy, Default, Debug, IOwrite, Pread, Pwrite, SizeWith)]
 pub struct BomBlocksEntry {
     /// Start offset of block data relative to start of file / [BomHeader].
     pub file_offset: u32,
@@ -261,6 +286,33 @@ pub struct BomVar {
 
     /// Name of variable.
     pub name: String,
+}
+
+impl BomVar {
+    /// Construct a new instance given a string.
+    pub fn new(block_index: u32, name: impl ToString) -> Result<Self, Error> {
+        let name = name.to_string();
+
+        if name.as_bytes().len() > 254 {
+            return Err(Error::BadVariableString);
+        }
+
+        Ok(Self {
+            block_index,
+            name_length: name.as_bytes().len() as u8 + 1,
+            name,
+        })
+    }
+
+    /// Write this data structure to a writer.
+    pub fn write(&self, writer: &mut impl Write) -> Result<(), Error> {
+        writer.iowrite_with(self.block_index, scroll::BE)?;
+        writer.iowrite_with(self.name_length, scroll::BE)?;
+        writer.write_all(self.name.as_bytes())?;
+        writer.write_all(b"\0")?;
+
+        Ok(())
+    }
 }
 
 impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomVar {
@@ -304,6 +356,21 @@ pub struct BomBlockBomInfo {
     pub entries: Vec<BomInfoEntry>,
 }
 
+impl BomBlockBomInfo {
+    /// Write this data structure to a writer.
+    pub fn write(&self, writer: &mut impl Write) -> Result<(), Error> {
+        writer.iowrite_with(self.version, scroll::BE)?;
+        writer.iowrite_with(self.number_of_paths, scroll::BE)?;
+        writer.iowrite_with(self.number_of_info_entries, scroll::BE)?;
+
+        for entry in &self.entries {
+            writer.iowrite_with(*entry, scroll::BE)?;
+        }
+
+        Ok(())
+    }
+}
+
 impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockBomInfo {
     type Error = Error;
 
@@ -335,7 +402,7 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockBomInfo {
 ///
 /// We do not currently know what the fields mean.
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+#[derive(Clone, Copy, Default, Debug, IOwrite, Pread, Pwrite, SizeWith)]
 pub struct BomInfoEntry {
     pub a: u32,
     pub b: u32,
@@ -355,10 +422,18 @@ pub struct BomBlockFile<'a> {
     ///
     /// Only the leaf file or directory name. i.e. the final component in a
     /// path.
-    pub name: &'a CStr,
+    pub name: Cow<'a, CStr>,
 }
 
 impl<'a> BomBlockFile<'a> {
+    /// Write this data structure to a writer.
+    pub fn write(&self, writer: &mut impl Write) -> Result<(), Error> {
+        writer.iowrite_with(self.parent_path_id, scroll::BE)?;
+        writer.write_all(self.name.to_bytes_with_nul())?;
+
+        Ok(())
+    }
+
     /// Obtain the file name as a [String].
     pub fn string_file_name(&self) -> String {
         self.name.to_string_lossy().to_string()
@@ -370,7 +445,8 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockFile<'a> {
 
     fn try_from_ctx(data: &'a [u8], le: scroll::Endian) -> Result<(Self, usize), Self::Error> {
         let parent = data.pread_with(0, le)?;
-        let name = CStr::from_bytes_with_nul(&data[4..]).map_err(|_| Error::BadVariableString)?;
+        let name =
+            Cow::from(CStr::from_bytes_with_nul(&data[4..]).map_err(|_| Error::BadVariableString)?);
 
         Ok((
             Self {
@@ -390,7 +466,7 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockFile<'a> {
 /// back to the [BomBlockPathRecord] since this pointer appears to always exist
 /// at block index [BomBlockTree::block_paths_index] + 1.
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+#[derive(Clone, Copy, Default, Debug, IOwrite, Pread, Pwrite, SizeWith)]
 pub struct BomBlockPathRecordPointer {
     /// Block index of corresponding [BomBlockPathRecord].
     pub block_path_record_index: u32,
@@ -436,6 +512,20 @@ pub struct BomBlockPaths {
 }
 
 impl BomBlockPaths {
+    /// Write this data structure to a writer.
+    pub fn write(&self, writer: &mut impl Write) -> Result<(), Error> {
+        writer.iowrite_with(self.is_path_info, scroll::BE)?;
+        writer.iowrite_with(self.count, scroll::BE)?;
+        writer.iowrite_with(self.next_paths_block_index, scroll::BE)?;
+        writer.iowrite_with(self.previous_paths_block_index, scroll::BE)?;
+
+        for entry in &self.paths {
+            writer.iowrite_with(*entry, scroll::BE)?;
+        }
+
+        Ok(())
+    }
+
     /// Resolve the [BomBlockFile] for a path at a given index.
     pub fn file_at<'a>(&self, bom: &'a ParsedBom, index: usize) -> Result<BomBlockFile<'a>, Error> {
         self.paths.get(index).ok_or(Error::BadIndex)?.file(bom)
@@ -528,7 +618,7 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockPaths {
 ///
 /// This type is contained within [BomBlockPaths].
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+#[derive(Clone, Copy, Default, Debug, IOwrite, Pread, Pwrite, SizeWith)]
 pub struct BomPathsEntry {
     /// Block index of associated data structure.
     ///
@@ -563,7 +653,7 @@ impl BomPathsEntry {
 
 /// Block type describing a single path.
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+#[derive(Clone, Copy, Default, Debug, IOwrite, Pread, Pwrite, SizeWith)]
 pub struct BomBlockPathInfoIndex {
     /// Unique identifier for this path.
     ///
@@ -585,7 +675,7 @@ impl BomBlockPathInfoIndex {
 ///
 /// This is where most of the metadata defining a BOM path lives.
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct BomBlockPathRecord<'a> {
     /// The type of the path.
     ///
@@ -629,13 +719,35 @@ pub struct BomBlockPathRecord<'a> {
     pub link_name_length: u32,
 
     /// Link path name.
-    pub link_name: Option<&'a CStr>,
+    pub link_name: Option<Cow<'a, CStr>>,
 }
 
 impl<'a> BomBlockPathRecord<'a> {
+    /// Write this data structure to a writer.
+    pub fn write(&self, writer: &mut impl Write) -> Result<(), Error> {
+        writer.iowrite_with(self.path_type, scroll::BE)?;
+        writer.iowrite_with(self.a, scroll::BE)?;
+        writer.iowrite_with(self.architecture, scroll::BE)?;
+        writer.iowrite_with(self.mode, scroll::BE)?;
+        writer.iowrite_with(self.user, scroll::BE)?;
+        writer.iowrite_with(self.group, scroll::BE)?;
+        writer.iowrite_with(self.mtime, scroll::BE)?;
+        writer.iowrite_with(self.size, scroll::BE)?;
+        writer.iowrite_with(self.b, scroll::BE)?;
+        writer.iowrite_with(self.checksum_or_type, scroll::BE)?;
+        writer.iowrite_with(self.link_name_length, scroll::BE)?;
+        if let Some(link_name) = &self.link_name {
+            writer.write_all(link_name.to_bytes_with_nul())?;
+        }
+
+        Ok(())
+    }
+
     /// Obtain the link name of this record, if present.
     pub fn string_link_name(&self) -> Option<String> {
-        self.link_name.map(|s| s.to_string_lossy().to_string())
+        self.link_name
+            .as_ref()
+            .map(|s| s.to_string_lossy().to_string())
     }
 }
 
@@ -659,7 +771,9 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockPathRecord<'a> 
 
         let link_name = if path_type == BomPathType::Link.into() && link_name_length > 0 {
             let link_name_data = &data[*offset..*offset + link_name_length as usize];
-            Some(CStr::from_bytes_with_nul(link_name_data).map_err(|_| Error::BadVariableString)?)
+            Some(Cow::from(
+                CStr::from_bytes_with_nul(link_name_data).map_err(|_| Error::BadVariableString)?,
+            ))
         } else {
             None
         };
@@ -686,7 +800,7 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockPathRecord<'a> 
 
 /// Block type for various variables describing a collection/tree of paths.
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, SizeWith)]
+#[derive(Clone, Copy, Debug, IOwrite, Pwrite, SizeWith)]
 pub struct BomBlockTree {
     /// Always `tree`.
     pub tree: [u8; 4],
@@ -705,6 +819,19 @@ pub struct BomBlockTree {
 
     /// Unknown.
     pub a: u8,
+}
+
+impl Default for BomBlockTree {
+    fn default() -> Self {
+        Self {
+            tree: *b"tree",
+            version: 1,
+            block_paths_index: 0,
+            block_size: 0,
+            path_count: 0,
+            a: 0,
+        }
+    }
 }
 
 impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockTree {
@@ -804,7 +931,7 @@ impl BomBlockTree {
 /// We're unsure what this block type is used for. But instances appear to
 /// follow [BomBlockPaths] / [BomBlockPathRecordPointer] entries for every given path.
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+#[derive(Clone, Copy, Default, Debug, IOwrite, Pread, Pwrite, SizeWith)]
 pub struct BomBlockTreePointer {
     /// Block index of corresponding [BomBlockTree].
     pub block_tree_index: u32,
@@ -820,7 +947,7 @@ impl BomBlockTreePointer {
 ///
 /// We don't know much about this data structure.
 #[repr(C)]
-#[derive(Clone, Copy, Default, Debug, Pread, SizeWith)]
+#[derive(Clone, Copy, Default, Debug, IOwrite, Pread, Pwrite, SizeWith)]
 pub struct BomBlockVIndex {
     /// Unknown.
     pub a: u32,
@@ -855,6 +982,26 @@ pub struct BomVarsIndex {
     pub vars: Vec<BomVar>,
 }
 
+impl BomVarsIndex {
+    /// Write this data structure to a writer.
+    pub fn write(&self, writer: &mut impl Write) -> Result<(), Error> {
+        writer.iowrite_with(self.count, scroll::BE)?;
+
+        for var in &self.vars {
+            var.write(writer)?;
+        }
+
+        Ok(())
+    }
+
+    /// Obtain the bytes representation of this data structure.
+    pub fn to_vec(&self) -> Result<Vec<u8>, Error> {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        self.write(&mut writer)?;
+        Ok(writer.into_inner())
+    }
+}
+
 impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomVarsIndex {
     type Error = Error;
 
@@ -875,6 +1022,7 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomVarsIndex {
 /// Enumeration over known block types.
 #[derive(Clone, Debug)]
 pub enum BomBlock<'a> {
+    Empty,
     BomInfo(BomBlockBomInfo),
     File(BomBlockFile<'a>),
     PathInfoIndex(BomBlockPathInfoIndex),
@@ -948,6 +1096,50 @@ impl<'a> BomBlock<'a> {
         }
 
         Err(Error::UnknownBlockType)
+    }
+
+    /// Write the block data to a writer.
+    pub fn write(&self, writer: &mut impl Write) -> Result<(), Error> {
+        match self {
+            Self::Empty => {}
+            Self::BomInfo(b) => {
+                b.write(writer)?;
+            }
+            Self::File(b) => {
+                b.write(writer)?;
+            }
+            Self::PathInfoIndex(b) => {
+                writer.iowrite_with(*b, scroll::BE)?;
+            }
+            Self::PathRecord(b) => {
+                b.write(writer)?;
+            }
+            Self::PathRecordPointer(b) => {
+                writer.iowrite_with(*b, scroll::BE)?;
+            }
+            Self::Paths(b) => {
+                b.write(writer)?;
+            }
+            Self::Tree(b) => {
+                writer.iowrite_with(*b, scroll::BE)?;
+            }
+            Self::TreePointer(b) => {
+                writer.iowrite_with(*b, scroll::BE)?;
+            }
+            Self::VIndex(b) => {
+                writer.iowrite_with(*b, scroll::BE)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Serialize this block to its bytes representation.
+    pub fn to_vec(&self) -> Result<Vec<u8>, Error> {
+        let mut writer = Cursor::new(Vec::<u8>::new());
+        self.write(&mut writer)?;
+
+        Ok(writer.into_inner())
     }
 }
 

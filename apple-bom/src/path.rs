@@ -11,6 +11,7 @@ use {
     simple_file_manifest::{
         S_IRGRP, S_IROTH, S_IRUSR, S_IWGRP, S_IWOTH, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR,
     },
+    std::ffi::CString,
 };
 
 /// The type of path in a BOM.
@@ -255,6 +256,19 @@ impl BomPath {
     /// The path that this link refers to.
     pub fn link_name(&self) -> Option<&str> {
         self.link_name.as_deref()
+    }
+
+    /// The path that this link refers to, as a [CString].
+    pub fn link_name_cstring(&self) -> Option<CString> {
+        if let Some(link_name) = &self.link_name {
+            let mut data = Vec::<u8>::with_capacity(link_name.as_bytes().len() + 1);
+            data.extend(link_name.as_bytes());
+            data.push(0);
+
+            Some(CString::new(data).expect("should be valid C string"))
+        } else {
+            None
+        }
     }
 
     /// Set the link name for this path.
