@@ -63,7 +63,7 @@
 //!
 //! ## HLIndex
 //!
-//! Unknown. Its block data is [BomBlockTree].
+//! Defines hard links. Its block data is [BomBlockTree].
 //!
 //! ## VIndex
 //!
@@ -400,7 +400,8 @@ impl<'a> scroll::ctx::TryFromCtx<'a, scroll::Endian> for BomBlockBomInfo {
 
 /// Holds data records stored within [BomBlockBomInfo].
 ///
-/// We do not currently know what the fields mean.
+/// The fields have something to do with architecture information. But we don't
+/// know what exactly.
 #[repr(C)]
 #[derive(Clone, Copy, Default, Debug, IOwrite, Pread, Pwrite, SizeWith)]
 pub struct BomInfoEntry {
