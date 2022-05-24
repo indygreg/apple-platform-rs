@@ -133,6 +133,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "apple-sdk"
+version = "0.1.0-pre"
+
+[[package]]
 name = "apple-xar"
 version = "0.11.0-pre"
 dependencies = [

@@ -3,6 +3,7 @@ members = [
     'apple-bundles',
     'apple-codesign',
     'apple-flat-package',
+    'apple-sdk',
     'apple-xar',
 ]
 resolver = "2"
