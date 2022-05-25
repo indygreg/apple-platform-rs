@@ -845,6 +845,46 @@ impl SearchDirectory {
     }
 }
 
+/// Sorting strategy to apply to SDK searches.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SdkSorting {
+    /// Do not apply any sorting.
+    ///
+    /// This will return SDKs in the order they are discovered from the input
+    /// paths.
+    None,
+
+    /// Order SDKs by their version in descending order.
+    ///
+    /// Newer SDKs will come before older SDKs.
+    VersionDescending,
+
+    /// Order SDKs by their version in ascending order.
+    ///
+    /// Older SDKs will come before newer SDKs.
+    VersionAscending,
+}
+
+impl SdkSorting {
+    pub fn compare_version(&self, a: Option<&SdkVersion>, b: Option<&SdkVersion>) -> Ordering {
+        match self {
+            Self::None => Ordering::Equal,
+            Self::VersionAscending => match (a, b) {
+                (Some(a), Some(b)) => a.cmp(b),
+                (Some(_), None) => Ordering::Greater,
+                (None, Some(_)) => Ordering::Less,
+                (None, None) => Ordering::Equal,
+            },
+            Self::VersionDescending => match (a, b) {
+                (Some(a), Some(b)) => b.cmp(a),
+                (Some(_), None) => Ordering::Less,
+                (None, Some(_)) => Ordering::Greater,
+                (None, None) => Ordering::Equal,
+            },
+        }
+    }
+}
+
 /// Search parameters for locating an Apple SDK.
 ///
 /// This type can be used to construct a search for an Apple SDK given user chosen
@@ -890,6 +930,7 @@ pub struct SdkSearch {
     platform: Option<ApplePlatform>,
     minimum_version: Option<SdkVersion>,
     maximum_version: Option<SdkVersion>,
+    sorting: SdkSorting,
 }
 
 impl Default for SdkSearch {
@@ -905,6 +946,7 @@ impl Default for SdkSearch {
             platform: None,
             minimum_version: None,
             maximum_version: None,
+            sorting: SdkSorting::None,
         }
     }
 }
@@ -1022,6 +1064,14 @@ impl SdkSearch {
         self
     }
 
+    /// Define the sorting order for returned SDKs.
+    ///
+    /// Default is [SdkSorting::None].
+    pub fn sorting(mut self, sorting: SdkSorting) -> Self {
+        self.sorting = sorting;
+        self
+    }
+
     /// Perform a search, yielding found SDKs sorted by the search's preferences.
     ///
     /// May return an empty vector.
@@ -1103,6 +1153,12 @@ impl SdkSearch {
                     }
                 }
             }
+        }
+
+        // Sorting should be stable with None variant. But we can avoid the
+        // overhead.
+        if self.sorting != SdkSorting::None {
+            res.sort_by(|a, b| self.sorting.compare_version(a.version(), b.version()))
         }
 
         Ok(res)
@@ -1224,6 +1280,31 @@ mod test {
         );
 
         Ok(())
+    }
+
+    #[test]
+    fn sdk_sorting() {
+        let sorting = SdkSorting::VersionAscending;
+
+        assert_eq!(
+            sorting.compare_version(Some(&SdkVersion::from("12")), Some(&SdkVersion::from("11"))),
+            Ordering::Greater
+        );
+        assert_eq!(
+            sorting.compare_version(Some(&SdkVersion::from("11")), Some(&SdkVersion::from("12"))),
+            Ordering::Less
+        );
+
+        let sorting = SdkSorting::VersionDescending;
+
+        assert_eq!(
+            sorting.compare_version(Some(&SdkVersion::from("12")), Some(&SdkVersion::from("11"))),
+            Ordering::Less
+        );
+        assert_eq!(
+            sorting.compare_version(Some(&SdkVersion::from("11")), Some(&SdkVersion::from("12"))),
+            Ordering::Greater
+        );
     }
 
     #[test]
