@@ -18,12 +18,13 @@
 //!
 //! # Apple SDKs
 //!
-//! We model Apple SDKs using the [AppleSdkDirectory] and [AppleSdk] types. The
+//! We model Apple SDKs using the [UnparsedSdk] and [ParsedSdk] types. The
 //! latter requires the `parse` crate feature in order to activate support for
 //! parsing JSON and plist files.
 
 #[cfg(feature = "parse")]
 mod parsed_sdk;
+mod simple_sdk;
 
 use std::{
     fmt::{Display, Formatter},
@@ -31,9 +32,11 @@ use std::{
     process::{Command, ExitStatus, Stdio},
 };
 
+pub use simple_sdk::UnparsedSdk;
+
 #[cfg(feature = "parse")]
 pub use crate::parsed_sdk::{
-    AppleSdk, AppleSdkSupportedTarget, SdkSettingsJson, SdkSettingsJsonDefaultProperties,
+    AppleSdkSupportedTarget, ParsedSdk, SdkSettingsJson, SdkSettingsJsonDefaultProperties,
 };
 
 /// Default install path for the Xcode command line tools.
@@ -305,51 +308,13 @@ pub fn find_developer_platforms(developer_dir: &Path) -> Result<Vec<(String, Pat
     Ok(res)
 }
 
-/// A directory purported to hold an Apple SDK.
-#[derive(Clone, Debug)]
-pub struct AppleSdkDirectory {
-    /// Root directory of the SDK.
-    pub path: PathBuf,
-
-    /// Whether the root directory is a symlink to another path.
-    pub is_symlink: bool,
-}
-
-impl AppleSdkDirectory {
-    /// Attempt to resolve an SDK from a path to the SDK root directory.
-    pub fn from_directory(path: &Path) -> Result<Self, Error> {
-        // Need to call symlink_metadata so symlinks aren't followed.
-        let metadata = std::fs::symlink_metadata(path)?;
-
-        let is_symlink = metadata.file_type().is_symlink();
-
-        let json_path = path.join("SDKSettings.json");
-        let plist_path = path.join("SDKSettings.plist");
-
-        if json_path.exists() || plist_path.exists() {
-            Ok(Self {
-                path: path.to_path_buf(),
-                is_symlink,
-            })
-        } else {
-            Err(Error::PathNotSdk(path.to_path_buf()))
-        }
-    }
-
-    #[cfg(feature = "parse")]
-    /// Attempt to convert into an [AppleSdk] by parsing an `SDKSettings.*` file.
-    pub fn try_parse(self) -> Result<AppleSdk, Error> {
-        self.try_into()
-    }
-}
-
 /// Finds SDKs in a specified directory.
 ///
 /// Directory entries are often symlinks pointing to other directories.
 /// SDKs are annotated with an `is_symlink` field to denote when this is
 /// the case. Callers may want to filter out symlinked SDKs to avoid
 /// duplicates.
-pub fn find_sdks_in_directory(root: &Path) -> Result<Vec<AppleSdkDirectory>, Error> {
+pub fn find_sdks_in_directory(root: &Path) -> Result<Vec<UnparsedSdk>, Error> {
     let dir = match std::fs::read_dir(&root) {
         Ok(v) => Ok(v),
         Err(e) => {
@@ -366,7 +331,7 @@ pub fn find_sdks_in_directory(root: &Path) -> Result<Vec<AppleSdkDirectory>, Err
     for entry in dir {
         let entry = entry?;
 
-        match AppleSdkDirectory::from_directory(&entry.path()) {
+        match UnparsedSdk::from_directory(&entry.path()) {
             Ok(sdk) => {
                 res.push(sdk);
             }
@@ -385,7 +350,7 @@ pub fn find_sdks_in_directory(root: &Path) -> Result<Vec<AppleSdkDirectory>, Err
 /// platform directories containing SDKs.
 ///
 /// A common input path is `/Applications/Xcode.app/Contents/Developer/Platforms/*.platform`.
-pub fn find_sdks_in_platform(platform_dir: &Path) -> Result<Vec<AppleSdkDirectory>, Error> {
+pub fn find_sdks_in_platform(platform_dir: &Path) -> Result<Vec<UnparsedSdk>, Error> {
     let sdks_path = platform_dir.join("Developer").join("SDKs");
 
     find_sdks_in_directory(&sdks_path)
@@ -399,7 +364,7 @@ pub fn find_sdks_in_platform(platform_dir: &Path) -> Result<Vec<AppleSdkDirector
 ///
 /// A common input path is `/Applications/Xcode.app/Contents/Developer` or the
 /// return value of [default_developer_directory()].
-pub fn find_developer_sdks(developer_dir: &Path) -> Result<Vec<AppleSdkDirectory>, Error> {
+pub fn find_developer_sdks(developer_dir: &Path) -> Result<Vec<UnparsedSdk>, Error> {
     Ok(find_developer_platforms(developer_dir)?
         .into_iter()
         .map(|(_, platform_path)| Ok(find_sdks_in_platform(&platform_path)?.into_iter()))
@@ -413,7 +378,7 @@ pub fn find_developer_sdks(developer_dir: &Path) -> Result<Vec<AppleSdkDirectory
 ///
 /// This is a convenience function for calling [find_developer_sdks()] with the output
 /// of [default_developer_directory()].
-pub fn find_default_developer_sdks() -> Result<Vec<AppleSdkDirectory>, Error> {
+pub fn find_default_developer_sdks() -> Result<Vec<UnparsedSdk>, Error> {
     let developer_dir = default_developer_directory()?;
 
     find_developer_sdks(&developer_dir)
@@ -426,7 +391,7 @@ pub fn find_default_developer_sdks() -> Result<Vec<AppleSdkDirectory>, Error> {
 ///
 /// Returns `Ok(None)` if the Xcode Command Line Tools are not present in
 /// this directory or doesn't have an `SDKs` directory.
-pub fn find_command_line_tools_sdks() -> Result<Option<Vec<AppleSdkDirectory>>, Error> {
+pub fn find_command_line_tools_sdks() -> Result<Option<Vec<UnparsedSdk>>, Error> {
     let sdk_path = PathBuf::from(COMMAND_LINE_TOOLS_DEFAULT_PATH).join("SDKs");
 
     if sdk_path.exists() {

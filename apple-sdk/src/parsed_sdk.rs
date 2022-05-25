@@ -1,7 +1,7 @@
 //! Data structures in Apple SDKs.
 
 use {
-    crate::{AppleSdkDirectory, Error},
+    crate::{Error, UnparsedSdk},
     serde::Deserialize,
     std::{
         collections::HashMap,
@@ -81,7 +81,7 @@ pub struct SdkSettingsJson {
 /// Apple SDK. This includes things like targeting capabilities.
 #[cfg(feature = "parse")]
 #[derive(Clone, Debug)]
-pub struct AppleSdk {
+pub struct ParsedSdk {
     /// Root directory of the SDK.
     pub path: PathBuf,
 
@@ -141,7 +141,7 @@ pub struct AppleSdk {
 }
 
 #[cfg(feature = "parse")]
-impl AppleSdk {
+impl ParsedSdk {
     /// Attempt to resolve an SDK from a path to the SDK's root directory.
     pub fn from_directory(path: impl AsRef<Path>) -> Result<Self, Error> {
         let path = path.as_ref();
@@ -261,10 +261,10 @@ impl AppleSdk {
 }
 
 #[cfg(feature = "parse")]
-impl TryFrom<AppleSdkDirectory> for AppleSdk {
+impl TryFrom<UnparsedSdk> for ParsedSdk {
     type Error = Error;
 
-    fn try_from(v: AppleSdkDirectory) -> Result<Self, Self::Error> {
+    fn try_from(v: UnparsedSdk) -> Result<Self, Self::Error> {
         Self::from_directory(v.path)
     }
 }
