@@ -229,10 +229,47 @@ impl ParsedSdk {
             .ok_or_else(|| Error::PlistKeyNotDictionary("DefaultProperties".to_string()))?;
 
         let platform_name = get_string(props, "PLATFORM_NAME")?;
-        let default_deployment_target = get_string(
-            props,
-            &format!("{}_DEPLOYMENT_TARGET", platform_name.to_ascii_uppercase()),
-        )?;
+
+        let supported_targets = value
+            .get("SupportedTargets")
+            .ok_or_else(|| Error::PlistKeyMissing("SupportedTargets".to_string()))?
+            .as_dictionary()
+            .ok_or_else(|| Error::PlistKeyNotDictionary("SupportedTargets".to_string()))?;
+
+        let default_target = supported_targets
+            .get(&platform_name)
+            .ok_or_else(|| Error::PlistKeyMissing(platform_name.clone()))?
+            .as_dictionary()
+            .ok_or_else(|| Error::PlistKeyNotDictionary(platform_name.clone()))?;
+
+        // The default deployment target can be specified a number of ways.
+        //
+        // Some SDKs have a property specifying the property defining it. That takes precedence, as
+        // explicit > implicit.
+        //
+        // Otherwise we have to fall back to a heuristic.
+        //
+        // First we try {platform_name}_DEPLOYMENT_TARGET. Then LLVM target triple + _DEPLOYMENT_TARGET.
+        // This heuristic appears to always work.
+        let default_deployment_target =
+            if let Ok(setting_name) = get_string(props, "DEPLOYMENT_TARGET_SETTING_NAME") {
+                get_string(props, &setting_name)?
+            } else if let Ok(value) = get_string(
+                props,
+                &format!("{}_DEPLOYMENT_TARGET", platform_name.to_ascii_uppercase()),
+            ) {
+                value
+            } else {
+                let llvm_target_triple = get_string(default_target, "LLVMTargetTripleSys")?;
+
+                get_string(
+                    props,
+                    &format!(
+                        "{}_DEPLOYMENT_TARGET",
+                        llvm_target_triple.to_ascii_uppercase()
+                    ),
+                )?
+            };
 
         Ok(Self {
             path,
