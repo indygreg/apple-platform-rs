@@ -16,6 +16,13 @@
 //! `/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/SDKs/MacOSX12.3.sdk`
 //! or `/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk`.
 //!
+//! # Apple Platforms
+//!
+//! We model an abstract Apple platform via the [ApplePlatform] enum.
+//!
+//! A directory containing an Apple platform is represented by the
+//! [ApplePlatformDirectory] struct.
+//!
 //! # Apple SDKs
 //!
 //! We model Apple SDKs using the [UnparsedSdk] and [ParsedSdk] types. The
@@ -37,9 +44,12 @@ mod parsed_sdk;
 mod simple_sdk;
 
 use std::{
+    cmp::Ordering,
     fmt::{Display, Formatter},
+    ops::Deref,
     path::{Path, PathBuf},
     process::{Command, ExitStatus, Stdio},
+    str::FromStr,
 };
 
 pub use simple_sdk::UnparsedSdk;
@@ -69,6 +79,8 @@ pub enum Error {
     XcodeSelectBadStatus(ExitStatus),
     /// Generic I/O error.
     Io(std::io::Error),
+    /// A path is not an Apple Platform directory.
+    PathNotPlatform(PathBuf),
     /// A path is not an Apple SDK.
     PathNotSdk(PathBuf),
     /// A plist value is not a dictionary.
@@ -101,6 +113,10 @@ impl Display for Error {
                 f.write_fmt(format_args!("Error running xcode-select: {}", v))
             }
             Self::Io(err) => f.write_fmt(format_args!("I/O error: {}", err)),
+            Self::PathNotPlatform(p) => f.write_fmt(format_args!(
+                "path is not an Apple Platform: {}",
+                p.display()
+            )),
             Self::PathNotSdk(p) => {
                 f.write_fmt(format_args!("path is not an Apple SDK: {}", p.display()))
             }
@@ -139,6 +155,169 @@ impl From<serde_json::Error> for Error {
 impl From<plist::Error> for Error {
     fn from(e: plist::Error) -> Self {
         Self::Plist(e)
+    }
+}
+
+/// A known Apple platform type.
+#[derive(Clone, Debug)]
+pub enum ApplePlatform {
+    AppleTvOs,
+    AppleTvSimulator,
+    DriverKit,
+    IPhoneOs,
+    IPhoneSimulator,
+    MacOsX,
+    WatchOs,
+    WatchSimulator,
+    Unknown(String),
+}
+
+impl FromStr for ApplePlatform {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "AppleTVOS" => Ok(Self::AppleTvOs),
+            "AppleTVSimulator" => Ok(Self::AppleTvSimulator),
+            "DriverKit" => Ok(Self::DriverKit),
+            "iPhoneOS" => Ok(Self::IPhoneOs),
+            "iPhoneSimulator" => Ok(Self::IPhoneSimulator),
+            "MacOSX" => Ok(Self::MacOsX),
+            "WatchOS" => Ok(Self::WatchOs),
+            "WatchSimulator" => Ok(Self::WatchSimulator),
+            v => Ok(Self::Unknown(v.to_string())),
+        }
+    }
+}
+
+impl ApplePlatform {
+    /// Attempt to construct an instance from a filesystem path.
+    ///
+    /// The argument should be the path of a `*.platform` directory. e.g.
+    /// `/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform`.
+    ///
+    /// Will return [Error::PathNotPlatform] if this does not appear to be a known
+    /// platform path.
+    pub fn from_path(p: &Path) -> Result<Self, Error> {
+        let (name, platform) = p
+            .file_name()
+            .ok_or_else(|| Error::PathNotPlatform(p.to_path_buf()))?
+            .to_str()
+            .ok_or_else(|| Error::PathNotPlatform(p.to_path_buf()))?
+            .split_once('.')
+            .ok_or_else(|| Error::PathNotPlatform(p.to_path_buf()))?;
+
+        if platform == "platform" {
+            Self::from_str(name)
+        } else {
+            Err(Error::PathNotPlatform(p.to_path_buf()))
+        }
+    }
+
+    /// Obtain the name of this platform as used in filesystem paths.
+    ///
+    /// This is just the platform part of the name without the trailing
+    /// `.platform`. This string appears in the `*.platform` directory names
+    /// as well as in SDK directory names preceding the trailing `.sdk` and
+    /// optional SDK version.
+    pub fn filesystem_name(&self) -> &str {
+        match self {
+            Self::AppleTvOs => "AppleTVOS",
+            Self::AppleTvSimulator => "AppleTVSimulator",
+            Self::DriverKit => "DriverKit",
+            Self::IPhoneOs => "iPhoneOS",
+            Self::IPhoneSimulator => "iPhoneSimulator",
+            Self::MacOsX => "MacOSX",
+            Self::WatchOs => "WatchOS",
+            Self::WatchSimulator => "WatchSimulator",
+            Self::Unknown(v) => v,
+        }
+    }
+
+    /// Obtain the directory name of this platform.
+    ///
+    /// This simply appends `.platform` to [Self::filesystem_name()].
+    pub fn directory_name(&self) -> String {
+        format!("{}.platform", self.filesystem_name())
+    }
+
+    /// Obtain the path of this platform relative to a developer directory root.
+    pub fn path_in_developer_directory(&self, developer_directory: impl AsRef<Path>) -> PathBuf {
+        developer_directory
+            .as_ref()
+            .join("Platforms")
+            .join(self.directory_name())
+    }
+}
+
+/// Represents an Apple Platform directory.
+///
+/// This is just a thin abstraction over a filesystem path and an
+/// [ApplePlatform] instance.
+///
+/// Equivalence and sorting are implemented in terms of the path component
+/// only. The assumption here is the [ApplePlatform] is fully derived from the
+/// filesystem path and this derivation is deterministic.
+pub struct ApplePlatformDirectory {
+    /// The filesystem path to this directory.
+    path: PathBuf,
+
+    /// The platform within this directory.
+    platform: ApplePlatform,
+}
+
+impl ApplePlatformDirectory {
+    /// Attempt to construct an instance from a filesystem path.
+    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, Error> {
+        let path = path.as_ref().to_path_buf();
+        let platform = ApplePlatform::from_path(&path)?;
+
+        Ok(Self { path, platform })
+    }
+
+    /// The filesystem path of this instance.
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+}
+
+impl AsRef<Path> for ApplePlatformDirectory {
+    fn as_ref(&self) -> &Path {
+        &self.path
+    }
+}
+
+impl AsRef<ApplePlatform> for ApplePlatformDirectory {
+    fn as_ref(&self) -> &ApplePlatform {
+        &self.platform
+    }
+}
+
+impl Deref for ApplePlatformDirectory {
+    type Target = ApplePlatform;
+
+    fn deref(&self) -> &Self::Target {
+        &self.platform
+    }
+}
+
+impl PartialEq for ApplePlatformDirectory {
+    fn eq(&self, other: &Self) -> bool {
+        self.path.eq(&other.path)
+    }
+}
+
+impl Eq for ApplePlatformDirectory {}
+
+impl PartialOrd for ApplePlatformDirectory {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.path.partial_cmp(&other.path)
+    }
+}
+
+impl Ord for ApplePlatformDirectory {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.path.cmp(&other.path)
     }
 }
 
@@ -263,24 +442,6 @@ pub fn find_system_xcode_developer_directories() -> Result<Vec<PathBuf>, Error> 
         .collect::<Vec<_>>())
 }
 
-/// Attempt to derive the name of a platform from a directory path.
-///
-/// Returns `Some(platform)` if the directory represents a platform or
-/// `None` otherwise.
-fn platform_from_path(path: &Path) -> Option<String> {
-    if let Some(file_name) = path.file_name() {
-        if let Some(name) = file_name.to_str() {
-            let parts = name.splitn(2, '.').collect::<Vec<_>>();
-
-            if parts.len() == 2 && parts[1] == "platform" {
-                return Some(parts[0].to_string());
-            }
-        }
-    }
-
-    None
-}
-
 /// Find "platforms" given a developer directory.
 ///
 /// Platforms are effectively targets that can be built for.
@@ -291,7 +452,9 @@ fn platform_from_path(path: &Path) -> Option<String> {
 ///
 /// Returns a vector of (platform, path) tuples denoting the platform
 /// name and its base directory.
-pub fn find_developer_platforms(developer_dir: &Path) -> Result<Vec<(String, PathBuf)>, Error> {
+pub fn find_developer_platforms(
+    developer_dir: &Path,
+) -> Result<Vec<ApplePlatformDirectory>, Error> {
     let platforms_path = developer_dir.join("Platforms");
 
     let dir = match std::fs::read_dir(&platforms_path) {
@@ -310,10 +473,13 @@ pub fn find_developer_platforms(developer_dir: &Path) -> Result<Vec<(String, Pat
     for entry in dir {
         let entry = entry?;
 
-        if let Some(platform) = platform_from_path(&entry.path()) {
-            res.push((platform, entry.path()));
+        if let Ok(platform) = ApplePlatformDirectory::from_path(entry.path()) {
+            res.push(platform);
         }
     }
+
+    // Make deterministic.
+    res.sort();
 
     Ok(res)
 }
@@ -385,7 +551,7 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     fn find_developer_sdks(developer_dir: &Path) -> Result<Vec<Self>, Error> {
         Ok(find_developer_platforms(developer_dir)?
             .into_iter()
-            .map(|(_, platform_path)| Ok(Self::find_sdks_in_platform(&platform_path)?.into_iter()))
+            .map(|platform| Ok(Self::find_sdks_in_platform(platform.as_ref())?.into_iter()))
             .collect::<Result<Vec<_>, Error>>()?
             .into_iter()
             .flatten()
@@ -449,6 +615,27 @@ mod test {
 
         if PathBuf::from(XCODE_APP_DEFAULT_PATH).exists() {
             assert!(!res.is_empty());
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn find_all_platform_directories() -> Result<(), Error> {
+        for path in find_system_xcode_developer_directories()? {
+            for platform in find_developer_platforms(&path)? {
+                // Paths should agree.
+                assert_eq!(
+                    platform.path,
+                    path.join("Platforms").join(platform.directory_name())
+                );
+                assert_eq!(platform.path, platform.path_in_developer_directory(&path));
+
+                // Ensure we're able to parse all platform types in existence. We want
+                // this to fail when Apple introduces new platforms so we can implement
+                // support for the new platform!
+                assert!(!matches!(platform.platform, ApplePlatform::Unknown(_)));
+            }
         }
 
         Ok(())
