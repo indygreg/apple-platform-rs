@@ -320,6 +320,19 @@ impl ApplePlatformDirectory {
     pub fn path(&self) -> &Path {
         &self.path
     }
+
+    /// Finds SDKs in this platform directory.
+    ///
+    /// The type of SDK to resolve must be specified by the caller.
+    ///
+    /// This function is a simple wrapper around [AppleSdk::find_sdks_in_directory()] looking
+    /// under the `Developer/SDKs` directory, which is where SDKs are located in platform
+    /// directories.
+    pub fn find_sdks<T: AppleSdk>(&self) -> Result<Vec<T>, Error> {
+        let sdks_path = self.path.join("Developer").join("SDKs");
+
+        T::find_sdks_in_directory(&sdks_path)
+    }
 }
 
 impl AsRef<Path> for ApplePlatformDirectory {
@@ -526,24 +539,11 @@ pub trait AppleSdk: Sized + AsRef<Path> {
         Ok(res)
     }
 
-    /// Finds SDKs in a platform directory.
-    ///
-    /// This function is a simple wrapper around [Self::find_sdks_in_directory()]
-    /// looking under the `Developer/SDKs` directory, which is the path under
-    /// platform directories containing SDKs.
-    ///
-    /// A common input path is `/Applications/Xcode.app/Contents/Developer/Platforms/*.platform`.
-    fn find_sdks_in_platform(platform_dir: &Path) -> Result<Vec<Self>, Error> {
-        let sdks_path = platform_dir.join("Developer").join("SDKs");
-
-        Self::find_sdks_in_directory(&sdks_path)
-    }
-
     /// Locate SDKs given the path to a developer directory.
     ///
     /// This is effectively a convenience method for calling
-    /// [find_developer_platforms()] + [Self::find_sdks_in_platform()] and chaining the
-    /// results.
+    /// [ApplePlatformDirectory::find_in_developer_directory()] +
+    /// [ApplePlatformDirectory::find_sdks()] and chaining the results.
     ///
     /// A common input path is `/Applications/Xcode.app/Contents/Developer` or the
     /// return value of [default_developer_directory()].
@@ -551,7 +551,7 @@ pub trait AppleSdk: Sized + AsRef<Path> {
         Ok(
             ApplePlatformDirectory::find_in_developer_directory(developer_dir)?
                 .into_iter()
-                .map(|platform| Ok(Self::find_sdks_in_platform(platform.as_ref())?.into_iter()))
+                .map(|platform| Ok(platform.find_sdks()?.into_iter()))
                 .collect::<Result<Vec<_>, Error>>()?
                 .into_iter()
                 .flatten()
