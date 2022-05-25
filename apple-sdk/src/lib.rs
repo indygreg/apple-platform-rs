@@ -159,7 +159,7 @@ impl From<plist::Error> for Error {
 }
 
 /// A known Apple platform type.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ApplePlatform {
     AppleTvOs,
     AppleTvSimulator,
@@ -191,14 +191,14 @@ impl FromStr for ApplePlatform {
 }
 
 impl ApplePlatform {
-    /// Attempt to construct an instance from a filesystem path.
+    /// Attempt to construct an instance from a filesystem path to a platform directory.
     ///
     /// The argument should be the path of a `*.platform` directory. e.g.
     /// `/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform`.
     ///
     /// Will return [Error::PathNotPlatform] if this does not appear to be a known
     /// platform path.
-    pub fn from_path(p: &Path) -> Result<Self, Error> {
+    pub fn from_platform_path(p: &Path) -> Result<Self, Error> {
         let (name, platform) = p
             .file_name()
             .ok_or_else(|| Error::PathNotPlatform(p.to_path_buf()))?
@@ -270,7 +270,7 @@ impl ApplePlatformDirectory {
     /// Attempt to construct an instance from a filesystem path.
     pub fn from_path(path: impl AsRef<Path>) -> Result<Self, Error> {
         let path = path.as_ref().to_path_buf();
-        let platform = ApplePlatform::from_path(&path)?;
+        let platform = ApplePlatform::from_platform_path(&path)?;
 
         Ok(Self { path, platform })
     }
@@ -496,6 +496,64 @@ pub fn find_system_xcode_developer_directories() -> Result<Vec<PathBuf>, Error> 
         .collect::<Vec<_>>())
 }
 
+/// Represents an SDK path with metadata parsed from the path.
+#[derive(Clone, Debug)]
+pub struct SdkPath {
+    /// The filesystem path.
+    pub path: PathBuf,
+
+    /// The platform this SDK belongs to.
+    pub platform: ApplePlatform,
+
+    /// The version of the SDK.
+    ///
+    /// Only present if the version occurred in the directory name. Use
+    /// [AppleSdk] to parse SDK directories to reliably obtain the SDK version.
+    pub version: Option<String>,
+}
+
+impl SdkPath {
+    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, Error> {
+        let path = path.as_ref().to_path_buf();
+
+        let s = path
+            .file_name()
+            .ok_or_else(|| Error::PathNotSdk(path.clone()))?
+            .to_str()
+            .ok_or_else(|| Error::PathNotSdk(path.clone()))?;
+
+        let (prefix, sdk) = s
+            .rsplit_once('.')
+            .ok_or_else(|| Error::PathNotSdk(path.clone()))?;
+
+        if sdk != "sdk" {
+            return Err(Error::PathNotSdk(path));
+        }
+
+        // prefix can be a platform name (e.g. `MacOSX`) or a platform name + version
+        // (e.g. `MacOSX12.4`).
+        let (platform_name, version) = if let Some(first_digit) = prefix
+            .chars()
+            .enumerate()
+            .find_map(|(i, c)| if c.is_numeric() { Some(i) } else { None })
+        {
+            let (name, version) = prefix.split_at(first_digit);
+
+            (name, Some(version.to_string()))
+        } else {
+            (prefix, None)
+        };
+
+        let platform = ApplePlatform::from_str(platform_name)?;
+
+        Ok(Self {
+            path,
+            platform,
+            version,
+        })
+    }
+}
+
 /// Defines common behavior for types representing Apple SDKs.
 pub trait AppleSdk: Sized + AsRef<Path> {
     /// Attempt to construct an instance from a filesystem directory.
@@ -593,6 +651,16 @@ pub trait AppleSdk: Sized + AsRef<Path> {
 
     /// Whether this SDK path is a symlink.
     fn is_symlink(&self) -> bool;
+
+    /// The platform this SDK is for.
+    fn platform(&self) -> &ApplePlatform;
+
+    /// Obtain the version string for this SDK.
+    ///
+    /// This should always be [Some] for [ParsedSdk]. It can be [None] if SDK
+    /// metadata is not loaded and the version string isn't available from side-channels
+    /// such as the directory name.
+    fn version_str(&self) -> Option<&str>;
 }
 
 #[cfg(test)]
@@ -638,6 +706,22 @@ mod test {
                 assert!(!matches!(platform.platform, ApplePlatform::Unknown(_)));
             }
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn parse_sdk_path() -> Result<(), Error> {
+        assert!(SdkPath::from_path("foo").is_err());
+        assert!(SdkPath::from_path("foo.bar").is_err());
+
+        let sdk = SdkPath::from_path("MacOSX.sdk")?;
+        assert_eq!(sdk.platform, ApplePlatform::MacOsX);
+        assert_eq!(sdk.version, None);
+
+        let sdk = SdkPath::from_path("MacOSX12.3.sdk")?;
+        assert_eq!(sdk.platform, ApplePlatform::MacOsX);
+        assert_eq!(sdk.version, Some("12.3".to_string()));
 
         Ok(())
     }

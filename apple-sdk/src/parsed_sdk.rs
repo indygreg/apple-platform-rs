@@ -1,7 +1,7 @@
 //! Data structures in Apple SDKs.
 
 use {
-    crate::{AppleSdk, Error, UnparsedSdk},
+    crate::{ApplePlatform, AppleSdk, Error, SdkPath, UnparsedSdk},
     serde::Deserialize,
     std::{
         collections::HashMap,
@@ -87,6 +87,9 @@ pub struct ParsedSdk {
     /// Whether the root directory is a symlink to another path.
     is_symlink: bool,
 
+    /// The platform this SDK belongs to.
+    platform: ApplePlatform,
+
     /// The name of the platform.
     ///
     /// This is likely the part before the `*.platform` in the platform directory in which
@@ -147,6 +150,8 @@ impl AsRef<Path> for ParsedSdk {
 
 impl AppleSdk for ParsedSdk {
     fn from_directory(path: &Path) -> Result<Self, Error> {
+        let sdk = SdkPath::from_path(path)?;
+
         // Need to call symlink_metadata so symlinks aren't followed.
         let metadata = std::fs::symlink_metadata(path)?;
 
@@ -159,11 +164,11 @@ impl AppleSdk for ParsedSdk {
             let fh = std::fs::File::open(&json_path)?;
             let value: SdkSettingsJson = serde_json::from_reader(fh)?;
 
-            Self::from_json(path.to_path_buf(), is_symlink, value)
+            Self::from_json(path.to_path_buf(), is_symlink, sdk.platform, value)
         } else if plist_path.exists() {
             let value = plist::Value::from_file(&plist_path)?;
 
-            Self::from_plist(path.to_path_buf(), is_symlink, value)
+            Self::from_plist(path.to_path_buf(), is_symlink, sdk.platform, value)
         } else {
             Err(Error::PathNotSdk(path.to_path_buf()))
         }
@@ -171,6 +176,14 @@ impl AppleSdk for ParsedSdk {
 
     fn is_symlink(&self) -> bool {
         self.is_symlink
+    }
+
+    fn platform(&self) -> &ApplePlatform {
+        &self.platform
+    }
+
+    fn version_str(&self) -> Option<&str> {
+        Some(self.version.as_str())
     }
 }
 
@@ -182,11 +195,13 @@ impl ParsedSdk {
     pub fn from_json(
         path: PathBuf,
         is_symlink: bool,
+        platform: ApplePlatform,
         value: SdkSettingsJson,
     ) -> Result<Self, Error> {
         Ok(Self {
             path,
             is_symlink,
+            platform,
             platform_name: value.default_properties.platform_name,
             name: value.canonical_name,
             default_deployment_target: value.default_deployment_target,
@@ -204,7 +219,12 @@ impl ParsedSdk {
     /// Plist files are the legacy mechanism for defining SDK settings. JSON files
     /// are preferred, as they are newer. However, older SDKs lack `SDKSettings.json`
     /// files.
-    pub fn from_plist(path: PathBuf, is_symlink: bool, value: plist::Value) -> Result<Self, Error> {
+    pub fn from_plist(
+        path: PathBuf,
+        is_symlink: bool,
+        platform: ApplePlatform,
+        value: plist::Value,
+    ) -> Result<Self, Error> {
         let value = value.into_dictionary().ok_or(Error::PlistNotDictionary)?;
 
         let get_string = |dict: &plist::Dictionary, key: &str| -> Result<String, Error> {
@@ -274,6 +294,7 @@ impl ParsedSdk {
         Ok(Self {
             path,
             is_symlink,
+            platform,
             platform_name,
             name,
             default_deployment_target,
@@ -348,7 +369,10 @@ mod test {
     #[test]
     fn find_all_sdks() -> Result<(), Error> {
         for path in crate::find_system_xcode_developer_directories()? {
-            ParsedSdk::find_developer_sdks(&path)?;
+            for sdk in ParsedSdk::find_developer_sdks(&path)? {
+                assert!(!matches!(sdk.platform(), ApplePlatform::Unknown(_)));
+                assert!(sdk.version_str().is_some());
+            }
         }
 
         Ok(())

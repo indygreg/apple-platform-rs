@@ -1,5 +1,5 @@
 use {
-    crate::{AppleSdk, Error},
+    crate::{ApplePlatform, AppleSdk, Error, SdkPath},
     std::path::{Path, PathBuf},
 };
 
@@ -14,6 +14,8 @@ pub struct UnparsedSdk {
 
     /// Whether the root directory is a symlink to another path.
     is_symlink: bool,
+
+    sdk_path: SdkPath,
 }
 
 impl AsRef<Path> for UnparsedSdk {
@@ -24,6 +26,8 @@ impl AsRef<Path> for UnparsedSdk {
 
 impl AppleSdk for UnparsedSdk {
     fn from_directory(path: &Path) -> Result<Self, Error> {
+        let sdk = SdkPath::from_path(path)?;
+
         // Need to call symlink_metadata so symlinks aren't followed.
         let metadata = std::fs::symlink_metadata(path)?;
 
@@ -36,6 +40,7 @@ impl AppleSdk for UnparsedSdk {
             Ok(Self {
                 path: path.to_path_buf(),
                 is_symlink,
+                sdk_path: sdk,
             })
         } else {
             Err(Error::PathNotSdk(path.to_path_buf()))
@@ -44,6 +49,14 @@ impl AppleSdk for UnparsedSdk {
 
     fn is_symlink(&self) -> bool {
         self.is_symlink
+    }
+
+    fn platform(&self) -> &ApplePlatform {
+        &self.sdk_path.platform
+    }
+
+    fn version_str(&self) -> Option<&str> {
+        self.sdk_path.version.as_deref()
     }
 }
 
@@ -91,7 +104,9 @@ mod test {
     #[test]
     fn find_all_sdks() -> Result<(), Error> {
         for path in crate::find_system_xcode_developer_directories()? {
-            UnparsedSdk::find_developer_sdks(&path)?;
+            for sdk in UnparsedSdk::find_developer_sdks(&path)? {
+                assert!(!matches!(sdk.platform(), ApplePlatform::Unknown(_)));
+            }
         }
 
         Ok(())
