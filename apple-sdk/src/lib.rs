@@ -275,6 +275,47 @@ impl ApplePlatformDirectory {
         Ok(Self { path, platform })
     }
 
+    /// Find platform directories under a given developer directory.
+    ///
+    /// Platforms are defined by the presence of a `Platforms` directory under
+    /// the developer directory. This directory layout is only recognized
+    /// for modern Xcode layouts.
+    ///
+    /// Returns all discovered instances inside this developer directory.
+    ///
+    /// The return order is sorted and deterministic.
+    pub fn find_in_developer_directory(
+        developer_dir: impl AsRef<Path>,
+    ) -> Result<Vec<Self>, Error> {
+        let platforms_path = developer_dir.as_ref().join("Platforms");
+
+        let dir = match std::fs::read_dir(&platforms_path) {
+            Ok(v) => Ok(v),
+            Err(e) => {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    return Ok(vec![]);
+                } else {
+                    Err(Error::from(e))
+                }
+            }
+        }?;
+
+        let mut res = vec![];
+
+        for entry in dir {
+            let entry = entry?;
+
+            if let Ok(platform) = ApplePlatformDirectory::from_path(entry.path()) {
+                res.push(platform);
+            }
+        }
+
+        // Make deterministic.
+        res.sort();
+
+        Ok(res)
+    }
+
     /// The filesystem path of this instance.
     pub fn path(&self) -> &Path {
         &self.path
@@ -442,48 +483,6 @@ pub fn find_system_xcode_developer_directories() -> Result<Vec<PathBuf>, Error> 
         .collect::<Vec<_>>())
 }
 
-/// Find "platforms" given a developer directory.
-///
-/// Platforms are effectively targets that can be built for.
-///
-/// Platforms are defined by the presence of a `Platforms` directory under
-/// the developer directory. This directory layout is only recognized
-/// for modern Xcode layouts.
-///
-/// Returns a vector of (platform, path) tuples denoting the platform
-/// name and its base directory.
-pub fn find_developer_platforms(
-    developer_dir: &Path,
-) -> Result<Vec<ApplePlatformDirectory>, Error> {
-    let platforms_path = developer_dir.join("Platforms");
-
-    let dir = match std::fs::read_dir(&platforms_path) {
-        Ok(v) => Ok(v),
-        Err(e) => {
-            if e.kind() == std::io::ErrorKind::NotFound {
-                return Ok(vec![]);
-            } else {
-                Err(Error::from(e))
-            }
-        }
-    }?;
-
-    let mut res = vec![];
-
-    for entry in dir {
-        let entry = entry?;
-
-        if let Ok(platform) = ApplePlatformDirectory::from_path(entry.path()) {
-            res.push(platform);
-        }
-    }
-
-    // Make deterministic.
-    res.sort();
-
-    Ok(res)
-}
-
 /// Defines common behavior for types representing Apple SDKs.
 pub trait AppleSdk: Sized + AsRef<Path> {
     /// Attempt to construct an instance from a filesystem directory.
@@ -549,13 +548,15 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     /// A common input path is `/Applications/Xcode.app/Contents/Developer` or the
     /// return value of [default_developer_directory()].
     fn find_developer_sdks(developer_dir: &Path) -> Result<Vec<Self>, Error> {
-        Ok(find_developer_platforms(developer_dir)?
-            .into_iter()
-            .map(|platform| Ok(Self::find_sdks_in_platform(platform.as_ref())?.into_iter()))
-            .collect::<Result<Vec<_>, Error>>()?
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>())
+        Ok(
+            ApplePlatformDirectory::find_in_developer_directory(developer_dir)?
+                .into_iter()
+                .map(|platform| Ok(Self::find_sdks_in_platform(platform.as_ref())?.into_iter()))
+                .collect::<Result<Vec<_>, Error>>()?
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>(),
+        )
     }
 
     /// Discover SDKs in the default developer directory.
@@ -623,7 +624,7 @@ mod test {
     #[test]
     fn find_all_platform_directories() -> Result<(), Error> {
         for path in find_system_xcode_developer_directories()? {
-            for platform in find_developer_platforms(&path)? {
+            for platform in ApplePlatformDirectory::find_in_developer_directory(&path)? {
                 // Paths should agree.
                 assert_eq!(
                     platform.path,
