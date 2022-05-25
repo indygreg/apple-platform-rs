@@ -1,7 +1,7 @@
 //! Data structures in Apple SDKs.
 
 use {
-    crate::{Error, UnparsedSdk},
+    crate::{AppleSdk, Error, UnparsedSdk},
     serde::Deserialize,
     std::{
         collections::HashMap,
@@ -77,16 +77,15 @@ pub struct SdkSettingsJson {
 
 /// An Apple SDK with parsed settings.
 ///
-/// Unlike [AppleSdkDirectory], this type gives you access to rich metadata about the
+/// Unlike [UnparsedSdk], this type gives you access to rich metadata about the
 /// Apple SDK. This includes things like targeting capabilities.
-#[cfg(feature = "parse")]
 #[derive(Clone, Debug)]
 pub struct ParsedSdk {
     /// Root directory of the SDK.
-    pub path: PathBuf,
+    path: PathBuf,
 
     /// Whether the root directory is a symlink to another path.
-    pub is_symlink: bool,
+    is_symlink: bool,
 
     /// The name of the platform.
     ///
@@ -140,12 +139,14 @@ pub struct ParsedSdk {
     pub version: String,
 }
 
-#[cfg(feature = "parse")]
-impl ParsedSdk {
-    /// Attempt to resolve an SDK from a path to the SDK's root directory.
-    pub fn from_directory(path: impl AsRef<Path>) -> Result<Self, Error> {
-        let path = path.as_ref();
+impl AsRef<Path> for ParsedSdk {
+    fn as_ref(&self) -> &Path {
+        &self.path
+    }
+}
 
+impl AppleSdk for ParsedSdk {
+    fn from_directory(path: &Path) -> Result<Self, Error> {
         // Need to call symlink_metadata so symlinks aren't followed.
         let metadata = std::fs::symlink_metadata(path)?;
 
@@ -155,7 +156,7 @@ impl ParsedSdk {
         let plist_path = path.join("SDKSettings.plist");
 
         if json_path.exists() {
-            let fh = std::fs::File::open(&path)?;
+            let fh = std::fs::File::open(&json_path)?;
             let value: SdkSettingsJson = serde_json::from_reader(fh)?;
 
             Self::from_json(path.to_path_buf(), is_symlink, value)
@@ -168,6 +169,12 @@ impl ParsedSdk {
         }
     }
 
+    fn is_symlink(&self) -> bool {
+        self.is_symlink
+    }
+}
+
+impl ParsedSdk {
     /// Construct an instance by parsing an `SDKSettings.json` file in a directory.
     ///
     /// These files are only available in more modern SDKs. For macOS, that's 10.14+.
@@ -260,11 +267,53 @@ impl ParsedSdk {
     }
 }
 
-#[cfg(feature = "parse")]
 impl TryFrom<UnparsedSdk> for ParsedSdk {
     type Error = Error;
 
     fn try_from(v: UnparsedSdk) -> Result<Self, Self::Error> {
-        Self::from_directory(v.path)
+        Self::from_directory(v.path())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use {
+        super::*,
+        crate::{default_developer_directory, COMMAND_LINE_TOOLS_DEFAULT_PATH},
+    };
+
+    #[test]
+    fn test_find_default_sdks() -> Result<(), Error> {
+        if let Ok(developer_dir) = default_developer_directory() {
+            assert!(!ParsedSdk::find_developer_sdks(&developer_dir)?.is_empty());
+            assert!(!ParsedSdk::find_default_developer_sdks()?.is_empty());
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_find_command_line_tools_sdks() -> Result<(), Error> {
+        let sdk_path = PathBuf::from(COMMAND_LINE_TOOLS_DEFAULT_PATH).join("SDKs");
+
+        let res = ParsedSdk::find_command_line_tools_sdks()?;
+
+        if sdk_path.exists() {
+            assert!(res.is_some());
+            assert!(!res.unwrap().is_empty());
+        } else {
+            assert!(res.is_none());
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    fn find_all_sdks() -> Result<(), Error> {
+        for path in crate::find_system_xcode_developer_directories()? {
+            ParsedSdk::find_developer_sdks(&path)?;
+        }
+
+        Ok(())
     }
 }

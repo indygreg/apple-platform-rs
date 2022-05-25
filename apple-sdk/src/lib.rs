@@ -21,6 +21,16 @@
 //! We model Apple SDKs using the [UnparsedSdk] and [ParsedSdk] types. The
 //! latter requires the `parse` crate feature in order to activate support for
 //! parsing JSON and plist files.
+//!
+//! Both these types are essentially a reference to a directory. [UnparsedSdk]
+//! is little more than a reference to a filesystem path. However, [ParsedSdk]
+//! parses the `SDKSettings.json` or `SDKSettings.plist` file within the SDK
+//! and is able to obtain rich metadata about the SDK, such as the names of
+//! machine architectures it can target, which OS versions it supports targeting,
+//! and more.
+//!
+//! Both these types implement the [AppleSdk] trait, which you'll likely want
+//! to import in order to use its APIs for searching for and constructing SDKs.
 
 #[cfg(feature = "parse")]
 mod parsed_sdk;
@@ -308,97 +318,114 @@ pub fn find_developer_platforms(developer_dir: &Path) -> Result<Vec<(String, Pat
     Ok(res)
 }
 
-/// Finds SDKs in a specified directory.
-///
-/// Directory entries are often symlinks pointing to other directories.
-/// SDKs are annotated with an `is_symlink` field to denote when this is
-/// the case. Callers may want to filter out symlinked SDKs to avoid
-/// duplicates.
-pub fn find_sdks_in_directory(root: &Path) -> Result<Vec<UnparsedSdk>, Error> {
-    let dir = match std::fs::read_dir(&root) {
-        Ok(v) => Ok(v),
-        Err(e) => {
-            if e.kind() == std::io::ErrorKind::NotFound {
-                return Ok(vec![]);
-            } else {
-                Err(Error::from(e))
+/// Defines common behavior for types representing Apple SDKs.
+pub trait AppleSdk: Sized + AsRef<Path> {
+    /// Attempt to construct an instance from a filesystem directory.
+    ///
+    /// Implementations will likely error with [Error::PathNotSdk] or
+    /// [Error::Io] if the input path is not an Apple SDK.
+    fn from_directory(path: &Path) -> Result<Self, Error>;
+
+    /// Find Apple SDKs in a specified directory.
+    ///
+    /// Directory entries are often symlinks pointing to other directories.
+    /// SDKs are annotated with an `is_symlink` field to denote when this is
+    /// the case. Callers may want to filter out symlinked SDKs to avoid
+    /// duplicates.
+    fn find_sdks_in_directory(root: &Path) -> Result<Vec<Self>, Error> {
+        let dir = match std::fs::read_dir(&root) {
+            Ok(v) => Ok(v),
+            Err(e) => {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    return Ok(vec![]);
+                } else {
+                    Err(Error::from(e))
+                }
+            }
+        }?;
+
+        let mut res = vec![];
+
+        for entry in dir {
+            let entry = entry?;
+
+            match Self::from_directory(&entry.path()) {
+                Ok(sdk) => {
+                    res.push(sdk);
+                }
+                Err(Error::PathNotSdk(_)) => {}
+                Err(err) => return Err(err),
             }
         }
-    }?;
 
-    let mut res = vec![];
+        Ok(res)
+    }
 
-    for entry in dir {
-        let entry = entry?;
+    /// Finds SDKs in a platform directory.
+    ///
+    /// This function is a simple wrapper around [Self::find_sdks_in_directory()]
+    /// looking under the `Developer/SDKs` directory, which is the path under
+    /// platform directories containing SDKs.
+    ///
+    /// A common input path is `/Applications/Xcode.app/Contents/Developer/Platforms/*.platform`.
+    fn find_sdks_in_platform(platform_dir: &Path) -> Result<Vec<Self>, Error> {
+        let sdks_path = platform_dir.join("Developer").join("SDKs");
 
-        match UnparsedSdk::from_directory(&entry.path()) {
-            Ok(sdk) => {
-                res.push(sdk);
-            }
-            Err(Error::PathNotSdk(_)) => {}
-            Err(err) => return Err(err),
+        Self::find_sdks_in_directory(&sdks_path)
+    }
+
+    /// Locate SDKs given the path to a developer directory.
+    ///
+    /// This is effectively a convenience method for calling
+    /// [find_developer_platforms()] + [Self::find_sdks_in_platform()] and chaining the
+    /// results.
+    ///
+    /// A common input path is `/Applications/Xcode.app/Contents/Developer` or the
+    /// return value of [default_developer_directory()].
+    fn find_developer_sdks(developer_dir: &Path) -> Result<Vec<Self>, Error> {
+        Ok(find_developer_platforms(developer_dir)?
+            .into_iter()
+            .map(|(_, platform_path)| Ok(Self::find_sdks_in_platform(&platform_path)?.into_iter()))
+            .collect::<Result<Vec<_>, Error>>()?
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>())
+    }
+
+    /// Discover SDKs in the default developer directory.
+    ///
+    /// This is a convenience function for calling [Self::find_developer_sdks()] with the output
+    /// of [default_developer_directory()].
+    fn find_default_developer_sdks() -> Result<Vec<Self>, Error> {
+        let developer_dir = default_developer_directory()?;
+
+        Self::find_developer_sdks(&developer_dir)
+    }
+
+    /// Locate SDKs installed as part of the Xcode Command Line Tools.
+    ///
+    /// This is a convenience method for looking for SDKs in the `SDKs` directory
+    /// under the default install path for the Xcode Command Line Tools.
+    ///
+    /// Returns `Ok(None)` if the Xcode Command Line Tools are not present in
+    /// this directory or doesn't have an `SDKs` directory.
+    fn find_command_line_tools_sdks() -> Result<Option<Vec<Self>>, Error> {
+        let sdk_path = PathBuf::from(COMMAND_LINE_TOOLS_DEFAULT_PATH).join("SDKs");
+
+        if sdk_path.exists() {
+            Ok(Some(Self::find_sdks_in_directory(&sdk_path)?))
+        } else {
+            Ok(None)
         }
     }
 
-    Ok(res)
-}
-
-/// Finds SDKs in a platform directory.
-///
-/// This function is a simple wrapper around [find_sdks_in_directory()]
-/// looking under the `Developer/SDKs` directory, which is the path under
-/// platform directories containing SDKs.
-///
-/// A common input path is `/Applications/Xcode.app/Contents/Developer/Platforms/*.platform`.
-pub fn find_sdks_in_platform(platform_dir: &Path) -> Result<Vec<UnparsedSdk>, Error> {
-    let sdks_path = platform_dir.join("Developer").join("SDKs");
-
-    find_sdks_in_directory(&sdks_path)
-}
-
-/// Locate SDKs given the path to a developer directory.
-///
-/// This is effectively a convenience method for calling
-/// [find_developer_platforms()] + [find_sdks_in_platform()] and chaining the
-/// results.
-///
-/// A common input path is `/Applications/Xcode.app/Contents/Developer` or the
-/// return value of [default_developer_directory()].
-pub fn find_developer_sdks(developer_dir: &Path) -> Result<Vec<UnparsedSdk>, Error> {
-    Ok(find_developer_platforms(developer_dir)?
-        .into_iter()
-        .map(|(_, platform_path)| Ok(find_sdks_in_platform(&platform_path)?.into_iter()))
-        .collect::<Result<Vec<_>, Error>>()?
-        .into_iter()
-        .flatten()
-        .collect::<Vec<_>>())
-}
-
-/// Discover SDKs in the default developer directory.
-///
-/// This is a convenience function for calling [find_developer_sdks()] with the output
-/// of [default_developer_directory()].
-pub fn find_default_developer_sdks() -> Result<Vec<UnparsedSdk>, Error> {
-    let developer_dir = default_developer_directory()?;
-
-    find_developer_sdks(&developer_dir)
-}
-
-/// Locate SDKs installed as part of the Xcode Command Line Tools.
-///
-/// This is a convenience method for looking for SDKs in the `SDKs` directory
-/// under the default install path for the Xcode Command Line Tools.
-///
-/// Returns `Ok(None)` if the Xcode Command Line Tools are not present in
-/// this directory or doesn't have an `SDKs` directory.
-pub fn find_command_line_tools_sdks() -> Result<Option<Vec<UnparsedSdk>>, Error> {
-    let sdk_path = PathBuf::from(COMMAND_LINE_TOOLS_DEFAULT_PATH).join("SDKs");
-
-    if sdk_path.exists() {
-        Ok(Some(find_sdks_in_directory(&sdk_path)?))
-    } else {
-        Ok(None)
+    /// Obtain the filesystem path to this SDK.
+    fn path(&self) -> &Path {
+        self.as_ref()
     }
+
+    /// Whether this SDK path is a symlink.
+    fn is_symlink(&self) -> bool;
 }
 
 #[cfg(test)]
@@ -452,37 +479,6 @@ mod test {
             find_system_xcode_applications()?.len(),
             find_system_xcode_developer_directories()?.len()
         );
-
-        // We should be able to resolve SDKs for all system Xcode applications.
-        for path in find_system_xcode_developer_directories()? {
-            find_developer_sdks(&path)?;
-        }
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_find_default_sdks() -> Result<(), Error> {
-        if let Ok(developer_dir) = default_developer_directory() {
-            assert!(!find_developer_sdks(&developer_dir)?.is_empty());
-            assert!(!find_default_developer_sdks()?.is_empty());
-        }
-
-        Ok(())
-    }
-
-    #[test]
-    fn test_find_command_line_tools_sdks() -> Result<(), Error> {
-        let sdk_path = PathBuf::from(COMMAND_LINE_TOOLS_DEFAULT_PATH).join("SDKs");
-
-        let res = find_command_line_tools_sdks()?;
-
-        if sdk_path.exists() {
-            assert!(res.is_some());
-            assert!(!res.unwrap().is_empty());
-        } else {
-            assert!(res.is_none());
-        }
 
         Ok(())
     }
