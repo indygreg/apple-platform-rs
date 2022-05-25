@@ -1,5 +1,5 @@
 use {
-    crate::{ApplePlatform, AppleSdk, Error, SdkPath},
+    crate::{ApplePlatform, AppleSdk, Error, SdkPath, SdkVersion},
     std::path::{Path, PathBuf},
 };
 
@@ -55,8 +55,8 @@ impl AppleSdk for UnparsedSdk {
         &self.sdk_path.platform
     }
 
-    fn version_str(&self) -> Option<&str> {
-        self.sdk_path.version.as_deref()
+    fn version(&self) -> Option<&SdkVersion> {
+        self.sdk_path.version.as_ref()
     }
 }
 

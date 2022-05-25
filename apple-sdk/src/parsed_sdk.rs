@@ -1,7 +1,7 @@
 //! Data structures in Apple SDKs.
 
 use {
-    crate::{ApplePlatform, AppleSdk, Error, SdkPath, UnparsedSdk},
+    crate::{ApplePlatform, AppleSdk, Error, SdkPath, SdkVersion, UnparsedSdk},
     serde::Deserialize,
     std::{
         collections::HashMap,
@@ -90,6 +90,8 @@ pub struct ParsedSdk {
     /// The platform this SDK belongs to.
     platform: ApplePlatform,
 
+    version: SdkVersion,
+
     /// The name of the platform.
     ///
     /// This is likely the part before the `*.platform` in the platform directory in which
@@ -137,9 +139,6 @@ pub struct ParsedSdk {
     /// Example keys are `macosx` and `iosmac`. Use the [Self::default_variant]
     /// field to access the default target.
     pub supported_targets: HashMap<String, AppleSdkSupportedTarget>,
-
-    /// Version of this SDK. e.g. `12.3`.
-    pub version: String,
 }
 
 impl AsRef<Path> for ParsedSdk {
@@ -182,8 +181,8 @@ impl AppleSdk for ParsedSdk {
         &self.platform
     }
 
-    fn version_str(&self) -> Option<&str> {
-        Some(self.version.as_str())
+    fn version(&self) -> Option<&SdkVersion> {
+        Some(&self.version)
     }
 }
 
@@ -202,6 +201,7 @@ impl ParsedSdk {
             path,
             is_symlink,
             platform,
+            version: value.version.into(),
             platform_name: value.default_properties.platform_name,
             name: value.canonical_name,
             default_deployment_target: value.default_deployment_target,
@@ -210,7 +210,6 @@ impl ParsedSdk {
             maximum_deployment_target: value.maximum_deployment_target,
             minimal_display_name: value.minimal_display_name,
             supported_targets: value.supported_targets,
-            version: value.version,
         })
     }
 
@@ -295,6 +294,7 @@ impl ParsedSdk {
             path,
             is_symlink,
             platform,
+            version: version.into(),
             platform_name,
             name,
             default_deployment_target,
@@ -303,25 +303,7 @@ impl ParsedSdk {
             maximum_deployment_target,
             minimal_display_name,
             supported_targets: HashMap::new(),
-            version,
         })
-    }
-
-    /// Attempt to derive a symver compatible version string for this SDK.
-    ///
-    /// This essentially pads a `.0` to version strings when there are only
-    /// 2 version components, which is common in Apple SDKs. The resulting
-    /// version string may conform to Rust's symver format if it was a valid
-    /// version string to begin with.
-    ///
-    /// [None] is returned in cases where the parsed version doesn't look like
-    /// a version string.
-    pub fn version_symver_compatible(&self) -> Option<String> {
-        match self.version.split('.').count() {
-            2 => Some(format!("{}.0", self.version)),
-            3 => Some(self.version.clone()),
-            _ => None,
-        }
     }
 }
 
@@ -371,7 +353,7 @@ mod test {
         for path in crate::find_system_xcode_developer_directories()? {
             for sdk in ParsedSdk::find_developer_sdks(&path)? {
                 assert!(!matches!(sdk.platform(), ApplePlatform::Unknown(_)));
-                assert!(sdk.version_str().is_some());
+                assert!(sdk.version().is_some());
             }
         }
 
