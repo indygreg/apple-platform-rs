@@ -349,7 +349,7 @@ impl TryFrom<UnparsedSdk> for ParsedSdk {
 mod test {
     use {
         super::*,
-        crate::{default_developer_directory, SdkSearch, COMMAND_LINE_TOOLS_DEFAULT_PATH},
+        crate::{DeveloperDirectory, SdkSearch, COMMAND_LINE_TOOLS_DEFAULT_PATH},
     };
 
     const MACOSX_10_9_SETTINGS_PLIST: &[u8] = include_bytes!("testfiles/macosx10.9-settings.plist");
@@ -413,8 +413,8 @@ mod test {
 
     #[test]
     fn test_find_default_sdks() -> Result<(), Error> {
-        if let Ok(developer_dir) = default_developer_directory() {
-            assert!(!ParsedSdk::find_developer_sdks(&developer_dir)?.is_empty());
+        if let Ok(developer_dir) = DeveloperDirectory::find_default_required() {
+            assert!(!ParsedSdk::find_developer_sdks(developer_dir.path())?.is_empty());
             assert!(!ParsedSdk::find_default_developer_sdks()?.is_empty());
         }
 
@@ -439,8 +439,8 @@ mod test {
 
     #[test]
     fn find_all_sdks() -> Result<(), Error> {
-        for path in crate::find_system_xcode_developer_directories()? {
-            for sdk in ParsedSdk::find_developer_sdks(&path)? {
+        for dir in DeveloperDirectory::find_system_xcodes()? {
+            for sdk in ParsedSdk::find_developer_sdks(dir.path())? {
                 assert!(!matches!(sdk.platform(), ApplePlatform::Unknown(_)));
                 assert!(sdk.version().is_some());
             }

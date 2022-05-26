@@ -16,6 +16,12 @@
 //! `/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/SDKs/MacOSX12.3.sdk`
 //! or `/Library/Developer/CommandLineTools/SDKs/MacOSX12.3.sdk`.
 //!
+//! # Developer Directories
+//!
+//! Developer Directories are modeled via the [DeveloperDirectory] struct. This
+//! type contains functions for locating developer directories and resolving the
+//! default developer directory to use.
+//!
 //! # Apple Platforms
 //!
 //! We model an abstract Apple platform via the [ApplePlatform] enum.
@@ -89,6 +95,10 @@ pub enum Error {
     XcodeSelectBadStatus(ExitStatus),
     /// Generic I/O error.
     Io(std::io::Error),
+    /// A developer directory could not be found.
+    DeveloperDirectoryNotFound,
+    /// A path is not a Developer Directory.
+    PathNotDeveloper(PathBuf),
     /// A path is not an Apple Platform directory.
     PathNotPlatform(PathBuf),
     /// A path is not an Apple SDK.
@@ -127,6 +137,11 @@ impl Display for Error {
                 f.write_fmt(format_args!("Error running xcode-select: {}", v))
             }
             Self::Io(err) => f.write_fmt(format_args!("I/O error: {}", err)),
+            Self::DeveloperDirectoryNotFound => f.write_str("could not find a Developer Directory"),
+            Self::PathNotDeveloper(p) => f.write_fmt(format_args!(
+                "path is not a Developer directory: {}",
+                p.display()
+            )),
             Self::PathNotPlatform(p) => f.write_fmt(format_args!(
                 "path is not an Apple Platform: {}",
                 p.display()
@@ -417,21 +432,47 @@ impl Ord for ApplePlatformDirectory {
     }
 }
 
-/// Obtain the current developer directory where SDKs and tools are installed.
-///
-/// This returns the `DEVELOPER_DIR` environment variable if found or
-/// uses the `xcode-select` logic for locating the developer directory if not.
-/// Failure the locate a directory results in `Err`.
-///
-/// The returned path is not verified to exist.
-pub fn default_developer_directory() -> Result<PathBuf, Error> {
-    // DEVELOPER_DIR environment variable overrides any settings.
-    if let Ok(env) = std::env::var("DEVELOPER_DIR") {
-        Ok(PathBuf::from(env))
-    } else {
-        // We use xcode-select to find the directory. But this probably
-        // just reads from a plist or something. We could potentially
-        // reimplement this logic in pure Rust...
+/// A directory containing Apple platforms, SDKs, and other tools.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct DeveloperDirectory {
+    path: PathBuf,
+}
+
+impl AsRef<Path> for DeveloperDirectory {
+    fn as_ref(&self) -> &Path {
+        &self.path
+    }
+}
+
+impl DeveloperDirectory {
+    /// Resolve an instance from the `DEVELOPER_DIR` environment variable.
+    ///
+    /// This environment variable is used by convention to override default search
+    /// locations for the developer directory.
+    ///
+    /// If `DEVELOPER_DIR` is defined, the value/path is validated for existence
+    /// and an error is returned if it doesn't exist.
+    ///
+    /// If `DEVELOPER_DIR` isn't defined, returns `Ok(None)`.
+    pub fn from_env() -> Result<Option<Self>, Error> {
+        if let Some(value) = std::env::var_os("DEVELOPER_DIR") {
+            let path = PathBuf::from(value);
+
+            if path.exists() {
+                Ok(Some(Self { path }))
+            } else {
+                Err(Error::PathNotDeveloper(path))
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Attempt to resolve an instance by running `xcode-select`.
+    ///
+    /// The output from `xcode-select` is implicitly trusted and no validation
+    /// of the path is performed.
+    pub fn from_xcode_select() -> Result<Self, Error> {
         let output = Command::new("xcode-select")
             .args(&["--print-path"])
             .stderr(Stdio::null())
@@ -442,25 +483,98 @@ pub fn default_developer_directory() -> Result<PathBuf, Error> {
             // We should arguably use OsString here. Keep it simple until someone
             // complains.
             let path = String::from_utf8_lossy(&output.stdout);
+            let path = PathBuf::from(path.trim());
 
-            Ok(PathBuf::from(path.trim()))
+            Ok(Self { path })
         } else {
             Err(Error::XcodeSelectBadStatus(output.status))
         }
     }
-}
 
-/// Obtain the path to the `Developer` directory in the default Xcode app.
-///
-/// Returns `Some` if Xcode is installed in its default location and has
-/// a `Developer` directory or `None` if not.
-pub fn default_xcode_developer_directory() -> Option<PathBuf> {
-    let path = PathBuf::from(XCODE_APP_DEFAULT_PATH).join(XCODE_APP_RELATIVE_PATH_DEVELOPER);
+    /// Attempt to resolve an instance from the default Xcode.app location.
+    ///
+    /// This looks for a system installed `Xcode.app` and for the developer
+    /// directory within. If found, returns `Some`. If not, returns `None`.
+    pub fn default_xcode() -> Option<Self> {
+        let path = PathBuf::from(XCODE_APP_DEFAULT_PATH).join(XCODE_APP_RELATIVE_PATH_DEVELOPER);
 
-    if path.exists() {
-        Some(path)
-    } else {
-        None
+        if path.exists() {
+            Some(Self { path })
+        } else {
+            None
+        }
+    }
+
+    /// Finds all `Developer` directories for system installed Xcode applications.
+    ///
+    /// This is a convenience method for [find_system_xcode_applications()] plus
+    /// resolving the `Developer` directory and filtering on missing items.
+    ///
+    /// It will return all available `Developer` directories for all Xcode installs
+    /// under `/Applications`.
+    pub fn find_system_xcodes() -> Result<Vec<Self>, Error> {
+        Ok(find_system_xcode_applications()?
+            .into_iter()
+            .filter_map(|p| {
+                let path = p.join(XCODE_APP_RELATIVE_PATH_DEVELOPER);
+
+                if path.exists() {
+                    Some(Self { path })
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>())
+    }
+
+    /// Attempt to find a Developer Directory using reasonable semantics.
+    ///
+    /// This is probably what most end-users want to use for resolving the path to a
+    /// Developer Directory.
+    ///
+    /// This is a convenience function for calling other APIs on this type to resolve
+    /// the default instance.
+    ///
+    /// In priority order:
+    ///
+    /// 1. `DEVELOPER_DIR`
+    /// 2. System Xcode.app application.
+    /// 3. `xcode-select` output.
+    ///
+    /// Errors only if `DEVELOPER_DIR` is defined and it points to an invalid path.
+    /// Errors from running `xcode-select` are ignored.
+    pub fn find_default() -> Result<Option<Self>, Error> {
+        if let Some(v) = Self::from_env()? {
+            Ok(Some(v))
+        } else if let Some(v) = Self::default_xcode() {
+            Ok(Some(v))
+        } else if let Ok(v) = Self::from_xcode_select() {
+            Ok(Some(v))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Find the Developer Directory and error if not found.
+    ///
+    /// This is a wrapper around [Self::find_default()] that will error if no Developer Directory
+    /// could be found.
+    pub fn find_default_required() -> Result<Self, Error> {
+        if let Some(v) = Self::find_default()? {
+            Ok(v)
+        } else {
+            Err(Error::DeveloperDirectoryNotFound)
+        }
+    }
+
+    /// The filesystem path to this developer directory.
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
+    /// The path to the directory containing platforms.
+    pub fn platforms_path(&self) -> PathBuf {
+        self.path.join("Platforms")
     }
 }
 
@@ -534,28 +648,6 @@ pub fn find_xcode_apps(applications_dir: &Path) -> Result<Vec<PathBuf>, Error> {
 /// This location is typically where Xcode is installed.
 pub fn find_system_xcode_applications() -> Result<Vec<PathBuf>, Error> {
     find_xcode_apps(&PathBuf::from("/Applications"))
-}
-
-/// Finds all `Developer` directories for installed Xcode applications for system application installs.
-///
-/// This is a convenience method for [find_system_xcode_applications()] plus
-/// resolving the `Developer` directory and filtering on missing items.
-///
-/// It will return all available `Developer` directories for all Xcode installs
-/// under `/Applications`.
-pub fn find_system_xcode_developer_directories() -> Result<Vec<PathBuf>, Error> {
-    Ok(find_system_xcode_applications()?
-        .into_iter()
-        .filter_map(|p| {
-            let developer_path = p.join(XCODE_APP_RELATIVE_PATH_DEVELOPER);
-
-            if developer_path.exists() {
-                Some(developer_path)
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<_>>())
 }
 
 /// Represents an SDK version string.
@@ -770,8 +862,8 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     /// [ApplePlatformDirectory::find_in_developer_directory()] +
     /// [ApplePlatformDirectory::find_sdks()] and chaining the results.
     ///
-    /// A common input path is `/Applications/Xcode.app/Contents/Developer` or the
-    /// return value of [default_developer_directory()].
+    /// It is recommended to use a [DeveloperDirectory] API for finding an
+    /// appropriate developer directory to use.
     fn find_developer_sdks(developer_dir: &Path) -> Result<Vec<Self>, Error> {
         Ok(
             ApplePlatformDirectory::find_in_developer_directory(developer_dir)?
@@ -787,11 +879,11 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     /// Discover SDKs in the default developer directory.
     ///
     /// This is a convenience function for calling [Self::find_developer_sdks()] with the output
-    /// of [default_developer_directory()].
+    /// of [DeveloperDirectory::find_default_required()].
     fn find_default_developer_sdks() -> Result<Vec<Self>, Error> {
-        let developer_dir = default_developer_directory()?;
+        let developer_dir = DeveloperDirectory::find_default_required()?;
 
-        Self::find_developer_sdks(&developer_dir)
+        Self::find_developer_sdks(developer_dir.path())
     }
 
     /// Locate SDKs installed as part of the Xcode Command Line Tools.
@@ -1127,7 +1219,7 @@ impl SdkSearch {
 
     /// Whether to search the current/default developer directory.
     ///
-    /// This effectively controls whether the path resolved by [default_developer_directory()]
+    /// This effectively controls whether the path resolved by [DeveloperDirectory::find_default()]
     /// will be searched, if available. This will honor the `DEVELOPER_DIR` environment
     /// variable to override the default path.
     ///
@@ -1150,8 +1242,8 @@ impl SdkSearch {
 
     /// Whether to search the developer directory in the default Xcode app.
     ///
-    /// This effectively controls whether the path resolved by [default_xcode_developer_directory()]
-    /// will be searched, if available.
+    /// This effectively controls whether the path resolved by
+    /// [DeveloperDirectory::default_xcode()] will be searched, if available.
     ///
     /// Default is `false`.
     pub fn default_system_xcode(mut self, value: bool) -> Self {
@@ -1162,7 +1254,7 @@ impl SdkSearch {
     /// Whether to search the developer directory in all system installed Xcode applications.
     ///
     /// This effectively controls whether the paths resolved by
-    /// [find_system_xcode_developer_directories()] will be searched, if present.
+    /// [DeveloperDirectory::find_system_xcodes()] will be searched, if present.
     ///
     /// Many macOS systems only have a single Xcode application under
     /// `/Applications/Xcode.app`. However, environments like CI workers and developers
@@ -1280,8 +1372,8 @@ impl SdkSearch {
         };
 
         if self.search_developer_dir {
-            if let Ok(path) = default_developer_directory() {
-                append_dir(SearchDirectory::Developer(path));
+            if let Ok(v) = DeveloperDirectory::find_default_required() {
+                append_dir(SearchDirectory::Developer(v.path().to_path_buf()));
             }
         }
 
@@ -1292,15 +1384,15 @@ impl SdkSearch {
         }
 
         if self.search_default_system_xcode {
-            if let Some(path) = default_xcode_developer_directory() {
-                append_dir(SearchDirectory::Developer(path));
+            if let Some(path) = DeveloperDirectory::default_xcode() {
+                append_dir(SearchDirectory::Developer(path.path().to_path_buf()));
             }
         }
 
         if self.search_system_xcodes {
-            if let Ok(paths) = find_system_xcode_developer_directories() {
-                for path in paths {
-                    append_dir(SearchDirectory::Developer(path));
+            if let Ok(dirs) = DeveloperDirectory::find_system_xcodes() {
+                for dir in dirs {
+                    append_dir(SearchDirectory::Developer(dir.path().to_path_buf()));
                 }
             }
         }
@@ -1491,7 +1583,7 @@ mod test {
 
     #[test]
     fn test_find_system_xcode_developer_directories() -> Result<(), Error> {
-        let res = find_system_xcode_developer_directories()?;
+        let res = DeveloperDirectory::find_system_xcodes()?;
 
         if PathBuf::from(XCODE_APP_DEFAULT_PATH).exists() {
             assert!(!res.is_empty());
@@ -1502,14 +1594,17 @@ mod test {
 
     #[test]
     fn find_all_platform_directories() -> Result<(), Error> {
-        for path in find_system_xcode_developer_directories()? {
-            for platform in ApplePlatformDirectory::find_in_developer_directory(&path)? {
+        for dir in DeveloperDirectory::find_system_xcodes()? {
+            for platform in ApplePlatformDirectory::find_in_developer_directory(dir.path())? {
                 // Paths should agree.
                 assert_eq!(
                     platform.path,
-                    path.join("Platforms").join(platform.directory_name())
+                    dir.platforms_path().join(platform.directory_name())
                 );
-                assert_eq!(platform.path, platform.path_in_developer_directory(&path));
+                assert_eq!(
+                    platform.path,
+                    platform.path_in_developer_directory(dir.path())
+                );
 
                 // Ensure we're able to parse all platform types in existence. We want
                 // this to fail when Apple introduces new platforms so we can implement
@@ -1629,8 +1724,10 @@ mod test {
         }
 
         assert_eq!(
-            default_xcode_developer_directory(),
-            Some(PathBuf::from("/Applications/Xcode.app/Contents/Developer"))
+            DeveloperDirectory::default_xcode(),
+            Some(DeveloperDirectory {
+                path: PathBuf::from("/Applications/Xcode.app/Contents/Developer")
+            })
         );
         assert!(PathBuf::from(COMMAND_LINE_TOOLS_DEFAULT_PATH).exists());
 
@@ -1641,7 +1738,7 @@ mod test {
         // applications.
         assert_eq!(
             find_system_xcode_applications()?.len(),
-            find_system_xcode_developer_directories()?.len()
+            DeveloperDirectory::find_system_xcodes()?.len()
         );
 
         // We should be able to find SDKs for common platforms by default.
