@@ -567,6 +567,12 @@ pub struct SdkVersion {
     value: String,
 }
 
+impl Display for SdkVersion {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.value.fmt(f)
+    }
+}
+
 impl AsRef<str> for SdkVersion {
     fn as_ref(&self) -> &str {
         &self.value
@@ -647,6 +653,21 @@ pub struct SdkPath {
     /// Only present if the version occurred in the directory name. Use
     /// [AppleSdk] to parse SDK directories to reliably obtain the SDK version.
     pub version: Option<SdkVersion>,
+}
+
+impl Display for SdkPath {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "{} (version: {}) SDK at {}",
+            self.platform.filesystem_name(),
+            if let Some(version) = &self.version {
+                version.value.as_str()
+            } else {
+                "unknown"
+            },
+            self.path.display()
+        ))
+    }
 }
 
 impl SdkPath {
@@ -779,6 +800,15 @@ pub trait AppleSdk: Sized + AsRef<Path> {
         }
     }
 
+    /// Obtain an [SdkPath] represent this SDK.
+    fn as_sdk_path(&self) -> SdkPath {
+        SdkPath {
+            path: self.path().to_path_buf(),
+            platform: self.platform().clone(),
+            version: self.version().cloned(),
+        }
+    }
+
     /// Obtain the filesystem path to this SDK.
     fn path(&self) -> &Path {
         self.as_ref()
@@ -836,24 +866,51 @@ impl SearchDirectory {
     /// Resolves directories containing SDKs.
     ///
     /// Will filter out directories if their platform doesn't match what we want.
-    fn resolve_sdks_dirs(self, platform: &Option<ApplePlatform>) -> Result<Vec<PathBuf>, Error> {
+    fn resolve_sdks_dirs(
+        self,
+        cb: &Option<SdkProgressCallback>,
+        platform: &Option<ApplePlatform>,
+    ) -> Result<Vec<PathBuf>, Error> {
         match self {
-            Self::Developer(developer_dir) => Ok(
-                ApplePlatformDirectory::find_in_developer_directory(developer_dir)?
-                    .into_iter()
-                    .filter_map(|platform_dir| {
-                        if let Some(wanted_platform) = &platform {
-                            if &platform_dir.platform == wanted_platform {
-                                Some(platform_dir.sdks_path())
+            Self::Developer(developer_dir) => {
+                if let Some(cb) = cb {
+                    cb(SdkSearchEvent::DeveloperDirectoryFindPlatforms(
+                        developer_dir.clone(),
+                    ));
+                }
+
+                Ok(
+                    ApplePlatformDirectory::find_in_developer_directory(developer_dir)?
+                        .into_iter()
+                        .filter_map(|platform_dir| {
+                            if let Some(wanted_platform) = &platform {
+                                if &platform_dir.platform == wanted_platform {
+                                    if let Some(cb) = cb {
+                                        cb(SdkSearchEvent::PlatformDirectoryInclude(
+                                            platform_dir.path.clone(),
+                                        ));
+                                    }
+                                    Some(platform_dir.sdks_path())
+                                } else {
+                                    if let Some(cb) = cb {
+                                        cb(SdkSearchEvent::PlatformDirectoryExclude(
+                                            platform_dir.path,
+                                        ));
+                                    }
+                                    None
+                                }
                             } else {
-                                None
+                                if let Some(cb) = cb {
+                                    cb(SdkSearchEvent::PlatformDirectoryInclude(
+                                        platform_dir.path.clone(),
+                                    ));
+                                }
+                                Some(platform_dir.sdks_path())
                             }
-                        } else {
-                            Some(platform_dir.sdks_path())
-                        }
-                    })
-                    .collect::<Vec<_>>(),
-            ),
+                        })
+                        .collect::<Vec<_>>(),
+                )
+            }
             Self::Sdks(path) => Ok(vec![path]),
         }
     }
@@ -879,6 +936,16 @@ pub enum SdkSorting {
     VersionAscending,
 }
 
+impl Display for SdkSorting {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            Self::None => "nothing",
+            Self::VersionDescending => "descending version",
+            Self::VersionAscending => "ascending version",
+        })
+    }
+}
+
 impl SdkSorting {
     pub fn compare_version(&self, a: Option<&SdkVersion>, b: Option<&SdkVersion>) -> Ordering {
         match self {
@@ -898,6 +965,63 @@ impl SdkSorting {
         }
     }
 }
+
+/// Describes an event during SDK discovery.
+///
+/// This events are sent to the progress callback to allow monitoring and debugging
+/// of SDK searching activity.
+pub enum SdkSearchEvent {
+    SdkRootEnvLoad(String),
+    DeveloperDirectoryFindPlatforms(PathBuf),
+    PlatformDirectoryInclude(PathBuf),
+    PlatformDirectoryExclude(PathBuf),
+    SearchingDeveloperDirectory(PathBuf),
+    SearchingSdksDirectory(PathBuf),
+    SdkFilterMatch(SdkPath),
+    SdkFilterExclude(SdkPath, String),
+    Sorting(usize, SdkSorting),
+}
+
+impl Display for SdkSearchEvent {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::SdkRootEnvLoad(path) => {
+                f.write_fmt(format_args!("loading SDK from SDKROOT: {}", path))
+            }
+            Self::DeveloperDirectoryFindPlatforms(path) => f.write_fmt(format_args!(
+                "finding platforms in Developer Directory {}",
+                path.display()
+            )),
+            Self::SearchingDeveloperDirectory(path) => f.write_fmt(format_args!(
+                "searching Developer Directory {}",
+                path.display()
+            )),
+            Self::PlatformDirectoryInclude(path) => f.write_fmt(format_args!(
+                "searching Platform directory {}",
+                path.display()
+            )),
+            Self::PlatformDirectoryExclude(path) => f.write_fmt(format_args!(
+                "excluding Platform directory {}",
+                path.display()
+            )),
+            Self::SearchingSdksDirectory(path) => {
+                f.write_fmt(format_args!("searching SDKs directory {}", path.display()))
+            }
+            Self::SdkFilterMatch(sdk) => {
+                f.write_fmt(format_args!("SDK {} matches search filter", sdk))
+            }
+            Self::SdkFilterExclude(sdk, reason) => {
+                f.write_fmt(format_args!("SDK {} discarded because {}", sdk, reason))
+            }
+            Self::Sorting(count, sorting) => {
+                f.write_fmt(format_args!("sorting {} SDKs by {}", count, sorting))
+            }
+        }
+    }
+}
+
+/// A callable that receives progress during an SDK search.
+pub type SdkProgressCallback = fn(SdkSearchEvent);
 
 /// Search parameters for locating an Apple SDK.
 ///
@@ -926,6 +1050,7 @@ impl SdkSorting {
 /// * [Self::platform()]
 /// * [Self::minimum_version()]
 /// * [Self::maximum_version()]
+/// * [Self::deployment_target()]
 ///
 /// By default, no filtering is performed. This means all SDKs in all search locations
 /// for all platforms are returned.
@@ -934,6 +1059,7 @@ impl SdkSorting {
 /// platform filter. Otherwise you may see SDKs for platforms you aren't targeting.
 #[derive(Clone)]
 pub struct SdkSearch {
+    progress_callback: Option<SdkProgressCallback>,
     search_sdkroot_env: bool,
     search_developer_dir: bool,
     search_command_line_tools_sdks: bool,
@@ -951,6 +1077,7 @@ pub struct SdkSearch {
 impl Default for SdkSearch {
     fn default() -> Self {
         Self {
+            progress_callback: None,
             search_sdkroot_env: true,
             search_developer_dir: true,
             search_command_line_tools_sdks: false,
@@ -968,6 +1095,12 @@ impl Default for SdkSearch {
 }
 
 impl SdkSearch {
+    /// Define a function that will be called to provide updates on SDK search status.
+    pub fn progress_callback(mut self, callback: SdkProgressCallback) -> Self {
+        self.progress_callback = Some(callback);
+        self
+    }
+
     /// Whether to resolve an SDK as specified by the `SDKROOT` environment variable.
     ///
     /// If set, we will attempt to resolve the SDK as specified via the `SDKRoot`
@@ -1161,16 +1294,22 @@ impl SdkSearch {
         // and failures are fatal.
         if self.search_sdkroot_env {
             if let Some(env) = std::env::var_os("SDKROOT") {
+                if let Some(cb) = &self.progress_callback {
+                    cb(SdkSearchEvent::SdkRootEnvLoad(
+                        env.to_string_lossy().to_string(),
+                    ));
+                }
+
                 let sdk = SDK::from_directory(&PathBuf::from(env))?;
 
-                if self.filter_sdk(&sdk)? {
+                if self.filter_sdk(&sdk, &self.progress_callback)? {
                     res.push(sdk);
                 }
             }
         }
 
         for search_dir in search_dirs {
-            for sdk_dir in search_dir.resolve_sdks_dirs(&self.platform)? {
+            for sdk_dir in search_dir.resolve_sdks_dirs(&self.progress_callback, &self.platform)? {
                 // Avoid redundant work.
                 if searched_dirs.contains(&sdk_dir) {
                     continue;
@@ -1178,8 +1317,12 @@ impl SdkSearch {
 
                 searched_dirs.insert(sdk_dir.clone());
 
+                if let Some(cb) = &self.progress_callback {
+                    cb(SdkSearchEvent::SearchingSdksDirectory(sdk_dir.clone()));
+                }
+
                 for sdk in SDK::find_sdks_in_directory(&sdk_dir)? {
-                    if self.filter_sdk(&sdk)? {
+                    if self.filter_sdk(&sdk, &self.progress_callback)? {
                         res.push(sdk);
                     }
                 }
@@ -1196,9 +1339,26 @@ impl SdkSearch {
     }
 
     /// Whether an SDK matches our search filter.
-    pub fn filter_sdk<SDK: AppleSdk>(&self, sdk: &SDK) -> Result<bool, Error> {
+    pub fn filter_sdk<SDK: AppleSdk>(
+        &self,
+        sdk: &SDK,
+        cb: &Option<SdkProgressCallback>,
+    ) -> Result<bool, Error> {
+        let sdk_path = sdk.as_sdk_path();
+
         if let Some(wanted_platform) = &self.platform {
             if sdk.platform() != wanted_platform {
+                if let Some(cb) = cb {
+                    cb(SdkSearchEvent::SdkFilterExclude(
+                        sdk_path,
+                        format!(
+                            "platform {} != {}",
+                            sdk.platform().filesystem_name(),
+                            wanted_platform.filesystem_name()
+                        ),
+                    ));
+                }
+
                 return Ok(false);
             }
         }
@@ -1206,10 +1366,30 @@ impl SdkSearch {
         if let Some(min_version) = &self.minimum_version {
             if let Some(sdk_version) = sdk.version() {
                 if sdk_version < min_version {
+                    if let Some(cb) = cb {
+                        cb(SdkSearchEvent::SdkFilterExclude(
+                            sdk_path,
+                            format!(
+                                "SDK version {} < minimum version {}",
+                                sdk_version, min_version
+                            ),
+                        ));
+                    }
+
                     return Ok(false);
                 }
             } else {
                 // SDKs without a version always fail.
+                if let Some(cb) = cb {
+                    cb(SdkSearchEvent::SdkFilterExclude(
+                        sdk_path,
+                        format!(
+                            "Unknown SDK version fails to meet minimum version {}",
+                            min_version
+                        ),
+                    ));
+                }
+
                 return Ok(false);
             }
         }
@@ -1217,18 +1397,50 @@ impl SdkSearch {
         if let Some(max_version) = &self.maximum_version {
             if let Some(sdk_version) = sdk.version() {
                 if sdk_version > max_version {
+                    if let Some(cb) = cb {
+                        cb(SdkSearchEvent::SdkFilterExclude(
+                            sdk_path,
+                            format!(
+                                "SDK version {} > maximum version {}",
+                                sdk_version, max_version
+                            ),
+                        ));
+                    }
+
                     return Ok(false);
                 }
             } else {
                 // SDKs without a version always fail.
+
+                if let Some(cb) = cb {
+                    cb(SdkSearchEvent::SdkFilterExclude(
+                        sdk_path,
+                        format!(
+                            "Unknown SDK version fails to meet maximum version {}",
+                            max_version
+                        ),
+                    ));
+                }
+
                 return Ok(false);
             }
         }
 
         if let Some((target, version)) = &self.deployment_target {
             if !sdk.supports_deployment_target(target, version)? {
+                if let Some(cb) = cb {
+                    cb(SdkSearchEvent::SdkFilterExclude(
+                        sdk_path,
+                        format!("does not support deployment target {}:{}", target, version),
+                    ));
+                }
+
                 return Ok(false);
             }
+        }
+
+        if let Some(cb) = cb {
+            cb(SdkSearchEvent::SdkFilterMatch(sdk_path));
         }
 
         Ok(true)
