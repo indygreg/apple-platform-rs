@@ -38,12 +38,26 @@ pub enum SdkSearchLocation {
     ///
     /// If this environment variable is defined and the path is not valid, an error
     /// occurs.
+    ///
+    /// If this location yields an SDK, the SDK search will be aborted and subsequent
+    /// locations will not be searched. This effectively honors the intent of `SDKROOT`
+    /// to force usage of a given SDK.
+    ///
+    /// If this behavior is not desirable, construct an [SdkSearch] with a
+    /// [SdkSearchLocation::Sdk] using the value of `SDKROOT`.
     SdkRootEnv,
 
     /// Use the Developer Directory specified by the `DEVELOPER_DIR` environment variable.
     ///
     /// If this environment variable is defined and the path is not valid, an error
     /// occurs.
+    ///
+    /// If this location yields an SDK, the SDK search will be aborted and subsequent
+    /// locations will not be searched. This effectively honors the intent of `DEVELOPER_DIR`
+    /// to explicitly define a developer directory to use for SDK searching.
+    ///
+    /// If this behavior is not desirable, construct an [SdkSearch] with a
+    /// [SdkSearchLocation::Developer] using the value of `DEVELOPER_DIR`.
     DeveloperDirEnv,
 
     /// Look for SDKs within the system installed `Xcode` application.
@@ -115,6 +129,11 @@ impl Display for SdkSearchLocation {
 }
 
 impl SdkSearchLocation {
+    /// Whether this search location is terminal.
+    fn is_terminal(&self) -> bool {
+        matches!(self, Self::SdkRootEnv | Self::DeveloperDirEnv)
+    }
+
     fn resolve_location(&self) -> Result<SdkSearchResolvedLocation, Error> {
         match self {
             Self::SdkRootEnv => {
@@ -335,7 +354,7 @@ pub type SdkProgressCallback = fn(SdkSearchEvent);
 #[derive(Clone)]
 pub struct SdkSearch {
     progress_callback: Option<SdkProgressCallback>,
-    dirs: Vec<SdkSearchLocation>,
+    locations: Vec<SdkSearchLocation>,
     platform: Option<Platform>,
     minimum_version: Option<SdkVersion>,
     maximum_version: Option<SdkVersion>,
@@ -347,7 +366,7 @@ impl Default for SdkSearch {
     fn default() -> Self {
         Self {
             progress_callback: None,
-            dirs: vec![
+            locations: vec![
                 SdkSearchLocation::SdkRootEnv,
                 SdkSearchLocation::DeveloperDirEnv,
                 SdkSearchLocation::SystemXcode,
@@ -369,7 +388,7 @@ impl SdkSearch {
     /// with the instance.
     pub fn empty() -> Self {
         let mut s = Self::default();
-        s.dirs.clear();
+        s.locations.clear();
         s
     }
 
@@ -383,7 +402,7 @@ impl SdkSearch {
     ///
     /// The location will be appended to the current search location list.
     pub fn location(mut self, location: SdkSearchLocation) -> Self {
-        self.dirs.push(location);
+        self.locations.push(location);
         self
     }
 
@@ -455,7 +474,7 @@ impl SdkSearch {
         let mut searched_platform_dirs = HashSet::new();
         let mut searched_sdks_dirs = HashSet::new();
 
-        for location in &self.dirs {
+        for location in &self.locations {
             if let Some(cb) = &self.progress_callback {
                 cb(SdkSearchEvent::SearchingLocation(location.clone()));
             }
@@ -521,10 +540,17 @@ impl SdkSearch {
                 }
             };
 
+            let mut added_count = 0;
+
             for sdk in candidate_sdks {
                 if !resolved.apply_sdk_filter() || self.filter_sdk(&sdk)? {
                     sdks.push(sdk);
+                    added_count += 1;
                 }
+            }
+
+            if location.is_terminal() && added_count > 0 {
+                break;
             }
         }
 
