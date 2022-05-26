@@ -343,11 +343,11 @@ impl ApplePlatformDirectory {
     ///
     /// The type of SDK to resolve must be specified by the caller.
     ///
-    /// This function is a simple wrapper around [AppleSdk::find_sdks_in_directory()] looking
+    /// This function is a simple wrapper around [AppleSdk::find_in_directory()] looking
     /// under the `Developer/SDKs` directory, which is where SDKs are located in platform
     /// directories.
     pub fn find_sdks<T: AppleSdk>(&self) -> Result<Vec<T>, Error> {
-        T::find_sdks_in_directory(&self.sdks_path())
+        T::find_in_directory(&self.sdks_path())
     }
 }
 
@@ -860,7 +860,7 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     /// SDKs are annotated with an `is_symlink` field to denote when this is
     /// the case. Callers may want to filter out symlinked SDKs to avoid
     /// duplicates.
-    fn find_sdks_in_directory(root: &Path) -> Result<Vec<Self>, Error> {
+    fn find_in_directory(root: &Path) -> Result<Vec<Self>, Error> {
         let dir = match std::fs::read_dir(&root) {
             Ok(v) => Ok(v),
             Err(e) => {
@@ -898,7 +898,7 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     /// this directory or doesn't have an `SDKs` directory.
     fn find_command_line_tools_sdks() -> Result<Option<Vec<Self>>, Error> {
         if let Some(path) = command_line_tools_sdks_directory() {
-            Ok(Some(Self::find_sdks_in_directory(&path)?))
+            Ok(Some(Self::find_in_directory(&path)?))
         } else {
             Ok(None)
         }
@@ -1440,7 +1440,7 @@ impl SdkSearch {
                     cb(SdkSearchEvent::SearchingSdksDirectory(sdk_dir.clone()));
                 }
 
-                for sdk in SDK::find_sdks_in_directory(&sdk_dir)? {
+                for sdk in SDK::find_in_directory(&sdk_dir)? {
                     if self.filter_sdk(&sdk, &self.progress_callback)? {
                         res.push(sdk);
                     }
