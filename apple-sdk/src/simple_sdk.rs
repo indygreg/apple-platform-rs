@@ -1,5 +1,5 @@
 use {
-    crate::{ApplePlatform, AppleSdk, Error, SdkPath, SdkVersion},
+    crate::{AppleSdk, Error, Platform, SdkPath, SdkVersion},
     std::path::{Path, PathBuf},
 };
 
@@ -8,7 +8,7 @@ use crate::parsed_sdk::ParsedSdk;
 
 /// A directory purported to hold an Apple SDK.
 #[derive(Clone, Debug)]
-pub struct UnparsedSdk {
+pub struct SimpleSdk {
     /// Root directory of the SDK.
     path: PathBuf,
 
@@ -18,13 +18,13 @@ pub struct UnparsedSdk {
     sdk_path: SdkPath,
 }
 
-impl AsRef<Path> for UnparsedSdk {
+impl AsRef<Path> for SimpleSdk {
     fn as_ref(&self) -> &Path {
         &self.path
     }
 }
 
-impl AppleSdk for UnparsedSdk {
+impl AppleSdk for SimpleSdk {
     fn from_directory(path: &Path) -> Result<Self, Error> {
         let sdk = SdkPath::from_path(path)?;
 
@@ -51,7 +51,7 @@ impl AppleSdk for UnparsedSdk {
         self.is_symlink
     }
 
-    fn platform(&self) -> &ApplePlatform {
+    fn platform(&self) -> &Platform {
         &self.sdk_path.platform
     }
 
@@ -70,7 +70,7 @@ impl AppleSdk for UnparsedSdk {
     }
 }
 
-impl UnparsedSdk {
+impl SimpleSdk {
     #[cfg(feature = "parse")]
     /// Attempt to convert into an [AppleSdk] by parsing an `SDKSettings.*` file.
     pub fn try_parse(self) -> Result<ParsedSdk, Error> {
@@ -88,7 +88,7 @@ mod test {
     #[test]
     fn test_find_default_sdks() -> Result<(), Error> {
         if let Ok(developer_dir) = DeveloperDirectory::find_default_required() {
-            assert!(!developer_dir.sdks::<UnparsedSdk>()?.is_empty());
+            assert!(!developer_dir.sdks::<SimpleSdk>()?.is_empty());
         }
 
         Ok(())
@@ -98,7 +98,7 @@ mod test {
     fn test_find_command_line_tools_sdks() -> Result<(), Error> {
         let sdk_path = PathBuf::from(COMMAND_LINE_TOOLS_DEFAULT_PATH).join("SDKs");
 
-        let res = UnparsedSdk::find_command_line_tools_sdks()?;
+        let res = SimpleSdk::find_command_line_tools_sdks()?;
 
         if sdk_path.exists() {
             assert!(res.is_some());
@@ -113,8 +113,8 @@ mod test {
     #[test]
     fn find_all_sdks() -> Result<(), Error> {
         for dir in DeveloperDirectory::find_system_xcodes()? {
-            for sdk in dir.sdks::<UnparsedSdk>()? {
-                assert!(!matches!(sdk.platform(), ApplePlatform::Unknown(_)));
+            for sdk in dir.sdks::<SimpleSdk>()? {
+                assert!(!matches!(sdk.platform(), Platform::Unknown(_)));
             }
         }
 

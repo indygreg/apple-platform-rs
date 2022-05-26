@@ -1,7 +1,7 @@
 //! Data structures in Apple SDKs.
 
 use {
-    crate::{ApplePlatform, AppleSdk, Error, SdkPath, SdkVersion, UnparsedSdk},
+    crate::{AppleSdk, Error, Platform, SdkPath, SdkVersion, SimpleSdk},
     serde::Deserialize,
     std::{
         collections::HashMap,
@@ -19,7 +19,7 @@ pub struct SdkSettingsJsonDefaultProperties {
 /// Represents a SupportedTargets value in a SDKSettings.json file.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct AppleSdkSupportedTarget {
+pub struct SupportedTarget {
     /// Names of machine architectures that can be targeted.
     ///
     /// e.g. `x86_64`, `arm64`, `arm64e`.
@@ -60,7 +60,7 @@ pub struct AppleSdkSupportedTarget {
     pub valid_deployment_targets: Vec<String>,
 }
 
-impl AppleSdkSupportedTarget {
+impl SupportedTarget {
     /// Obtain [SdkVersion] for each deployment target this target supports.
     pub fn deployment_targets_versions(&self) -> Vec<SdkVersion> {
         self.valid_deployment_targets
@@ -81,13 +81,13 @@ pub struct SdkSettingsJson {
     pub display_name: String,
     pub maximum_deployment_target: String,
     pub minimal_display_name: String,
-    pub supported_targets: HashMap<String, AppleSdkSupportedTarget>,
+    pub supported_targets: HashMap<String, SupportedTarget>,
     pub version: String,
 }
 
 /// An Apple SDK with parsed settings.
 ///
-/// Unlike [UnparsedSdk], this type gives you access to rich metadata about the
+/// Unlike [SimpleSdk], this type gives you access to rich metadata about the
 /// Apple SDK. This includes things like targeting capabilities.
 #[derive(Clone, Debug)]
 pub struct ParsedSdk {
@@ -98,7 +98,7 @@ pub struct ParsedSdk {
     is_symlink: bool,
 
     /// The platform this SDK belongs to.
-    platform: ApplePlatform,
+    platform: Platform,
 
     version: SdkVersion,
 
@@ -148,7 +148,7 @@ pub struct ParsedSdk {
     ///
     /// Example keys are `macosx` and `iosmac`. Use the [Self::default_variant]
     /// field to access the default target.
-    pub supported_targets: HashMap<String, AppleSdkSupportedTarget>,
+    pub supported_targets: HashMap<String, SupportedTarget>,
 }
 
 impl AsRef<Path> for ParsedSdk {
@@ -187,7 +187,7 @@ impl AppleSdk for ParsedSdk {
         self.is_symlink
     }
 
-    fn platform(&self) -> &ApplePlatform {
+    fn platform(&self) -> &Platform {
         &self.platform
     }
 
@@ -224,7 +224,7 @@ impl ParsedSdk {
     pub fn from_json(
         path: PathBuf,
         is_symlink: bool,
-        platform: ApplePlatform,
+        platform: Platform,
         value: SdkSettingsJson,
     ) -> Result<Self, Error> {
         Ok(Self {
@@ -251,7 +251,7 @@ impl ParsedSdk {
     pub fn from_plist(
         path: PathBuf,
         is_symlink: bool,
-        platform: ApplePlatform,
+        platform: Platform,
         value: plist::Value,
     ) -> Result<Self, Error> {
         let value = value.into_dictionary().ok_or(Error::PlistNotDictionary)?;
@@ -337,10 +337,10 @@ impl ParsedSdk {
     }
 }
 
-impl TryFrom<UnparsedSdk> for ParsedSdk {
+impl TryFrom<SimpleSdk> for ParsedSdk {
     type Error = Error;
 
-    fn try_from(v: UnparsedSdk) -> Result<Self, Self::Error> {
+    fn try_from(v: SimpleSdk) -> Result<Self, Self::Error> {
         Self::from_directory(v.path())
     }
 }
@@ -366,7 +366,7 @@ mod test {
         ParsedSdk::from_plist(
             PathBuf::from("MacOSX10.9.sdk"),
             false,
-            ApplePlatform::MacOsX,
+            Platform::MacOsX,
             value,
         )
     }
@@ -377,7 +377,7 @@ mod test {
         ParsedSdk::from_plist(
             PathBuf::from("MacOSX10.10.sdk"),
             false,
-            ApplePlatform::MacOsX,
+            Platform::MacOsX,
             value,
         )
     }
@@ -388,7 +388,7 @@ mod test {
         ParsedSdk::from_json(
             PathBuf::from("MacOSX10.15.sdk"),
             false,
-            ApplePlatform::MacOsX,
+            Platform::MacOsX,
             value,
         )
     }
@@ -399,7 +399,7 @@ mod test {
         ParsedSdk::from_json(
             PathBuf::from("MacOSX11.3.sdk"),
             false,
-            ApplePlatform::MacOsX,
+            Platform::MacOsX,
             value,
         )
     }
@@ -442,7 +442,7 @@ mod test {
     fn find_all_sdks() -> Result<(), Error> {
         for dir in DeveloperDirectory::find_system_xcodes()? {
             for sdk in dir.sdks::<ParsedSdk>()? {
-                assert!(!matches!(sdk.platform(), ApplePlatform::Unknown(_)));
+                assert!(!matches!(sdk.platform(), Platform::Unknown(_)));
                 assert!(sdk.version().is_some());
             }
         }

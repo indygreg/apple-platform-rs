@@ -7,7 +7,7 @@
 //!
 //! A *platform* is a target OS/environment that you build applications for.
 //! These typically correspond to `*.platform` directories under `Platforms`
-//! subdirectory in the *developer directory. e.g.
+//! subdirectory in the *developer directory*. e.g.
 //! `/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform`.
 //!
 //! An *SDK* holds header files, library stubs, and other files enabling you
@@ -24,18 +24,18 @@
 //!
 //! # Apple Platforms
 //!
-//! We model an abstract Apple platform via the [ApplePlatform] enum.
+//! We model an abstract Apple platform via the [Platform] enum.
 //!
 //! A directory containing an Apple platform is represented by the
-//! [ApplePlatformDirectory] struct.
+//! [PlatformDirectory] struct.
 //!
 //! # Apple SDKs
 //!
-//! We model Apple SDKs using the [UnparsedSdk] and [ParsedSdk] types. The
+//! We model Apple SDKs using the [SimpleSdk] and [ParsedSdk] types. The
 //! latter requires the `parse` crate feature in order to activate support for
 //! parsing JSON and plist files.
 //!
-//! Both these types are essentially a reference to a directory. [UnparsedSdk]
+//! Both these types are essentially a reference to a directory. [SimpleSdk]
 //! is little more than a reference to a filesystem path. However, [ParsedSdk]
 //! parses the `SDKSettings.json` or `SDKSettings.plist` file within the SDK
 //! and is able to obtain rich metadata about the SDK, such as the names of
@@ -68,11 +68,11 @@ use std::{
     str::FromStr,
 };
 
-pub use simple_sdk::UnparsedSdk;
+pub use simple_sdk::SimpleSdk;
 
 #[cfg(feature = "parse")]
 pub use crate::parsed_sdk::{
-    AppleSdkSupportedTarget, ParsedSdk, SdkSettingsJson, SdkSettingsJsonDefaultProperties,
+    ParsedSdk, SdkSettingsJson, SdkSettingsJsonDefaultProperties, SupportedTarget,
 };
 
 /// Default install path for the Xcode command line tools.
@@ -195,7 +195,7 @@ impl From<plist::Error> for Error {
 /// is equivalent. This ensures that [Self::Unknown] will equate to a variant of
 /// its string value matches a known type.
 #[derive(Clone, Debug)]
-pub enum ApplePlatform {
+pub enum Platform {
     AppleTvOs,
     AppleTvSimulator,
     DriverKit,
@@ -207,7 +207,7 @@ pub enum ApplePlatform {
     Unknown(String),
 }
 
-impl FromStr for ApplePlatform {
+impl FromStr for Platform {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -226,15 +226,15 @@ impl FromStr for ApplePlatform {
     }
 }
 
-impl PartialEq for ApplePlatform {
+impl PartialEq for Platform {
     fn eq(&self, other: &Self) -> bool {
         self.filesystem_name().eq(other.filesystem_name())
     }
 }
 
-impl Eq for ApplePlatform {}
+impl Eq for Platform {}
 
-impl TryFrom<&str> for ApplePlatform {
+impl TryFrom<&str> for Platform {
     type Error = Error;
 
     fn try_from(s: &str) -> Result<Self, Self::Error> {
@@ -242,7 +242,7 @@ impl TryFrom<&str> for ApplePlatform {
     }
 }
 
-impl ApplePlatform {
+impl Platform {
     /// Attempt to construct an instance from a filesystem path to a platform directory.
     ///
     /// The argument should be the path of a `*.platform` directory. e.g.
@@ -304,25 +304,24 @@ impl ApplePlatform {
 
 /// Represents an Apple Platform directory.
 ///
-/// This is just a thin abstraction over a filesystem path and an
-/// [ApplePlatform] instance.
+/// This is just a thin abstraction over a filesystem path and a [Platform] instance.
 ///
 /// Equivalence and sorting are implemented in terms of the path component
-/// only. The assumption here is the [ApplePlatform] is fully derived from the
-/// filesystem path and this derivation is deterministic.
-pub struct ApplePlatformDirectory {
+/// only. The assumption here is the [Platform] is fully derived from the filesystem
+/// path and this derivation is deterministic.
+pub struct PlatformDirectory {
     /// The filesystem path to this directory.
     path: PathBuf,
 
     /// The platform within this directory.
-    platform: ApplePlatform,
+    platform: Platform,
 }
 
-impl ApplePlatformDirectory {
+impl PlatformDirectory {
     /// Attempt to construct an instance from a filesystem path.
     pub fn from_path(path: impl AsRef<Path>) -> Result<Self, Error> {
         let path = path.as_ref().to_path_buf();
-        let platform = ApplePlatform::from_platform_path(&path)?;
+        let platform = Platform::from_platform_path(&path)?;
 
         Ok(Self { path, platform })
     }
@@ -351,41 +350,41 @@ impl ApplePlatformDirectory {
     }
 }
 
-impl AsRef<Path> for ApplePlatformDirectory {
+impl AsRef<Path> for PlatformDirectory {
     fn as_ref(&self) -> &Path {
         &self.path
     }
 }
 
-impl AsRef<ApplePlatform> for ApplePlatformDirectory {
-    fn as_ref(&self) -> &ApplePlatform {
+impl AsRef<Platform> for PlatformDirectory {
+    fn as_ref(&self) -> &Platform {
         &self.platform
     }
 }
 
-impl Deref for ApplePlatformDirectory {
-    type Target = ApplePlatform;
+impl Deref for PlatformDirectory {
+    type Target = Platform;
 
     fn deref(&self) -> &Self::Target {
         &self.platform
     }
 }
 
-impl PartialEq for ApplePlatformDirectory {
+impl PartialEq for PlatformDirectory {
     fn eq(&self, other: &Self) -> bool {
         self.path.eq(&other.path)
     }
 }
 
-impl Eq for ApplePlatformDirectory {}
+impl Eq for PlatformDirectory {}
 
-impl PartialOrd for ApplePlatformDirectory {
+impl PartialOrd for PlatformDirectory {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.path.partial_cmp(&other.path)
     }
 }
 
-impl Ord for ApplePlatformDirectory {
+impl Ord for PlatformDirectory {
     fn cmp(&self, other: &Self) -> Ordering {
         self.path.cmp(&other.path)
     }
@@ -565,7 +564,7 @@ impl DeveloperDirectory {
     /// Returns all discovered instances inside this developer directory.
     ///
     /// The return order is sorted and deterministic.
-    pub fn platforms(&self) -> Result<Vec<ApplePlatformDirectory>, Error> {
+    pub fn platforms(&self) -> Result<Vec<PlatformDirectory>, Error> {
         let platforms_path = self.platforms_path();
 
         let dir = match std::fs::read_dir(platforms_path) {
@@ -584,7 +583,7 @@ impl DeveloperDirectory {
         for entry in dir {
             let entry = entry?;
 
-            if let Ok(platform) = ApplePlatformDirectory::from_path(entry.path()) {
+            if let Ok(platform) = PlatformDirectory::from_path(entry.path()) {
                 res.push(platform);
             }
         }
@@ -598,7 +597,7 @@ impl DeveloperDirectory {
     /// Find SDKs within this developer directory.
     ///
     /// This is a convenience method for calling [Self::platforms()] +
-    /// [ApplePlatformDirectory::find_sdks()] and chaining the results.
+    /// [PlatformDirectory::find_sdks()] and chaining the results.
     pub fn sdks<SDK: AppleSdk>(&self) -> Result<Vec<SDK>, Error> {
         Ok(self
             .platforms()?
@@ -780,7 +779,7 @@ pub struct SdkPath {
     pub path: PathBuf,
 
     /// The platform this SDK belongs to.
-    pub platform: ApplePlatform,
+    pub platform: Platform,
 
     /// The version of the SDK.
     ///
@@ -836,7 +835,7 @@ impl SdkPath {
             (prefix, None)
         };
 
-        let platform = ApplePlatform::from_str(platform_name)?;
+        let platform = Platform::from_str(platform_name)?;
 
         Ok(Self {
             path,
@@ -922,7 +921,7 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     fn is_symlink(&self) -> bool;
 
     /// The platform this SDK is for.
-    fn platform(&self) -> &ApplePlatform;
+    fn platform(&self) -> &Platform;
 
     /// Obtain the version string for this SDK.
     ///
@@ -944,7 +943,7 @@ enum SdkSearchResolvedLocation {
     /// Nothing.
     None,
     /// A collection of platform directories.
-    PlatformDirectories(Vec<ApplePlatformDirectory>),
+    PlatformDirectories(Vec<PlatformDirectory>),
     /// A directory holding SDKs.
     SdksDirectory(PathBuf),
     /// A specific directory with an SDK.
@@ -1264,7 +1263,7 @@ pub type SdkProgressCallback = fn(SdkSearchEvent);
 pub struct SdkSearch {
     progress_callback: Option<SdkProgressCallback>,
     dirs: Vec<SdkSearchLocation>,
-    platform: Option<ApplePlatform>,
+    platform: Option<Platform>,
     minimum_version: Option<SdkVersion>,
     maximum_version: Option<SdkVersion>,
     deployment_target: Option<(String, SdkVersion)>,
@@ -1321,7 +1320,7 @@ impl SdkSearch {
     ///
     /// If you are looking for a specific SDK to use, you probably want to call this.
     /// If you are searching for all available SDKs, you probably don't want to call this.
-    pub fn platform(mut self, platform: ApplePlatform) -> Self {
+    pub fn platform(mut self, platform: Platform) -> Self {
         self.platform = Some(platform);
         self
     }
@@ -1330,7 +1329,7 @@ impl SdkSearch {
     ///
     /// Effectively imposes a `>=` filter on found SDKs.
     ///
-    /// If using [UnparsedSdk] and the SDK version could not be determined from
+    /// If using [SimpleSdk] and the SDK version could not be determined from
     /// the filesystem path, the version is assumed to be `0.0` and this filter
     /// will likely exclude the SDK.
     pub fn minimum_version(mut self, version: impl Into<SdkVersion>) -> Self {
@@ -1354,7 +1353,7 @@ impl SdkSearch {
     /// Only modern SDKs with `SDKSettings.json` files advertise their targeting settings
     /// in a way that allows this filter to work.
     ///
-    /// Attempting to use this filter on [UnparsedSdk] will result in a run-time
+    /// Attempting to use this filter on [SimpleSdk] will result in a run-time
     /// error at search time since these SDKs do not parse `SDKSettings` files.
     pub fn deployment_target(
         mut self,
@@ -1616,7 +1615,7 @@ mod test {
                 // Ensure we're able to parse all platform types in existence. We want
                 // this to fail when Apple introduces new platforms so we can implement
                 // support for the new platform!
-                assert!(!matches!(platform.platform, ApplePlatform::Unknown(_)));
+                assert!(!matches!(platform.platform, Platform::Unknown(_)));
             }
         }
 
@@ -1625,8 +1624,8 @@ mod test {
 
     #[test]
     fn apple_platform() -> Result<(), Error> {
-        assert_eq!(ApplePlatform::from_str("macosx")?, ApplePlatform::MacOsX);
-        assert_eq!(ApplePlatform::from_str("MacOSX")?, ApplePlatform::MacOsX);
+        assert_eq!(Platform::from_str("macosx")?, Platform::MacOsX);
+        assert_eq!(Platform::from_str("MacOSX")?, Platform::MacOsX);
 
         Ok(())
     }
@@ -1699,11 +1698,11 @@ mod test {
         assert!(SdkPath::from_path("foo.bar").is_err());
 
         let sdk = SdkPath::from_path("MacOSX.sdk")?;
-        assert_eq!(sdk.platform, ApplePlatform::MacOsX);
+        assert_eq!(sdk.platform, Platform::MacOsX);
         assert_eq!(sdk.version, None);
 
         let sdk = SdkPath::from_path("MacOSX12.3.sdk")?;
-        assert_eq!(sdk.platform, ApplePlatform::MacOsX);
+        assert_eq!(sdk.platform, Platform::MacOsX);
         assert_eq!(sdk.version, Some("12.3".to_string().into()));
 
         Ok(())
@@ -1713,7 +1712,7 @@ mod test {
     fn search_all() -> Result<(), Error> {
         let search = SdkSearch::default().location(SdkSearchLocation::SystemXcodes);
 
-        search.search::<UnparsedSdk>()?;
+        search.search::<SimpleSdk>()?;
 
         Ok(())
     }
@@ -1747,22 +1746,18 @@ mod test {
         );
 
         // We should be able to find SDKs for common platforms by default.
-        for platform in [
-            ApplePlatform::MacOsX,
-            ApplePlatform::IPhoneOs,
-            ApplePlatform::WatchOs,
-        ] {
+        for platform in [Platform::MacOsX, Platform::IPhoneOs, Platform::WatchOs] {
             let sdks = SdkSearch::default()
                 .platform(platform)
-                .search::<UnparsedSdk>()?;
+                .search::<SimpleSdk>()?;
             assert!(!sdks.is_empty());
         }
 
         // We should be able to find a macOS 11.0+ SDK by default.
         let sdks = SdkSearch::default()
-            .platform(ApplePlatform::MacOsX)
+            .platform(Platform::MacOsX)
             .minimum_version(SdkVersion::from("11.0"))
-            .search::<UnparsedSdk>()?;
+            .search::<SimpleSdk>()?;
         assert!(!sdks.is_empty());
 
         Ok(())
