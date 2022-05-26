@@ -218,6 +218,14 @@ impl PartialEq for ApplePlatform {
 
 impl Eq for ApplePlatform {}
 
+impl TryFrom<&str> for ApplePlatform {
+    type Error = Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        Self::from_str(s)
+    }
+}
+
 impl ApplePlatform {
     /// Attempt to construct an instance from a filesystem path to a platform directory.
     ///
