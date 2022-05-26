@@ -196,15 +196,16 @@ impl FromStr for ApplePlatform {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "AppleTVOS" => Ok(Self::AppleTvOs),
-            "AppleTVSimulator" => Ok(Self::AppleTvSimulator),
-            "DriverKit" => Ok(Self::DriverKit),
-            "iPhoneOS" => Ok(Self::IPhoneOs),
-            "iPhoneSimulator" => Ok(Self::IPhoneSimulator),
-            "MacOSX" => Ok(Self::MacOsX),
-            "WatchOS" => Ok(Self::WatchOs),
-            "WatchSimulator" => Ok(Self::WatchSimulator),
+        // We do a case insensitive comparison so we're lenient in parsing input.
+        match s.to_ascii_lowercase().as_str() {
+            "appletvos" => Ok(Self::AppleTvOs),
+            "appletvsimulator" => Ok(Self::AppleTvSimulator),
+            "driverkit" => Ok(Self::DriverKit),
+            "iphoneos" => Ok(Self::IPhoneOs),
+            "iphonesimulator" => Ok(Self::IPhoneSimulator),
+            "macosx" => Ok(Self::MacOsX),
+            "watchos" => Ok(Self::WatchOs),
+            "watchsimulator" => Ok(Self::WatchSimulator),
             v => Ok(Self::Unknown(v.to_string())),
         }
     }
@@ -1512,6 +1513,14 @@ mod test {
                 assert!(!matches!(platform.platform, ApplePlatform::Unknown(_)));
             }
         }
+
+        Ok(())
+    }
+
+    #[test]
+    fn apple_platform() -> Result<(), Error> {
+        assert_eq!(ApplePlatform::from_str("macosx")?, ApplePlatform::MacOsX);
+        assert_eq!(ApplePlatform::from_str("MacOSX")?, ApplePlatform::MacOsX);
 
         Ok(())
     }
