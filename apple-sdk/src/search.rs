@@ -254,6 +254,7 @@ pub enum SdkSearchEvent {
     SearchingLocation(SdkSearchLocation),
     PlatformDirectoryInclude(PathBuf),
     PlatformDirectoryExclude(PathBuf),
+    SdkFilterSkip(SdkPath),
     SdkFilterMatch(SdkPath),
     SdkFilterExclude(SdkPath, String),
     Sorting(usize, SdkSorting),
@@ -273,6 +274,7 @@ impl Display for SdkSearchEvent {
                 "excluding Platform directory {}",
                 path.display()
             )),
+            Self::SdkFilterSkip(sdk) => f.write_fmt(format_args!("SDK {} bypasses filter", sdk)),
             Self::SdkFilterMatch(sdk) => {
                 f.write_fmt(format_args!("SDK {} matches search filter", sdk))
             }
@@ -543,7 +545,17 @@ impl SdkSearch {
             let mut added_count = 0;
 
             for sdk in candidate_sdks {
-                if !resolved.apply_sdk_filter() || self.filter_sdk(&sdk)? {
+                let include = if resolved.apply_sdk_filter() {
+                    self.filter_sdk(&sdk)?
+                } else {
+                    if let Some(cb) = &self.progress_callback {
+                        cb(SdkSearchEvent::SdkFilterSkip(sdk.as_sdk_path()));
+                    }
+
+                    true
+                };
+
+                if include {
                     sdks.push(sdk);
                     added_count += 1;
                 }
