@@ -578,9 +578,13 @@ impl From<String> for SdkVersion {
 
 impl From<&str> for SdkVersion {
     fn from(s: &str) -> Self {
-        Self {
-            value: s.to_string(),
-        }
+        Self::from(s.to_string())
+    }
+}
+
+impl From<&String> for SdkVersion {
+    fn from(s: &String) -> Self {
+        Self::from(s.to_string())
     }
 }
 

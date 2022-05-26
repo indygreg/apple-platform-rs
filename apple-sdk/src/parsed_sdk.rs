@@ -60,6 +60,16 @@ pub struct AppleSdkSupportedTarget {
     pub valid_deployment_targets: Vec<String>,
 }
 
+impl AppleSdkSupportedTarget {
+    /// Obtain [SdkVersion] for each deployment target this target supports.
+    pub fn deployment_targets_versions(&self) -> Vec<SdkVersion> {
+        self.valid_deployment_targets
+            .iter()
+            .map(SdkVersion::from)
+            .collect::<Vec<_>>()
+    }
+}
+
 /// Used for deserializing a SDKSettings.json file in an SDK directory.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
@@ -249,18 +259,6 @@ impl ParsedSdk {
 
         let platform_name = get_string(props, "PLATFORM_NAME")?;
 
-        let supported_targets = value
-            .get("SupportedTargets")
-            .ok_or_else(|| Error::PlistKeyMissing("SupportedTargets".to_string()))?
-            .as_dictionary()
-            .ok_or_else(|| Error::PlistKeyNotDictionary("SupportedTargets".to_string()))?;
-
-        let default_target = supported_targets
-            .get(&platform_name)
-            .ok_or_else(|| Error::PlistKeyMissing(platform_name.clone()))?
-            .as_dictionary()
-            .ok_or_else(|| Error::PlistKeyNotDictionary(platform_name.clone()))?;
-
         // The default deployment target can be specified a number of ways.
         //
         // Some SDKs have a property specifying the property defining it. That takes precedence, as
@@ -279,6 +277,18 @@ impl ParsedSdk {
             ) {
                 value
             } else {
+                let supported_targets = value
+                    .get("SupportedTargets")
+                    .ok_or_else(|| Error::PlistKeyMissing("SupportedTargets".to_string()))?
+                    .as_dictionary()
+                    .ok_or_else(|| Error::PlistKeyNotDictionary("SupportedTargets".to_string()))?;
+
+                let default_target = supported_targets
+                    .get(&platform_name)
+                    .ok_or_else(|| Error::PlistKeyMissing(platform_name.clone()))?
+                    .as_dictionary()
+                    .ok_or_else(|| Error::PlistKeyNotDictionary(platform_name.clone()))?;
+
                 let llvm_target_triple = get_string(default_target, "LLVMTargetTripleSys")?;
 
                 get_string(
@@ -305,6 +315,24 @@ impl ParsedSdk {
             supported_targets: HashMap::new(),
         })
     }
+
+    /// Whether this SDK supports the given deployment target.
+    ///
+    /// This API does not work reliably on SDKs loaded from plists because the plist metadata
+    /// lacks the required version constraint annotations.
+    pub fn supports_deployment_target(
+        &self,
+        target_name: &str,
+        target_version: &SdkVersion,
+    ) -> bool {
+        if let Some(target) = self.supported_targets.get(target_name) {
+            target
+                .deployment_targets_versions()
+                .contains(target_version)
+        } else {
+            false
+        }
+    }
 }
 
 impl TryFrom<UnparsedSdk> for ParsedSdk {
@@ -321,6 +349,65 @@ mod test {
         super::*,
         crate::{default_developer_directory, SdkSearch, COMMAND_LINE_TOOLS_DEFAULT_PATH},
     };
+
+    const MACOSX_10_9_SETTINGS_PLIST: &[u8] = include_bytes!("testfiles/macosx10.9-settings.plist");
+    const MACOSX_10_10_SETTINGS_PLIST: &[u8] =
+        include_bytes!("testfiles/macosx10.10-settings.plist");
+    const MACOSX_10_15_SETTINGS_JSON: &[u8] = include_bytes!("testfiles/macosx10.15-settings.json");
+    const MACOSX_11_3_SETTINGS_JSON: &[u8] = include_bytes!("testfiles/macosx11.3-settings.json");
+
+    fn macosx_10_9() -> Result<ParsedSdk, Error> {
+        let value = plist::Value::from_reader(std::io::Cursor::new(MACOSX_10_9_SETTINGS_PLIST))?;
+
+        ParsedSdk::from_plist(
+            PathBuf::from("MacOSX10.9.sdk"),
+            false,
+            ApplePlatform::MacOsX,
+            value,
+        )
+    }
+
+    fn macosx_10_10() -> Result<ParsedSdk, Error> {
+        let value = plist::Value::from_reader(std::io::Cursor::new(MACOSX_10_10_SETTINGS_PLIST))?;
+
+        ParsedSdk::from_plist(
+            PathBuf::from("MacOSX10.10.sdk"),
+            false,
+            ApplePlatform::MacOsX,
+            value,
+        )
+    }
+
+    fn macosx_10_15() -> Result<ParsedSdk, Error> {
+        let value = serde_json::from_slice::<SdkSettingsJson>(MACOSX_10_15_SETTINGS_JSON)?;
+
+        ParsedSdk::from_json(
+            PathBuf::from("MacOSX10.15.sdk"),
+            false,
+            ApplePlatform::MacOsX,
+            value,
+        )
+    }
+
+    fn macosx_11_3() -> Result<ParsedSdk, Error> {
+        let value = serde_json::from_slice::<SdkSettingsJson>(MACOSX_11_3_SETTINGS_JSON)?;
+
+        ParsedSdk::from_json(
+            PathBuf::from("MacOSX11.3.sdk"),
+            false,
+            ApplePlatform::MacOsX,
+            value,
+        )
+    }
+
+    fn all_test_sdks() -> Result<Vec<ParsedSdk>, Error> {
+        Ok(vec![
+            macosx_10_9()?,
+            macosx_10_10()?,
+            macosx_10_15()?,
+            macosx_11_3()?,
+        ])
+    }
 
     #[test]
     fn test_find_default_sdks() -> Result<(), Error> {
@@ -361,6 +448,42 @@ mod test {
             .command_line_tools(true)
             .system_xcodes(true)
             .search::<ParsedSdk>()?;
+
+        Ok(())
+    }
+
+    #[test]
+    fn parse_test_sdks() -> Result<(), Error> {
+        all_test_sdks()?;
+
+        Ok(())
+    }
+
+    #[test]
+    fn supports_deployment_target() -> Result<(), Error> {
+        let sdk = macosx_10_15()?;
+
+        assert!(!sdk.supports_deployment_target("ios", &SdkVersion::from("55.0")));
+        assert!(!sdk.supports_deployment_target("macosx", &SdkVersion::from("10.5")));
+        assert!(!sdk.supports_deployment_target("macosx", &SdkVersion::from("10.16")));
+        assert!(!sdk.supports_deployment_target("macosx", &SdkVersion::from("11.0")));
+
+        let mut versions = vec!["10.9", "10.10", "10.11", "10.12", "10.13", "10.14", "10.15"];
+
+        for version in &versions {
+            assert!(sdk.supports_deployment_target("macosx", &SdkVersion::from(*version)));
+        }
+
+        let sdk = macosx_11_3()?;
+        versions.extend(["11.0", "11.1", "11.2", "11.3"]);
+
+        for version in &versions {
+            assert!(sdk.supports_deployment_target("macosx", &SdkVersion::from(*version)));
+        }
+
+        // API doesn't work for plists.
+        assert!(!macosx_10_9()?.supports_deployment_target("macosx", &SdkVersion::from("10.9")));
+        assert!(!macosx_10_10()?.supports_deployment_target("macosx", &SdkVersion::from("10.9")));
 
         Ok(())
     }
