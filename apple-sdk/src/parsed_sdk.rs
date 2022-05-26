@@ -414,7 +414,7 @@ mod test {
     }
 
     #[test]
-    fn test_find_default_sdks() -> Result<(), Error> {
+    fn find_default_sdks() -> Result<(), Error> {
         if let Ok(developer_dir) = DeveloperDirectory::find_default_required() {
             assert!(!developer_dir.sdks::<ParsedSdk>()?.is_empty());
         }
@@ -423,7 +423,7 @@ mod test {
     }
 
     #[test]
-    fn test_find_command_line_tools_sdks() -> Result<(), Error> {
+    fn find_command_line_tools_sdks() -> Result<(), Error> {
         let sdk_path = PathBuf::from(COMMAND_LINE_TOOLS_DEFAULT_PATH).join("SDKs");
 
         let res = ParsedSdk::find_command_line_tools_sdks()?;

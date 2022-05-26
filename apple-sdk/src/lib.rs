@@ -943,8 +943,8 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_find_system_xcode_applications() -> Result<(), Error> {
-        let res = find_system_xcode_applications()?;
+    fn find_system_xcode_applications() -> Result<(), Error> {
+        let res = crate::find_system_xcode_applications()?;
 
         if PathBuf::from(XCODE_APP_DEFAULT_PATH).exists() {
             assert!(!res.is_empty());
@@ -954,7 +954,7 @@ mod test {
     }
 
     #[test]
-    fn test_find_system_xcode_developer_directories() -> Result<(), Error> {
+    fn find_system_xcode_developer_directories() -> Result<(), Error> {
         let res = DeveloperDirectory::find_system_xcodes()?;
 
         if PathBuf::from(XCODE_APP_DEFAULT_PATH).exists() {
@@ -1088,7 +1088,7 @@ mod test {
     /// This assumes we're using GitHub's official macOS runners.
     #[cfg(target_os = "macos")]
     #[test]
-    fn test_github_actions() -> Result<(), Error> {
+    fn github_actions() -> Result<(), Error> {
         if std::env::var("GITHUB_ACTIONS").is_err() {
             return Ok(());
         }
@@ -1102,12 +1102,12 @@ mod test {
         assert!(PathBuf::from(COMMAND_LINE_TOOLS_DEFAULT_PATH).exists());
 
         // GitHub Actions runners have multiple Xcode applications installed.
-        assert!(find_system_xcode_applications()?.len() > 5);
+        assert!(crate::find_system_xcode_applications()?.len() > 5);
 
         // We should be able to resolve developer directories for all system Xcode
         // applications.
         assert_eq!(
-            find_system_xcode_applications()?.len(),
+            crate::find_system_xcode_applications()?.len(),
             DeveloperDirectory::find_system_xcodes()?.len()
         );
 
