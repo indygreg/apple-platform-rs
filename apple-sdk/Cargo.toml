@@ -18,6 +18,3 @@ plist = { version = "1.3", optional = true }
 [features]
 default = ["parse"]
 parse = ["plist", "serde_json", "serde"]
-
-[package.metadata.docs.rs]
-all-features = true
