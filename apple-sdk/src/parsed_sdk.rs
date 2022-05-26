@@ -349,7 +349,9 @@ impl TryFrom<UnparsedSdk> for ParsedSdk {
 mod test {
     use {
         super::*,
-        crate::{DeveloperDirectory, SdkSearch, COMMAND_LINE_TOOLS_DEFAULT_PATH},
+        crate::{
+            DeveloperDirectory, SdkSearch, SdkSearchLocation, COMMAND_LINE_TOOLS_DEFAULT_PATH,
+        },
     };
 
     const MACOSX_10_9_SETTINGS_PLIST: &[u8] = include_bytes!("testfiles/macosx10.9-settings.plist");
@@ -446,8 +448,7 @@ mod test {
         }
 
         SdkSearch::default()
-            .command_line_tools(true)
-            .system_xcodes(true)
+            .location(SdkSearchLocation::SystemXcodes)
             .search::<ParsedSdk>()?;
 
         Ok(())

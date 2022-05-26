@@ -939,80 +939,167 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     ) -> Result<bool, Error>;
 }
 
-/// Represents a directory to search.
-///
-/// We need this to annotate whether a directory is a developer directory or
-/// an SDKs directory.
-#[derive(Clone)]
-enum SearchDirectory {
-    Developer(DeveloperDirectory),
-    Sdks(PathBuf),
+/// The search location that a [SdkSearchLocation] normalizes to.
+enum SdkSearchResolvedLocation {
+    /// Nothing.
+    None,
+    /// A collection of platform directories.
+    PlatformDirectories(Vec<ApplePlatformDirectory>),
+    /// A directory holding SDKs.
+    SdksDirectory(PathBuf),
+    /// A specific directory with an SDK.
+    SdkDirectory(PathBuf),
+    /// A specified directory with an SDK excluded from SDK filtering.
+    SdkDirectoryUnfiltered(PathBuf),
 }
 
-impl AsRef<Path> for SearchDirectory {
-    fn as_ref(&self) -> &Path {
+impl SdkSearchResolvedLocation {
+    fn apply_sdk_filter(&self) -> bool {
+        !matches!(self, Self::SdkDirectoryUnfiltered(_))
+    }
+}
+
+/// Represents a location to search for SDKs.
+#[derive(Clone, Debug)]
+pub enum SdkSearchLocation {
+    /// Use the path specified by the `SDKROOT` environment variable.
+    ///
+    /// If this environment variable is defined and the path is not valid, an error
+    /// occurs.
+    SdkRootEnv,
+
+    /// Use the Developer Directory specified by the `DEVELOPER_DIR` environment variable.
+    ///
+    /// If this environment variable is defined and the path is not valid, an error
+    /// occurs.
+    DeveloperDirEnv,
+
+    /// Look for SDKs within the system installed `Xcode` application.
+    ///
+    /// This effectively controls whether the Developer Directory resolved by
+    /// [DeveloperDirectory::default_xcode()] will be searched, if available.
+    SystemXcode,
+
+    /// Look for SDKs within the system install `Xcode Command Line Tools` installation.
+    ///
+    /// This effectively uses the directory returned by [command_line_tools_sdks_directory()],
+    /// if available.
+    CommandLineTools,
+
+    /// Invoke `xcode-select` to find a *Developer Directory* to search.
+    ///
+    /// This mechanism is intended as a fallback in case other (pure Rust) mechanisms for locating
+    /// the default *Developer Directory* fail. If you find yourself needing this, it likely
+    /// points to a gap in our feature coverage to locate the default *Developer Directory* without
+    /// running external tools. Consider filing a bug against this crate to track closing the
+    /// feature gap.
+    XcodeSelect,
+
+    /// Look for SDKs within all system installed `Xcode` applications.
+    ///
+    /// This effectively controls whether the paths resolved by
+    /// [DeveloperDirectory::find_system_xcodes()] will be searched, if present.
+    ///
+    /// Many macOS systems only have a single Xcode application at `/Applications/Xcode.app`.
+    /// However, environments like CI workers and developers having beta versions of Xcode installed
+    /// may have multiple versions of Xcode available. This option can enable multiple copies
+    /// of Xcode to be used.
+    SystemXcodes,
+
+    /// Use an explicit *Developer Directory*.
+    ///
+    /// This can be used to point a search at a non-standard location holding a *Developer
+    /// Directory*. A common use case for this is when cross-compiling or using hermetic / chroot /
+    /// container build environments that don't resemble a common macOS system layout and therefore
+    /// prohibit use of mechanisms for locating a *Developer Directory* in default locations.
+    Developer(DeveloperDirectory),
+
+    /// Use an explicit directory holding SDKs.
+    ///
+    /// This is similar to [Self::Developer] with regards to its intended use cases. The difference
+    /// is the path is a directory holding `*.sdk` directories, not a *Developer Directory*.
+    Sdks(PathBuf),
+
+    /// Use an explicit directory holding an SDK.
+    Sdk(PathBuf),
+}
+
+impl Display for SdkSearchLocation {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Developer(p) => p.path(),
-            Self::Sdks(p) => p,
+            Self::SdkRootEnv => f.write_str("SDKROOT environment variable"),
+            Self::DeveloperDirEnv => f.write_str("DEVELOPER_DIR environment variable"),
+            Self::SystemXcode => f.write_str("System-installed Xcode application"),
+            Self::CommandLineTools => f.write_str("Xcode Command Line Tools installation"),
+            Self::XcodeSelect => f.write_str("xcode-select"),
+            Self::SystemXcodes => f.write_str("All system-installed Xcode applications"),
+            Self::Developer(dir) => {
+                f.write_fmt(format_args!("Developer Directory {}", dir.path().display()))
+            }
+            Self::Sdks(path) => f.write_fmt(format_args!("SDKs directory {}", path.display())),
+            Self::Sdk(path) => f.write_fmt(format_args!("SDK directory {}", path.display())),
         }
     }
 }
 
-impl PartialEq for SearchDirectory {
-    fn eq(&self, other: &Self) -> bool {
-        self.as_ref().eq(other.as_ref())
-    }
-}
-
-impl Eq for SearchDirectory {}
-
-impl SearchDirectory {
-    /// Resolves directories containing SDKs.
-    ///
-    /// Will filter out directories if their platform doesn't match what we want.
-    fn resolve_sdks_dirs(
-        self,
-        cb: &Option<SdkProgressCallback>,
-        platform: &Option<ApplePlatform>,
-    ) -> Result<Vec<PathBuf>, Error> {
+impl SdkSearchLocation {
+    fn resolve_location(&self) -> Result<SdkSearchResolvedLocation, Error> {
         match self {
-            Self::Developer(developer_dir) => {
-                if let Some(cb) = cb {
-                    cb(SdkSearchEvent::DeveloperDirectoryFindPlatforms(
-                        developer_dir.path().to_path_buf(),
-                    ));
-                }
+            Self::SdkRootEnv => {
+                if let Some(path) = std::env::var_os("SDKROOT") {
+                    let path = PathBuf::from(path);
 
-                Ok(developer_dir
-                    .platforms()?
-                    .into_iter()
-                    .filter_map(|platform_dir| {
-                        if let Some(wanted_platform) = &platform {
-                            if &platform_dir.platform == wanted_platform {
-                                if let Some(cb) = cb {
-                                    cb(SdkSearchEvent::PlatformDirectoryInclude(
-                                        platform_dir.path.clone(),
-                                    ));
-                                }
-                                Some(platform_dir.sdks_path())
-                            } else {
-                                if let Some(cb) = cb {
-                                    cb(SdkSearchEvent::PlatformDirectoryExclude(platform_dir.path));
-                                }
-                                None
-                            }
-                        } else {
-                            if let Some(cb) = cb {
-                                cb(SdkSearchEvent::PlatformDirectoryInclude(
-                                    platform_dir.path.clone(),
-                                ));
-                            }
-                            Some(platform_dir.sdks_path())
-                        }
-                    })
-                    .collect::<Vec<_>>())
+                    if path.exists() {
+                        Ok(SdkSearchResolvedLocation::SdkDirectoryUnfiltered(path))
+                    } else {
+                        Err(Error::PathNotSdk(path))
+                    }
+                } else {
+                    Ok(SdkSearchResolvedLocation::None)
+                }
             }
-            Self::Sdks(path) => Ok(vec![path]),
+            Self::DeveloperDirEnv => {
+                if let Some(dir) = DeveloperDirectory::from_env()? {
+                    Ok(SdkSearchResolvedLocation::PlatformDirectories(
+                        dir.platforms()?,
+                    ))
+                } else {
+                    Ok(SdkSearchResolvedLocation::None)
+                }
+            }
+            Self::SystemXcode => {
+                if let Some(dir) = DeveloperDirectory::default_xcode() {
+                    Ok(SdkSearchResolvedLocation::PlatformDirectories(
+                        dir.platforms()?,
+                    ))
+                } else {
+                    Ok(SdkSearchResolvedLocation::None)
+                }
+            }
+            Self::CommandLineTools => {
+                if let Some(path) = command_line_tools_sdks_directory() {
+                    Ok(SdkSearchResolvedLocation::SdksDirectory(path))
+                } else {
+                    Ok(SdkSearchResolvedLocation::None)
+                }
+            }
+            Self::XcodeSelect => Ok(SdkSearchResolvedLocation::PlatformDirectories(
+                DeveloperDirectory::from_xcode_select()?.platforms()?,
+            )),
+            Self::SystemXcodes => Ok(SdkSearchResolvedLocation::PlatformDirectories(
+                DeveloperDirectory::find_system_xcodes()?
+                    .into_iter()
+                    .map(|dir| dir.platforms())
+                    .collect::<Result<Vec<_>, Error>>()?
+                    .into_iter()
+                    .flatten()
+                    .collect::<Vec<_>>(),
+            )),
+            Self::Developer(dir) => Ok(SdkSearchResolvedLocation::PlatformDirectories(
+                dir.platforms()?,
+            )),
+            Self::Sdks(path) => Ok(SdkSearchResolvedLocation::SdksDirectory(path.clone())),
+            Self::Sdk(path) => Ok(SdkSearchResolvedLocation::SdkDirectory(path.clone())),
         }
     }
 }
@@ -1072,12 +1159,10 @@ impl SdkSorting {
 /// This events are sent to the progress callback to allow monitoring and debugging
 /// of SDK searching activity.
 pub enum SdkSearchEvent {
-    SdkRootEnvLoad(String),
-    DeveloperDirectoryFindPlatforms(PathBuf),
+    /// Beginning a search of a given location.
+    SearchingLocation(SdkSearchLocation),
     PlatformDirectoryInclude(PathBuf),
     PlatformDirectoryExclude(PathBuf),
-    SearchingDeveloperDirectory(PathBuf),
-    SearchingSdksDirectory(PathBuf),
     SdkFilterMatch(SdkPath),
     SdkFilterExclude(SdkPath, String),
     Sorting(usize, SdkSorting),
@@ -1086,17 +1171,9 @@ pub enum SdkSearchEvent {
 impl Display for SdkSearchEvent {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::SdkRootEnvLoad(path) => {
-                f.write_fmt(format_args!("loading SDK from SDKROOT: {}", path))
+            Self::SearchingLocation(location) => {
+                f.write_fmt(format_args!("searching {}", location))
             }
-            Self::DeveloperDirectoryFindPlatforms(path) => f.write_fmt(format_args!(
-                "finding platforms in Developer Directory {}",
-                path.display()
-            )),
-            Self::SearchingDeveloperDirectory(path) => f.write_fmt(format_args!(
-                "searching Developer Directory {}",
-                path.display()
-            )),
             Self::PlatformDirectoryInclude(path) => f.write_fmt(format_args!(
                 "searching Platform directory {}",
                 path.display()
@@ -1105,9 +1182,6 @@ impl Display for SdkSearchEvent {
                 "excluding Platform directory {}",
                 path.display()
             )),
-            Self::SearchingSdksDirectory(path) => {
-                f.write_fmt(format_args!("searching SDKs directory {}", path.display()))
-            }
             Self::SdkFilterMatch(sdk) => {
                 f.write_fmt(format_args!("SDK {} matches search filter", sdk))
             }
@@ -1131,44 +1205,65 @@ pub type SdkProgressCallback = fn(SdkSearchEvent);
 ///
 /// The search algorithm is essentially:
 ///
-/// 1. Collect directories to search.
-/// 2. Iterate through each directory to discover, filter, and sort SDKs.
+/// 1. Iterate through each registered search location.
+/// 2. Discover candidate SDKs and filter.
 /// 3. Globally sort (if enabled).
 ///
-/// The caller can specify multiple directories to search. The order of their search
-/// (in terms of methods to enable each) is:
+/// # Search Locations
 ///
-/// 1. [Self::sdk_root_env()]
-/// 2. [Self::developer_dir()]
-/// 3. [Self::command_line_tools()]
-/// 4. [Self::default_system_xcode()]
-/// 5. [Self::system_xcodes()]
-/// 6. [Self::additional_developer_dir()]
-/// 7. [Self::additional_sdks_dir()]
+/// Search mechanisms / locations are represented via [SdkSearchLocation] and internally
+/// the searcher maintains a vector of locations. The default search locations are:
 ///
-/// There are additional parameters to control filtering of SDKs:
+/// 1. Use path specified by `SDKROOT` environment variable, if defined.
+/// 2. Find SDKs within the Developer Directory defined by the `DEVELOPER_DIR` environment
+///    variable.
+/// 3. Find SDKs within the system installed `Xcode` application.
+/// 4. Find SDKs within the system installed Xcode Command Line Tools.
+///
+/// Simply call [Self::location()] to register a new location. If the default locations
+/// are not desirable, construct an empty instance via [Self::empty()] and register your
+/// explicit list of locations.
+///
+/// An attempt is made to only search a given location at most once. This is done in
+/// order to avoid redundant work. If a location is specified multiple times - even via
+/// different [SdkSearchLocation] variants - subsequent searches of that location will
+/// yield no distinct results. Duplicate SDKs can occur in the returned list.
+///
+/// # Filtering
+///
+/// Filters can be registered to control which SDKs are emitted from the search.
+///
+/// By default, no filtering is performed. This means all SDKs in all search locations
+/// are returned. This can return SDKs belonging to multiple platforms (e.g. macOS and iOS).
+///
+/// The following functions control filtering:
 ///
 /// * [Self::platform()]
 /// * [Self::minimum_version()]
 /// * [Self::maximum_version()]
 /// * [Self::deployment_target()]
 ///
-/// By default, no filtering is performed. This means all SDKs in all search locations
-/// for all platforms are returned.
+/// If you are looking for an SDK to use (e.g. for compilation), you should at least use a
+/// platform filter. Otherwise you may see SDKs for platforms you aren't targeting! It is
+/// also an encouraged practice to specify a minimum or maximum SDK version to use.
 ///
-/// If you are looking for an SDK to use, you probably want to at least use a
-/// platform filter. Otherwise you may see SDKs for platforms you aren't targeting.
+/// If you know you are targeting a specific OS version, applying a targeting filter
+/// via [Self::deployment_target()] is recommended. However, this filter is not always
+/// reliable. See the caveats in its documentation.
+///
+/// # Sorting
+///
+/// By default, the returned list of SDKs is the chained result of SDKs discovered
+/// in all registered search locations. The order of the SDK within each search
+/// location is likely the sorted order of directory names as they appear on the filesystem.
+///
+/// If using an SDK for compilation, sorting by the SDK version is likely desired.
+/// Using the latest/newest SDK that supports a given deployment target is generally
+/// a best practice.
 #[derive(Clone)]
 pub struct SdkSearch {
     progress_callback: Option<SdkProgressCallback>,
-    search_sdkroot_env: bool,
-    search_developer_dir: bool,
-    search_command_line_tools_sdks: bool,
-    search_default_system_xcode: bool,
-    search_system_xcodes: bool,
-    search_additional_developer_dirs: Vec<PathBuf>,
-    search_additional_sdks_dirs: Vec<PathBuf>,
-    sdkroot_skip_filter: bool,
+    dirs: Vec<SdkSearchLocation>,
     platform: Option<ApplePlatform>,
     minimum_version: Option<SdkVersion>,
     maximum_version: Option<SdkVersion>,
@@ -1180,14 +1275,12 @@ impl Default for SdkSearch {
     fn default() -> Self {
         Self {
             progress_callback: None,
-            search_sdkroot_env: true,
-            search_developer_dir: true,
-            search_command_line_tools_sdks: false,
-            search_default_system_xcode: false,
-            search_system_xcodes: false,
-            search_additional_developer_dirs: vec![],
-            search_additional_sdks_dirs: vec![],
-            sdkroot_skip_filter: false,
+            dirs: vec![
+                SdkSearchLocation::SdkRootEnv,
+                SdkSearchLocation::DeveloperDirEnv,
+                SdkSearchLocation::SystemXcode,
+                SdkSearchLocation::CommandLineTools,
+            ],
             platform: None,
             minimum_version: None,
             maximum_version: None,
@@ -1198,102 +1291,27 @@ impl Default for SdkSearch {
 }
 
 impl SdkSearch {
+    /// Obtain an instance with an empty set of search locations.
+    ///
+    /// The search will not resolve any SDKs unless a search location is registered
+    /// with the instance.
+    pub fn empty() -> Self {
+        let mut s = Self::default();
+        s.dirs.clear();
+        s
+    }
+
     /// Define a function that will be called to provide updates on SDK search status.
     pub fn progress_callback(mut self, callback: SdkProgressCallback) -> Self {
         self.progress_callback = Some(callback);
         self
     }
 
-    /// Whether to resolve an SDK as specified by the `SDKROOT` environment variable.
+    /// Add a location to search.
     ///
-    /// If set, we will attempt to resolve the SDK as specified via the `SDKRoot`
-    /// environment variable. If the environment variable is set and it doesn't point
-    /// to a valid SDK, the search will yield an error. Contrast with other search
-    /// locations which will typically ignore failures if a location does not exist.
-    ///
-    /// Default is `true`.
-    pub fn sdk_root_env(mut self, value: bool) -> Self {
-        self.search_sdkroot_env = value;
-        self
-    }
-
-    /// Whether to search the current/default developer directory.
-    ///
-    /// This effectively controls whether the path resolved by [DeveloperDirectory::find_default()]
-    /// will be searched, if available. This will honor the `DEVELOPER_DIR` environment
-    /// variable to override the default path.
-    ///
-    /// Default is `true`.
-    pub fn developer_dir(mut self, value: bool) -> Self {
-        self.search_developer_dir = value;
-        self
-    }
-
-    /// Whether to search the Xcode Command Line Tools installation.
-    ///
-    /// This effectively controls whether the path resolved by
-    /// [command_line_tools_sdks_directory()] will be searched, if available.
-    ///
-    /// Default is `false`.
-    pub fn command_line_tools(mut self, value: bool) -> Self {
-        self.search_command_line_tools_sdks = value;
-        self
-    }
-
-    /// Whether to search the developer directory in the default Xcode app.
-    ///
-    /// This effectively controls whether the path resolved by
-    /// [DeveloperDirectory::default_xcode()] will be searched, if available.
-    ///
-    /// Default is `false`.
-    pub fn default_system_xcode(mut self, value: bool) -> Self {
-        self.search_default_system_xcode = value;
-        self
-    }
-
-    /// Whether to search the developer directory in all system installed Xcode applications.
-    ///
-    /// This effectively controls whether the paths resolved by
-    /// [DeveloperDirectory::find_system_xcodes()] will be searched, if present.
-    ///
-    /// Many macOS systems only have a single Xcode application under
-    /// `/Applications/Xcode.app`. However, environments like CI workers and developers
-    /// who have beta versions of Xcode installed may have multiple versions of Xcode
-    /// available.
-    ///
-    /// Default is `false`.
-    pub fn system_xcodes(mut self, value: bool) -> Self {
-        self.search_system_xcodes = value;
-        self
-    }
-
-    /// Register an additional *Developer Directory* to search.
-    ///
-    /// SDKs exist under a `Platforms/*.platform/Developer/SDKs` child directory.
-    pub fn additional_developer_dir(mut self, value: impl AsRef<Path>) -> Self {
-        self.search_additional_developer_dirs
-            .push(value.as_ref().to_path_buf());
-        self
-    }
-
-    /// Register an additional SDKs directory to search.
-    ///
-    /// This is a directory holding SDKs. e.g. `*.sdk` sub-directories.
-    pub fn additional_sdks_dir(mut self, value: impl AsRef<Path>) -> Self {
-        self.search_additional_sdks_dirs
-            .push(value.as_ref().to_path_buf());
-        self
-    }
-
-    /// Set whether to skip filtering on `SDKROOT` environment variable SDKs.
-    ///
-    /// If `true`, we will not run the Apple SDK found from the `SDKROOT` environment
-    /// variable through our filters. This can be useful when the caller wants to
-    /// honor `SDKROOT`, even if filters are specified.
-    ///
-    /// Default is `false`.
-    pub fn sdk_root_skip_filter(mut self, value: bool) -> Self {
-        self.sdkroot_skip_filter = value;
+    /// The location will be appended to the current search location list.
+    pub fn location(mut self, location: SdkSearchLocation) -> Self {
+        self.dirs.push(location);
         self
     }
 
@@ -1358,92 +1376,82 @@ impl SdkSearch {
     /// Perform a search, yielding found SDKs sorted by the search's preferences.
     ///
     /// May return an empty vector.
-    ///
-    /// Consumes the search instance.
-    pub fn search<SDK: AppleSdk>(self) -> Result<Vec<SDK>, Error> {
-        // Collect directories to search.
-        let mut search_dirs = vec![];
+    pub fn search<SDK: AppleSdk>(&self) -> Result<Vec<SDK>, Error> {
+        let mut sdks = vec![];
 
-        // Ensure we only search each directory once.
-        let mut append_dir = |v: SearchDirectory| {
-            if !search_dirs.contains(&v) {
-                search_dirs.push(v);
+        // Track searched locations to avoid redundant work.
+        let mut searched_platform_dirs = HashSet::new();
+        let mut searched_sdks_dirs = HashSet::new();
+
+        for location in &self.dirs {
+            if let Some(cb) = &self.progress_callback {
+                cb(SdkSearchEvent::SearchingLocation(location.clone()));
             }
-        };
 
-        if self.search_developer_dir {
-            if let Ok(v) = DeveloperDirectory::find_default_required() {
-                append_dir(SearchDirectory::Developer(v));
-            }
-        }
+            // Expand each location to SDKs.
+            let resolved = location.resolve_location()?;
 
-        if self.search_command_line_tools_sdks {
-            if let Some(path) = command_line_tools_sdks_directory() {
-                append_dir(SearchDirectory::Sdks(path));
-            }
-        }
-
-        if self.search_default_system_xcode {
-            if let Some(v) = DeveloperDirectory::default_xcode() {
-                append_dir(SearchDirectory::Developer(v));
-            }
-        }
-
-        if self.search_system_xcodes {
-            if let Ok(dirs) = DeveloperDirectory::find_system_xcodes() {
-                for dir in dirs {
-                    append_dir(SearchDirectory::Developer(dir));
+            let candidate_sdks = match &resolved {
+                SdkSearchResolvedLocation::None => {
+                    vec![]
                 }
-            }
-        }
+                SdkSearchResolvedLocation::PlatformDirectories(dirs) => dirs
+                    .iter()
+                    // Apply platform filter.
+                    .filter(|dir| {
+                        if let Some(wanted_platform) = &self.platform {
+                            if &dir.platform == wanted_platform {
+                                if let Some(cb) = &self.progress_callback {
+                                    cb(SdkSearchEvent::PlatformDirectoryInclude(dir.path.clone()));
+                                }
 
-        for path in &self.search_additional_developer_dirs {
-            append_dir(SearchDirectory::Developer(path.into()));
-        }
+                                true
+                            } else {
+                                if let Some(cb) = &self.progress_callback {
+                                    cb(SdkSearchEvent::PlatformDirectoryExclude(dir.path.clone()));
+                                }
 
-        for path in &self.search_additional_sdks_dirs {
-            append_dir(SearchDirectory::Sdks(path.clone()));
-        }
+                                false
+                            }
+                        } else {
+                            if let Some(cb) = &self.progress_callback {
+                                cb(SdkSearchEvent::PlatformDirectoryInclude(dir.path.clone()));
+                            }
 
-        let mut searched_dirs = HashSet::new();
-
-        let mut res = vec![];
-
-        // SDKROOT is handled specially since it isn't a collection of directories
-        // and failures are fatal.
-        if self.search_sdkroot_env {
-            if let Some(env) = std::env::var_os("SDKROOT") {
-                if let Some(cb) = &self.progress_callback {
-                    cb(SdkSearchEvent::SdkRootEnvLoad(
-                        env.to_string_lossy().to_string(),
-                    ));
-                }
-
-                let sdk = SDK::from_directory(&PathBuf::from(env))?;
-
-                if self.sdkroot_skip_filter || self.filter_sdk(&sdk, &self.progress_callback)? {
-                    res.push(sdk);
-                }
-            }
-        }
-
-        for search_dir in search_dirs {
-            for sdk_dir in search_dir.resolve_sdks_dirs(&self.progress_callback, &self.platform)? {
-                // Avoid redundant work.
-                if searched_dirs.contains(&sdk_dir) {
-                    continue;
-                }
-
-                searched_dirs.insert(sdk_dir.clone());
-
-                if let Some(cb) = &self.progress_callback {
-                    cb(SdkSearchEvent::SearchingSdksDirectory(sdk_dir.clone()));
-                }
-
-                for sdk in SDK::find_in_directory(&sdk_dir)? {
-                    if self.filter_sdk(&sdk, &self.progress_callback)? {
-                        res.push(sdk);
+                            true
+                        }
+                    })
+                    // Apply duplicate search filter.
+                    .filter(|dir| {
+                        if searched_platform_dirs.contains(dir.path()) {
+                            false
+                        } else {
+                            searched_platform_dirs.insert(dir.path().to_path_buf());
+                            true
+                        }
+                    })
+                    .map(|dir| dir.find_sdks::<SDK>())
+                    .collect::<Result<Vec<_>, Error>>()?
+                    .into_iter()
+                    .flatten()
+                    .collect::<Vec<_>>(),
+                SdkSearchResolvedLocation::SdksDirectory(path) => {
+                    if searched_sdks_dirs.contains(path) {
+                        vec![]
+                    } else {
+                        searched_sdks_dirs.insert(path.clone());
+                        SDK::find_in_directory(path)?
                     }
+                }
+                SdkSearchResolvedLocation::SdkDirectory(path)
+                | SdkSearchResolvedLocation::SdkDirectoryUnfiltered(path) => {
+                    vec![SDK::from_directory(path)?]
+                }
+            };
+
+            for sdk in candidate_sdks {
+                if !resolved.apply_sdk_filter() || self.filter_sdk(&sdk)? {
+                    sdks.push(sdk);
                 }
             }
         }
@@ -1451,23 +1459,22 @@ impl SdkSearch {
         // Sorting should be stable with None variant. But we can avoid the
         // overhead.
         if self.sorting != SdkSorting::None {
-            res.sort_by(|a, b| self.sorting.compare_version(a.version(), b.version()))
+            sdks.sort_by(|a, b| self.sorting.compare_version(a.version(), b.version()))
         }
 
-        Ok(res)
+        Ok(sdks)
     }
 
     /// Whether an SDK matches our search filter.
-    pub fn filter_sdk<SDK: AppleSdk>(
-        &self,
-        sdk: &SDK,
-        cb: &Option<SdkProgressCallback>,
-    ) -> Result<bool, Error> {
+    ///
+    /// This is exposed as a convenience method to allow custom implementations of
+    /// SDK searching using the filtering logic on this type.
+    pub fn filter_sdk<SDK: AppleSdk>(&self, sdk: &SDK) -> Result<bool, Error> {
         let sdk_path = sdk.as_sdk_path();
 
         if let Some(wanted_platform) = &self.platform {
             if sdk.platform() != wanted_platform {
-                if let Some(cb) = cb {
+                if let Some(cb) = &self.progress_callback {
                     cb(SdkSearchEvent::SdkFilterExclude(
                         sdk_path,
                         format!(
@@ -1485,7 +1492,7 @@ impl SdkSearch {
         if let Some(min_version) = &self.minimum_version {
             if let Some(sdk_version) = sdk.version() {
                 if sdk_version < min_version {
-                    if let Some(cb) = cb {
+                    if let Some(cb) = &self.progress_callback {
                         cb(SdkSearchEvent::SdkFilterExclude(
                             sdk_path,
                             format!(
@@ -1499,7 +1506,7 @@ impl SdkSearch {
                 }
             } else {
                 // SDKs without a version always fail.
-                if let Some(cb) = cb {
+                if let Some(cb) = &self.progress_callback {
                     cb(SdkSearchEvent::SdkFilterExclude(
                         sdk_path,
                         format!(
@@ -1516,7 +1523,7 @@ impl SdkSearch {
         if let Some(max_version) = &self.maximum_version {
             if let Some(sdk_version) = sdk.version() {
                 if sdk_version > max_version {
-                    if let Some(cb) = cb {
+                    if let Some(cb) = &self.progress_callback {
                         cb(SdkSearchEvent::SdkFilterExclude(
                             sdk_path,
                             format!(
@@ -1531,7 +1538,7 @@ impl SdkSearch {
             } else {
                 // SDKs without a version always fail.
 
-                if let Some(cb) = cb {
+                if let Some(cb) = &self.progress_callback {
                     cb(SdkSearchEvent::SdkFilterExclude(
                         sdk_path,
                         format!(
@@ -1547,7 +1554,7 @@ impl SdkSearch {
 
         if let Some((target, version)) = &self.deployment_target {
             if !sdk.supports_deployment_target(target, version)? {
-                if let Some(cb) = cb {
+                if let Some(cb) = &self.progress_callback {
                     cb(SdkSearchEvent::SdkFilterExclude(
                         sdk_path,
                         format!("does not support deployment target {}:{}", target, version),
@@ -1558,7 +1565,7 @@ impl SdkSearch {
             }
         }
 
-        if let Some(cb) = cb {
+        if let Some(cb) = &self.progress_callback {
             cb(SdkSearchEvent::SdkFilterMatch(sdk_path));
         }
 
@@ -1704,9 +1711,7 @@ mod test {
 
     #[test]
     fn search_all() -> Result<(), Error> {
-        let search = SdkSearch::default()
-            .command_line_tools(true)
-            .system_xcodes(true);
+        let search = SdkSearch::default().location(SdkSearchLocation::SystemXcodes);
 
         search.search::<UnparsedSdk>()?;
 
