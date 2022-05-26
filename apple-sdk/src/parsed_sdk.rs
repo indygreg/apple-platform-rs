@@ -414,7 +414,7 @@ mod test {
     #[test]
     fn test_find_default_sdks() -> Result<(), Error> {
         if let Ok(developer_dir) = DeveloperDirectory::find_default_required() {
-            assert!(!ParsedSdk::find_developer_sdks(developer_dir.path())?.is_empty());
+            assert!(!ParsedSdk::find_developer_sdks(&developer_dir)?.is_empty());
             assert!(!ParsedSdk::find_default_developer_sdks()?.is_empty());
         }
 
@@ -440,7 +440,7 @@ mod test {
     #[test]
     fn find_all_sdks() -> Result<(), Error> {
         for dir in DeveloperDirectory::find_system_xcodes()? {
-            for sdk in ParsedSdk::find_developer_sdks(dir.path())? {
+            for sdk in ParsedSdk::find_developer_sdks(&dir)? {
                 assert!(!matches!(sdk.platform(), ApplePlatform::Unknown(_)));
                 assert!(sdk.version().is_some());
             }

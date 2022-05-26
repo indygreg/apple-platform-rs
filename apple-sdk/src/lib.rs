@@ -327,47 +327,6 @@ impl ApplePlatformDirectory {
         Ok(Self { path, platform })
     }
 
-    /// Find platform directories under a given developer directory.
-    ///
-    /// Platforms are defined by the presence of a `Platforms` directory under
-    /// the developer directory. This directory layout is only recognized
-    /// for modern Xcode layouts.
-    ///
-    /// Returns all discovered instances inside this developer directory.
-    ///
-    /// The return order is sorted and deterministic.
-    pub fn find_in_developer_directory(
-        developer_dir: impl AsRef<Path>,
-    ) -> Result<Vec<Self>, Error> {
-        let platforms_path = developer_dir.as_ref().join("Platforms");
-
-        let dir = match std::fs::read_dir(&platforms_path) {
-            Ok(v) => Ok(v),
-            Err(e) => {
-                if e.kind() == std::io::ErrorKind::NotFound {
-                    return Ok(vec![]);
-                } else {
-                    Err(Error::from(e))
-                }
-            }
-        }?;
-
-        let mut res = vec![];
-
-        for entry in dir {
-            let entry = entry?;
-
-            if let Ok(platform) = ApplePlatformDirectory::from_path(entry.path()) {
-                res.push(platform);
-            }
-        }
-
-        // Make deterministic.
-        res.sort();
-
-        Ok(res)
-    }
-
     /// The filesystem path of this instance.
     pub fn path(&self) -> &Path {
         &self.path
@@ -441,6 +400,26 @@ pub struct DeveloperDirectory {
 impl AsRef<Path> for DeveloperDirectory {
     fn as_ref(&self) -> &Path {
         &self.path
+    }
+}
+
+impl From<&Path> for DeveloperDirectory {
+    fn from(p: &Path) -> Self {
+        Self {
+            path: p.to_path_buf(),
+        }
+    }
+}
+
+impl From<PathBuf> for DeveloperDirectory {
+    fn from(path: PathBuf) -> Self {
+        Self { path }
+    }
+}
+
+impl From<&PathBuf> for DeveloperDirectory {
+    fn from(path: &PathBuf) -> Self {
+        Self { path: path.clone() }
     }
 }
 
@@ -575,6 +554,45 @@ impl DeveloperDirectory {
     /// The path to the directory containing platforms.
     pub fn platforms_path(&self) -> PathBuf {
         self.path.join("Platforms")
+    }
+
+    /// Find platform directories within this developer directory.
+    ///
+    /// Platforms are defined by the presence of a `Platforms` directory under
+    /// the developer directory. This directory layout is only recognized
+    /// for modern Xcode layouts.
+    ///
+    /// Returns all discovered instances inside this developer directory.
+    ///
+    /// The return order is sorted and deterministic.
+    pub fn platforms(&self) -> Result<Vec<ApplePlatformDirectory>, Error> {
+        let platforms_path = self.platforms_path();
+
+        let dir = match std::fs::read_dir(platforms_path) {
+            Ok(v) => Ok(v),
+            Err(e) => {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    return Ok(vec![]);
+                } else {
+                    Err(Error::from(e))
+                }
+            }
+        }?;
+
+        let mut res = vec![];
+
+        for entry in dir {
+            let entry = entry?;
+
+            if let Ok(platform) = ApplePlatformDirectory::from_path(entry.path()) {
+                res.push(platform);
+            }
+        }
+
+        // Make deterministic.
+        res.sort();
+
+        Ok(res)
     }
 }
 
@@ -859,21 +877,20 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     /// Locate SDKs given the path to a developer directory.
     ///
     /// This is effectively a convenience method for calling
-    /// [ApplePlatformDirectory::find_in_developer_directory()] +
+    /// [DeveloperDirectory::platforms()] +
     /// [ApplePlatformDirectory::find_sdks()] and chaining the results.
     ///
     /// It is recommended to use a [DeveloperDirectory] API for finding an
     /// appropriate developer directory to use.
-    fn find_developer_sdks(developer_dir: &Path) -> Result<Vec<Self>, Error> {
-        Ok(
-            ApplePlatformDirectory::find_in_developer_directory(developer_dir)?
-                .into_iter()
-                .map(|platform| Ok(platform.find_sdks()?.into_iter()))
-                .collect::<Result<Vec<_>, Error>>()?
-                .into_iter()
-                .flatten()
-                .collect::<Vec<_>>(),
-        )
+    fn find_developer_sdks(developer_dir: &DeveloperDirectory) -> Result<Vec<Self>, Error> {
+        Ok(developer_dir
+            .platforms()?
+            .into_iter()
+            .map(|platform| Ok(platform.find_sdks()?.into_iter()))
+            .collect::<Result<Vec<_>, Error>>()?
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>())
     }
 
     /// Discover SDKs in the default developer directory.
@@ -883,7 +900,7 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     fn find_default_developer_sdks() -> Result<Vec<Self>, Error> {
         let developer_dir = DeveloperDirectory::find_default_required()?;
 
-        Self::find_developer_sdks(developer_dir.path())
+        Self::find_developer_sdks(&developer_dir)
     }
 
     /// Locate SDKs installed as part of the Xcode Command Line Tools.
@@ -942,14 +959,14 @@ pub trait AppleSdk: Sized + AsRef<Path> {
 /// an SDKs directory.
 #[derive(Clone)]
 enum SearchDirectory {
-    Developer(PathBuf),
+    Developer(DeveloperDirectory),
     Sdks(PathBuf),
 }
 
 impl AsRef<Path> for SearchDirectory {
     fn as_ref(&self) -> &Path {
         match self {
-            Self::Developer(p) => p,
+            Self::Developer(p) => p.path(),
             Self::Sdks(p) => p,
         }
     }
@@ -976,41 +993,38 @@ impl SearchDirectory {
             Self::Developer(developer_dir) => {
                 if let Some(cb) = cb {
                     cb(SdkSearchEvent::DeveloperDirectoryFindPlatforms(
-                        developer_dir.clone(),
+                        developer_dir.path().to_path_buf(),
                     ));
                 }
 
-                Ok(
-                    ApplePlatformDirectory::find_in_developer_directory(developer_dir)?
-                        .into_iter()
-                        .filter_map(|platform_dir| {
-                            if let Some(wanted_platform) = &platform {
-                                if &platform_dir.platform == wanted_platform {
-                                    if let Some(cb) = cb {
-                                        cb(SdkSearchEvent::PlatformDirectoryInclude(
-                                            platform_dir.path.clone(),
-                                        ));
-                                    }
-                                    Some(platform_dir.sdks_path())
-                                } else {
-                                    if let Some(cb) = cb {
-                                        cb(SdkSearchEvent::PlatformDirectoryExclude(
-                                            platform_dir.path,
-                                        ));
-                                    }
-                                    None
-                                }
-                            } else {
+                Ok(developer_dir
+                    .platforms()?
+                    .into_iter()
+                    .filter_map(|platform_dir| {
+                        if let Some(wanted_platform) = &platform {
+                            if &platform_dir.platform == wanted_platform {
                                 if let Some(cb) = cb {
                                     cb(SdkSearchEvent::PlatformDirectoryInclude(
                                         platform_dir.path.clone(),
                                     ));
                                 }
                                 Some(platform_dir.sdks_path())
+                            } else {
+                                if let Some(cb) = cb {
+                                    cb(SdkSearchEvent::PlatformDirectoryExclude(platform_dir.path));
+                                }
+                                None
                             }
-                        })
-                        .collect::<Vec<_>>(),
-                )
+                        } else {
+                            if let Some(cb) = cb {
+                                cb(SdkSearchEvent::PlatformDirectoryInclude(
+                                    platform_dir.path.clone(),
+                                ));
+                            }
+                            Some(platform_dir.sdks_path())
+                        }
+                    })
+                    .collect::<Vec<_>>())
             }
             Self::Sdks(path) => Ok(vec![path]),
         }
@@ -1373,7 +1387,7 @@ impl SdkSearch {
 
         if self.search_developer_dir {
             if let Ok(v) = DeveloperDirectory::find_default_required() {
-                append_dir(SearchDirectory::Developer(v.path().to_path_buf()));
+                append_dir(SearchDirectory::Developer(v));
             }
         }
 
@@ -1384,21 +1398,21 @@ impl SdkSearch {
         }
 
         if self.search_default_system_xcode {
-            if let Some(path) = DeveloperDirectory::default_xcode() {
-                append_dir(SearchDirectory::Developer(path.path().to_path_buf()));
+            if let Some(v) = DeveloperDirectory::default_xcode() {
+                append_dir(SearchDirectory::Developer(v));
             }
         }
 
         if self.search_system_xcodes {
             if let Ok(dirs) = DeveloperDirectory::find_system_xcodes() {
                 for dir in dirs {
-                    append_dir(SearchDirectory::Developer(dir.path().to_path_buf()));
+                    append_dir(SearchDirectory::Developer(dir));
                 }
             }
         }
 
         for path in &self.search_additional_developer_dirs {
-            append_dir(SearchDirectory::Developer(path.clone()));
+            append_dir(SearchDirectory::Developer(path.into()));
         }
 
         for path in &self.search_additional_sdks_dirs {
@@ -1595,7 +1609,7 @@ mod test {
     #[test]
     fn find_all_platform_directories() -> Result<(), Error> {
         for dir in DeveloperDirectory::find_system_xcodes()? {
-            for platform in ApplePlatformDirectory::find_in_developer_directory(dir.path())? {
+            for platform in dir.platforms()? {
                 // Paths should agree.
                 assert_eq!(
                     platform.path,
