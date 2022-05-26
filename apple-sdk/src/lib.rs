@@ -1223,16 +1223,16 @@ impl SdkSearch {
     /// If using [UnparsedSdk] and the SDK version could not be determined from
     /// the filesystem path, the version is assumed to be `0.0` and this filter
     /// will likely exclude the SDK.
-    pub fn minimum_version(mut self, version: SdkVersion) -> Self {
-        self.minimum_version = Some(version);
+    pub fn minimum_version(mut self, version: impl Into<SdkVersion>) -> Self {
+        self.minimum_version = Some(version.into());
         self
     }
 
     /// Maximum SDK version to return.
     ///
     /// Effectively imposes a `<=` filter on found SDKs.
-    pub fn maximum_version(mut self, version: SdkVersion) -> Self {
-        self.maximum_version = Some(version);
+    pub fn maximum_version(mut self, version: impl Into<SdkVersion>) -> Self {
+        self.maximum_version = Some(version.into());
         self
     }
 
@@ -1246,8 +1246,12 @@ impl SdkSearch {
     ///
     /// Attempting to use this filter on [UnparsedSdk] will result in a run-time
     /// error at search time since these SDKs do not parse `SDKSettings` files.
-    pub fn deployment_target(mut self, target: String, version: SdkVersion) -> Self {
-        self.deployment_target = Some((target, version));
+    pub fn deployment_target(
+        mut self,
+        target: impl ToString,
+        version: impl Into<SdkVersion>,
+    ) -> Self {
+        self.deployment_target = Some((target.to_string(), version.into()));
         self
     }
 
