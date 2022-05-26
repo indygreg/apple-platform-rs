@@ -39,6 +39,10 @@ pub enum SdkSearchLocation {
     /// If this environment variable is defined and the path is not valid, an error
     /// occurs.
     ///
+    /// An SDK yielded from this location skips search filtering. This is because the
+    /// semantic intent of the `SDKROOT` environment variable is to force usage of a
+    /// specific SDK.
+    ///
     /// If this location yields an SDK, the SDK search will be aborted and subsequent
     /// locations will not be searched. This effectively honors the intent of `SDKROOT`
     /// to force usage of a given SDK.

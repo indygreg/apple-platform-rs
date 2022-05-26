@@ -2,6 +2,13 @@
 apple-sdk Crate Changelog
 =========================
 
+0.2.0
+=====
+
+(Not yet released.)
+
+* Document that ``SdkSearchLocation::SdkRootEnv`` bypasses SDK filtering.
+
 0.1.0
 =====
 
