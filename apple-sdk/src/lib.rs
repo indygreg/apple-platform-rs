@@ -1165,7 +1165,7 @@ impl SdkSearch {
     }
 
     /// Whether an SDK matches our search filter.
-    fn filter_sdk<SDK: AppleSdk>(&self, sdk: &SDK) -> bool {
+    pub fn filter_sdk<SDK: AppleSdk>(&self, sdk: &SDK) -> bool {
         if let Some(wanted_platform) = &self.platform {
             if sdk.platform() != wanted_platform {
                 return false;
