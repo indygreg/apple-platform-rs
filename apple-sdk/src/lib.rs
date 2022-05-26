@@ -95,6 +95,8 @@ pub enum Error {
     PathNotSdk(PathBuf),
     /// A version string could not be parsed.
     VersionParse(String),
+    /// Certain functionality is not supported.
+    FunctionalityNotSupported(&'static str),
     /// A plist value is not a dictionary.
     PlistNotDictionary,
     /// An expected plist key is missing.
@@ -133,6 +135,7 @@ impl Display for Error {
                 f.write_fmt(format_args!("path is not an Apple SDK: {}", p.display()))
             }
             Self::VersionParse(s) => f.write_fmt(format_args!("malformed version string: {}", s)),
+            Self::FunctionalityNotSupported(s) => f.write_fmt(format_args!("not supported: {}", s)),
             Self::PlistNotDictionary => f.write_str("plist value not a dictionary"),
             Self::PlistKeyMissing(key) => f.write_fmt(format_args!("plist key missing: {}", key)),
             Self::PlistKeyNotDictionary(key) => {
@@ -793,6 +796,13 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     /// metadata is not loaded and the version string isn't available from side-channels
     /// such as the directory name.
     fn version(&self) -> Option<&SdkVersion>;
+
+    /// Whether this SDK supports targeting the given target name at specified OS version.
+    fn supports_deployment_target(
+        &self,
+        target_name: &str,
+        target_version: &SdkVersion,
+    ) -> Result<bool, Error>;
 }
 
 /// Represents a directory to search.
@@ -934,6 +944,7 @@ pub struct SdkSearch {
     platform: Option<ApplePlatform>,
     minimum_version: Option<SdkVersion>,
     maximum_version: Option<SdkVersion>,
+    deployment_target: Option<(String, SdkVersion)>,
     sorting: SdkSorting,
 }
 
@@ -950,6 +961,7 @@ impl Default for SdkSearch {
             platform: None,
             minimum_version: None,
             maximum_version: None,
+            deployment_target: None,
             sorting: SdkSorting::None,
         }
     }
@@ -1068,6 +1080,21 @@ impl SdkSearch {
         self
     }
 
+    /// Deployment target that the SDK must support.
+    ///
+    /// When set, only SDKs that support targeting the given target-version pair will
+    /// be returned. Example values are (`macosx`, `10.15`).
+    ///
+    /// Only modern SDKs with `SDKSettings.json` files advertise their targeting settings
+    /// in a way that allows this filter to work.
+    ///
+    /// Attempting to use this filter on [UnparsedSdk] will result in a run-time
+    /// error at search time since these SDKs do not parse `SDKSettings` files.
+    pub fn deployment_target(mut self, target: String, version: SdkVersion) -> Self {
+        self.deployment_target = Some((target, version));
+        self
+    }
+
     /// Define the sorting order for returned SDKs.
     ///
     /// Default is [SdkSorting::None].
@@ -1136,7 +1163,7 @@ impl SdkSearch {
             if let Some(env) = std::env::var_os("SDKROOT") {
                 let sdk = SDK::from_directory(&PathBuf::from(env))?;
 
-                if self.filter_sdk(&sdk) {
+                if self.filter_sdk(&sdk)? {
                     res.push(sdk);
                 }
             }
@@ -1152,7 +1179,7 @@ impl SdkSearch {
                 searched_dirs.insert(sdk_dir.clone());
 
                 for sdk in SDK::find_sdks_in_directory(&sdk_dir)? {
-                    if self.filter_sdk(&sdk) {
+                    if self.filter_sdk(&sdk)? {
                         res.push(sdk);
                     }
                 }
@@ -1169,36 +1196,42 @@ impl SdkSearch {
     }
 
     /// Whether an SDK matches our search filter.
-    pub fn filter_sdk<SDK: AppleSdk>(&self, sdk: &SDK) -> bool {
+    pub fn filter_sdk<SDK: AppleSdk>(&self, sdk: &SDK) -> Result<bool, Error> {
         if let Some(wanted_platform) = &self.platform {
             if sdk.platform() != wanted_platform {
-                return false;
+                return Ok(false);
             }
         }
 
         if let Some(min_version) = &self.minimum_version {
             if let Some(sdk_version) = sdk.version() {
                 if sdk_version < min_version {
-                    return false;
+                    return Ok(false);
                 }
             } else {
                 // SDKs without a version always fail.
-                return false;
+                return Ok(false);
             }
         }
 
         if let Some(max_version) = &self.maximum_version {
             if let Some(sdk_version) = sdk.version() {
                 if sdk_version > max_version {
-                    return false;
+                    return Ok(false);
                 }
             } else {
                 // SDKs without a version always fail.
-                return false;
+                return Ok(false);
             }
         }
 
-        true
+        if let Some((target, version)) = &self.deployment_target {
+            if !sdk.supports_deployment_target(target, version)? {
+                return Ok(false);
+            }
+        }
+
+        Ok(true)
     }
 }
 

@@ -194,6 +194,26 @@ impl AppleSdk for ParsedSdk {
     fn version(&self) -> Option<&SdkVersion> {
         Some(&self.version)
     }
+
+    /// Whether this SDK supports the given deployment target.
+    ///
+    /// This API does not work reliably on SDKs loaded from plists because the plist metadata
+    /// lacks the required version constraint annotations.
+    fn supports_deployment_target(
+        &self,
+        target_name: &str,
+        target_version: &SdkVersion,
+    ) -> Result<bool, Error> {
+        Ok(
+            if let Some(target) = self.supported_targets.get(target_name) {
+                target
+                    .deployment_targets_versions()
+                    .contains(target_version)
+            } else {
+                false
+            },
+        )
+    }
 }
 
 impl ParsedSdk {
@@ -314,24 +334,6 @@ impl ParsedSdk {
             minimal_display_name,
             supported_targets: HashMap::new(),
         })
-    }
-
-    /// Whether this SDK supports the given deployment target.
-    ///
-    /// This API does not work reliably on SDKs loaded from plists because the plist metadata
-    /// lacks the required version constraint annotations.
-    pub fn supports_deployment_target(
-        &self,
-        target_name: &str,
-        target_version: &SdkVersion,
-    ) -> bool {
-        if let Some(target) = self.supported_targets.get(target_name) {
-            target
-                .deployment_targets_versions()
-                .contains(target_version)
-        } else {
-            false
-        }
     }
 }
 
@@ -463,27 +465,27 @@ mod test {
     fn supports_deployment_target() -> Result<(), Error> {
         let sdk = macosx_10_15()?;
 
-        assert!(!sdk.supports_deployment_target("ios", &SdkVersion::from("55.0")));
-        assert!(!sdk.supports_deployment_target("macosx", &SdkVersion::from("10.5")));
-        assert!(!sdk.supports_deployment_target("macosx", &SdkVersion::from("10.16")));
-        assert!(!sdk.supports_deployment_target("macosx", &SdkVersion::from("11.0")));
+        assert!(!sdk.supports_deployment_target("ios", &SdkVersion::from("55.0"))?);
+        assert!(!sdk.supports_deployment_target("macosx", &SdkVersion::from("10.5"))?);
+        assert!(!sdk.supports_deployment_target("macosx", &SdkVersion::from("10.16"))?);
+        assert!(!sdk.supports_deployment_target("macosx", &SdkVersion::from("11.0"))?);
 
         let mut versions = vec!["10.9", "10.10", "10.11", "10.12", "10.13", "10.14", "10.15"];
 
         for version in &versions {
-            assert!(sdk.supports_deployment_target("macosx", &SdkVersion::from(*version)));
+            assert!(sdk.supports_deployment_target("macosx", &SdkVersion::from(*version))?);
         }
 
         let sdk = macosx_11_3()?;
         versions.extend(["11.0", "11.1", "11.2", "11.3"]);
 
         for version in &versions {
-            assert!(sdk.supports_deployment_target("macosx", &SdkVersion::from(*version)));
+            assert!(sdk.supports_deployment_target("macosx", &SdkVersion::from(*version))?);
         }
 
         // API doesn't work for plists.
-        assert!(!macosx_10_9()?.supports_deployment_target("macosx", &SdkVersion::from("10.9")));
-        assert!(!macosx_10_10()?.supports_deployment_target("macosx", &SdkVersion::from("10.9")));
+        assert!(!macosx_10_9()?.supports_deployment_target("macosx", &SdkVersion::from("10.9"))?);
+        assert!(!macosx_10_10()?.supports_deployment_target("macosx", &SdkVersion::from("10.9"))?);
 
         Ok(())
     }

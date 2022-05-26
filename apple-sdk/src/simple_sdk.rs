@@ -58,6 +58,16 @@ impl AppleSdk for UnparsedSdk {
     fn version(&self) -> Option<&SdkVersion> {
         self.sdk_path.version.as_ref()
     }
+
+    fn supports_deployment_target(
+        &self,
+        _target_name: &str,
+        _target_version: &SdkVersion,
+    ) -> Result<bool, Error> {
+        Err(Error::FunctionalityNotSupported(
+            "evaluating deployment target support on UnparsedSdk instances",
+        ))
+    }
 }
 
 impl UnparsedSdk {
