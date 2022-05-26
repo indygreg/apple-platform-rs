@@ -1075,6 +1075,7 @@ pub struct SdkSearch {
     search_system_xcodes: bool,
     search_additional_developer_dirs: Vec<PathBuf>,
     search_additional_sdks_dirs: Vec<PathBuf>,
+    sdkroot_skip_filter: bool,
     platform: Option<ApplePlatform>,
     minimum_version: Option<SdkVersion>,
     maximum_version: Option<SdkVersion>,
@@ -1093,6 +1094,7 @@ impl Default for SdkSearch {
             search_system_xcodes: false,
             search_additional_developer_dirs: vec![],
             search_additional_sdks_dirs: vec![],
+            sdkroot_skip_filter: false,
             platform: None,
             minimum_version: None,
             maximum_version: None,
@@ -1187,6 +1189,18 @@ impl SdkSearch {
     pub fn additional_sdks_dir(mut self, value: impl AsRef<Path>) -> Self {
         self.search_additional_sdks_dirs
             .push(value.as_ref().to_path_buf());
+        self
+    }
+
+    /// Set whether to skip filtering on `SDKROOT` environment variable SDKs.
+    ///
+    /// If `true`, we will not run the Apple SDK found from the `SDKROOT` environment
+    /// variable through our filters. This can be useful when the caller wants to
+    /// honor `SDKROOT`, even if filters are specified.
+    ///
+    /// Default is `false`.
+    pub fn sdk_root_skip_filter(mut self, value: bool) -> Self {
+        self.sdkroot_skip_filter = value;
         self
     }
 
@@ -1310,7 +1324,7 @@ impl SdkSearch {
 
                 let sdk = SDK::from_directory(&PathBuf::from(env))?;
 
-                if self.filter_sdk(&sdk, &self.progress_callback)? {
+                if self.sdkroot_skip_filter || self.filter_sdk(&sdk, &self.progress_callback)? {
                     res.push(sdk);
                 }
             }
