@@ -594,6 +594,21 @@ impl DeveloperDirectory {
 
         Ok(res)
     }
+
+    /// Find SDKs within this developer directory.
+    ///
+    /// This is a convenience method for calling [Self::platforms()] +
+    /// [ApplePlatformDirectory::find_sdks()] and chaining the results.
+    pub fn sdks<SDK: AppleSdk>(&self) -> Result<Vec<SDK>, Error> {
+        Ok(self
+            .platforms()?
+            .into_iter()
+            .map(|platform| Ok(platform.find_sdks()?.into_iter()))
+            .collect::<Result<Vec<_>, Error>>()?
+            .into_iter()
+            .flatten()
+            .collect::<Vec<_>>())
+    }
 }
 
 /// Obtain the path to SDKs within an Xcode Command Line Tools installation.
@@ -872,35 +887,6 @@ pub trait AppleSdk: Sized + AsRef<Path> {
         }
 
         Ok(res)
-    }
-
-    /// Locate SDKs given the path to a developer directory.
-    ///
-    /// This is effectively a convenience method for calling
-    /// [DeveloperDirectory::platforms()] +
-    /// [ApplePlatformDirectory::find_sdks()] and chaining the results.
-    ///
-    /// It is recommended to use a [DeveloperDirectory] API for finding an
-    /// appropriate developer directory to use.
-    fn find_developer_sdks(developer_dir: &DeveloperDirectory) -> Result<Vec<Self>, Error> {
-        Ok(developer_dir
-            .platforms()?
-            .into_iter()
-            .map(|platform| Ok(platform.find_sdks()?.into_iter()))
-            .collect::<Result<Vec<_>, Error>>()?
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>())
-    }
-
-    /// Discover SDKs in the default developer directory.
-    ///
-    /// This is a convenience function for calling [Self::find_developer_sdks()] with the output
-    /// of [DeveloperDirectory::find_default_required()].
-    fn find_default_developer_sdks() -> Result<Vec<Self>, Error> {
-        let developer_dir = DeveloperDirectory::find_default_required()?;
-
-        Self::find_developer_sdks(&developer_dir)
     }
 
     /// Locate SDKs installed as part of the Xcode Command Line Tools.
