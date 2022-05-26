@@ -53,6 +53,28 @@
 //!
 //! This functionality is exposed through the [SdkSearch] struct. See its
 //! documentation for more.
+//!
+//! # Common Functionality
+//!
+//! To locate the default SDK to use, do something like this:
+//!
+//! ```
+//! use apple_sdk::{SdkSearch, Platform, SimpleSdk, SdkSorting, AppleSdk};
+//!
+//! // This search will honor the `SDKROOT` and `DEVELOPER_DIR` environment variables.
+//! let sdks = SdkSearch::default()
+//!     .platform(Platform::MacOsX)
+//!     // Ideally we'd call e.g. `.deployment_target("macosx", "11.0")` to require
+//!     // the SDK to support a specific deployment target. This requires the
+//!     // `ParsedSdk` type, which requires the `parse` crate feature.
+//!     .sorting(SdkSorting::VersionDescending)
+//!     .search::<SimpleSdk>()
+//!     .expect("failed to search for SDKs");
+//!
+//! if let Some(sdk) = sdks.first() {
+//!     println!("{}", sdk.as_sdk_path());
+//! }
+//! ```
 
 #[cfg(feature = "parse")]
 mod parsed_sdk;
