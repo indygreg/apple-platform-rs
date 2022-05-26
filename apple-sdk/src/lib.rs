@@ -1323,6 +1323,17 @@ mod test {
         Ok(())
     }
 
+    #[test]
+    fn search_all() -> Result<(), Error> {
+        let search = SdkSearch::default()
+            .command_line_tools(true)
+            .system_xcodes(true);
+
+        search.search::<UnparsedSdk>()?;
+
+        Ok(())
+    }
+
     /// Verifies various discovery operations on a macOS GitHub Actions runner.
     ///
     /// This assumes we're using GitHub's official macOS runners.
@@ -1348,6 +1359,25 @@ mod test {
             find_system_xcode_applications()?.len(),
             find_system_xcode_developer_directories()?.len()
         );
+
+        // We should be able to find SDKs for common platforms by default.
+        for platform in [
+            ApplePlatform::MacOsX,
+            ApplePlatform::IPhoneOs,
+            ApplePlatform::WatchOs,
+        ] {
+            let sdks = SdkSearch::default()
+                .platform(platform)
+                .search::<UnparsedSdk>()?;
+            assert!(!sdks.is_empty());
+        }
+
+        // We should be able to find a macOS 11.0+ SDK by default.
+        let sdks = SdkSearch::default()
+            .platform(ApplePlatform::MacOsX)
+            .minimum_version(SdkVersion::from("11.0"))
+            .search::<UnparsedSdk>()?;
+        assert!(!sdks.is_empty());
 
         Ok(())
     }

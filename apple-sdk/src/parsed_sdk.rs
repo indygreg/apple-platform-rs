@@ -319,7 +319,7 @@ impl TryFrom<UnparsedSdk> for ParsedSdk {
 mod test {
     use {
         super::*,
-        crate::{default_developer_directory, COMMAND_LINE_TOOLS_DEFAULT_PATH},
+        crate::{default_developer_directory, SdkSearch, COMMAND_LINE_TOOLS_DEFAULT_PATH},
     };
 
     #[test]
@@ -356,6 +356,11 @@ mod test {
                 assert!(sdk.version().is_some());
             }
         }
+
+        SdkSearch::default()
+            .command_line_tools(true)
+            .system_xcodes(true)
+            .search::<ParsedSdk>()?;
 
         Ok(())
     }
