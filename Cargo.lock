@@ -134,7 +134,12 @@ dependencies = [
 
 [[package]]
 name = "apple-sdk"
-version = "0.1.0-pre"
+version = "0.1.0"
+dependencies = [
+ "plist",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "apple-xar"
