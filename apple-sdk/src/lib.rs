@@ -80,7 +80,7 @@
 //!     .expect("failed to search for SDKs");
 //!
 //! if let Some(sdk) = sdks.first() {
-//!     println!("{}", sdk.as_sdk_path());
+//!     println!("{}", sdk.sdk_path());
 //! }
 //! ```
 
@@ -961,12 +961,17 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     }
 
     /// Obtain an [SdkPath] represent this SDK.
-    fn as_sdk_path(&self) -> SdkPath {
+    fn sdk_path(&self) -> SdkPath {
         SdkPath {
             path: self.path().to_path_buf(),
             platform: self.platform().clone(),
             version: self.version().cloned(),
         }
+    }
+
+    #[deprecated(since = "0.1.1", note = "plase use `sdk_path` instead")]
+    fn as_sdk_path(&self) -> SdkPath {
+        self.sdk_path()
     }
 
     /// Obtain the filesystem path to this SDK.

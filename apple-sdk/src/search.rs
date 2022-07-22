@@ -561,7 +561,7 @@ impl SdkSearch {
                     self.filter_sdk(&sdk)?
                 } else {
                     if let Some(cb) = &self.progress_callback {
-                        cb(SdkSearchEvent::SdkFilterSkip(sdk.as_sdk_path()));
+                        cb(SdkSearchEvent::SdkFilterSkip(sdk.sdk_path()));
                     }
 
                     true
@@ -592,7 +592,7 @@ impl SdkSearch {
     /// This is exposed as a convenience method to allow custom implementations of
     /// SDK searching using the filtering logic on this type.
     pub fn filter_sdk<SDK: AppleSdk>(&self, sdk: &SDK) -> Result<bool, Error> {
-        let sdk_path = sdk.as_sdk_path();
+        let sdk_path = sdk.sdk_path();
 
         if let Some(wanted_platform) = &self.platform {
             if sdk.platform() != wanted_platform {

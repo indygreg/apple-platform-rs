@@ -9,6 +9,9 @@ apple-sdk Crate Changelog
 
 * Document that ``SdkSearchLocation::SdkRootEnv`` bypasses SDK filtering.
 * Add ``Platform::from_target_triple()``. (#1)
+* ``AppleSdk::as_sdk_path()`` has been renamed to ``AppleSdk::sdk_path()``. The
+  old name proxies to the new function, is marked as deprecated, and will be
+  removed in a future minor version release. (#2)
 
 0.1.0
 =====
