@@ -155,6 +155,8 @@ pub enum Error {
     SerdeJson(serde_json::Error),
     #[cfg(feature = "plist")]
     Plist(plist::Error),
+    /// Maybe a new target is added to rust toolchain.
+    UnknownTarget(String),
 }
 
 impl Display for Error {
@@ -193,6 +195,7 @@ impl Display for Error {
             Self::SerdeJson(err) => f.write_fmt(format_args!("JSON parsing error: {}", err)),
             #[cfg(feature = "plist")]
             Self::Plist(err) => f.write_fmt(format_args!("plist error: {}", err)),
+            Self::UnknownTarget(target) => f.write_fmt(format_args!("unknown target: {}", target)),
         }
     }
 }
@@ -294,6 +297,30 @@ impl Platform {
         } else {
             Err(Error::PathNotPlatform(p.to_path_buf()))
         }
+    }
+
+    /// Attempt to construct an instance from a target triple.
+    ///
+    /// The argument should be a target triple of a Rust toolchain. e.g.
+    /// `x86_64-apple-darwin`.
+    ///
+    /// Will return [Error::UnknownTarget] if this does not appear to be a known
+    /// target triple.
+    pub fn from_target_triple(target: &str) -> Result<Self, Error> {
+        let platform = match target {
+            target if target.ends_with("-apple-darwin") => Self::MacOsX,
+            "i386-apple-ios" | "x86_64-apple-ios" => Self::IPhoneSimulator,
+            target if target.ends_with("-apple-ios-sim") => Platform::IPhoneSimulator,
+            target if target.ends_with("-apple-ios") => Platform::IPhoneOs,
+            target if target.ends_with("-apple-ios-macabi") => Platform::IPhoneOs,
+            "i386-apple-watchos" => Self::WatchSimulator,
+            target if target.ends_with("-apple-watchos-sim") => Self::WatchSimulator,
+            target if target.ends_with("-apple-watchos") => Platform::WatchOs,
+            "x86_64-apple-tvos" => Self::AppleTvSimulator,
+            target if target.ends_with("-apple-tvos") => Platform::AppleTvOs,
+            _ => return Err(Error::UnknownTarget(target.to_string())),
+        };
+        Ok(platform)
     }
 
     /// Obtain the name of this platform as used in filesystem paths.
@@ -1022,6 +1049,35 @@ mod test {
     fn apple_platform() -> Result<(), Error> {
         assert_eq!(Platform::from_str("macosx")?, Platform::MacOsX);
         assert_eq!(Platform::from_str("MacOSX")?, Platform::MacOsX);
+
+        Ok(())
+    }
+
+    #[test]
+    fn target_platform() -> Result<(), Error> {
+        use Platform::*;
+        fn test(target: &str, platform: Platform) {
+            assert_eq!(Platform::from_target_triple(target).unwrap(), platform);
+        }
+        test("aarch64-apple-darwin", MacOsX);
+        test("aarch64-apple-ios", IPhoneOs);
+        test("aarch64-apple-ios-macabi", IPhoneOs);
+        test("aarch64-apple-ios-sim", IPhoneSimulator);
+        test("aarch64-apple-tvos", AppleTvOs); // this can also can be simulator
+        test("aarch64-apple-watchos-sim", WatchSimulator);
+        test("arm64_32-apple-watchos", WatchOs);
+        test("armv7-apple-ios", IPhoneOs);
+        test("armv7k-apple-watchos", WatchOs);
+        test("armv7s-apple-ios", IPhoneOs);
+        test("i386-apple-ios", IPhoneSimulator);
+        test("i686-apple-darwin", MacOsX);
+        test("x86_64-apple-darwin", MacOsX);
+        test("x86_64-apple-ios", IPhoneSimulator);
+        test("x86_64-apple-ios-macabi", IPhoneOs);
+        test("x86_64-apple-tvos", AppleTvSimulator);
+        test("x86_64-apple-watchos-sim", WatchSimulator);
+
+        assert!(Platform::from_target_triple("x86_64-unknown-linux-gnu").is_err());
 
         Ok(())
     }

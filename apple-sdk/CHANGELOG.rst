@@ -8,6 +8,7 @@ apple-sdk Crate Changelog
 (Not yet released.)
 
 * Document that ``SdkSearchLocation::SdkRootEnv`` bypasses SDK filtering.
+* Add ``Platform::from_target_triple()``. (#1)
 
 0.1.0
 =====
