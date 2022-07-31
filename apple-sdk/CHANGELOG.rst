@@ -5,7 +5,7 @@ apple-sdk Crate Changelog
 0.2.0
 =====
 
-(Not yet released.)
+Released on 2022-07-31.
 
 * Document that ``SdkSearchLocation::SdkRootEnv`` bypasses SDK filtering.
 * Add ``Platform::from_target_triple()``. (#1)
