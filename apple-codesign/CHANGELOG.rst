@@ -7,6 +7,11 @@
 
 (Not yet released)
 
+* When signing the main binary in a bundle, we now prefer the identifier from
+  the bundle's ``Info.plist`` over the identifier already present in the Mach-O.
+  This ensures that the identifier is consistent across multiple Mach-O in a
+  fat/universal binary and is consistent with the value advertised in the
+  ``Info.plist``. (#12, #22)
 * ``aws-config``, ``aws-smithy-http`` upgraded from 0.47 -> 0.48.
 * ``aws-sdk-s3`` upgraded from 0.17 -> 0.18.
 
