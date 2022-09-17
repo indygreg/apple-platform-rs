@@ -54,13 +54,6 @@ jobs:
       # Prevent sccache server from stopping due to inactivity.
       SCCACHE_IDLE_TIMEOUT: '0'
       RUSTC_WRAPPER: sccache
-      # PYOXIDIZER_BUILD_FORCE_GIT_SOURCE is set to prevent pyoxidizer's build.rs from
-      # writing the filesystem path to the Git checkout in the built binary. With the
-      # filesystem path embedded in the binary, pyoxidizer will probe for that path
-      # at run-time and will attempt to use it for the location of the pyembed crate.
-      # With the filesystem path not set, pyoxidizer will use the canonical github.com
-      # repository for any Git references.
-      PYOXIDIZER_BUILD_FORCE_GIT_SOURCE: '1'
 
       # This forces the lzma-sys crate to link liblzma statically. Ideally we'd do
       # this with a crate feature. But the xz2 crate didn't expose that feature at the
@@ -68,8 +61,6 @@ jobs:
       LZMA_API_STATIC: '1'
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - uses: ./.github/actions/rust-bootstrap
         with:

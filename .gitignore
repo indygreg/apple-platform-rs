@@ -1,16 +1,4 @@
 .idea/
 apple-codesign/docs/_build/
-docs/_build/
-docs/apple_codesign*
-docs/oxidized_importer*
-docs/pyembed*
-docs/pyoxidizer*
-docs/pyoxy*
-docs/tugger*
-pyembed/docs/_build/
-python-oxidized-importer/docs/_build/
 target/
-tugger/docs/_build/
-venv/
-wheelhouse/
 

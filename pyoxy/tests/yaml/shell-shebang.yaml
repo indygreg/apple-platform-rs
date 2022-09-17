@@ -1,6 +1,0 @@
-#!/bin/sh
-"exec" "`dirname $0`/pyoxy" run-yaml "$0" -- "$@"
----
-interpreter_config:
-  run_command: 'print("hello, world")'
-...

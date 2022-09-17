@@ -1,3 +1,0 @@
----
-interpreter_config:
-  run_command: 'print("hello, world")'
