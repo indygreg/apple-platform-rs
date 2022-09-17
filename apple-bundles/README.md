@@ -6,7 +6,7 @@ encapsulating code and resources. (The ``.app`` *directories* in
 ``/Applications`` are *application bundles*, for example.)
 
 `apple-bundles` is part of the
-[PyOxidizer](https://github.com/indygreg/PyOxidizer.git) project and this
+[apple-platform-rs](https://github.com/indygreg/apple-platform-rs) project and this
 crate is developed in that repository.
 
 While this crate is developed as part of a larger project, modifications

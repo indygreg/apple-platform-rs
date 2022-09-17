@@ -251,7 +251,7 @@ Configuring a Workflow / Actions
 First, export the public key data of the signing certificate to a file
 checked into source control. Use ``rcodesign analyze-certificate`` and
 copy the ``-----BEGIN PUBLIC KEY----`` block to a file in your
-repository. e.g. https://github.com/indygreg/PyOxidizer/blob/main/ci/developer-id-application.pem
+repository. e.g. https://github.com/indygreg/apple-platform-rs/blob/main/ci/developer-id-application.pem
 defines the ``Developer ID Application`` public key data for the maintainer
 of this project.
 
@@ -262,7 +262,7 @@ of this project.
    data widely available in the repository.
 
 Next, create a GitHub workflow or action that invokes ``rcodesign sign``.
-https://github.com/indygreg/PyOxidizer/blob/main/.github/workflows/sign-apple-exe.yml
+https://github.com/indygreg/apple-platform-rs/blob/main/.github/workflows/sign-apple-exe.yml
 is an example of such a workflow. This particular workflow is using
 ``on.workflow_dispatch`` so the workflow is only triggered manually. See
 the `workflow_dispatch documentation <https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch>`_
@@ -283,7 +283,7 @@ docs for more.
 The important steps in a remote signing action/workflow are:
 
 1. Securely obtain ``rcodesign``. We recommend downloading a release artifact
-   from https://github.com/indygreg/PyOxidizer/releases and pinning/verifying
+   from https://github.com/indygreg/apple-platform-rs/releases and pinning/verifying
    the SHA-256 digest on download.
 2. Download the artifact you want signed. The
    `Download workflow artifact <https://github.com/marketplace/actions/download-workflow-artifact>`_

@@ -8,7 +8,7 @@ Installing
 ==========
 
 Pre-built binaries are published as GitHub Releases. Go to
-https://github.com/indygreg/PyOxidizer/releases and look for the latest
+https://github.com/indygreg/apple-platform-rs/releases and look for the latest
 release of ``Apple Codesign``.
 
 To install the latest release version of the ``rcodesign`` executable using Cargo
@@ -40,7 +40,7 @@ To install from the latest commit in the canonical Git repository:
 
 .. code-block:: bash
 
-    cargo install --git https://github.com/indygreg/PyOxidizer --branch main rcodesign
+    cargo install --git https://github.com/indygreg/apple-platform-rs --branch main rcodesign
 
 Obtaining a Code Signing Certificate
 ====================================

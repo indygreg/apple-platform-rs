@@ -188,7 +188,7 @@ own server instance.
 The source code for the server and a Terraform module for deploying it into
 AWS are available in this repository in the
 ``terraform-modules/remote-code-signing`` directory. The canonical location
-is https://github.com/indygreg/PyOxidizer/tree/main/terraform-modules/remote-code-signing.
+is https://github.com/indygreg/apple-platform-rs/tree/main/terraform-modules/remote-code-signing.
 
 See its README for instructions on how to use. Once deployed at a different
 hostname, you'll need to provide the ``--remote-signing-url`` argument to

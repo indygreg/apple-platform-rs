@@ -7,6 +7,8 @@
 
 (Not yet released)
 
+* Canonical home of project moved from https://github.com/indygreg/PyOxidizer to
+  https://github.com/indygreg/apple-platform-rs.
 * Universal Mach-O creation logic inlined from ``tugger-apple`` crate to remove
   crate dependency.
 

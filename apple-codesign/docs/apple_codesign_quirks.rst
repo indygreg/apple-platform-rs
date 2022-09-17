@@ -25,7 +25,7 @@ All this complexity means bundle signing is susceptible to a lot of subtle
 bugs and variation from how Apple's tooling does it.
 
 If you find bugs in bundle signing or have suggestions for improving its
-ergonomics, please `file a GitHub issue <https://github.com/indygreg/PyOxidizer/issues/new>`_!
+ergonomics, please `file a GitHub issue <https://github.com/indygreg/apple-platform-rs/issues/new>`_!
 
 Cannot Sign File Contents of DMGs
 =================================

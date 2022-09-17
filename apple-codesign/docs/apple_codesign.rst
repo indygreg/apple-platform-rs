@@ -41,11 +41,11 @@ Other features include:
 
 Canonical project links:
 
-* Source code: https://github.com/indygreg/PyOxidizer/tree/main/apple-codesign
+* Source code: https://github.com/indygreg/apple-platform-rs/tree/main/apple-codesign
 * Documentation https://gregoryszorc.com/docs/apple-codesign/
 * Rust crate: https://crates.io/crates/apple-codesign
-* Changelog: https://github.com/indygreg/PyOxidizer/blob/main/apple-codesign/CHANGELOG.rst
-* Bugs and feature requests: https://github.com/indygreg/PyOxidizer/issues?q=is%3Aopen+is%3Aissue+label%3Aapple-codesign
+* Changelog: https://github.com/indygreg/apple-platform-rs/blob/main/apple-codesign/CHANGELOG.rst
+* Bugs and feature requests: https://github.com/indygreg/apple-platform-rs/issues?q=is%3Aopen+is%3Aissue+label%3Aapple-codesign
 
 While this project is developed inside a larger monorepository, it is designed
 to be used as a standalone project.

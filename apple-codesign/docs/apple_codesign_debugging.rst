@@ -12,7 +12,7 @@ the output of this tool.
 
    If Apple software rejects the output of this tool, we consider that a bug.
    We encourage end-users to report these bugs to the
-   `GitHub issue tracker <https://github.com/indygreg/PyOxidizer/issues>`_.
+   `GitHub issue tracker <https://github.com/indygreg/apple-platform-rs/issues>`_.
 
 Commands to Print Signature Info
 ================================
