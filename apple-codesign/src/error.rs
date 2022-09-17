@@ -3,11 +3,13 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use {
-    crate::remote_signing::RemoteSignError,
+    crate::{
+        macho_universal::UniversalMachOError,
+        remote_signing::RemoteSignError
+    },
     cryptographic_message_syntax::CmsError,
     std::path::PathBuf,
     thiserror::Error,
-    tugger_apple::UniversalMachOError,
     x509_certificate::{KeyAlgorithm, X509CertificateError},
 };
 

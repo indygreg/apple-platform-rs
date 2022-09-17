@@ -2,6 +2,14 @@
 `apple-codesign` History
 ========================
 
+0.19.0
+======
+
+(Not yet released)
+
+* Universal Mach-O creation logic inlined from ``tugger-apple`` crate to remove
+  crate dependency.
+
 0.18.0
 ======
 

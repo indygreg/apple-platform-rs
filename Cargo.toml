@@ -4,6 +4,5 @@ members = [
     'apple-codesign',
     'apple-flat-package',
     'apple-xar',
-    'tugger-apple',
 ]
 resolver = "2"

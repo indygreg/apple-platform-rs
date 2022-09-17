@@ -106,7 +106,6 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
- "tugger-apple",
  "tugger-file-manifest",
  "tungstenite",
  "uuid",
@@ -2998,16 +2997,6 @@ name = "try-lock"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59547bce71d9c38b83d9c0e92b6066c4253371f15005def0c30d9657f50c7642"
-
-[[package]]
-name = "tugger-apple"
-version = "0.8.0-pre"
-dependencies = [
- "anyhow",
- "goblin",
- "scroll",
- "thiserror",
-]
 
 [[package]]
 name = "tugger-file-manifest"

@@ -18,6 +18,7 @@ use {
         entitlements::plist_to_executable_segment_flags,
         error::AppleCodesignError,
         macho::{semver_to_macho_target_version, MachFile, MachOBinary},
+        macho_universal::create_universal_macho,
         policy::derive_designated_requirements,
         signing_settings::{DesignatedRequirementMode, SettingsScope, SigningSettings},
     },
@@ -32,7 +33,6 @@ use {
     log::{debug, info, warn},
     scroll::{ctx::SizeWith, IOwrite},
     std::{borrow::Cow, cmp::Ordering, collections::HashMap, io::Write, path::Path},
-    tugger_apple::create_universal_macho,
 };
 
 /// Derive a new Mach-O binary with new signature data.

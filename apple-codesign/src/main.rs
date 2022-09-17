@@ -31,6 +31,8 @@ mod error;
 mod macho;
 #[allow(unused)]
 mod macho_signing;
+#[allow(unused)]
+mod macho_universal;
 #[allow(non_upper_case_globals, unused)]
 #[cfg(target_os = "macos")]
 mod macos;

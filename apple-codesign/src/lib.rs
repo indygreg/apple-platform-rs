@@ -140,6 +140,8 @@ mod macos;
 pub use macos::*;
 mod macho_signing;
 pub use macho_signing::*;
+mod macho_universal;
+pub use macho_universal::UniversalBinaryBuilder;
 pub mod notarization;
 pub use notarization::*;
 mod policy;
