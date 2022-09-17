@@ -11,6 +11,7 @@ repository = "https://github.com/indygreg/PyOxidizer.git"
 readme = "README.md"
 
 [dependencies]
+cpio-archive = "0.5"
 flate2 = "1.0"
 scroll = { version ="0.11", features = ["derive"] }
 serde-xml-rs = "0.5"
@@ -20,7 +21,3 @@ thiserror = "1.0"
 [dependencies.apple-xar]
 path = "../apple-xar"
 version = "0.10.0-pre"
-
-[dependencies.cpio-archive]
-path = "../cpio-archive"
-version = "0.6.0-pre"

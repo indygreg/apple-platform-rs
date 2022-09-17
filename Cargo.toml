@@ -4,10 +4,6 @@ members = [
     'apple-codesign',
     'apple-flat-package',
     'apple-xar',
-    'cpio-archive',
-    'cryptographic-message-syntax',
     'tugger-apple',
-    'tugger-file-manifest',
-    'x509-certificate',
 ]
 resolver = "2"
