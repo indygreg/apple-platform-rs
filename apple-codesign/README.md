@@ -35,14 +35,5 @@ $ cargo run --bin rcodesign -- --help
 $ cargo install --bin rcodesign
 
 # Remote install.
-$ cargo install --git https://github.com/indygreg/PyOxidizer --branch main --bin rcodesign apple-codesign
+$ cargo install --git https://github.com/indygreg/apple-platform-rs --branch main --bin rcodesign apple-codesign
 ```
-
-# Project Relationship
-
-`apple-codesign` is part of the
-[PyOxidizer](https://github.com/indygreg/PyOxidizer.git) project and
-this crate is developed in that repository.
-
-While this crate is developed as part of a larger project, modifications
-to support its use outside of its primary use case are very much welcome!

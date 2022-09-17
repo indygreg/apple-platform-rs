@@ -68,14 +68,9 @@ ci-run workflow branch="ci-test":
 
 # Trigger all workflows on a given branch.
 ci-run-all branch="ci-test":
-  just ci-run cargo_deny.yml {{branch}}
-  just ci-run oxidized_importer.yml {{branch}}
-  just ci-run pyoxidizer.yml {{branch}}
-  just ci-run pyoxy.yml {{branch}}
   just ci-run rcodesign.yml {{branch}}
   just ci-run sphinx.yml {{branch}}
   just ci-run workspace.yml {{branch}}
-  just ci-run workspace-python.yml {{branch}}
 
 _remote-sign-exe ref workflow run_id artifact exe_name rcodesign_branch="main":
   gh workflow run sign-apple-exe.yml \
@@ -231,7 +226,7 @@ apple-codesign-release-prepare commit tag:
       ${sign_command}
     fi
 
-    cargo run --bin pyoxidizer -- rust-project-licensing \
+    pyoxidizer rust-project-licensing \
       --system-rust \
       --target-triple ${triple} \
       --all-features \

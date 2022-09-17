@@ -6,8 +6,8 @@ edition = "2021"
 license = "MPL-2.0"
 description = "Interface with Apple bundle primitives"
 keywords = ["apple", "macos", "bundle", "appbundle"]
-homepage = "https://github.com/indygreg/PyOxidizer"
-repository = "https://github.com/indygreg/PyOxidizer.git"
+homepage = "https://github.com/indygreg/apple-platform-rs"
+repository = "https://github.com/indygreg/apple-platform-rs.git"
 readme = "README.md"
 
 [dependencies]
