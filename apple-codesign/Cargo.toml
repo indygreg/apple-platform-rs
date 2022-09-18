@@ -1,6 +1,6 @@
 [package]
 name = "apple-codesign"
-version = "0.19.0-pre"
+version = "0.19.0"
 authors = ["Gregory Szorc <gregory.szorc@gmail.com>"]
 edition = "2021"
 license = "MPL-2.0"
@@ -82,16 +82,16 @@ zip = { version = "0.6", default-features = false, features = ["deflate"] }
 zip_structs = "0.2"
 
 [dependencies.apple-bundles]
-path = "../apple-bundles"
-version = "0.14.0-pre"
+#path = "../apple-bundles"
+version = "0.14.0"
 
 [dependencies.apple-flat-package]
-path = "../apple-flat-package"
-version = "0.10.0-pre"
+#path = "../apple-flat-package"
+version = "0.10.0"
 
 [dependencies.apple-xar]
-path = "../apple-xar"
-version = "0.10.0-pre"
+#path = "../apple-xar"
+version = "0.10.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 security-framework = { version = "2.6", features = ["OSX_10_12"] }

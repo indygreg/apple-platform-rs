@@ -5,7 +5,7 @@
 0.19.0
 ======
 
-(Not yet released)
+(Released 2022-09-18)
 
 * Canonical home of project moved from https://github.com/indygreg/PyOxidizer to
   https://github.com/indygreg/apple-platform-rs.
