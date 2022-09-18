@@ -161,7 +161,7 @@ impl PublicKeyPeerDecrypt for KeychainCertificate {
         // It doesn't look like the Rust bindings expose the APIs we need to
         // implement decryption. Sadness. Will probably need to contribute
         // those upstream...
-        error!("missing feature along with workarounds tracked in https://github.com/indygreg/PyOxidizer/issues/554");
+        error!("missing feature along with workarounds tracked in https://github.com/indygreg/apple-platform-rs/issues/7");
         Err(RemoteSignError::Crypto(
             "decryption not yet implemented for keychain stored keys".into(),
         ))

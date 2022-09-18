@@ -51,7 +51,7 @@ access to it. Popular scenarios include:
 
    In other words, use this feature at your own risk.
 
-   `Issue 552 <https://github.com/indygreg/PyOxidizer/issues/552>`_ tracks
+   `Issue 5 <https://github.com/indygreg/apple-platform-rs/issues/5>`_ tracks
    performing an audit of this feature.
 
 How It Works
@@ -239,7 +239,7 @@ feature.
 
 .. note::
 
-   `Issue #553 <https://github.com/indygreg/PyOxidizer/issues/553>`_ tracks
+   `Issue #6 <https://github.com/indygreg/apple-platform-rs/issues/6>`_ tracks
    publishing a canonical GitHub Action that formalizes the steps in this
    documentation. Assistance in building that would be greatly appreciated!
 

@@ -58,7 +58,7 @@ is created. Then you'll need to create the DMG (using ``hdiutil`` or
 whatever tool you have access to) then feed that DMG into this tool for
 signing.
 
-https://github.com/indygreg/PyOxidizer/issues/540 is our tracking issue
+https://github.com/indygreg/apple-platform-rs/issues/2 is our tracking issue
 for DMG writing support. If you have ideas, please comment there!
 
 Cannot Recursively Sign Flat Packages (``.pkg`` Installers)
@@ -89,7 +89,7 @@ sign the ``.pkg``. For installers that contained nested ``.pkg`` installers,
 this process will be quite tedious. Invoking ``componentbuild`` and
 ``productbuild`` will likely be much simpler.
 
-https://github.com/indygreg/PyOxidizer/issues/541 is our tracking issue
+https://github.com/indygreg/apple-platform-rs/issues/3 is our tracking issue
 for flat packages writing support.
 
 Extra Signing or Time-Stamp Token Operations
@@ -112,8 +112,8 @@ these stand-in signatures and we can probably only make 1 request to the
 time-stamp token server to obtain the size of its signatures. But we
 haven't implemented this throughout the code base yet.
 
-https://github.com/indygreg/PyOxidizer/issues/542 and
-https://github.com/indygreg/PyOxidizer/issues/543 track improvements here.
+https://github.com/indygreg/apple-platform-rs/issues/4 and
+https://github.com/indygreg/apple-platform-rs/issues/19 track improvements here.
 
 Long Tail of Random Discrepancies from Apple's Tooling
 ======================================================
