@@ -134,7 +134,7 @@ dependencies = [
 
 [[package]]
 name = "apple-xar"
-version = "0.10.0-pre"
+version = "0.10.0"
 dependencies = [
  "base64",
  "bcder",
