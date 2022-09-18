@@ -38,8 +38,8 @@ version = "0.14.0-pre"
 dependencies = [
  "anyhow",
  "plist",
+ "simple-file-manifest",
  "tempfile",
- "tugger-file-manifest",
  "walkdir",
 ]
 
@@ -100,13 +100,13 @@ dependencies = [
  "serde_yaml",
  "sha2",
  "signature",
+ "simple-file-manifest",
  "spake2",
  "spki 0.6.0",
  "subtle",
  "tempfile",
  "thiserror",
  "tokio",
- "tugger-file-manifest",
  "tungstenite",
  "uuid",
  "x509",
@@ -2615,6 +2615,12 @@ dependencies = [
  "digest 0.10.5",
  "rand_core 0.6.4",
 ]
+
+[[package]]
+name = "simple-file-manifest"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5dd19be0257552dd56d1bb6946f89f193c6e5b9f13cc9327c4bc84a357507c74"
 
 [[package]]
 name = "simple_asn1"

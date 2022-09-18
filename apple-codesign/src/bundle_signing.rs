@@ -22,7 +22,7 @@ use {
         io::Write,
         path::{Path, PathBuf},
     },
-    tugger_file_manifest::create_symlink,
+    simple_file_manifest::create_symlink,
 };
 
 /// Copy a bundle's contents to a destination directory.

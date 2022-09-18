@@ -11,6 +11,8 @@
   https://github.com/indygreg/apple-platform-rs.
 * Universal Mach-O creation logic inlined from ``tugger-apple`` crate to remove
   crate dependency.
+* Switched from ``tugger-file-manifest`` crate to ``simple-file-manifest``. (The
+  crate was effectively renamed.)
 
 0.18.0
 ======
