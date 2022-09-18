@@ -2,6 +2,11 @@
 `apple-codesign` History
 ========================
 
+0.20.0
+======
+
+(Not yet released)
+
 0.19.0
 ======
 
