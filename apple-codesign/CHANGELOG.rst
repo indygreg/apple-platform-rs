@@ -7,6 +7,9 @@
 
 (Not yet released)
 
+* ``aws-config``, ``aws-smithy-http`` upgraded from 0.47 -> 0.48.
+* ``aws-sdk-s3`` upgraded from 0.17 -> 0.18.
+
 0.19.0
 ======
 
