@@ -7,6 +7,9 @@ apple-sdk Crate Changelog
 
 Not yet released.
 
+* Project moved from https://github.com/indygreg/toolchain-tools to
+  https://github.com/indygreg/apple-platform-rs.
+
 0.2.0
 =====
 

@@ -7,8 +7,8 @@ readme = "README.md"
 authors = ["Gregory Szorc <gregory.szorc@gmail.com>"]
 description = "Interact with Apple SDKs"
 keywords = ["apple"]
-homepage = "https://github.com/indygreg/toolchain-tools"
-repository = "https://github.com/indygreg/toolchain-tools.git"
+homepage = "https://github.com/indygreg/apple-platform-rs"
+repository = "https://github.com/indygreg/apple-platform-rs.git"
 
 [dependencies]
 serde_json = { version = "1.0", optional = true }
