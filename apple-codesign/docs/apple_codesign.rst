@@ -66,3 +66,4 @@ to be used as a standalone project.
    apple_codesign_remote_signing_design
    apple_codesign_gatekeeper
    apple_codesign_custom_assessment_policies
+   apple_codesign_developer_guide
