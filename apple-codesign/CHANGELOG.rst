@@ -7,6 +7,10 @@
 
 (Not yet released)
 
+* Zip notarization support. APIs and the ``notary-submit`` CLI command now recognize
+  zip files and will upload them to the Notary API without modifications. Neither
+  zip file signing nor stapling are supported. Feature contributed by @deansheather.
+  (#20)
 * When signing the main binary in a bundle, we now prefer the identifier from
   the bundle's ``Info.plist`` over the identifier already present in the Mach-O.
   This ensures that the identifier is consistent across multiple Mach-O in a

@@ -15,6 +15,7 @@ features:
 * Signing, notarizing, and stapling directory bundles (e.g. ``.app`` directories).
 * Signing, notarizing, and stapling XAR archives / ``.pkg`` installers.
 * Signing, notarizing, and stapling disk images / ``.dmg`` files.
+* Notarizing zip files.
 
 **What this all means is that you can sign, notarize, and release Apple software
 from non-Apple operating systems (like Linux, Windows, and BSDs) without needing
