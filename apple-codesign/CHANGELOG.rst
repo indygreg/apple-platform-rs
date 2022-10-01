@@ -16,6 +16,8 @@
   This ensures that the identifier is consistent across multiple Mach-O in a
   fat/universal binary and is consistent with the value advertised in the
   ``Info.plist``. (#12, #22)
+* Most code from ``main.rs`` has been moved into ``cli.rs`` so it is part of the
+  library.
 * ``aws-config``, ``aws-smithy-http`` upgraded from 0.47 -> 0.49.
 * ``aws-sdk-s3`` upgraded from 0.17 -> 0.19.
 
