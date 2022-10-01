@@ -2639,7 +2639,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 Arg::new("profile")
                     .long("profile")
                     .takes_value(true)
-                    .possible_values(CertificateProfile::str_names())
+                    .value_parser(CertificateProfile::str_names())
                     .default_value("apple-development"),
             )
             .arg(

@@ -765,8 +765,8 @@ impl CertificateProfile {
     }
 
     /// Obtain the string values that variants are recognized as.
-    pub fn str_names() -> &'static [&'static str] {
-        &[
+    pub fn str_names() -> [&'static str; 5] {
+        [
             "mac-installer-distribution",
             "apple-distribution",
             "apple-development",
