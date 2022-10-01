@@ -25,7 +25,9 @@ use {
         load_command::{
             CommandVariant, LinkeditDataCommand, LC_BUILD_VERSION, SIZEOF_LINKEDIT_DATA_COMMAND,
         },
-        parse_magic_and_ctx, Mach, MachO,
+        parse_magic_and_ctx,
+        segment::Segment,
+        Mach, MachO,
     },
     rayon::prelude::*,
     scroll::Pread,
@@ -176,16 +178,28 @@ impl<'a> MachOBinary<'a> {
             .map(|command| start_offset + command.datasize)
     }
 
+    /// Obtain Mach-O segments by file offset order.
+    ///
+    /// The header-defined order may vary by the file layout order. This ensures the ordering
+    /// is by file layout.
+    pub fn segments_by_file_offset(&self) -> Vec<&Segment<'a>> {
+        let mut segments = self.macho.segments.iter().collect::<Vec<_>>();
+
+        segments.sort_by(|a, b| a.fileoff.cmp(&b.fileoff));
+
+        segments
+    }
+
     /// The byte offset within the binary at which point "code" stops.
     ///
     /// If a signature is present, this is the offset of the start of the
     /// signature. Else it represents the end of the binary.
     pub fn code_limit_binary_offset(&self) -> Result<u64, AppleCodesignError> {
         let last_segment = self
-            .macho
-            .segments
+            .segments_by_file_offset()
             .last()
-            .ok_or(AppleCodesignError::MissingLinkedit)?;
+            .ok_or(AppleCodesignError::MissingLinkedit)?
+            .clone();
         if !matches!(last_segment.name(), Ok(SEG_LINKEDIT)) {
             return Err(AppleCodesignError::LinkeditNotLast);
         }
@@ -302,11 +316,10 @@ impl<'a> MachOBinary<'a> {
     /// signed signature), so this limitation hopefully isn't impactful.
     pub fn check_signing_capability(&self) -> Result<(), AppleCodesignError> {
         let last_segment = self
-            .macho
-            .segments
-            .iter()
+            .segments_by_file_offset()
             .last()
-            .ok_or(AppleCodesignError::MissingLinkedit)?;
+            .ok_or(AppleCodesignError::MissingLinkedit)?
+            .clone();
 
         // Last segment needs to be __LINKEDIT so we don't have to write offsets.
         if !matches!(last_segment.name(), Ok(SEG_LINKEDIT)) {

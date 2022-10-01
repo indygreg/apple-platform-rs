@@ -16,6 +16,12 @@
   This ensures that the identifier is consistent across multiple Mach-O in a
   fat/universal binary and is consistent with the value advertised in the
   ``Info.plist``. (#12, #22)
+* It is now possible to sign Mach-O binaries where the ``__LINKEDIT`` segment
+  wasn't the final advertised segment in Mach-O headers. Previously, a
+  ``__LINKEDIT isn't final Mach-O segment`` error would occur when attempting to
+  sign a Mach-O whose headers declared a ``__LINKEDIT`` segment before other
+  segments, even if ``__LINKEDIT`` was truly at the highest file offset. (This
+  scenario is common in Go binaries.) (#17)
 * Most code from ``main.rs`` has been moved into ``cli.rs`` so it is part of the
   library.
 * ``aws-config``, ``aws-smithy-http`` upgraded from 0.47 -> 0.49.

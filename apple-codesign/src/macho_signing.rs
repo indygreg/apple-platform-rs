@@ -160,7 +160,7 @@ fn create_macho_with_signature(
     }
 
     // Write out segments, updating the __LINKEDIT segment when we encounter it.
-    for segment in macho.macho.segments.iter() {
+    for segment in macho.segments_by_file_offset() {
         // The initial __PAGEZERO segment contains no data (it is the magic and load
         // commands) and overlaps with the __TEXT segment, which has .fileoff =0, so
         // we ignore it.
