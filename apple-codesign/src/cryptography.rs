@@ -442,6 +442,15 @@ impl PrivateKey for InMemoryPrivateKey {
 }
 
 impl InMemoryPrivateKey {
+    /// Construct an instance by parsing PKCS#1 DER data.
+    pub fn from_pkcs1_der(data: impl AsRef<[u8]>) -> Result<Self, AppleCodesignError> {
+        let key = InMemoryRsaKey::from_der(data.as_ref()).map_err(|e| {
+            AppleCodesignError::CertificateGeneric(format!("when parsing PKCS#1 data: {}", e))
+        })?;
+
+        Ok(Self::Rsa(key))
+    }
+
     /// Construct an instance by parsing PKCS#8 DER data.
     pub fn from_pkcs8_der(data: impl AsRef<[u8]>) -> Result<Self, AppleCodesignError> {
         let pki = PrivateKeyInfo::try_from(data.as_ref()).map_err(|e| {

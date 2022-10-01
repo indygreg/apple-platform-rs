@@ -22,6 +22,9 @@
   sign a Mach-O whose headers declared a ``__LINKEDIT`` segment before other
   segments, even if ``__LINKEDIT`` was truly at the highest file offset. (This
   scenario is common in Go binaries.) (#17)
+* The ``--pem-source`` argument can now decode PKCS#1 private keys as encoded
+  with ``RSA PRIVATE KEY``. Previously, an ``unhandled PEM tag RSA PRIVATE KEY;
+  ignoring`` warning would have been printed. (#26)
 * Most code from ``main.rs`` has been moved into ``cli.rs`` so it is part of the
   library.
 * ``aws-config``, ``aws-smithy-http`` upgraded from 0.47 -> 0.49.

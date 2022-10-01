@@ -611,7 +611,10 @@ fn collect_certificates_from_args(
                         certs.push(CapturedX509Certificate::from_der(pem.contents)?);
                     }
                     "PRIVATE KEY" => {
-                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs8_der(&pem.contents)?))
+                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs8_der(&pem.contents)?));
+                    }
+                    "RSA PRIVATE KEY" => {
+                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs1_der(&pem.contents)?));
                     }
                     tag => warn!("(unhandled PEM tag {}; ignoring)", tag),
                 }
