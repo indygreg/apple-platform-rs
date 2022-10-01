@@ -16,8 +16,8 @@
   This ensures that the identifier is consistent across multiple Mach-O in a
   fat/universal binary and is consistent with the value advertised in the
   ``Info.plist``. (#12, #22)
-* ``aws-config``, ``aws-smithy-http`` upgraded from 0.47 -> 0.48.
-* ``aws-sdk-s3`` upgraded from 0.17 -> 0.18.
+* ``aws-config``, ``aws-smithy-http`` upgraded from 0.47 -> 0.49.
+* ``aws-sdk-s3`` upgraded from 0.17 -> 0.19.
 
 0.19.0
 ======
