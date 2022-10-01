@@ -2271,7 +2271,7 @@ fn command_smartcard_scan(_args: &ArgMatches) -> Result<(), AppleCodesignError> 
         println!("Device {}: {}", index, reader.name());
 
         if let Ok(yk) = reader.open() {
-            let mut yk = yubikey::YubiKey::from(yk);
+            let mut yk = crate::yubikey::YubiKey::from(yk);
             println!("Device {}: Serial: {}", index, yk.inner()?.serial());
             println!("Device {}: Version: {}", index, yk.inner()?.version());
 
