@@ -25,7 +25,7 @@ use {
         signing::UnifiedSigner,
         signing_settings::{SettingsScope, SigningSettings},
     },
-    clap::{Arg, ArgGroup, ArgMatches, Command},
+    clap::{Arg, ArgAction, ArgGroup, ArgMatches, Command},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
@@ -2483,7 +2483,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .long("verbose")
                 .short('v')
                 .global(true)
-                .multiple_occurrences(true)
+                .action(ArgAction::Count)
                 .help("Increase logging verbosity. Can be specified multiple times."),
         );
 
@@ -3034,7 +3034,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
     let matches = app.get_matches();
 
     // TODO make default log level warn once we audit logging sites.
-    let log_level = match matches.occurrences_of("verbose") {
+    let log_level = match matches.get_count("verbose") {
         0 => LevelFilter::Info,
         1 => LevelFilter::Debug,
         _ => LevelFilter::Trace,
