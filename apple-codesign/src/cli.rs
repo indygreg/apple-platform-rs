@@ -631,7 +631,7 @@ fn collect_certificates_from_args(
         }
     }
 
-    let remote_signing_url = if args.is_present("remote_signer") {
+    let remote_signing_url = if args.contains_id("remote_signer") {
         args.get_one::<String>("remote_signing_url")
     } else {
         None
@@ -1786,7 +1786,7 @@ fn command_keychain_export_certificate_chain(args: &ArgMatches) -> Result<(), Ap
     let certs = macos_keychain_find_certificate_chain(domain, password.as_deref(), user_id)?;
 
     for (i, cert) in certs.iter().enumerate() {
-        if args.is_present("no_print_self") && i == 0 {
+        if args.contains_id("no_print_self") && i == 0 {
             continue;
         }
 
@@ -1930,8 +1930,8 @@ fn command_notary_submit(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         args.get_one::<String>("path")
             .expect("clap should have validated arguments"),
     );
-    let staple = args.is_present("staple");
-    let wait = args.is_present("wait") || staple;
+    let staple = args.get_flag("staple");
+    let wait = args.get_flag("wait") || staple;
 
     let wait_limit = if wait {
         Some(notarizer_wait_duration(args)?)
@@ -2017,7 +2017,7 @@ fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         .get_one::<String>("remote_signing_url")
         .expect("remote signing URL should always be present");
 
-    let session_join_string = if args.is_present("session_join_string_editor") {
+    let session_join_string = if args.contains_id("session_join_string_editor") {
         let mut value = None;
 
         for _ in 0..3 {
@@ -2344,7 +2344,7 @@ fn command_smartcard_import(args: &ArgMatches) -> Result<(), AppleCodesignError>
         args.get_one::<String>("pin_policy")
             .expect("pin_policy argument is required"),
     )?;
-    let use_existing_key = args.is_present("existing_key");
+    let use_existing_key = args.contains_id("existing_key");
 
     println!(
         "found {} private keys and {} public certificates",
@@ -2384,7 +2384,7 @@ fn command_smartcard_import(args: &ArgMatches) -> Result<(), AppleCodesignError>
     let mut yk = YubiKey::new()?;
     yk.set_pin_callback(prompt_smartcard_pin);
 
-    if args.is_present("dry_run") {
+    if args.get_flag("dry_run") {
         println!("dry run mode enabled; stopping");
         return Ok(());
     }
@@ -2740,34 +2740,39 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             ),
     ));
 
-    let app =
-        app.subcommand(add_notary_api_args(
-            Command::new("notary-submit")
-                .about("Upload an asset to Apple for notarization and possibly staple it")
-                .long_about(NOTARIZE_ABOUT)
-                .alias("notarize")
-                .arg(
-                    Arg::new("wait")
-                        .long("wait")
-                        .help("Whether to wait for upload processing to complete"),
-                )
-                .arg(
-                    Arg::new("max_wait_seconds")
-                        .long("max-wait-seconds")
-                        .takes_value(true)
-                        .default_value("600")
-                        .help("Maximum time in seconds to wait for the upload result"),
-                )
-                .arg(Arg::new("staple").long("staple").help(
-                    "Staple the notarization ticket after successful upload (implies --wait)",
-                ))
-                .arg(
-                    Arg::new("path")
-                        .takes_value(true)
-                        .required(true)
-                        .help("Path to asset to upload"),
-                ),
-        ));
+    let app = app.subcommand(add_notary_api_args(
+        Command::new("notary-submit")
+            .about("Upload an asset to Apple for notarization and possibly staple it")
+            .long_about(NOTARIZE_ABOUT)
+            .alias("notarize")
+            .arg(
+                Arg::new("wait")
+                    .long("wait")
+                    .action(ArgAction::SetTrue)
+                    .help("Whether to wait for upload processing to complete"),
+            )
+            .arg(
+                Arg::new("max_wait_seconds")
+                    .long("max-wait-seconds")
+                    .takes_value(true)
+                    .default_value("600")
+                    .help("Maximum time in seconds to wait for the upload result"),
+            )
+            .arg(
+                Arg::new("staple")
+                    .long("staple")
+                    .action(ArgAction::SetTrue)
+                    .help(
+                        "Staple the notarization ticket after successful upload (implies --wait)",
+                    ),
+            )
+            .arg(
+                Arg::new("path")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Path to asset to upload"),
+            ),
+    ));
 
     let app = app.subcommand(add_notary_api_args(
         Command::new("notary-wait")
@@ -2845,6 +2850,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .arg(
                     Arg::new("dry_run")
                         .long("dry-run")
+                        .action(ArgAction::SetTrue)
                         .help("Don't actually perform the import"),
                 ),
         )));
