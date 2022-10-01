@@ -417,7 +417,7 @@ fn add_certificate_source_args(app: Command) -> Command {
         Arg::new("keychain_domain")
             .long("keychain-domain")
             .action(ArgAction::Append)
-            .possible_values(&["user", "system", "common", "dynamic"])
+            .value_parser(["user", "system", "common", "dynamic"])
             .help("(macOS only) Keychain domain to operate on"),
     )
     .arg(
@@ -698,7 +698,7 @@ fn add_yubikey_policy_args(app: Command) -> Command {
         Arg::new("touch_policy")
             .long("touch-policy")
             .takes_value(true)
-            .possible_values(["default", "always", "never", "cached"])
+            .value_parser(["default", "always", "never", "cached"])
             .default_value("default")
             .help("Smartcard touch policy to protect key access"),
     )
@@ -706,7 +706,7 @@ fn add_yubikey_policy_args(app: Command) -> Command {
         Arg::new("pin_policy")
             .long("pin-policy")
             .takes_value(true)
-            .possible_values(["default", "never", "once", "always"])
+            .value_parser(["default", "never", "once", "always"])
             .default_value("default")
             .help("Smartcard pin prompt policy to protect key access"),
     )
@@ -2577,7 +2577,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 Arg::new("data")
                     .long("data")
                     .takes_value(true)
-                    .possible_values(&[
+                    .value_parser([
                         "blobs",
                         "cms-info",
                         "cms-pem",
@@ -2631,7 +2631,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 Arg::new("algorithm")
                     .long("algorithm")
                     .takes_value(true)
-                    .possible_values(&["ecdsa", "ed25519"])
+                    .value_parser(["ecdsa", "ed25519"])
                     .default_value("ecdsa")
                     .help("Which key type to use"),
             )
@@ -2686,7 +2686,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("domain")
                     .long("domain")
-                    .possible_values(&["user", "system", "common", "dynamic"])
+                    .value_parser(["user", "system", "common", "dynamic"])
                     .default_value("user")
                     .help("Keychain domain to operate on")
             )
@@ -2723,7 +2723,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("domain")
                     .long("--domain")
-                    .possible_values(&["user", "system", "common", "dynamic"])
+                    .value_parser(["user", "system", "common", "dynamic"])
                     .default_value("user")
                     .help("Keychain domain to operate on"),
             ),
@@ -2795,7 +2795,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 Arg::new("format")
                     .long("--format")
                     .required(true)
-                    .possible_values(&["csrl", "expression-tree"])
+                    .value_parser(["csrl", "expression-tree"])
                     .default_value("csrl")
                     .help("Output format"),
             )
