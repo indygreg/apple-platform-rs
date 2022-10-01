@@ -508,16 +508,18 @@ fn add_certificate_source_args(app: Command) -> Command {
 fn get_remote_signing_initiator(
     args: &ArgMatches,
 ) -> Result<Box<dyn SessionInitiatePeer>, RemoteSignError> {
-    let server_url = args.value_of("remote_signing_url").map(|x| x.to_string());
+    let server_url = args
+        .get_one::<String>("remote_signing_url")
+        .map(|x| x.to_string());
 
-    if let Some(public_key_data) = args.value_of("remote_public_key") {
+    if let Some(public_key_data) = args.get_one::<String>("remote_public_key") {
         let public_key_data = base64::decode(public_key_data)?;
 
         Ok(Box::new(PublicKeyInitiator::new(
             public_key_data,
             server_url,
         )?))
-    } else if let Some(path) = args.value_of("remote_public_key_pem_file") {
+    } else if let Some(path) = args.get_one::<String>("remote_public_key_pem_file") {
         let pem_data = std::fs::read(path)?;
         let doc = pem::parse(pem_data)?;
 
@@ -537,7 +539,7 @@ fn get_remote_signing_initiator(
         };
 
         Ok(Box::new(PublicKeyInitiator::new(spki_der, server_url)?))
-    } else if let Some(env) = args.value_of("remote_shared_secret_env") {
+    } else if let Some(env) = args.get_one::<String>("remote_shared_secret_env") {
         let secret = std::env::var(env).map_err(|_| {
             RemoteSignError::ClientState("failed reading from shared secret environment variable")
         })?;
@@ -545,7 +547,7 @@ fn get_remote_signing_initiator(
         Ok(Box::new(SharedSecretInitiator::new(
             secret.as_bytes().to_vec(),
         )?))
-    } else if let Some(value) = args.value_of("remote_shared_secret") {
+    } else if let Some(value) = args.get_one::<String>("remote_shared_secret") {
         Ok(Box::new(SharedSecretInitiator::new(
             value.as_bytes().to_vec(),
         )?))
@@ -567,12 +569,12 @@ fn collect_certificates_from_args(
     let mut keys: Vec<Box<dyn PrivateKey>> = vec![];
     let mut certs = vec![];
 
-    if let Some(p12_path) = args.value_of("p12_path") {
+    if let Some(p12_path) = args.get_one::<String>("p12_path") {
         let p12_data = std::fs::read(p12_path)?;
 
-        let p12_password = if let Some(password) = args.value_of("p12_password") {
+        let p12_password = if let Some(password) = args.get_one::<String>("p12_password") {
             password.to_string()
-        } else if let Some(path) = args.value_of("p12_password_file") {
+        } else if let Some(path) = args.get_one::<String>("p12_password_file") {
             std::fs::read_to_string(path)?
                 .lines()
                 .next()
@@ -624,13 +626,13 @@ fn collect_certificates_from_args(
     find_certificates_in_keychain(args, &mut keys, &mut certs)?;
 
     if scan_smartcard {
-        if let Some(slot) = args.value_of("smartcard_slot") {
+        if let Some(slot) = args.get_one::<String>("smartcard_slot") {
             handle_smartcard_sign_slot(slot, &mut keys, &mut certs)?;
         }
     }
 
     let remote_signing_url = if args.is_present("remote_signer") {
-        args.value_of("remote_signing_url")
+        args.get_one::<String>("remote_signing_url")
     } else {
         None
     };
@@ -930,13 +932,14 @@ fn find_certificates_in_keychain(
 
     for domain in domains {
         for cert in keychain_find_code_signing_certificates(domain, None)? {
-            let matches = if let Some(wanted_fingerprint) = args.value_of("keychain_fingerprint") {
-                let got_fingerprint = hex::encode(cert.sha256_fingerprint()?.as_ref());
+            let matches =
+                if let Some(wanted_fingerprint) = args.get_one::<String>("keychain_fingerprint") {
+                    let got_fingerprint = hex::encode(cert.sha256_fingerprint()?.as_ref());
 
-                wanted_fingerprint.to_ascii_lowercase() == got_fingerprint.to_ascii_lowercase()
-            } else {
-                false
-            };
+                    wanted_fingerprint.to_ascii_lowercase() == got_fingerprint.to_ascii_lowercase()
+                } else {
+                    false
+                };
 
             if matches {
                 public_certificates.push(cert.as_captured_x509_certificate());
@@ -978,13 +981,13 @@ fn command_analyze_certificate(args: &ArgMatches) -> Result<(), AppleCodesignErr
 
 fn command_compute_code_hashes(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
-        .value_of("path")
+        .get_one::<String>("path")
         .ok_or(AppleCodesignError::CliBadArgument)?;
-    let index = args.value_of("universal_index").unwrap();
+    let index = args.get_one::<String>("universal_index").unwrap();
     let index = usize::from_str(index).map_err(|_| AppleCodesignError::CliBadArgument)?;
-    let hash_type = DigestType::try_from(args.value_of("hash").unwrap())?;
+    let hash_type = DigestType::try_from(args.get_one::<String>("hash").unwrap().as_str())?;
     let page_size = usize::from_str(
-        args.value_of("page_size")
+        args.get_one::<String>("page_size")
             .expect("page_size should have default value"),
     )
     .map_err(|_| AppleCodesignError::CliBadArgument)?;
@@ -1004,10 +1007,10 @@ fn command_compute_code_hashes(args: &ArgMatches) -> Result<(), AppleCodesignErr
 
 fn command_diff_signatures(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path0 = args
-        .value_of("path0")
+        .get_one::<String>("path0")
         .ok_or(AppleCodesignError::CliBadArgument)?;
     let path1 = args
-        .value_of("path1")
+        .get_one::<String>("path1")
         .ok_or(AppleCodesignError::CliBadArgument)?;
 
     let reader = SignatureReader::from_path(path0)?;
@@ -1080,10 +1083,10 @@ file and adjust accordingly.
 
 fn command_encode_app_store_connect_api_key(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let issuer_id = args
-        .value_of("issuer_id")
+        .get_one::<String>("issuer_id")
         .expect("arg should have been required");
     let key_id = args
-        .value_of("key_id")
+        .get_one::<String>("key_id")
         .expect("arg should have been required");
     let private_key_path = args
         .get_one::<PathBuf>("private_key_path")
@@ -1265,19 +1268,19 @@ fn print_signed_data(
 
 fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
-        .value_of("path")
+        .get_one::<String>("path")
         .ok_or(AppleCodesignError::CliBadArgument)?;
     let format = args
-        .value_of("data")
+        .get_one::<String>("data")
         .ok_or(AppleCodesignError::CliBadArgument)?;
-    let index = args.value_of("universal_index").unwrap();
+    let index = args.get_one::<String>("universal_index").unwrap();
     let index = usize::from_str(index).map_err(|_| AppleCodesignError::CliBadArgument)?;
 
     let data = std::fs::read(path)?;
     let mach = MachFile::parse(&data)?;
     let macho = mach.nth_macho(index)?;
 
-    match format {
+    match format.as_str() {
         "blobs" => {
             let embedded = macho
                 .code_signature()?
@@ -1630,7 +1633,7 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
 fn command_generate_certificate_signing_request(
     args: &ArgMatches,
 ) -> Result<(), AppleCodesignError> {
-    let csr_pem_path = args.value_of("csr_pem_path").map(PathBuf::from);
+    let csr_pem_path = args.get_one::<String>("csr_pem_path").map(PathBuf::from);
 
     let (private_keys, _) = collect_certificates_from_args(args, true)?;
 
@@ -1679,8 +1682,9 @@ fn command_generate_certificate_signing_request(
 
 fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let algorithm = match args
-        .value_of("algorithm")
+        .get_one::<String>("algorithm")
         .ok_or(AppleCodesignError::CliBadArgument)?
+        .as_str()
     {
         "ecdsa" => KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1),
         "ed25519" => KeyAlgorithm::Ed25519,
@@ -1691,24 +1695,24 @@ fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), App
     };
 
     let profile = args
-        .value_of("profile")
+        .get_one::<String>("profile")
         .ok_or(AppleCodesignError::CliBadArgument)?;
     let profile = CertificateProfile::from_str(profile)?;
     let team_id = args
-        .value_of("team_id")
+        .get_one::<String>("team_id")
         .ok_or(AppleCodesignError::CliBadArgument)?;
     let person_name = args
-        .value_of("person_name")
+        .get_one::<String>("person_name")
         .ok_or(AppleCodesignError::CliBadArgument)?;
     let country_name = args
-        .value_of("country_name")
+        .get_one::<String>("country_name")
         .ok_or(AppleCodesignError::CliBadArgument)?;
 
-    let validity_days = args.value_of("validity_days").unwrap();
+    let validity_days = args.get_one::<String>("validity_days").unwrap();
     let validity_days =
         i64::from_str(validity_days).map_err(|_| AppleCodesignError::CliBadArgument)?;
 
-    let pem_filename = args.value_of("pem_filename");
+    let pem_filename = args.get_one::<String>("pem_filename");
 
     let validity_duration = chrono::Duration::days(validity_days);
 
@@ -1755,16 +1759,16 @@ fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), App
 
 #[cfg(target_os = "macos")]
 fn command_keychain_export_certificate_chain(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let user_id = args.value_of("user_id").unwrap();
+    let user_id = args.get_one::<String>("user_id").unwrap();
 
     let domain = args
-        .value_of("domain")
+        .get_one::<String>("domain")
         .expect("clap should have added default value");
 
-    let domain =
-        KeychainDomain::try_from(domain).expect("clap should have validated domain values");
+    let domain = KeychainDomain::try_from(domain.as_str())
+        .expect("clap should have validated domain values");
 
-    let password = if let Some(path) = args.value_of("password_file") {
+    let password = if let Some(path) = args.get_one::<String>("password_file") {
         let data = std::fs::read_to_string(path)?;
 
         Some(
@@ -1773,7 +1777,7 @@ fn command_keychain_export_certificate_chain(args: &ArgMatches) -> Result<(), Ap
                 .expect("should get a single line")
                 .to_string(),
         )
-    } else if let Some(password) = args.value_of("password") {
+    } else if let Some(password) = args.get_one::<String>("password") {
         Some(password.to_string())
     } else {
         None
@@ -1802,11 +1806,11 @@ fn command_keychain_export_certificate_chain(_args: &ArgMatches) -> Result<(), A
 #[cfg(target_os = "macos")]
 fn command_keychain_print_certificates(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let domain = args
-        .value_of("domain")
+        .get_one::<String>("domain")
         .expect("clap should have added default value");
 
-    let domain =
-        KeychainDomain::try_from(domain).expect("clap should have validated domain values");
+    let domain = KeychainDomain::try_from(domain.as_str())
+        .expect("clap should have validated domain values");
 
     let certs = keychain_find_code_signing_certificates(domain, None)?;
 
@@ -1881,8 +1885,8 @@ fn notarizer_from_args(
     args: &ArgMatches,
 ) -> Result<crate::notarization::Notarizer, AppleCodesignError> {
     let api_key_path = args.get_one::<PathBuf>("api_key_path");
-    let api_issuer = args.value_of("api_issuer");
-    let api_key = args.value_of("api_key");
+    let api_issuer = args.get_one::<String>("api_issuer");
+    let api_key = args.get_one::<String>("api_key");
 
     let mut notarizer = crate::notarization::Notarizer::new()?;
 
@@ -1898,7 +1902,7 @@ fn notarizer_from_args(
 
 fn notarizer_wait_duration(args: &ArgMatches) -> Result<std::time::Duration, AppleCodesignError> {
     let max_wait_seconds = args
-        .value_of("max_wait_seconds")
+        .get_one::<String>("max_wait_seconds")
         .expect("argument should have default value");
     let max_wait_seconds =
         u64::from_str(max_wait_seconds).map_err(|_| AppleCodesignError::CliBadArgument)?;
@@ -1909,7 +1913,7 @@ fn notarizer_wait_duration(args: &ArgMatches) -> Result<std::time::Duration, App
 fn command_notary_log(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let notarizer = notarizer_from_args(args)?;
     let submission_id = args
-        .value_of("submission_id")
+        .get_one::<String>("submission_id")
         .expect("submission_id is required");
 
     let log = notarizer.fetch_notarization_log(submission_id)?;
@@ -1923,7 +1927,7 @@ fn command_notary_log(args: &ArgMatches) -> Result<(), AppleCodesignError> {
 
 fn command_notary_submit(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = PathBuf::from(
-        args.value_of("path")
+        args.get_one::<String>("path")
             .expect("clap should have validated arguments"),
     );
     let staple = args.is_present("staple");
@@ -1959,7 +1963,7 @@ fn command_notary_wait(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let wait_duration = notarizer_wait_duration(args)?;
     let notarizer = notarizer_from_args(args)?;
     let submission_id = args
-        .value_of("submission_id")
+        .get_one::<String>("submission_id")
         .expect("submission_id is required");
 
     notarizer.wait_on_notarization_and_fetch_log(submission_id, wait_duration)?;
@@ -1969,7 +1973,7 @@ fn command_notary_wait(args: &ArgMatches) -> Result<(), AppleCodesignError> {
 
 fn command_parse_code_signing_requirement(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
-        .value_of("input_path")
+        .get_one::<String>("input_path")
         .expect("clap should have validated argument");
 
     let data = std::fs::read(path)?;
@@ -1978,8 +1982,9 @@ fn command_parse_code_signing_requirement(args: &ArgMatches) -> Result<(), Apple
 
     for requirement in requirements.iter() {
         match args
-            .value_of("format")
+            .get_one::<String>("format")
             .expect("clap should have validated argument")
+            .as_str()
         {
             "csrl" => {
                 println!("{}", requirement);
@@ -1996,7 +2001,7 @@ fn command_parse_code_signing_requirement(args: &ArgMatches) -> Result<(), Apple
 
 fn command_print_signature_info(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
-        .value_of("path")
+        .get_one::<String>("path")
         .expect("clap should have validated argument");
 
     let reader = SignatureReader::from_path(path)?;
@@ -2009,7 +2014,7 @@ fn command_print_signature_info(args: &ArgMatches) -> Result<(), AppleCodesignEr
 
 fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let remote_url = args
-        .value_of("remote_signing_url")
+        .get_one::<String>("remote_signing_url")
         .expect("remote signing URL should always be present");
 
     let session_join_string = if args.is_present("session_join_string_editor") {
@@ -2028,9 +2033,9 @@ fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         value.ok_or_else(|| {
             AppleCodesignError::CliGeneralError("session join string not entered in editor".into())
         })?
-    } else if let Some(path) = args.value_of("session_join_string_path") {
+    } else if let Some(path) = args.get_one::<String>("session_join_string_path") {
         std::fs::read_to_string(path)?
-    } else if let Some(value) = args.value_of("session_join_string") {
+    } else if let Some(value) = args.get_one::<String>("session_join_string") {
         value.to_string()
     } else {
         return Err(AppleCodesignError::CliGeneralError(
@@ -2040,10 +2045,10 @@ fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
 
     let mut joiner = create_session_joiner(session_join_string)?;
 
-    if let Some(env) = args.value_of("remote_shared_secret_env") {
+    if let Some(env) = args.get_one::<String>("remote_shared_secret_env") {
         let secret = std::env::var(env).map_err(|_| AppleCodesignError::CliBadArgument)?;
         joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
-    } else if let Some(secret) = args.value_of("remote_shared_secret") {
+    } else if let Some(secret) = args.get_one::<String>("remote_shared_secret") {
         joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
     }
 
@@ -2115,7 +2120,7 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
             }
         }
 
-        if let Some(timestamp_url) = args.value_of("timestamp_url") {
+        if let Some(timestamp_url) = args.get_one::<String>("timestamp_url") {
             if timestamp_url != "none" {
                 warn!("using time-stamp protocol server {}", timestamp_url);
                 settings.set_time_stamp_url(timestamp_url)?;
@@ -2135,12 +2140,12 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         settings.chain_certificate(cert);
     }
 
-    if let Some(team_name) = args.value_of("team_name") {
+    if let Some(team_name) = args.get_one::<String>("team_name") {
         settings.set_team_id(team_name);
     }
 
-    if let Some(value) = args.value_of("digest") {
-        let digest_type = DigestType::try_from(value)?;
+    if let Some(value) = args.get_one::<String>("digest") {
+        let digest_type = DigestType::try_from(value.as_str())?;
         settings.set_digest_type(digest_type);
     }
 
@@ -2232,10 +2237,10 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     }
 
     let input_path = PathBuf::from(
-        args.value_of("input_path")
+        args.get_one::<String>("input_path")
             .expect("input_path presence should have been validated by clap"),
     );
-    let output_path = args.value_of("output_path");
+    let output_path = args.get_one::<String>("output_path");
 
     let signer = UnifiedSigner::new(settings);
 
@@ -2290,18 +2295,19 @@ fn command_smartcard_scan(_args: &ArgMatches) -> Result<(), AppleCodesignError> 
 
 #[cfg(feature = "yubikey")]
 fn command_smartcard_generate_key(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let slot_id =
-        ::yubikey::piv::SlotId::from_str(args.value_of("smartcard_slot").ok_or_else(|| {
+    let slot_id = ::yubikey::piv::SlotId::from_str(
+        args.get_one::<String>("smartcard_slot").ok_or_else(|| {
             error!("--smartcard-slot is required");
             AppleCodesignError::CliBadArgument
-        })?)?;
+        })?,
+    )?;
 
     let touch_policy = str_to_touch_policy(
-        args.value_of("touch_policy")
+        args.get_one::<String>("touch_policy")
             .expect("touch_policy argument is required"),
     )?;
     let pin_policy = str_to_pin_policy(
-        args.value_of("pin_policy")
+        args.get_one::<String>("pin_policy")
             .expect("pin_policy argument is required"),
     )?;
 
@@ -2324,17 +2330,18 @@ fn command_smartcard_generate_key(_args: &ArgMatches) -> Result<(), AppleCodesig
 fn command_smartcard_import(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let (keys, certs) = collect_certificates_from_args(args, false)?;
 
-    let slot_id =
-        ::yubikey::piv::SlotId::from_str(args.value_of("smartcard_slot").ok_or_else(|| {
+    let slot_id = ::yubikey::piv::SlotId::from_str(
+        args.get_one::<String>("smartcard_slot").ok_or_else(|| {
             error!("--smartcard-slot is required");
             AppleCodesignError::CliBadArgument
-        })?)?;
+        })?,
+    )?;
     let touch_policy = str_to_touch_policy(
-        args.value_of("touch_policy")
+        args.get_one::<String>("touch_policy")
             .expect("touch_policy argument is required"),
     )?;
     let pin_policy = str_to_pin_policy(
-        args.value_of("pin_policy")
+        args.get_one::<String>("pin_policy")
             .expect("pin_policy argument is required"),
     )?;
     let use_existing_key = args.is_present("existing_key");
@@ -2406,7 +2413,7 @@ fn command_smartcard_import(_args: &ArgMatches) -> Result<(), AppleCodesignError
 
 fn command_staple(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
-        .value_of("path")
+        .get_one::<String>("path")
         .ok_or(AppleCodesignError::CliBadArgument)?;
 
     let stapler = crate::stapling::Stapler::new()?;
@@ -2417,7 +2424,7 @@ fn command_staple(args: &ArgMatches) -> Result<(), AppleCodesignError> {
 
 fn command_verify(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
-        .value_of("path")
+        .get_one::<String>("path")
         .ok_or(AppleCodesignError::CliBadArgument)?;
 
     let data = std::fs::read(path)?;
