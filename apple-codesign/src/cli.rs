@@ -25,16 +25,12 @@ use {
         signing::UnifiedSigner,
         signing_settings::{SettingsScope, SigningSettings},
     },
-    clap::{Arg, ArgAction, ArgGroup, ArgMatches, Command},
+    clap::{value_parser, Arg, ArgAction, ArgGroup, ArgMatches, Command},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
     spki::EncodePublicKey,
-    std::{
-        io::Write,
-        path::{Path, PathBuf},
-        str::FromStr,
-    },
+    std::{io::Write, path::PathBuf, str::FromStr},
     x509_certificate::{CapturedX509Certificate, EcdsaCurve, KeyAlgorithm, X509CertificateBuilder},
 };
 
@@ -673,7 +669,7 @@ fn add_notary_api_args(app: Command) -> Command {
         Arg::new("api_key_path")
             .long("api-key-path")
             .takes_value(true)
-            .allow_invalid_utf8(true)
+            .value_parser(value_parser!(PathBuf))
             .conflicts_with_all(&["api_issuer", "api_key"])
             .help("Path to a JSON file containing the API Key"),
     )
@@ -1089,16 +1085,13 @@ fn command_encode_app_store_connect_api_key(args: &ArgMatches) -> Result<(), App
     let key_id = args
         .value_of("key_id")
         .expect("arg should have been required");
-    let private_key_path = Path::new(
-        args.value_of_os("private_key_path")
-            .expect("arg should have been required"),
-    );
+    let private_key_path = args
+        .get_one::<PathBuf>("private_key_path")
+        .expect("arg should have been required");
 
     let unified = UnifiedApiKey::from_ecdsa_pem_path(issuer_id, key_id, private_key_path)?;
 
-    if let Some(output_path) = args.value_of_os("output_path") {
-        let output_path = Path::new(output_path);
-
+    if let Some(output_path) = args.get_one::<PathBuf>("output_path") {
         eprintln!("writing unified key JSON to {}", output_path.display());
         unified.write_json_file(output_path)?;
         eprintln!(
@@ -1887,7 +1880,7 @@ specify `--staple`. This implies `--wait`.
 fn notarizer_from_args(
     args: &ArgMatches,
 ) -> Result<crate::notarization::Notarizer, AppleCodesignError> {
-    let api_key_path = args.value_of_os("api_key_path").map(Path::new);
+    let api_key_path = args.get_one::<PathBuf>("api_key_path");
     let api_issuer = args.value_of("api_issuer");
     let api_key = args.value_of("api_key");
 
@@ -2543,7 +2536,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                     .short('o')
                     .long("output-path")
                     .takes_value(true)
-                    .allow_invalid_utf8(true)
+                    .value_parser(value_parser!(PathBuf))
                     .help("Path to a JSON file to create the output to"),
             )
             .arg(
@@ -2559,7 +2552,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("private_key_path")
                     .required(true)
-                    .allow_invalid_utf8(true)
+                    .value_parser(value_parser!(PathBuf))
                     .help("Path to a file containing the private key downloaded from Apple"),
             ),
     );
