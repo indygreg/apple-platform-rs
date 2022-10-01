@@ -71,8 +71,8 @@ impl CodeSignatureFlags {
     /// Obtain all flags that can be set by the user.
     ///
     /// Maps to variants that have a `from_str()` implementation.
-    pub fn all_user_configurable() -> Vec<&'static str> {
-        vec![
+    pub fn all_user_configurable() -> [&'static str; 7] {
+        [
             "host",
             "hard",
             "kill",

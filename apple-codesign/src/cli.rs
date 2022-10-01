@@ -2905,7 +2905,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                     Arg::new("code_signature_flags_set")
                         .long("code-signature-flags")
                         .action(ArgAction::Append)
-                        .possible_values(CodeSignatureFlags::all_user_configurable())
+                        .value_parser(CodeSignatureFlags::all_user_configurable())
                         .help("Code signature flags to set")
                 )
                 .arg(
