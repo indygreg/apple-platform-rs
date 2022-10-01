@@ -406,7 +406,7 @@ fn add_certificate_source_args(app: Command) -> Command {
     app.arg(
         Arg::new("smartcard_slot")
             .long("smartcard-slot")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .help("Smartcard slot number of signing certificate to use (9c is common)"),
     )
     .arg(
@@ -419,7 +419,7 @@ fn add_certificate_source_args(app: Command) -> Command {
     .arg(
         Arg::new("keychain_fingerprint")
             .long("keychain-fingerprint")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .help("(macOS only) SHA-256 fingerprint of certificate in Keychain to use"),
     )
     .arg(
@@ -438,14 +438,14 @@ fn add_certificate_source_args(app: Command) -> Command {
         Arg::new("p12_path")
             .long("p12-file")
             .alias("pfx-file")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .help("Path to a .p12/PFX file containing a certificate key pair"),
     )
     .arg(
         Arg::new("p12_password")
             .long("p12-password")
             .alias("pfx-password")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .help("The password to use to open the --p12-file file"),
     )
     .arg(
@@ -453,7 +453,7 @@ fn add_certificate_source_args(app: Command) -> Command {
             .long("p12-password-file")
             .alias("pfx-password-file")
             .conflicts_with("p12_password")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .help("Path to file containing password for opening --p12-file file"),
     )
     .arg(
@@ -465,14 +465,14 @@ fn add_certificate_source_args(app: Command) -> Command {
     .arg(
         Arg::new("remote_public_key")
             .long("remote-public-key")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .conflicts_with_all(&remote_initialization_args(Some("remote_public_key")))
             .help("Base64 encoded public key data describing the signer"),
     )
     .arg(
         Arg::new("remote_public_key_pem_file")
             .long("remote-public-key-pem-file")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .conflicts_with_all(&remote_initialization_args(Some(
                 "remote_public_key_pem_file",
             )))
@@ -482,7 +482,7 @@ fn add_certificate_source_args(app: Command) -> Command {
         Arg::new("remote_shared_secret")
             .long("remote-shared-secret")
             .conflicts_with_all(&remote_initialization_args(Some("remote_shared_secret")))
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .help("Shared secret used for remote signing"),
     )
     .arg(
@@ -491,13 +491,13 @@ fn add_certificate_source_args(app: Command) -> Command {
             .conflicts_with_all(&remote_initialization_args(Some(
                 "remote_shared_secret_env",
             )))
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .help("Environment variable holding the shared secret used for remote signing"),
     )
     .arg(
         Arg::new("remote_signing_url")
             .long("remote-signing-url")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .default_value(crate::remote_signing::DEFAULT_SERVER_URL)
             .help("URL of a remote code signing server"),
     )
@@ -670,7 +670,7 @@ fn add_notary_api_args(app: Command) -> Command {
     app.arg(
         Arg::new("api_key_path")
             .long("api-key-path")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .value_parser(value_parser!(PathBuf))
             .conflicts_with_all(&["api_issuer", "api_key"])
             .help("Path to a JSON file containing the API Key"),
@@ -678,14 +678,14 @@ fn add_notary_api_args(app: Command) -> Command {
     .arg(
         Arg::new("api_issuer")
             .long("api-issuer")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .requires("api_key")
             .help("App Store Connect Issuer ID (likely a UUID)"),
     )
     .arg(
         Arg::new("api_key")
             .long("api-key")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .requires("api_issuer")
             .help("App Store Connect API Key ID"),
     )
@@ -695,7 +695,7 @@ fn add_yubikey_policy_args(app: Command) -> Command {
     app.arg(
         Arg::new("touch_policy")
             .long("touch-policy")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .value_parser(["default", "always", "never", "cached"])
             .default_value("default")
             .help("Smartcard touch policy to protect key access"),
@@ -703,7 +703,7 @@ fn add_yubikey_policy_args(app: Command) -> Command {
     .arg(
         Arg::new("pin_policy")
             .long("pin-policy")
-            .action(ArgAction::StoreValue)
+            .action(ArgAction::Set)
             .value_parser(["default", "never", "once", "always"])
             .default_value("default")
             .help("Smartcard pin prompt policy to protect key access"),
@@ -2498,7 +2498,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("hash")
                     .long("hash")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .value_parser(SUPPORTED_HASHES)
                     .default_value("sha256")
                     .help("Hashing algorithm to use"),
@@ -2506,14 +2506,14 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("page_size")
                     .long("page-size")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .default_value("4096")
                     .help("Chunk size to digest over"),
             )
             .arg(
                 Arg::new("universal_index")
                     .long("universal-index")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .default_value("0")
                     .help("Index of Mach-O binary to operate on within a universal/fat binary"),
             ),
@@ -2542,7 +2542,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 Arg::new("output_path")
                     .short('o')
                     .long("output-path")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .value_parser(value_parser!(PathBuf))
                     .help("Path to a JSON file to create the output to"),
             )
@@ -2576,7 +2576,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("data")
                     .long("data")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .value_parser([
                         "blobs",
                         "cms-info",
@@ -2606,7 +2606,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("universal_index")
                     .long("universal-index")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .default_value("0")
                     .help("Index of Mach-O binary to operate on within a universal/fat binary"),
             ),
@@ -2618,7 +2618,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("csr_pem_path")
                     .long("csr-pem-path")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .help("Path to file to write PEM encoded CSR to")
             )
     ));
@@ -2630,7 +2630,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("algorithm")
                     .long("algorithm")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .value_parser(["ecdsa", "ed25519"])
                     .default_value("ecdsa")
                     .help("Which key type to use"),
@@ -2638,14 +2638,14 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("profile")
                     .long("profile")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .value_parser(CertificateProfile::str_names())
                     .default_value("apple-development"),
             )
             .arg(
                 Arg::new("team_id")
                     .long("team-id")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .default_value("unset")
                     .help(
                         "Team ID (this is a short string attached to your Apple Developer account)",
@@ -2654,28 +2654,28 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("person_name")
                     .long("person-name")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("The name of the person this certificate is for"),
             )
             .arg(
                 Arg::new("country_name")
                     .long("country-name")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .default_value("XX")
                     .help("Country Name (C) value for certificate identifier"),
             )
             .arg(
                 Arg::new("validity_days")
                     .long("validity-days")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .default_value("365")
                     .help("How many days the certificate should be valid for"),
             )
             .arg(
                 Arg::new("pem_filename")
                     .long("pem-filename")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .help("Base name of files to write PEM encoded certificate to"),
             ),
     );
@@ -2693,13 +2693,13 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("password")
                     .long("--password")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .help("Password to unlock the Keychain")
             )
             .arg(
                 Arg::new("password_file")
                     .long("--password-file")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .conflicts_with("password")
                     .help("File containing password to use to unlock the Keychain")
             )
@@ -2711,7 +2711,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
            .arg(
                Arg::new("user_id")
                     .long("--user-id")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("User ID value of code signing certificate to find and whose CA chain to export")
            ),
@@ -2735,7 +2735,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("submission_id")
                     .required(true)
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .help("The ID of the previous submission to wait on"),
             ),
     ));
@@ -2754,7 +2754,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("max_wait_seconds")
                     .long("max-wait-seconds")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .default_value("600")
                     .help("Maximum time in seconds to wait for the upload result"),
             )
@@ -2768,7 +2768,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             )
             .arg(
                 Arg::new("path")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("Path to asset to upload"),
             ),
@@ -2780,14 +2780,14 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("max_wait_seconds")
                     .long("max-wait-seconds")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .default_value("600")
                     .help("Maximum time in seconds to wait for the upload result"),
             )
             .arg(
                 Arg::new("submission_id")
                     .required(true)
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .help("The ID of the previous submission to wait on"),
             ),
     ));
@@ -2833,7 +2833,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .arg(
                     Arg::new("smartcard_slot")
                         .long("smartcard-slot")
-                        .action(ArgAction::StoreValue)
+                        .action(ArgAction::Set)
                         .required(true)
                         .help("Smartcard slot number to store key in (9c is common)"),
                 ),
@@ -2867,12 +2867,12 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("session_join_string_path")
                     .long("sjs-path")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .help("Path to file containing session join string"),
             )
             .arg(
                 Arg::new("session_join_string")
-                    .action(ArgAction::StoreValue)
+                    .action(ArgAction::Set)
                     .help("Session join string (provided by the signing initiator)"),
             )
             .group(
@@ -2949,14 +2949,14 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                     Arg::new(
                         "team_name")
                         .long("team-name")
-                        .action(ArgAction::StoreValue)
+                        .action(ArgAction::Set)
                         .help("Team name/identifier to include in code signature"
                     )
                 )
                 .arg(
                     Arg::new("timestamp_url")
                         .long("timestamp-url")
-                        .action(ArgAction::StoreValue)
+                        .action(ArgAction::Set)
                         .default_value(APPLE_TIMESTAMP_URL)
                         .help(
                             "URL of timestamp server to use to obtain a token of the CMS signature",
