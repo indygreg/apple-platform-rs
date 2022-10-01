@@ -592,7 +592,7 @@ fn collect_certificates_from_args(
         certs.push(cert);
     }
 
-    if let Some(values) = args.values_of("pem_source") {
+    if let Some(values) = args.get_many::<String>("pem_source") {
         for pem_source in values {
             warn!("reading PEM data from {}", pem_source);
             let pem_data = std::fs::read(pem_source)?;
@@ -614,7 +614,7 @@ fn collect_certificates_from_args(
         }
     }
 
-    if let Some(values) = args.values_of("der_source") {
+    if let Some(values) = args.get_many::<String>("der_source") {
         for der_source in values {
             warn!("reading DER file {}", der_source);
             let der_data = std::fs::read(der_source)?;
@@ -911,7 +911,7 @@ fn find_certificates_in_keychain(
     }
 
     // Collect all the keychain domains to search.
-    let domains = if let Some(domains) = args.values_of("keychain_domain") {
+    let domains = if let Some(domains) = args.get_many::<String>("keychain_domain") {
         domains
             .into_iter()
             .map(|x| x.to_string())
@@ -2149,7 +2149,7 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         settings.set_digest_type(digest_type);
     }
 
-    if let Some(values) = args.values_of("extra_digest") {
+    if let Some(values) = args.get_many::<String>("extra_digest") {
         for value in values {
             let (scope, digest_type) = parse_scoped_value(value)?;
             let digest_type = DigestType::try_from(digest_type)?;
@@ -2157,20 +2157,20 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         }
     }
 
-    if let Some(values) = args.values_of("exclude") {
+    if let Some(values) = args.get_many::<String>("exclude") {
         for pattern in values {
             settings.add_path_exclusion(pattern)?;
         }
     }
 
-    if let Some(values) = args.values_of("binary_identifier") {
+    if let Some(values) = args.get_many::<String>("binary_identifier") {
         for value in values {
             let (scope, identifier) = parse_scoped_value(value)?;
             settings.set_binary_identifier(scope, identifier);
         }
     }
 
-    if let Some(values) = args.values_of("code_requirements_path") {
+    if let Some(values) = args.get_many::<String>("code_requirements_path") {
         for value in values {
             let (scope, path) = parse_scoped_value(value)?;
 
@@ -2186,7 +2186,7 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         }
     }
 
-    if let Some(values) = args.values_of("code_resources") {
+    if let Some(values) = args.get_many::<String>("code_resources") {
         for value in values {
             let (scope, path) = parse_scoped_value(value)?;
 
@@ -2199,7 +2199,7 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         }
     }
 
-    if let Some(values) = args.values_of("code_signature_flags_set") {
+    if let Some(values) = args.get_many::<String>("code_signature_flags_set") {
         for value in values {
             let (scope, value) = parse_scoped_value(value)?;
 
@@ -2208,7 +2208,7 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         }
     }
 
-    if let Some(values) = args.values_of("entitlements_xml_path") {
+    if let Some(values) = args.get_many::<String>("entitlements_xml_path") {
         for value in values {
             let (scope, path) = parse_scoped_value(value)?;
 
@@ -2218,7 +2218,7 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         }
     }
 
-    if let Some(values) = args.values_of("runtime_version") {
+    if let Some(values) = args.get_many::<String>("runtime_version") {
         for value in values {
             let (scope, value) = parse_scoped_value(value)?;
 
@@ -2227,7 +2227,7 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         }
     }
 
-    if let Some(values) = args.values_of("info_plist_path") {
+    if let Some(values) = args.get_many::<String>("info_plist_path") {
         for value in values {
             let (scope, value) = parse_scoped_value(value)?;
 
