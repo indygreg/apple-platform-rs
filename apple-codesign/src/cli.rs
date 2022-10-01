@@ -416,10 +416,8 @@ fn add_certificate_source_args(app: Command) -> Command {
     .arg(
         Arg::new("keychain_domain")
             .long("keychain-domain")
-            .takes_value(true)
+            .action(ArgAction::Append)
             .possible_values(&["user", "system", "common", "dynamic"])
-            .multiple_occurrences(true)
-            .multiple_values(true)
             .help("(macOS only) Keychain domain to operate on"),
     )
     .arg(
@@ -431,17 +429,13 @@ fn add_certificate_source_args(app: Command) -> Command {
     .arg(
         Arg::new("pem_source")
             .long("pem-source")
-            .takes_value(true)
-            .multiple_occurrences(true)
-            .multiple_values(true)
+            .action(ArgAction::Append)
             .help("Path to file containing PEM encoded certificate/key data"),
     )
     .arg(
         Arg::new("der_source")
             .long("der-source")
-            .takes_value(true)
-            .multiple_occurrences(true)
-            .multiple_values(true)
+            .action(ArgAction::Append)
             .help("Path to file containing DER encoded certificate data"),
     )
     .arg(
@@ -2892,37 +2886,25 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .arg(
                     Arg::new("binary_identifier")
                         .long("binary-identifier")
-                        .takes_value(true)
-                        .multiple_occurrences(true)
-                        .multiple_values(true)
-                        .number_of_values(1)
+                        .action(ArgAction::Append)
                         .help("Identifier string for binary. The value normally used by CFBundleIdentifier")
                 )
                 .arg(
                     Arg::new("code_requirements_path")
                         .long("code-requirements-path")
-                        .takes_value(true)
-                        .multiple_occurrences(true)
-                        .multiple_values(true)
-                        .number_of_values(1)
+                        .action(ArgAction::Append)
                         .help("Path to a file containing binary code requirements data to be used as designated requirements")
                 )
                 .arg(
                     Arg::new("code_resources")
                         .long("code-resources-path")
-                        .takes_value(true)
-                        .multiple_occurrences(true)
-                        .multiple_values(true)
-                        .number_of_values(1)
+                        .action(ArgAction::Append)
                         .help("Path to an XML plist file containing code resources"),
                 )
                 .arg(
                     Arg::new("code_signature_flags_set")
                         .long("code-signature-flags")
-                        .takes_value(true)
-                        .multiple_occurrences(true)
-                        .multiple_values(true)
-                        .number_of_values(1)
+                        .action(ArgAction::Append)
                         .possible_values(CodeSignatureFlags::all_user_configurable())
                         .help("Code signature flags to set")
                 )
@@ -2936,37 +2918,26 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 )
                 .arg(Arg::new("extra_digest")
                     .long("extra-digest")
+                    .action(ArgAction::Append)
                     .possible_values(SUPPORTED_HASHES)
-                    .takes_value(true)
-                    .multiple_occurrences(true)
-                    .multiple_values(true)
-                    .number_of_values(1).help("Extra digests to include in signatures")
+                    .help("Extra digests to include in signatures")
                 )
                 .arg(
                     Arg::new("entitlements_xml_path")
                         .long("entitlements-xml-path")
                         .short('e')
-                        .takes_value(true)
-                        .multiple_occurrences(true)
-                        .multiple_values(true)
-                        .number_of_values(1)
+                        .action(ArgAction::Append)
                         .help("Path to a plist file containing entitlements"),
                 )
                 .arg(
                     Arg::new("runtime_version")
                         .long("runtime-version")
-                        .takes_value(true)
-                        .multiple_occurrences(true)
-                        .multiple_values(true)
-                        .number_of_values(1)
+                        .action(ArgAction::Append)
                         .help("Hardened runtime version to use (defaults to SDK version used to build binary)"))
                 .arg(
                     Arg::new("info_plist_path")
                         .long("info-plist-path")
-                        .takes_value(true)
-                        .multiple_occurrences(true)
-                        .multiple_values(true)
-                        .number_of_values(1)
+                        .action(ArgAction::Append)
                         .help("Path to an Info.plist file whose digest to include in Mach-O signature")
                 )
                 .arg(
@@ -2989,10 +2960,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .arg(
                     Arg::new("exclude")
                         .long("exclude")
-                        .takes_value(true)
-                        .multiple_occurrences(true)
-                        .multiple_values(true)
-                        .number_of_values(1)
+                        .action(ArgAction::Append)
                         .help("Glob expression of paths to exclude from signing")
                 )
                 .arg(
