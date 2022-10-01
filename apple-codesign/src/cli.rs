@@ -906,7 +906,7 @@ fn find_certificates_in_keychain(
 ) -> Result<(), AppleCodesignError> {
     // No arguments pertinent to keychains. Don't even speak to the
     // keychain API since this could only error.
-    if args.occurrences_of("keychain") == 0 {
+    if !args.contains_id("keychain") {
         return Ok(());
     }
 
@@ -957,7 +957,7 @@ fn find_certificates_in_keychain(
     _private_keys: &mut [Box<dyn PrivateKey>],
     _public_certificates: &mut [CapturedX509Certificate],
 ) -> Result<(), AppleCodesignError> {
-    if args.occurrences_of("keychain") > 0 {
+    if args.contains_id("keychain") {
         error!(
             "--keychain* arguments only supported on macOS and will be ignored on this platform"
         );
