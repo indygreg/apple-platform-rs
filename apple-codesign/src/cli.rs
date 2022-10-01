@@ -375,7 +375,7 @@ To exclude all nested bundles from being signed and only sign the main bundle
 
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
 
-const SUPPORTED_HASHES: &[&str; 6] = &[
+const SUPPORTED_HASHES: [&str; 6] = [
     "none",
     "sha1",
     "sha256",
@@ -2499,7 +2499,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 Arg::new("hash")
                     .long("hash")
                     .takes_value(true)
-                    .possible_values(SUPPORTED_HASHES)
+                    .value_parser(SUPPORTED_HASHES)
                     .default_value("sha256")
                     .help("Hashing algorithm to use"),
             )
@@ -2911,7 +2911,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .arg(
                     Arg::new("digest")
                         .long("digest")
-                        .possible_values(SUPPORTED_HASHES)
+                        .value_parser(SUPPORTED_HASHES)
                         .takes_value(true)
                         .default_value("sha256")
                         .help("Digest algorithm to use")
@@ -2919,7 +2919,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .arg(Arg::new("extra_digest")
                     .long("extra-digest")
                     .action(ArgAction::Append)
-                    .possible_values(SUPPORTED_HASHES)
+                    .value_parser(SUPPORTED_HASHES)
                     .help("Extra digests to include in signatures")
                 )
                 .arg(
