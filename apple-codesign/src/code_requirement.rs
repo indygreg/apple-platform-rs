@@ -168,7 +168,7 @@ fn format_certificate_slot(slot: i32) -> String {
 ///
 /// The value can be various primitive types. This type exists to make it
 /// easier to work with and format values in code requirement expressions.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum CodeRequirementValue<'a> {
     String(Cow<'a, str>),
     Bytes(Cow<'a, [u8]>),
