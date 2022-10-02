@@ -683,10 +683,9 @@ impl<'a> MachFile<'a> {
     }
 
     pub fn nth_macho(&self, index: usize) -> Result<&MachOBinary<'a>, AppleCodesignError> {
-        Ok(self
-            .machos
+        self.machos
             .get(index)
-            .ok_or_else(|| AppleCodesignError::InvalidMachOIndex(index))?)
+            .ok_or(AppleCodesignError::InvalidMachOIndex(index))
     }
 
     /// Produce an iterator over each [MachOBinary], consuming self.
