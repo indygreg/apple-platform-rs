@@ -87,7 +87,7 @@ version = "0.15.1-pre"
 
 [dependencies.apple-flat-package]
 path = "../apple-flat-package"
-version = "0.11.0-pre"
+version = "0.11.1-pre"
 
 [dependencies.apple-xar]
 path = "../apple-xar"

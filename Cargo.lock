@@ -134,7 +134,7 @@ dependencies = [
 
 [[package]]
 name = "apple-flat-package"
-version = "0.11.0"
+version = "0.11.1-pre"
 dependencies = [
  "apple-xar",
  "cpio-archive",
