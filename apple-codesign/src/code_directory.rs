@@ -136,7 +136,7 @@ impl FromStr for ExecutableSegmentFlags {
 }
 
 /// Version of Code Directory data structure.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(u32)]
 pub enum CodeDirectoryVersion {
     Initial = 0x20000,
