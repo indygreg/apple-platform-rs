@@ -301,7 +301,7 @@ impl<'a> TryFrom<PrivateKeyInfo<'a>> for InMemoryPrivateKey {
             x if x.as_bytes() == OID_SIG_ED25519.as_bytes() => {
                 // The private key seed should start at byte offset 2.
                 Ok(Self::Ed25519(InMemoryEd25519Key {
-                    private_key: Zeroizing::new((&value.private_key[2..]).to_vec()),
+                    private_key: Zeroizing::new((value.private_key[2..]).to_vec()),
                 }))
             }
             _ => Err(pkcs8::Error::KeyMalformed),
