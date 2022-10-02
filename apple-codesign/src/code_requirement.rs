@@ -200,7 +200,7 @@ impl<'a> From<Cow<'a, str>> for CodeRequirementValue<'a> {
     }
 }
 
-impl<'a> From<String> for CodeRequirementValue<'static> {
+impl From<String> for CodeRequirementValue<'static> {
     fn from(v: String) -> Self {
         Self::String(Cow::Owned(v))
     }
