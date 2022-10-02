@@ -178,7 +178,7 @@ fn create_macho_with_signature(
                     padding.len(),
                     segment.name().unwrap_or("<unknown>")
                 );
-                cursor.write_all(&padding)?;
+                cursor.write_all(padding)?;
             }
             // The __TEXT segment usually has .fileoff = 0, which has it overlapping with
             // already written data. Allow this special case through.
