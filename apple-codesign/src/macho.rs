@@ -198,8 +198,9 @@ impl<'a> MachOBinary<'a> {
         let last_segment = self
             .segments_by_file_offset()
             .last()
-            .ok_or(AppleCodesignError::MissingLinkedit)?
-            .clone();
+            .copied()
+            .ok_or(AppleCodesignError::MissingLinkedit)?;
+
         if !matches!(last_segment.name(), Ok(SEG_LINKEDIT)) {
             return Err(AppleCodesignError::LinkeditNotLast);
         }
@@ -318,8 +319,8 @@ impl<'a> MachOBinary<'a> {
         let last_segment = self
             .segments_by_file_offset()
             .last()
-            .ok_or(AppleCodesignError::MissingLinkedit)?
-            .clone();
+            .copied()
+            .ok_or(AppleCodesignError::MissingLinkedit)?;
 
         // Last segment needs to be __LINKEDIT so we don't have to write offsets.
         if !matches!(last_segment.name(), Ok(SEG_LINKEDIT)) {
