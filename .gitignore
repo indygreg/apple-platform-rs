@@ -1,4 +1,4 @@
 .idea/
 apple-codesign/docs/_build/
+dist/
 target/
-
