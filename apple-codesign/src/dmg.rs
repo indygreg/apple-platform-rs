@@ -67,7 +67,7 @@ const KOLY_SIZE: i64 = 512;
 /// DMG trailer describing file content.
 ///
 /// This is the main structure defining a DMG.
-#[derive(Clone, Debug, Pread, PartialEq, Pwrite, SizeWith)]
+#[derive(Clone, Debug, Eq, Pread, PartialEq, Pwrite, SizeWith)]
 pub struct KolyTrailer {
     /// "koly"
     pub signature: [u8; 4],
