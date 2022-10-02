@@ -1,6 +1,6 @@
 allow-branch = ["main"]
 push-remote = "origin"
-dev-version-ext = "alpha.0"
+dev-version-ext = "pre"
 dev-version = true
 pre-release-commit-message = "{{crate_name}}: release version {{version}}"
 post-release-commit-message = "{{crate_name}}: bump version {{next_version}}"
