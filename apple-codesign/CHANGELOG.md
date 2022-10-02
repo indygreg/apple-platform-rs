@@ -33,7 +33,7 @@ Released on 2022-10-02.
 * `aws-config`, `aws-smithy-http` upgraded from 0.47 -> 0.49.
 * `aws-sdk-s3` upgraded from 0.17 -> 0.19.
 * `clap` upgraded from 3.1 -> 4.0. This entailed a lot of code changes to
-  argument parsing. Argument parsing behavior should be backwards incompatible
+  argument parsing. Argument parsing behavior should be backwards compatible
   (unless otherwise documented in this section) and any change in behavior is
   a bug.
 
