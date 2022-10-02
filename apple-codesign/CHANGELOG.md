@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.20.0
+
+Released on 2022-10-02.
+
 * Zip notarization support. APIs and the `notary-submit` CLI command now recognize
   zip files and will upload them to the Notary API without modifications. Neither
   zip file signing nor stapling are supported. Feature contributed by @deansheather.
