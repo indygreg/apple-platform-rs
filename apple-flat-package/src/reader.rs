@@ -16,7 +16,7 @@ use {
 };
 
 /// The type of a flat package.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PkgFlavor {
     /// A *component* installer.
     ///
