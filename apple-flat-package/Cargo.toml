@@ -20,4 +20,4 @@ thiserror = "1.0"
 
 [dependencies.apple-xar]
 path = "../apple-xar"
-version = "0.11.0-pre"
+version = "0.11.1-pre"

@@ -91,7 +91,7 @@ version = "0.11.0-pre"
 
 [dependencies.apple-xar]
 path = "../apple-xar"
-version = "0.11.0-pre"
+version = "0.11.1-pre"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 security-framework = { version = "2.6", features = ["OSX_10_12"] }
