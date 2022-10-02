@@ -802,14 +802,12 @@ checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
 
 [[package]]
 name = "cpio-archive"
-version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "422d3f6e51093f728814e49d4bc4820b11d7a92b4c3c99ef5a396012ddb6fafe"
+version = "0.6.0-pre"
 dependencies = [
  "chrono",
  "is_executable",
+ "simple-file-manifest",
  "thiserror",
- "tugger-file-manifest",
 ]
 
 [[package]]
@@ -3014,12 +3012,6 @@ name = "try-lock"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59547bce71d9c38b83d9c0e92b6066c4253371f15005def0c30d9657f50c7642"
-
-[[package]]
-name = "tugger-file-manifest"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4eb47a7c6d38b6994490284e7572edbe226364e85cf1ab18525cfabeb0ea70be"
 
 [[package]]
 name = "tungstenite"
