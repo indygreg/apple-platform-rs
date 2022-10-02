@@ -1041,7 +1041,7 @@ impl MatchType {
 }
 
 /// An instance of a match expression in a [CodeRequirementExpression].
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum CodeRequirementMatchExpression<'a> {
     /// Entity exists.
     ///
