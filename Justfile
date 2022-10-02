@@ -166,8 +166,6 @@ _create_shasums dir:
   done
 
 _upload_release name title_name commit tag:
-  git tag -f {{name}}/{{tag}} {{commit}}
-  git push -f origin refs/tags/{{name}}/{{tag}}:refs/tags/{{name}}/{{tag}}
   gh release create \
     --prerelease \
     --target {{commit}} \
