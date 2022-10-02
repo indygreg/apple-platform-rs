@@ -596,7 +596,7 @@ impl Signature {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Deserialize)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum SignatureStyle {
     /// Cryptographic message syntax.
