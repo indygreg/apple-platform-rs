@@ -83,7 +83,7 @@ zip_structs = "0.2"
 
 [dependencies.apple-bundles]
 path = "../apple-bundles"
-version = "0.15.0-pre"
+version = "0.15.1-pre"
 
 [dependencies.apple-flat-package]
 path = "../apple-flat-package"
