@@ -993,7 +993,7 @@ impl<'a> BlobWrapperBlob<'a> {
     }
 }
 
-impl<'a> BlobWrapperBlob<'static> {
+impl BlobWrapperBlob<'static> {
     /// Construct an instance with payload data.
     pub fn from_data_owned(data: Vec<u8>) -> BlobWrapperBlob<'static> {
         Self { data: data.into() }
