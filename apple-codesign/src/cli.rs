@@ -459,6 +459,7 @@ fn add_certificate_source_args(app: Command) -> Command {
     .arg(
         Arg::new("remote_signer")
             .long("remote-signer")
+            .action(ArgAction::SetTrue)
             .requires("remote_initialization")
             .help("Send signing requests to a remote server"),
     )
@@ -631,7 +632,7 @@ fn collect_certificates_from_args(
         }
     }
 
-    let remote_signing_url = if args.contains_id("remote_signer") {
+    let remote_signing_url = if args.get_flag("remote_signer") {
         args.get_one::<String>("remote_signing_url")
     } else {
         None
@@ -1786,7 +1787,7 @@ fn command_keychain_export_certificate_chain(args: &ArgMatches) -> Result<(), Ap
     let certs = macos_keychain_find_certificate_chain(domain, password.as_deref(), user_id)?;
 
     for (i, cert) in certs.iter().enumerate() {
-        if args.contains_id("no_print_self") && i == 0 {
+        if args.get_flag("no_print_self") && i == 0 {
             continue;
         }
 
@@ -2017,7 +2018,7 @@ fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         .get_one::<String>("remote_signing_url")
         .expect("remote signing URL should always be present");
 
-    let session_join_string = if args.contains_id("session_join_string_editor") {
+    let session_join_string = if args.get_flag("session_join_string_editor") {
         let mut value = None;
 
         for _ in 0..3 {
@@ -2344,7 +2345,7 @@ fn command_smartcard_import(args: &ArgMatches) -> Result<(), AppleCodesignError>
         args.get_one::<String>("pin_policy")
             .expect("pin_policy argument is required"),
     )?;
-    let use_existing_key = args.contains_id("existing_key");
+    let use_existing_key = args.get_flag("existing_key");
 
     println!(
         "found {} private keys and {} public certificates",
@@ -2492,6 +2493,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .about("Compute code hashes for a binary")
             .arg(
                 Arg::new("path")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("path to Mach-O binary to examine"),
             )
@@ -2524,11 +2526,13 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .about("Print a diff between the signature content of two paths")
             .arg(
                 Arg::new("path0")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("The first path to compare"),
             )
             .arg(
                 Arg::new("path1")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("The second path to compare"),
             ),
@@ -2548,16 +2552,19 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             )
             .arg(
                 Arg::new("issuer_id")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("The issuer of the API Token. Likely a UUID"),
             )
             .arg(
                 Arg::new("key_id")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("The Key ID. A short alphanumeric string like DEADBEEF42"),
             )
             .arg(
                 Arg::new("private_key_path")
+                    .action(ArgAction::Set)
                     .required(true)
                     .value_parser(value_parser!(PathBuf))
                     .help("Path to a file containing the private key downloaded from Apple"),
@@ -2570,6 +2577,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .long_about(EXTRACT_ABOUT)
             .arg(
                 Arg::new("path")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("Path to Mach-O binary to examine"),
             )
@@ -2686,6 +2694,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("domain")
                     .long("domain")
+                    .action(ArgAction::Set)
                     .value_parser(["user", "system", "common", "dynamic"])
                     .default_value("user")
                     .help("Keychain domain to operate on")
@@ -2706,6 +2715,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
            .arg(
                 Arg::new("no_print_self")
                     .long("--no-print-self")
+                    .action(ArgAction::SetTrue)
                     .help("Print only the issuing certificate chain, not the subject certificate")
            )
            .arg(
@@ -2723,6 +2733,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("domain")
                     .long("--domain")
+                    .action(ArgAction::Set)
                     .value_parser(["user", "system", "common", "dynamic"])
                     .default_value("user")
                     .help("Keychain domain to operate on"),
@@ -2734,8 +2745,8 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .about("Fetch the notarization log for a previous submission")
             .arg(
                 Arg::new("submission_id")
-                    .required(true)
                     .action(ArgAction::Set)
+                    .required(true)
                     .help("The ID of the previous submission to wait on"),
             ),
     ));
@@ -2786,8 +2797,8 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             )
             .arg(
                 Arg::new("submission_id")
-                    .required(true)
                     .action(ArgAction::Set)
+                    .required(true)
                     .help("The ID of the previous submission to wait on"),
             ),
     ));
@@ -2799,6 +2810,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("format")
                     .long("--format")
+                    .action(ArgAction::Set)
                     .required(true)
                     .value_parser(["csrl", "expression-tree"])
                     .default_value("csrl")
@@ -2806,6 +2818,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             )
             .arg(
                 Arg::new("input_path")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("Path to file to parse"),
             ),
@@ -2816,6 +2829,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .about("Print signature information for a filesystem path")
             .arg(
                 Arg::new("path")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("Filesystem path to entity whose info to print"),
             ),
@@ -2845,6 +2859,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .arg(
                     Arg::new("existing_key")
                         .long("existing-key")
+                        .action(ArgAction::SetTrue)
                         .help("Re-use the existing private key in the smartcard slot"),
                 )
                 .arg(
@@ -2862,6 +2877,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .arg(
                 Arg::new("session_join_string_editor")
                     .long("editor")
+                    .action(ArgAction::SetTrue)
                     .help("Open an editor to input the session join string"),
             )
             .arg(
@@ -2917,6 +2933,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .arg(
                     Arg::new("digest")
                         .long("digest")
+                        .action(ArgAction::Set)
                         .value_parser(SUPPORTED_HASHES)
                         .default_value("sha256")
                         .help("Digest algorithm to use")
@@ -2970,11 +2987,13 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 )
                 .arg(
                     Arg::new("input_path")
+                        .action(ArgAction::Set)
                         .required(true)
                         .help("Path to Mach-O binary to sign"),
                 )
                 .arg(
                     Arg::new("output_path")
+                        .action(ArgAction::Set)
                         .help("Path to signed Mach-O binary to write"),
                 ),
         ));
@@ -2984,6 +3003,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .about("Staples a notarization ticket to an entity")
             .arg(
                 Arg::new("path")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("Path to entity to attempt to staple"),
             ),
@@ -2994,6 +3014,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .about("Verifies code signature data")
             .arg(
                 Arg::new("path")
+                    .action(ArgAction::Set)
                     .required(true)
                     .help("Path of Mach-O binary to examine"),
             ),
