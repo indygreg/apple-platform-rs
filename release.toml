@@ -1,0 +1,18 @@
+allow-branch = ["main"]
+push-remote = "origin"
+dev-version-ext = "alpha.0"
+dev-version = true
+pre-release-commit-message = "{{crate_name}}: release version {{version}}"
+post-release-commit-message = "{{crate_name}}: bump version {{next_version}}"
+tag-message = "{{crate_name}}: version {{version}}"
+tag-name = "{{crate_name}}/{{version}}"
+tag = true
+enable-features = []
+enable-all-features = false
+dependent-version = "fix"
+
+pre-release-replacements = [
+  {file="CHANGELOG.md", search="Unreleased", replace="{{version}}"},
+  {file="CHANGELOG.md", search="ReleaseDate", replace="{{date}}"},
+  {file="CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n\n## Unreleased\n\nReleased on ReleaseDate.", exactly=1},
+]
