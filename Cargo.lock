@@ -47,7 +47,7 @@ dependencies = [
 
 [[package]]
 name = "apple-bundles"
-version = "0.15.0-pre"
+version = "0.15.0"
 dependencies = [
  "anyhow",
  "plist",
