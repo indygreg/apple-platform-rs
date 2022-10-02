@@ -139,7 +139,7 @@ where
     secret_key: ECSecretKey<C>,
 }
 
-impl<'a, C> InMemoryEcdsaKey<C>
+impl<C> InMemoryEcdsaKey<C>
 where
     C: Curve + ProjectiveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
