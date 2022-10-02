@@ -40,8 +40,7 @@ impl<R: Read + Seek + Sized + Debug> XarReader<R> {
     pub fn new(mut reader: R) -> XarResult<Self> {
         let header = reader.ioread_with::<XarHeader>(scroll::BE)?;
 
-        let mut header_extra = Vec::with_capacity(header.size as usize - 28);
-        header_extra.resize(header_extra.capacity(), 0);
+        let mut header_extra = vec![0u8; header.size as usize - 28];
         reader.read_exact(&mut header_extra)?;
 
         // Following the header is a zlib compressed table of contents.
