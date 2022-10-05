@@ -154,6 +154,7 @@ Finally, import the Apple-issued public certificate into the smart card::
 
     rcodesign smartcard-import \
         --der-source developerID_application.cer \
+        --existing-key \
         --smartcard-slot 9c
 
 At this point, the smart card is ready to sign using an Apple issued certificate
