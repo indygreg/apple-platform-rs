@@ -628,7 +628,8 @@ fn collect_certificates_from_args(
 
     if scan_smartcard {
         if let Some(slot) = args.get_one::<String>("smartcard_slot") {
-            handle_smartcard_sign_slot(slot, &mut keys, &mut certs)?;
+            let pin_env_var = args.get_one::<String>("smartcard_pin_env");
+            handle_smartcard_sign_slot(slot, pin_env_var, &mut keys, &mut certs)?;
         }
     }
 
@@ -869,13 +870,28 @@ fn prompt_smartcard_pin() -> Result<Vec<u8>, AppleCodesignError> {
 #[cfg(feature = "yubikey")]
 fn handle_smartcard_sign_slot(
     slot: &str,
+    pin_env_var: Option<&String>,
     private_keys: &mut Vec<Box<dyn PrivateKey>>,
     public_certificates: &mut Vec<CapturedX509Certificate>,
 ) -> Result<(), AppleCodesignError> {
     let slot_id = ::yubikey::piv::SlotId::from_str(slot)?;
     let formatted = hex::encode([u8::from(slot_id)]);
     let mut yk = YubiKey::new()?;
-    yk.set_pin_callback(prompt_smartcard_pin);
+
+    if let Some(pin_var) = pin_env_var {
+        let pin_var = pin_var.to_owned();
+
+        yk.set_pin_callback(move || {
+            if let Ok(pin) = std::env::var(&pin_var) {
+                eprintln!("using {} environment variable", &pin_var);
+                Ok(pin.as_bytes().to_vec())
+            } else {
+                prompt_smartcard_pin()
+            }
+        });
+    } else {
+        yk.set_pin_callback(prompt_smartcard_pin);
+    }
 
     if let Some(cert) = yk.get_certificate_signer(slot_id)? {
         warn!("using certificate in smartcard slot {}", formatted);
@@ -891,6 +907,7 @@ fn handle_smartcard_sign_slot(
 #[cfg(not(feature = "yubikey"))]
 fn handle_smartcard_sign_slot(
     _slot: &str,
+    _pin_env_var: Option<&String>,
     _private_keys: &mut [Box<dyn PrivateKey>],
     _public_certificates: &mut [CapturedX509Certificate],
 ) -> Result<(), AppleCodesignError> {
@@ -2984,6 +3001,15 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                         .long("exclude")
                         .action(ArgAction::Append)
                         .help("Glob expression of paths to exclude from signing")
+                )
+                .arg(
+                    Arg::new("smartcard_pin_env")
+                        .long("smartcard-pin-env")
+                        .conflicts_with_all(&remote_initialization_args(Some(
+                            "smartcard_pin_env",
+                        )))
+                        .action(ArgAction::Set)
+                        .help("Environment variable holding the smartcard PIN"),
                 )
                 .arg(
                     Arg::new("input_path")
