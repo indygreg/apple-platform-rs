@@ -4,6 +4,8 @@
 
 //! Yubikey interaction.
 
+use std::rc::Rc;
+
 use {
     crate::{
         cryptography::{rsa_oaep_post_decrypt_decode, PrivateKey},
@@ -30,7 +32,7 @@ use {
 };
 
 /// A function that will attempt to resolve the PIN to unlock a YubiKey.
-pub type PinCallback = fn() -> Result<Vec<u8>, AppleCodesignError>;
+pub type PinCallback = dyn Fn() -> Result<Vec<u8>, AppleCodesignError>;
 
 fn algorithm_from_certificate(
     cert: &CapturedX509Certificate,
@@ -156,7 +158,7 @@ fn attempt_authenticated_operation<T>(
 /// Represents a connection to a yubikey device.
 pub struct YubiKey {
     yk: Arc<Mutex<RawYubiKey>>,
-    pin_callback: Option<PinCallback>,
+    pin_callback: Option<Rc<PinCallback>>,
 }
 
 impl From<RawYubiKey> for YubiKey {
@@ -180,8 +182,10 @@ impl YubiKey {
     }
 
     /// Set a callback function to be used for retrieving the PIN.
-    pub fn set_pin_callback(&mut self, cb: PinCallback) {
-        self.pin_callback = Some(cb);
+    pub fn set_pin_callback<T>(&mut self, cb: T)
+        where T: Fn() -> Result<Vec<u8>, AppleCodesignError> + 'static
+    {
+        self.pin_callback = Some(Rc::new(cb));
     }
 
     pub fn inner(&self) -> Result<MutexGuard<RawYubiKey>, AppleCodesignError> {
@@ -277,7 +281,7 @@ impl YubiKey {
                 Ok(())
             },
             RequiredAuthentication::ManagementKeyAndPin,
-            self.pin_callback.as_ref(),
+            self.pin_callback.as_deref(),
         )?;
 
         Ok(())
@@ -310,7 +314,7 @@ impl YubiKey {
                 Ok(())
             },
             RequiredAuthentication::ManagementKeyAndPin,
-            self.pin_callback.as_ref(),
+            self.pin_callback.as_deref(),
         )?;
 
         Ok(())
@@ -409,7 +413,7 @@ impl YubiKey {
                 Ok(YkCertificate::delete(yk, slot)?)
             },
             RequiredAuthentication::ManagementKeyAndPin,
-            self.pin_callback.as_ref(),
+            self.pin_callback.as_deref(),
         )?;
 
         let key_info = attempt_authenticated_operation(
@@ -425,7 +429,7 @@ impl YubiKey {
                 )?)
             },
             RequiredAuthentication::ManagementKeyAndPin,
-            self.pin_callback.as_ref(),
+            self.pin_callback.as_deref(),
         )?;
 
         warn!("private key successfully generated");
@@ -481,7 +485,7 @@ impl YubiKey {
                 Ok(fake_cert.write(yk, slot, CertInfo::Uncompressed)?)
             },
             RequiredAuthentication::ManagementKeyAndPin,
-            self.pin_callback.as_ref(),
+            self.pin_callback.as_deref(),
         )?;
 
         Ok(())
@@ -510,7 +514,7 @@ impl YubiKey {
                 Ok(cert.write(yk, slot, CertInfo::Uncompressed)?)
             },
             RequiredAuthentication::ManagementKeyAndPin,
-            self.pin_callback.as_ref(),
+            self.pin_callback.as_deref(),
         )?;
 
         warn!("certificate import successful");
@@ -527,7 +531,7 @@ pub struct CertificateSigner {
     yk: Arc<Mutex<RawYubiKey>>,
     slot: SlotId,
     cert: CapturedX509Certificate,
-    pin_callback: Option<PinCallback>,
+    pin_callback: Option<Rc<PinCallback>>,
 }
 
 impl Signer<Signature> for CertificateSigner {
@@ -582,7 +586,7 @@ impl Signer<Signature> for CertificateSigner {
                 Ok(Signature::from(signature.to_vec()))
             },
             RequiredAuthentication::Pin,
-            self.pin_callback.as_ref(),
+            self.pin_callback.as_deref(),
         )
         .map_err(signature::Error::from_source)
     }
@@ -675,7 +679,7 @@ impl PublicKeyPeerDecrypt for CertificateSigner {
                 Ok(plaintext)
             },
             RequiredAuthentication::Pin,
-            self.pin_callback.as_ref(),
+            self.pin_callback.as_deref(),
         )
         .map_err(|e| RemoteSignError::Crypto(format!("failed to decrypt using YubiKey: {}", e)))
     }
