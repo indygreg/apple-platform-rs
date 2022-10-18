@@ -32,7 +32,8 @@ use {
 };
 
 /// A function that will attempt to resolve the PIN to unlock a YubiKey.
-pub type PinCallback = dyn Fn() -> Result<Vec<u8>, AppleCodesignError>;
+pub trait PinCallback: Fn() -> Result<Vec<u8>, AppleCodesignError> {}
+impl<T: Fn () -> Result<Vec<u8>, AppleCodesignError>> PinCallback for T {}
 
 fn algorithm_from_certificate(
     cert: &CapturedX509Certificate,
@@ -89,7 +90,7 @@ fn attempt_authenticated_operation<T>(
     yk: &mut RawYubiKey,
     op: impl Fn(&mut RawYubiKey) -> Result<T, AppleCodesignError>,
     required_authentication: RequiredAuthentication,
-    get_device_pin: Option<&PinCallback>,
+    get_device_pin: Option<&dyn PinCallback>,
 ) -> Result<T, AppleCodesignError> {
     const MAX_ATTEMPTS: u8 = 3;
 
@@ -158,7 +159,7 @@ fn attempt_authenticated_operation<T>(
 /// Represents a connection to a yubikey device.
 pub struct YubiKey {
     yk: Arc<Mutex<RawYubiKey>>,
-    pin_callback: Option<Rc<PinCallback>>,
+    pin_callback: Option<Rc<dyn PinCallback>>,
 }
 
 impl From<RawYubiKey> for YubiKey {
@@ -183,7 +184,7 @@ impl YubiKey {
 
     /// Set a callback function to be used for retrieving the PIN.
     pub fn set_pin_callback<T>(&mut self, cb: T)
-        where T: Fn() -> Result<Vec<u8>, AppleCodesignError> + 'static
+        where T: PinCallback + 'static
     {
         self.pin_callback = Some(Rc::new(cb));
     }
@@ -531,7 +532,7 @@ pub struct CertificateSigner {
     yk: Arc<Mutex<RawYubiKey>>,
     slot: SlotId,
     cert: CapturedX509Certificate,
-    pin_callback: Option<Rc<PinCallback>>,
+    pin_callback: Option<Rc<dyn PinCallback>>,
 }
 
 impl Signer<Signature> for CertificateSigner {
