@@ -629,7 +629,7 @@ fn collect_certificates_from_args(
     if scan_smartcard {
         if let Some(slot) = args.get_one::<String>("smartcard_slot") {
             let pin_env_var = args.get_one::<String>("smartcard_pin_env");
-            handle_smartcard_sign_slot(slot, pin_env_var, &mut keys, &mut certs)?;
+            handle_smartcard_sign_slot(slot, pin_env_var.map(|x| &**x), &mut keys, &mut certs)?;
         }
     }
 
@@ -870,7 +870,7 @@ fn prompt_smartcard_pin() -> Result<Vec<u8>, AppleCodesignError> {
 #[cfg(feature = "yubikey")]
 fn handle_smartcard_sign_slot(
     slot: &str,
-    pin_env_var: Option<&String>,
+    pin_env_var: Option<&str>,
     private_keys: &mut Vec<Box<dyn PrivateKey>>,
     public_certificates: &mut Vec<CapturedX509Certificate>,
 ) -> Result<(), AppleCodesignError> {
@@ -883,7 +883,7 @@ fn handle_smartcard_sign_slot(
 
         yk.set_pin_callback(move || {
             if let Ok(pin) = std::env::var(&pin_var) {
-                eprintln!("using {} environment variable", &pin_var);
+                eprintln!("using PIN from {} environment variable", &pin_var);
                 Ok(pin.as_bytes().to_vec())
             } else {
                 prompt_smartcard_pin()
@@ -907,7 +907,7 @@ fn handle_smartcard_sign_slot(
 #[cfg(not(feature = "yubikey"))]
 fn handle_smartcard_sign_slot(
     _slot: &str,
-    _pin_env_var: Option<&String>,
+    _pin_env_var: Option<&str>,
     _private_keys: &mut [Box<dyn PrivateKey>],
     _public_certificates: &mut [CapturedX509Certificate],
 ) -> Result<(), AppleCodesignError> {
