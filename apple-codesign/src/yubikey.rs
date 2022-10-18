@@ -183,9 +183,7 @@ impl YubiKey {
     }
 
     /// Set a callback function to be used for retrieving the PIN.
-    pub fn set_pin_callback<T>(&mut self, cb: T)
-        where T: PinCallback + 'static
-    {
+    pub fn set_pin_callback(&mut self, cb: impl PinCallback + 'static) {
         self.pin_callback = Some(Rc::new(cb));
     }
 
