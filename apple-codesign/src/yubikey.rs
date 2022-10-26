@@ -4,8 +4,6 @@
 
 //! Yubikey interaction.
 
-use std::rc::Rc;
-
 use {
     crate::{
         cryptography::{rsa_oaep_post_decrypt_decode, PrivateKey},
@@ -32,8 +30,8 @@ use {
 };
 
 /// A function that will attempt to resolve the PIN to unlock a YubiKey.
-pub trait PinCallback: Fn() -> Result<Vec<u8>, AppleCodesignError> {}
-impl<T: Fn () -> Result<Vec<u8>, AppleCodesignError>> PinCallback for T {}
+pub trait PinCallback: Fn() -> Result<Vec<u8>, AppleCodesignError> + Send + Sync {}
+impl<T: Fn () -> Result<Vec<u8>, AppleCodesignError> + Send + Sync> PinCallback for T {}
 
 fn algorithm_from_certificate(
     cert: &CapturedX509Certificate,
@@ -159,7 +157,7 @@ fn attempt_authenticated_operation<T>(
 /// Represents a connection to a yubikey device.
 pub struct YubiKey {
     yk: Arc<Mutex<RawYubiKey>>,
-    pin_callback: Option<Rc<dyn PinCallback>>,
+    pin_callback: Option<Arc<dyn PinCallback>>,
 }
 
 impl From<RawYubiKey> for YubiKey {
@@ -184,7 +182,7 @@ impl YubiKey {
 
     /// Set a callback function to be used for retrieving the PIN.
     pub fn set_pin_callback(&mut self, cb: impl PinCallback + 'static) {
-        self.pin_callback = Some(Rc::new(cb));
+        self.pin_callback = Some(Arc::new(cb));
     }
 
     pub fn inner(&self) -> Result<MutexGuard<RawYubiKey>, AppleCodesignError> {
@@ -530,7 +528,7 @@ pub struct CertificateSigner {
     yk: Arc<Mutex<RawYubiKey>>,
     slot: SlotId,
     cert: CapturedX509Certificate,
-    pin_callback: Option<Rc<dyn PinCallback>>,
+    pin_callback: Option<Arc<dyn PinCallback>>,
 }
 
 impl Signer<Signature> for CertificateSigner {
