@@ -83,7 +83,7 @@ impl From<&InMemoryRsaKey> for RsaConstructedKey {
         let prime2 = BigUint::from_bytes_be(key.prime2.as_bytes());
         let primes = vec![prime1, prime2];
 
-        Self::from_components(n, e, d, primes)
+        Self::from_components(n, e, d, primes).expect("inputs valid")
     }
 }
 
