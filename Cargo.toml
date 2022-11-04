@@ -3,6 +3,7 @@ members = [
     'apple-bom',
     'apple-bundles',
     'apple-codesign',
+    'apple-dmg',
     'apple-flat-package',
     'apple-sdk',
     'apple-xar',
