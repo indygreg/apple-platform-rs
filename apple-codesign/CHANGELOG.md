@@ -9,6 +9,8 @@ Released on ReleaseDate.
 * Embedded entitlements XML is now used when estimating the size of signatures.
   Previously, this data could cause us to not reserve enough space for the
   signature, causing signing to fail. (#32, #40)
+* Bundle stapling is now capable of stapling any bundle with a main executable,
+  not just app bundles with a main executable. (#41)
 
 ## 0.20.0
 

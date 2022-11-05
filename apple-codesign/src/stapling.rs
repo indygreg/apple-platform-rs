@@ -20,7 +20,7 @@ use {
         ticket_lookup::{default_client, lookup_notarization_ticket},
         AppleCodesignError,
     },
-    apple_bundles::{BundlePackageType, DirectoryBundle},
+    apple_bundles::DirectoryBundle,
     apple_xar::reader::XarReader,
     log::{error, info, warn},
     reqwest::blocking::Client,
@@ -37,13 +37,7 @@ use {
 ///
 /// The record name is derived from the digest of the code directory of the
 /// main binary within the bundle.
-pub fn record_name_from_app_bundle(bundle: &DirectoryBundle) -> Result<String, AppleCodesignError> {
-    if !matches!(bundle.package_type(), BundlePackageType::App) {
-        return Err(AppleCodesignError::StapleUnsupportedBundleType(
-            bundle.package_type(),
-        ));
-    }
-
+pub fn record_name_from_executable_bundle(bundle: &DirectoryBundle) -> Result<String, AppleCodesignError> {
     let main_exe = bundle
         .files(false)
         .map_err(AppleCodesignError::DirectoryBundle)?
@@ -162,11 +156,11 @@ impl Stapler {
     /// This errors if there is a problem deriving the notarization ticket record name
     /// or if a failure occurs when looking up the notarization ticket. This can include
     /// a notarization ticket not existing for the requested record.
-    pub fn lookup_ticket_for_app_bundle(
+    pub fn lookup_ticket_for_executable_bundle(
         &self,
         bundle: &DirectoryBundle,
     ) -> Result<Vec<u8>, AppleCodesignError> {
-        let record_name = record_name_from_app_bundle(bundle)?;
+        let record_name = record_name_from_executable_bundle(bundle)?;
 
         let response = lookup_notarization_ticket(&self.client, &record_name)?;
 
@@ -181,7 +175,7 @@ impl Stapler {
             "attempting to find notarization ticket for bundle at {}",
             bundle.root_dir().display()
         );
-        let ticket_data = self.lookup_ticket_for_app_bundle(bundle)?;
+        let ticket_data = self.lookup_ticket_for_executable_bundle(bundle)?;
         staple_ticket_to_bundle(bundle, &ticket_data)?;
 
         Ok(())
