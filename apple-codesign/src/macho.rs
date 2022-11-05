@@ -408,6 +408,11 @@ impl<'a> MachOBinary<'a> {
             size += cert.constructed_data().len();
         }
 
+        // Add entitlements xml if needed.
+        if let Some(entitlements) = settings.entitlements_xml(SettingsScope::Main)? {
+            size += entitlements.as_bytes().len()
+        }
+
         // Obtain an actual timestamp token of placeholder data and use its length.
         // This may be excessive to actually query the time-stamp server and issue
         // a token. But these operations should be "cheap."
