@@ -38,12 +38,6 @@ use {
 /// The record name is derived from the digest of the code directory of the
 /// main binary within the bundle.
 pub fn record_name_from_app_bundle(bundle: &DirectoryBundle) -> Result<String, AppleCodesignError> {
-    if !matches!(bundle.package_type(), BundlePackageType::App) {
-        return Err(AppleCodesignError::StapleUnsupportedBundleType(
-            bundle.package_type(),
-        ));
-    }
-
     let main_exe = bundle
         .files(false)
         .map_err(AppleCodesignError::DirectoryBundle)?
