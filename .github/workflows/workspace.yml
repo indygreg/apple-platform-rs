@@ -41,29 +41,31 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Conditionally Enable sccache
+        shell: bash
+        run: |
+          if [ -n "${AWS_SECRET_ACCESS_KEY}" ]; then
+            echo "enabling sccache"
+            echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+          fi
+
       - uses: ./.github/actions/rust-bootstrap
         with:
           rust_toolchain: ${{ matrix.rust_toolchain }}
           rust_target: ${{ matrix.target.triple }}
 
       - name: Build Workspace
-        env:
-          RUSTC_WRAPPER: sccache
         run: |
           rustc --version
           cargo build --workspace
           cargo nextest run --no-run --workspace
 
       - name: Test Workspace
-        env:
-          RUSTC_WRAPPER: sccache
         run: |
           cargo nextest run --no-fail-fast --success-output immediate-final --workspace
 
       - uses: actions-rs/clippy@master
         if: ${{ matrix.rust_toolchain == 'stable' || matrix.rust_toolchain == 'beta' }}
-        env:
-          RUSTC_WRAPPER: sccache
         with:
           args: --workspace
 

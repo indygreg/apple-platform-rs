@@ -53,7 +53,6 @@ jobs:
       SCCACHE_S3_USE_SSL: '1'
       # Prevent sccache server from stopping due to inactivity.
       SCCACHE_IDLE_TIMEOUT: '0'
-      RUSTC_WRAPPER: sccache
 
       # This forces the lzma-sys crate to link liblzma statically. Ideally we'd do
       # this with a crate feature. But the xz2 crate didn't expose that feature at the
@@ -61,6 +60,14 @@ jobs:
       LZMA_API_STATIC: '1'
     steps:
       - uses: actions/checkout@v3
+
+      - name: Conditionally Enable sccache
+        shell: bash
+        run: |
+          if [ -n "${AWS_SECRET_ACCESS_KEY}" ]; then
+            echo "enabling sccache"
+            echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+          fi
 
       - uses: ./.github/actions/rust-bootstrap
         with:
