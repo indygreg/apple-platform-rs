@@ -629,14 +629,14 @@ impl<'data> MachOSigner<'data> {
             }
         }
 
+        info!("code requirements: {}", requirements);
+        let mut blob = RequirementSetBlob::default();
+
         if !requirements.is_empty() {
-            info!("code requirements: {}", requirements);
-
-            let mut blob = RequirementSetBlob::default();
             requirements.add_to_requirement_set(&mut blob, RequirementType::Designated)?;
-
-            res.push((CodeSigningSlot::RequirementSet, blob.into()));
         }
+
+        res.push((CodeSigningSlot::RequirementSet, blob.into()));
 
         if let Some(entitlements) = settings.entitlements_xml(SettingsScope::Main)? {
             info!("adding entitlements XML");

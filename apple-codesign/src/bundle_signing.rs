@@ -4,10 +4,12 @@
 
 //! Functionality for signing Apple bundles.
 
+use std::borrow::Cow;
+
 use {
     crate::{
         code_directory::CodeDirectoryBlob,
-        code_requirement::RequirementType,
+        code_requirement::{CodeRequirementExpression, RequirementType},
         code_resources::{CodeResourcesBuilder, CodeResourcesRule},
         embedded_signature::{Blob, BlobData, DigestType},
         error::AppleCodesignError,
@@ -199,7 +201,41 @@ impl SignedMachOInfo {
 
                 Some(format!("{}", req[0]))
             } else {
-                None
+                // In case no explicit requirements has been set, we use current file cdhashes.
+                let mut requirement_expr = None;
+
+                for macho in mach.iter_macho() {
+                    let signature = macho
+                        .code_signature()?
+                        .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+
+                    let cd = if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha256)? {
+                        cd
+                    } else if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha1)? {
+                        cd
+                    } else if let Some(cd) = signature.code_directory()? {
+                        cd
+                    } else {
+                        return Err(AppleCodesignError::BinaryNoCodeSignature);
+                    };
+
+                    let digest_type = if cd.digest_type == DigestType::Sha256 {
+                        DigestType::Sha256Truncated
+                    } else {
+                        cd.digest_type
+                    };
+
+                    let hash = digest_type.digest_data(&cd.to_blob_bytes()?)?;
+                    let expression = Box::new(CodeRequirementExpression::CodeDirectoryHash(Cow::from(hash)));
+
+                    if let Some(left_part) = requirement_expr {
+                        requirement_expr = Some(Box::new(CodeRequirementExpression::Or(left_part, expression)))
+                    } else {
+                        requirement_expr = Some(expression);
+                    }
+                }
+
+                Some(format!("{}", requirement_expr.unwrap()))
             }
         } else {
             None
