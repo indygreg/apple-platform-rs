@@ -37,6 +37,9 @@ pub enum AppleCodesignError {
     #[error("binary does not have code signature data")]
     BinaryNoCodeSignature,
 
+    #[error("binary does not have code directory blob")]
+    BinaryNoCodeDirectory,
+
     #[error("X.509 certificate handler error: {0}")]
     X509(#[from] X509CertificateError),
 

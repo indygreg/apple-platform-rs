@@ -7,7 +7,7 @@
 use {
     crate::{
         code_directory::CodeDirectoryBlob,
-        code_requirement::RequirementType,
+        code_requirement::{CodeRequirementExpression, RequirementType},
         code_resources::{CodeResourcesBuilder, CodeResourcesRule},
         embedded_signature::{Blob, BlobData, DigestType},
         error::AppleCodesignError,
@@ -19,6 +19,7 @@ use {
     log::{info, warn},
     simple_file_manifest::create_symlink,
     std::{
+        borrow::Cow,
         collections::BTreeMap,
         io::Write,
         path::{Path, PathBuf},
@@ -176,20 +177,7 @@ impl SignedMachOInfo {
             .code_signature()?
             .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-        // Usually this type is used to chain content digests in the context of bundle signing /
-        // code resources files. In that context, SHA-256 digests are preferred and might even
-        // be the only supported digests. So, prefer a SHA-256 code directory over SHA-1.
-        let cd = if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha256)? {
-            cd
-        } else if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha1)? {
-            cd
-        } else if let Some(cd) = signature.code_directory()? {
-            cd
-        } else {
-            return Err(AppleCodesignError::BinaryNoCodeSignature);
-        };
-
-        let code_directory_blob = cd.to_blob_bytes()?;
+        let code_directory_blob = signature.preferred_code_directory()?.to_blob_bytes()?;
 
         let designated_code_requirement = if let Some(requirements) =
             signature.code_requirements()?
@@ -199,7 +187,39 @@ impl SignedMachOInfo {
 
                 Some(format!("{}", req[0]))
             } else {
-                None
+                // In case no explicit requirements has been set, we use current file cdhashes.
+                let mut requirement_expr = None;
+
+                for macho in mach.iter_macho() {
+                    let cd = macho
+                        .code_signature()?
+                        .ok_or(AppleCodesignError::BinaryNoCodeSignature)?
+                        .preferred_code_directory()?;
+
+                    let digest_type = if cd.digest_type == DigestType::Sha256 {
+                        DigestType::Sha256Truncated
+                    } else {
+                        cd.digest_type
+                    };
+
+                    let digest = digest_type.digest_data(&cd.to_blob_bytes()?)?;
+                    let expression = Box::new(CodeRequirementExpression::CodeDirectoryHash(
+                        Cow::from(digest),
+                    ));
+
+                    if let Some(left_part) = requirement_expr {
+                        requirement_expr = Some(Box::new(CodeRequirementExpression::Or(
+                            left_part, expression,
+                        )))
+                    } else {
+                        requirement_expr = Some(expression);
+                    }
+                }
+
+                Some(format!(
+                    "{}",
+                    requirement_expr.expect("a Mach-O should have been present")
+                ))
             }
         } else {
             None

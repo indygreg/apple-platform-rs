@@ -16,7 +16,14 @@ Released on ReleaseDate.
   crate feature enabled. The commands will error at runtime if smartcard support
   is not enabled.
 * Minimum supported Rust version changed from 1.61.0 to 1.62.1.
-
+* Changed handling of code requirements around bundle signing to hopefully fix
+  `the sealed resource directory is invalid` errors. This should hopefully
+  enable signing adhoc app bundles with frameworks. Before, if a Mach-O inside
+  a bundle contained no designated requirements, no designated requirements
+  were emitted. After, designated requirements are derived automatically from
+  the digests of code directories in Mach-O binaries. Additionally, an empty
+  designated requirements blob can be emitted. (#44)
+ 
 ## 0.20.0
 
 Released on 2022-10-02.

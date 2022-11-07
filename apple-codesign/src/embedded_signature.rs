@@ -1423,6 +1423,24 @@ impl<'a> EmbeddedSignature<'a> {
         Ok(None)
     }
 
+    /// Attempt to resolve the preferred code directory for this binary.
+    ///
+    /// Attempts to resolve the SHA-256 variant first, falling back to SHA-1 on failure, and
+    /// falling back to the primary CD slot before erroring if no CD is present.
+    pub fn preferred_code_directory(
+        &self,
+    ) -> Result<Box<CodeDirectoryBlob<'a>>, AppleCodesignError> {
+        if let Some(cd) = self.code_directory_for_digest(DigestType::Sha256)? {
+            Ok(cd)
+        } else if let Some(cd) = self.code_directory_for_digest(DigestType::Sha1)? {
+            Ok(cd)
+        } else if let Some(cd) = self.code_directory()? {
+            Ok(cd)
+        } else {
+            Err(AppleCodesignError::BinaryNoCodeDirectory)
+        }
+    }
+
     /// Attempt to resolve a parsed [EntitlementsBlob] for this signature data.
     ///
     /// Returns Err on data parsing error or if the blob slot didn't contain an entitlments
