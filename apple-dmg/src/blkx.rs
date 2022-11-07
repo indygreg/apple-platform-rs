@@ -1,3 +1,8 @@
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+// option. This file may not be copied, modified, or distributed
+// except according to those terms.
 use crate::koly::UdifChecksum;
 use anyhow::Result;
 use byteorder::{ReadBytesExt, WriteBytesExt, BE};
@@ -14,7 +19,7 @@ pub struct BlkxTable {
     /// seems to always be 0
     pub data_offset: u64,
     /// seems to be a magic constant for zlib describing the buffer size
-    /// required for decompressing a chunk. number was taken from hdiutil
+    /// required for decompressing a chunk.
     pub buffers_needed: u32,
     /// not sure what this is, setting it to the partition index
     pub block_descriptors: u32,
@@ -31,6 +36,7 @@ impl Default for BlkxTable {
             sector_number: 0,
             sector_count: 0,
             data_offset: 0,
+            //  number was taken from hdiutil
             buffers_needed: 2056,
             block_descriptors: 0,
             reserved: [0; 24],

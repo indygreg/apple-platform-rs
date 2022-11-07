@@ -1,3 +1,8 @@
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+// option. This file may not be copied, modified, or distributed
+// except according to those terms.
 use anyhow::Result;
 use crc32fast::Hasher;
 use fatfs::{Dir, FileSystem, FormatVolumeOptions, FsOptions, ReadWriteSeek};
@@ -182,7 +187,8 @@ impl<W: Write + Seek> DmgWriter<W> {
     }
 }
 
-fn symlink(target: &str) -> Vec<u8> {
+// https://wiki.samba.org/index.php/UNIX_Extensions#Storing_symlinks_on_Windows_servers
+fn symlink(target: &str) -> Result<Vec<u8>> {
     let xsym = format!(
         "XSym\n{:04}\n{:x}\n{}\n",
         target.as_bytes().len(),
@@ -190,8 +196,9 @@ fn symlink(target: &str) -> Vec<u8> {
         target,
     );
     let mut xsym = xsym.into_bytes();
+    anyhow::ensure!(xsym.len() <= 1067);
     xsym.resize(1067, b' ');
-    xsym
+    Ok(xsym)
 }
 
 fn add_dir<T: ReadWriteSeek>(src: &Path, dest: &Dir<'_, T>) -> Result<()> {
@@ -199,7 +206,7 @@ fn add_dir<T: ReadWriteSeek>(src: &Path, dest: &Dir<'_, T>) -> Result<()> {
         let entry = entry?;
         let file_name = entry.file_name();
         let file_name = file_name.to_str().unwrap();
-        let source = src.join(&file_name);
+        let source = src.join(file_name);
         let file_type = entry.file_type()?;
         if file_type.is_dir() {
             let d = dest.create_dir(file_name)?;
@@ -209,7 +216,7 @@ fn add_dir<T: ReadWriteSeek>(src: &Path, dest: &Dir<'_, T>) -> Result<()> {
             std::io::copy(&mut File::open(source)?, &mut f)?;
         } else if file_type.is_symlink() {
             let target = std::fs::read_link(&source)?;
-            let xsym = symlink(target.to_str().unwrap());
+            let xsym = symlink(target.to_str().unwrap())?;
             let mut f = dest.create_file(file_name)?;
             std::io::copy(&mut &xsym[..], &mut f)?;
         }

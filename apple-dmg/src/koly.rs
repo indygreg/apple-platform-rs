@@ -1,3 +1,8 @@
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+// option. This file may not be copied, modified, or distributed
+// except according to those terms.
 use anyhow::Result;
 use byteorder::{ReadBytesExt, WriteBytesExt, BE};
 use std::io::{Read, Seek, SeekFrom, Write};
@@ -71,8 +76,8 @@ pub struct KolyTrailer {
     pub running_data_fork_offset: u64,
     pub data_fork_offset: u64,
     pub data_fork_length: u64,
-    pub rsrc_fork_offset: u64,
-    pub rsrc_fork_length: u64,
+    pub resource_fork_offset: u64,
+    pub resource_fork_length: u64,
     pub segment_number: u32,
     pub segment_count: u32,
     pub segment_id: [u8; 16],
@@ -97,8 +102,8 @@ impl Default for KolyTrailer {
             running_data_fork_offset: 0,
             data_fork_offset: 0,
             data_fork_length: 0,
-            rsrc_fork_offset: 0,
-            rsrc_fork_length: 0,
+            resource_fork_offset: 0,
+            resource_fork_length: 0,
             segment_number: 1,
             segment_count: 1,
             segment_id: [0; 16],
@@ -119,7 +124,7 @@ impl Default for KolyTrailer {
 
 impl KolyTrailer {
     pub fn new(
-        bytes: u64,
+        data_fork_length: u64,
         sectors: u64,
         plist_offset: u64,
         plist_length: u64,
@@ -129,7 +134,7 @@ impl KolyTrailer {
         let mut segment_id = [0; 16];
         getrandom::getrandom(&mut segment_id).unwrap();
         Self {
-            data_fork_length: bytes,
+            data_fork_length,
             sector_count: sectors,
             plist_offset,
             plist_length,
@@ -156,8 +161,8 @@ impl KolyTrailer {
         let running_data_fork_offset = r.read_u64::<BE>()?;
         let data_fork_offset = r.read_u64::<BE>()?;
         let data_fork_length = r.read_u64::<BE>()?;
-        let rsrc_fork_offset = r.read_u64::<BE>()?;
-        let rsrc_fork_length = r.read_u64::<BE>()?;
+        let resource_fork_offset = r.read_u64::<BE>()?;
+        let resource_fork_length = r.read_u64::<BE>()?;
         let segment_number = r.read_u32::<BE>()?;
         let segment_count = r.read_u32::<BE>()?;
         let mut segment_id = [0; 16];
@@ -182,8 +187,8 @@ impl KolyTrailer {
             running_data_fork_offset,
             data_fork_offset,
             data_fork_length,
-            rsrc_fork_offset,
-            rsrc_fork_length,
+            resource_fork_offset,
+            resource_fork_length,
             segment_number,
             segment_count,
             segment_id,
@@ -209,8 +214,8 @@ impl KolyTrailer {
         w.write_u64::<BE>(self.running_data_fork_offset)?;
         w.write_u64::<BE>(self.data_fork_offset)?;
         w.write_u64::<BE>(self.data_fork_length)?;
-        w.write_u64::<BE>(self.rsrc_fork_offset)?;
-        w.write_u64::<BE>(self.rsrc_fork_length)?;
+        w.write_u64::<BE>(self.resource_fork_offset)?;
+        w.write_u64::<BE>(self.resource_fork_length)?;
         w.write_u32::<BE>(self.segment_number)?;
         w.write_u32::<BE>(self.segment_count)?;
         w.write_all(&self.segment_id)?;
