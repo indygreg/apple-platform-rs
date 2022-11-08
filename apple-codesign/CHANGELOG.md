@@ -23,7 +23,9 @@ Released on ReleaseDate.
   were emitted. After, designated requirements are derived automatically from
   the digests of code directories in Mach-O binaries. Additionally, an empty
   designated requirements blob can be emitted. (#44)
- 
+* Shallow framework bundles are now properly recognized as such. This fixes
+  a common issue with signing iOS bundles. (#46)
+
 ## 0.20.0
 
 Released on 2022-10-02.
