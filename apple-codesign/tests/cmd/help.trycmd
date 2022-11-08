@@ -1,0 +1,70 @@
+```
+$ rcodesign
+? 2
+Sign and notarize Apple programs. See https://gregoryszorc.com/docs/apple-codesign/main/ for more docs.
+
+Usage: rcodesign[EXE] [OPTIONS] [COMMAND]
+
+Commands:
+  analyze-certificate                   Analyze an X.509 certificate for Apple code signing properties
+  compute-code-hashes                   Compute code hashes for a binary
+  diff-signatures                       Print a diff between the signature content of two paths
+  encode-app-store-connect-api-key      Encode App Store Connect API Key metadata to a single file
+  extract                               Extracts code signature data from a Mach-O binary
+  generate-certificate-signing-request  Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
+  generate-self-signed-certificate      Generate a self-signed certificate for code signing
+  keychain-export-certificate-chain     Export Apple CA certificates from the macOS Keychain
+  keychain-print-certificates           Print information about certificates in the macOS keychain
+  notary-log                            Fetch the notarization log for a previous submission
+  notary-submit                         Upload an asset to Apple for notarization and possibly staple it
+  notary-wait                           Wait for completion of a previous submission
+  parse-code-signing-requirement        Parse binary Code Signing Requirement data into a human readable string
+  print-signature-info                  Print signature information for a filesystem path
+  remote-sign                           Create signatures initiated from a remote signing operation
+  sign                                  Sign a Mach-O binary or bundle
+  staple                                Staples a notarization ticket to an entity
+  verify                                Verifies code signature data
+  x509-oids                             Print information about X.509 OIDs related to Apple code signing
+  help                                  Print this message or the help of the given subcommand(s)
+
+Options:
+  -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
+  -h, --help        Print help information
+  -V, --version     Print version information
+
+```
+
+```
+$ rcodesign help
+Sign and notarize Apple programs. See https://gregoryszorc.com/docs/apple-codesign/main/ for more docs.
+
+Usage: rcodesign[EXE] [OPTIONS] [COMMAND]
+
+Commands:
+  analyze-certificate                   Analyze an X.509 certificate for Apple code signing properties
+  compute-code-hashes                   Compute code hashes for a binary
+  diff-signatures                       Print a diff between the signature content of two paths
+  encode-app-store-connect-api-key      Encode App Store Connect API Key metadata to a single file
+  extract                               Extracts code signature data from a Mach-O binary
+  generate-certificate-signing-request  Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
+  generate-self-signed-certificate      Generate a self-signed certificate for code signing
+  keychain-export-certificate-chain     Export Apple CA certificates from the macOS Keychain
+  keychain-print-certificates           Print information about certificates in the macOS keychain
+  notary-log                            Fetch the notarization log for a previous submission
+  notary-submit                         Upload an asset to Apple for notarization and possibly staple it
+  notary-wait                           Wait for completion of a previous submission
+  parse-code-signing-requirement        Parse binary Code Signing Requirement data into a human readable string
+  print-signature-info                  Print signature information for a filesystem path
+  remote-sign                           Create signatures initiated from a remote signing operation
+  sign                                  Sign a Mach-O binary or bundle
+  staple                                Staples a notarization ticket to an entity
+  verify                                Verifies code signature data
+  x509-oids                             Print information about X.509 OIDs related to Apple code signing
+  help                                  Print this message or the help of the given subcommand(s)
+
+Options:
+  -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
+  -h, --help        Print help information
+  -V, --version     Print version information
+
+```
