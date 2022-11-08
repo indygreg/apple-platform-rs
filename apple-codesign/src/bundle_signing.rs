@@ -541,8 +541,9 @@ impl SingleBundleSigner {
         // Apple's tooling seems to only do this for some bundle type combinations. I'm
         // not yet sure what the complete heuristic is. But we observed that frameworks
         // don't appear to include digests of any nested app bundles. So we add that
-        // exclusion. We should figure out what the actual rules here...
-        if self.bundle.package_type() != BundlePackageType::Framework {
+        // exclusion. iOS bundles don't seem to include digests for nested bundles either.
+        // We should figure out what the actual rules here...
+        if !self.bundle.shallow() {
             let dest_bundle = DirectoryBundle::new_from_path(&dest_dir)
                 .map_err(AppleCodesignError::DirectoryBundle)?;
 
