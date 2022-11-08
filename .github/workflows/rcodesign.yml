@@ -1,7 +1,7 @@
 on:
   push:
-    branches-ignore:
-      - 'ci-test'
+    branches:
+      - main
     tags-ignore:
       - '**'
   pull_request:
