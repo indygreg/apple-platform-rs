@@ -14,6 +14,7 @@ data.
 
 use {
     crate::{
+        code_directory::CodeDirectoryBlob,
         embedded_signature::{DigestType, EmbeddedSignature},
         error::AppleCodesignError,
         signing_settings::{SettingsScope, SigningSettings},
@@ -481,6 +482,26 @@ impl<'a> MachOBinary<'a> {
         }
 
         Ok(None)
+    }
+
+    // Attempt to grab the code directory blob.
+    pub fn code_directory_blob(&'a self) -> Result<Box<CodeDirectoryBlob<'a>>, AppleCodesignError> {
+        let signature = self
+            .code_signature()?
+            .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+
+        // Usually this type is used to chain content digests in the context of bundle signing /
+        // code resources files. In that context, SHA-256 digests are preferred and might even
+        // be the only supported digests. So, prefer a SHA-256 code directory over SHA-1.
+        if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha256)? {
+            Ok(cd)
+        } else if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha1)? {
+            Ok(cd)
+        } else if let Some(cd) = signature.code_directory()? {
+            Ok(cd)
+        } else {
+            Err(AppleCodesignError::BinaryNoCodeSignature)
+        }
     }
 }
 

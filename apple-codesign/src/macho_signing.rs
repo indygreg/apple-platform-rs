@@ -629,10 +629,10 @@ impl<'data> MachOSigner<'data> {
             }
         }
 
-        info!("code requirements: {}", requirements);
         let mut blob = RequirementSetBlob::default();
 
         if !requirements.is_empty() {
+            info!("code requirements: {}", requirements);
             requirements.add_to_requirement_set(&mut blob, RequirementType::Designated)?;
         }
 

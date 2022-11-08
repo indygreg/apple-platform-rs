@@ -178,18 +178,7 @@ impl SignedMachOInfo {
             .code_signature()?
             .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-        // Usually this type is used to chain content digests in the context of bundle signing /
-        // code resources files. In that context, SHA-256 digests are preferred and might even
-        // be the only supported digests. So, prefer a SHA-256 code directory over SHA-1.
-        let cd = if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha256)? {
-            cd
-        } else if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha1)? {
-            cd
-        } else if let Some(cd) = signature.code_directory()? {
-            cd
-        } else {
-            return Err(AppleCodesignError::BinaryNoCodeSignature);
-        };
+        let cd = macho.code_directory_blob()?;
 
         let code_directory_blob = cd.to_blob_bytes()?;
 
@@ -205,19 +194,7 @@ impl SignedMachOInfo {
                 let mut requirement_expr = None;
 
                 for macho in mach.iter_macho() {
-                    let signature = macho
-                        .code_signature()?
-                        .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-
-                    let cd = if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha256)? {
-                        cd
-                    } else if let Some(cd) = signature.code_directory_for_digest(DigestType::Sha1)? {
-                        cd
-                    } else if let Some(cd) = signature.code_directory()? {
-                        cd
-                    } else {
-                        return Err(AppleCodesignError::BinaryNoCodeSignature);
-                    };
+                    let cd = macho.code_directory_blob()?;
 
                     let digest_type = if cd.digest_type == DigestType::Sha256 {
                         DigestType::Sha256Truncated
