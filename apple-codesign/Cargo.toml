@@ -98,6 +98,7 @@ security-framework = { version = "2.7", features = ["OSX_10_12"] }
 
 [dev-dependencies]
 indoc = "1.0"
+trycmd = "0.14.3"
 
 [features]
 default = []
