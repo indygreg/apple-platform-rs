@@ -11,6 +11,8 @@ Released on ReleaseDate.
   signature, causing signing to fail. (#32, #40)
 * Bundle stapling is now capable of stapling any bundle with a main executable,
   not just app bundles with a main executable. (#41)
+* Shallow framework bundles are now properly recognized as such. This fixes
+  a common issue with signing iOS bundles. (#46)
 
 ## 0.20.0
 
