@@ -66,10 +66,17 @@ impl DirectoryBundle {
             contents.join("Info.plist")
         };
 
-        let framework_plist = if shallow {
-            directory.join("Info.plist")
+        let framework_plist_deep = directory.join("Resources").join("Info.plist");
+        let framework_plist_shallow = directory.join("Info.plist");
+        // Frameworks are always considered shallow, but on iOS they're "even more" shallow than on macOS,
+        // with the Info.plist file in the root .framework/ directory rather than in Resources/. In this
+        // case it's safe to check for the existence of the .framework path extension because iOS frameworks
+        // aren't versioned. It's furthermore necessary to perform this check, otherwise we would end up
+        // assuming that all bundles are frameworks.
+        let framework_plist = if !framework_plist_deep.exists() && root_name.ends_with(".framework") && framework_plist_shallow.exists() {
+            framework_plist_shallow
         } else {
-            directory.join("Resources").join("Info.plist")
+            framework_plist_deep
         };
 
         // Shallow bundles make it very easy to mis-identify a directory as a bundle.
@@ -600,6 +607,44 @@ mod test {
         assert!(bundle.shallow());
         assert_eq!(bundle.identifier()?, None);
         assert!(bundle.nested_bundles(true)?.is_empty());
+
+        Ok(())
+    }
+
+    #[test]
+    fn ios_framework() -> Result<()> {
+        let (_temp, td) = temp_dir()?;
+
+        let root = td.join("MyFramework.framework");
+        create_dir_all(&root)?;
+
+        let plist_path = root.join("Info.plist");
+        let empty = plist::Value::from(plist::Dictionary::new());
+        empty.to_file_xml(&plist_path)?;
+
+        let bundle = DirectoryBundle::new_from_path(&root)?;
+        assert_eq!(bundle.package_type, BundlePackageType::Framework);
+        assert_eq!(bundle.name(), "MyFramework.framework");
+        assert!(bundle.shallow());
+        assert_eq!(bundle.identifier()?, None);
+        assert!(bundle.nested_bundles(true)?.is_empty());
+
+        Ok(())
+    }
+
+    #[test]
+    fn simple_bundle() -> Result<()> {
+        let (_temp, td) = temp_dir()?;
+
+        let root = td.join("MyBundle.bundle");
+        create_dir_all(&root)?;
+
+        let plist_path = root.join("Info.plist");
+        let empty = plist::Value::from(plist::Dictionary::new());
+        empty.to_file_xml(&plist_path)?;
+
+        let bundle = DirectoryBundle::new_from_path(&root)?;
+        assert_eq!(bundle.package_type, BundlePackageType::Bundle);
 
         Ok(())
     }
