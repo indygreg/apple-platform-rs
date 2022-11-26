@@ -182,10 +182,15 @@ impl Checksum {
 #[derive(Clone, Copy, Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ChecksumType {
+    #[serde(alias = "NONE")]
     None,
+    #[serde(alias = "SHA1")]
     Sha1,
+    #[serde(alias = "SHA256")]
     Sha256,
+    #[serde(alias = "SHA512")]
     Sha512,
+    #[serde(alias = "MD5")]
     Md5,
 }
 
@@ -686,5 +691,23 @@ impl X509Data {
                 CapturedX509Certificate::from_pem(data)
             })
             .collect::<Result<Vec<_>, X509CertificateError>>()?)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn file_checksum_serialize() -> XarResult<()> {
+        let xml = "<checksum style=\"sha1\">checksum</checksum>";
+
+        let _: FileChecksum = serde_xml_rs::from_reader(std::io::BufReader::new(xml.as_bytes()))?;
+
+        // Uppercase variant works.
+        let xml = "<checksum style=\"SHA1\">checksum</checksum>";
+        let _: FileChecksum = serde_xml_rs::from_reader(std::io::BufReader::new(xml.as_bytes()))?;
+
+        Ok(())
     }
 }
