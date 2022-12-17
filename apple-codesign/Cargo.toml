@@ -70,7 +70,7 @@ subtle = "2.4"
 tempfile = "3.3"
 thiserror = "1.0"
 tokio = { version = "1.21", features = ["rt"] }
-tungstenite = { version = "0.17", features = ["rustls-tls-native-roots"] }
+tungstenite = { version = "0.18.0", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.2", features = ["v4"] }
 x509 = "0.2"
 x509-certificate = "0.15"
