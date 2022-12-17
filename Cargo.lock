@@ -67,7 +67,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-s3",
  "aws-smithy-http",
- "base64 0.13.1",
+ "base64 0.20.0",
  "bcder",
  "bitflags",
  "bytes",

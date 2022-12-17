@@ -31,6 +31,15 @@ use {
 
 type Result<T> = std::result::Result<T, RemoteSignError>;
 
+fn base64_engine() -> impl base64::engine::Engine {
+    base64::engine::fast_portable::FastPortable::from(
+        &base64::alphabet::URL_SAFE,
+        base64::engine::fast_portable::FastPortableConfig::new()
+            .with_encode_padding(false)
+            .with_decode_padding_mode(base64::engine::DecodePaddingMode::RequireNone),
+    )
+}
+
 /// A generator of nonces that is a simple incrementing counter.
 ///
 /// Assumed use with ChaCha20+Poly1305.
@@ -337,9 +346,9 @@ pub trait SessionInitiatePeer {
 
     /// Obtain the base 64 encoded session join string.
     fn session_join_string_base64(&self) -> Result<String> {
-        Ok(base64::encode_config(
+        Ok(base64::encode_engine(
             self.session_join_string_bytes()?,
-            base64::URL_SAFE_NO_PAD,
+            &base64_engine(),
         ))
     }
 
@@ -853,7 +862,7 @@ pub fn create_session_joiner(
             ));
         }
     } else {
-        base64::decode_config(trimmed.as_bytes(), base64::URL_SAFE_NO_PAD)?
+        base64::decode_engine(trimmed.as_bytes(), &base64_engine())?
     };
 
     let mut decoder = Decoder::new(&sjs);
