@@ -20,6 +20,9 @@ Commands:
   notary-wait                           Wait for completion of a previous submission
   parse-code-signing-requirement        Parse binary Code Signing Requirement data into a human readable string
   print-signature-info                  Print signature information for a filesystem path
+  smartcard-scan                        Show information about available smartcard (SC) devices
+  smartcard-generate-key                Generate a new private key on a smartcard
+  smartcard-import                      Import a code signing certificate and key into a smartcard
   remote-sign                           Create signatures initiated from a remote signing operation
   sign                                  Sign a Mach-O binary or bundle
   staple                                Staples a notarization ticket to an entity
@@ -55,6 +58,9 @@ Commands:
   notary-wait                           Wait for completion of a previous submission
   parse-code-signing-requirement        Parse binary Code Signing Requirement data into a human readable string
   print-signature-info                  Print signature information for a filesystem path
+  smartcard-scan                        Show information about available smartcard (SC) devices
+  smartcard-generate-key                Generate a new private key on a smartcard
+  smartcard-import                      Import a code signing certificate and key into a smartcard
   remote-sign                           Create signatures initiated from a remote signing operation
   sign                                  Sign a Mach-O binary or bundle
   staple                                Staples a notarization ticket to an entity

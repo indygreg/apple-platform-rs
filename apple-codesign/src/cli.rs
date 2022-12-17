@@ -2841,7 +2841,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             ),
     );
 
-    let mut app = app.subcommand(
+    let app = app.subcommand(
         Command::new("print-signature-info")
             .about("Print signature information for a filesystem path")
             .arg(
@@ -2852,41 +2852,39 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             ),
     );
 
-    if cfg!(feature = "yubikey") {
-        app = app.subcommand(
-            Command::new("smartcard-scan")
-                .about("Show information about available smartcard (SC) devices"),
-        );
+    let app = app.subcommand(
+        Command::new("smartcard-scan")
+            .about("Show information about available smartcard (SC) devices"),
+    );
 
-        app = app.subcommand(add_yubikey_policy_args(
-            Command::new("smartcard-generate-key")
-                .about("Generate a new private key on a smartcard")
-                .arg(
-                    Arg::new("smartcard_slot")
-                        .long("smartcard-slot")
-                        .action(ArgAction::Set)
-                        .required(true)
-                        .help("Smartcard slot number to store key in (9c is common)"),
-                ),
-        ));
+    let app = app.subcommand(add_yubikey_policy_args(
+        Command::new("smartcard-generate-key")
+            .about("Generate a new private key on a smartcard")
+            .arg(
+                Arg::new("smartcard_slot")
+                    .long("smartcard-slot")
+                    .action(ArgAction::Set)
+                    .required(true)
+                    .help("Smartcard slot number to store key in (9c is common)"),
+            ),
+    ));
 
-        app = app.subcommand(add_yubikey_policy_args(add_certificate_source_args(
-            Command::new("smartcard-import")
-                .about("Import a code signing certificate and key into a smartcard")
-                .arg(
-                    Arg::new("existing_key")
-                        .long("existing-key")
-                        .action(ArgAction::SetTrue)
-                        .help("Re-use the existing private key in the smartcard slot"),
-                )
-                .arg(
-                    Arg::new("dry_run")
-                        .long("dry-run")
-                        .action(ArgAction::SetTrue)
-                        .help("Don't actually perform the import"),
-                ),
-        )));
-    }
+    let app = app.subcommand(add_yubikey_policy_args(add_certificate_source_args(
+        Command::new("smartcard-import")
+            .about("Import a code signing certificate and key into a smartcard")
+            .arg(
+                Arg::new("existing_key")
+                    .long("existing-key")
+                    .action(ArgAction::SetTrue)
+                    .help("Re-use the existing private key in the smartcard slot"),
+            )
+            .arg(
+                Arg::new("dry_run")
+                    .long("dry-run")
+                    .action(ArgAction::SetTrue)
+                    .help("Don't actually perform the import"),
+            ),
+    )));
 
     let app = app.subcommand(add_certificate_source_args(
         Command::new("remote-sign")

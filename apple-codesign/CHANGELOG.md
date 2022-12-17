@@ -11,6 +11,10 @@ Released on ReleaseDate.
   signature, causing signing to fail. (#32, #40)
 * Bundle stapling is now capable of stapling any bundle with a main executable,
   not just app bundles with a main executable. (#41)
+* The `smartcard-scan`, `smartcard-generate-key`, and `smartcard-import`
+  commons are now always present, even when compiled without the `smartcard`
+  crate feature enabled. The commands will error at runtime if smartcard support
+  is not enabled.
 
 ## 0.20.0
 
