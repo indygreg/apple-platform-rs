@@ -3,10 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use {
-    crate::{
-        macho_universal::UniversalMachOError,
-        remote_signing::RemoteSignError
-    },
+    crate::{macho_universal::UniversalMachOError, remote_signing::RemoteSignError},
     cryptographic_message_syntax::CmsError,
     std::path::PathBuf,
     thiserror::Error,
@@ -357,7 +354,7 @@ pub enum AppleCodesignError {
     RemoteSign(#[from] RemoteSignError),
 
     #[error("bytestream creation error: {0}")]
-    AwsByteStream(#[from] aws_smithy_http::byte_stream::Error),
+    AwsByteStream(#[from] aws_smithy_http::byte_stream::error::Error),
 
     #[error("s3 upload error: {0}")]
     AwsS3Error(#[from] aws_sdk_s3::Error),
