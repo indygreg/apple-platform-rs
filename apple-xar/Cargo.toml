@@ -11,7 +11,7 @@ repository = "https://github.com/indygreg/apple-platform-rs.git"
 readme = "README.md"
 
 [dependencies]
-base64 = "0.13"
+base64 = "0.20.0"
 bcder = "0.7"
 bzip2 = "0.4"
 chrono = { version = "0.4", features = ["serde"] }
