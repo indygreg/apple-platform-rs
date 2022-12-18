@@ -15,6 +15,7 @@ Released on ReleaseDate.
   commons are now always present, even when compiled without the `smartcard`
   crate feature enabled. The commands will error at runtime if smartcard support
   is not enabled.
+* Minimum supported Rust version changed from 1.61.0 to 1.62.1.
 
 ## 0.20.0
 
