@@ -84,7 +84,7 @@ pub struct BundleIdCreateRequestAttributes {
     pub platform: String,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, clap::ValueEnum)]
 pub enum BundleIdPlatform {
     Ios,
     MacOs,

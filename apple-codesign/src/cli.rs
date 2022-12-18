@@ -4,7 +4,6 @@
 
 use {
     crate::{
-        app_store_connect::UnifiedApiKey,
         certificate::{
             create_self_signed_code_signing_certificate, AppleCertificate, CertificateProfile,
         },
@@ -25,6 +24,7 @@ use {
         signing::UnifiedSigner,
         signing_settings::{SettingsScope, SigningSettings},
     },
+    app_store_connect::UnifiedApiKey,
     clap::{value_parser, Arg, ArgAction, ArgGroup, ArgMatches, Command},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},

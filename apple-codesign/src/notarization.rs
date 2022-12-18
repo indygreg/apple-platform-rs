@@ -15,15 +15,12 @@ and waiting on the availability of a notarization ticket.
 
 use {
     crate::{
-        app_store_connect::{
-            notary_api::{
-                NewSubmissionResponse, SubmissionResponse,
-                SubmissionResponseStatus,
-            },
-            AppStoreConnectClient, ConnectTokenEncoder,
-        },
         reader::PathType,
         AppleCodesignError,
+    },
+    app_store_connect::{
+        notary_api::{NewSubmissionResponse, SubmissionResponse, SubmissionResponseStatus},
+        AppStoreConnectClient, ConnectTokenEncoder,
     },
     apple_bundles::DirectoryBundle,
     aws_sdk_s3::{Credentials, Region},
@@ -274,9 +271,7 @@ impl Notarizer {
 impl Notarizer {
     fn client(&self) -> Result<AppStoreConnectClient, AppleCodesignError> {
         match &self.token_encoder {
-            Some(token) => Ok(AppStoreConnectClient::new(
-                token.clone(),
-            )?),
+            Some(token) => Ok(AppStoreConnectClient::new(token.clone())?),
             None => Err(AppleCodesignError::NotarizeNoAuthCredentials),
         }
     }

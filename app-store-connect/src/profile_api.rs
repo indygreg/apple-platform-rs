@@ -143,7 +143,7 @@ pub struct RefData {
     pub r#type: String,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, clap::ValueEnum)]
 pub enum ProfileType {
     IosAppDevelopment,
     MacAppDevelopment,

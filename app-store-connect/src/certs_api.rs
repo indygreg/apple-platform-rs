@@ -14,7 +14,7 @@ use std::io::Write;
 use std::path::Path;
 use x509_certificate::{InMemorySigningKeyPair, Sign, X509CertificateBuilder};
 
-pub fn generate_key(api_key: &Path, ty: CertificateType, pem: &Path) -> Result<()> {
+pub fn generate_signing_certificate(api_key: &Path, ty: CertificateType, pem: &Path) -> Result<()> {
     let secret = RsaPrivateKey::new(&mut OsRng, 2048)?;
     let key = InMemorySigningKeyPair::from_pkcs8_der(secret.to_pkcs8_der()?.as_bytes())?;
     let mut builder = X509CertificateBuilder::new(key.key_algorithm().unwrap());
@@ -119,7 +119,7 @@ pub struct CertificateCreateRequestAttributes {
     pub csr_content: String,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, clap::ValueEnum)]
 pub enum CertificateType {
     Development,
     Distribution,

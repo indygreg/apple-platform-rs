@@ -12,11 +12,14 @@ use app_store_connect::profile_api::{Profile, ProfileType};
 use app_store_connect::{AppStoreConnectClient, UnifiedApiKey};
 use clap::{Parser, Subcommand};
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
+    /// Path to unified api key.
+    #[clap(long, global = true)]
+    api_key: PathBuf,
     #[clap(subcommand)]
     command: Commands,
 }
@@ -24,19 +27,16 @@ struct Args {
 fn main() -> Result<()> {
     env_logger::init();
     let args = Args::parse();
-    args.command.run()
+    args.command.run(&args.api_key)
 }
 
 #[derive(Subcommand)]
 enum Commands {
     /// Generates a PEM encoded RSA2048 signing key
-    GenerateKey {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
+    GenerateSigningCertificate {
         /// Certificate type can be one of development, distribution or notarization.
         #[clap(long)]
-        r#type: String,
+        r#type: CertificateType,
         /// Path to write a new PEM encoded RSA2048 signing key
         pem: PathBuf,
     },
@@ -50,8 +50,6 @@ enum Commands {
         key_id: String,
         /// Path to private key.
         private_key: PathBuf,
-        /// Path to write a unified api key.
-        api_key: PathBuf,
     },
     Bundle {
         #[clap(subcommand)]
@@ -72,29 +70,23 @@ enum Commands {
 }
 
 impl Commands {
-    fn run(self) -> Result<()> {
+    fn run(self, api_key: &Path) -> Result<()> {
         match self {
-            Self::GenerateKey {
-                api_key,
-                r#type,
-                pem,
-            } => {
-                let r#type = parse_certificate_type(&r#type)?;
-                certs_api::generate_key(&api_key, r#type, &pem)?;
+            Self::GenerateSigningCertificate { r#type, pem } => {
+                certs_api::generate_signing_certificate(api_key, r#type, &pem)?;
             }
             Self::CreateApiKey {
                 issuer_id,
                 key_id,
                 private_key,
-                api_key,
             } => {
                 UnifiedApiKey::from_ecdsa_pem_path(issuer_id, key_id, private_key)?
                     .write_json_file(api_key)?;
             }
-            Self::Bundle { command } => command.run()?,
-            Self::Certificate { command } => command.run()?,
-            Self::Device { command } => command.run()?,
-            Self::Profile { command } => command.run()?,
+            Self::Bundle { command } => command.run(api_key)?,
+            Self::Certificate { command } => command.run(api_key)?,
+            Self::Device { command } => command.run(api_key)?,
+            Self::Profile { command } => command.run(api_key)?,
         }
         Ok(())
     }
@@ -103,9 +95,6 @@ impl Commands {
 #[derive(Subcommand)]
 enum BundleCommand {
     Register {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Bundle identifier.
         #[clap(long)]
         identifier: String,
@@ -113,66 +102,44 @@ enum BundleCommand {
         #[clap(long)]
         name: String,
     },
-    List {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
-    },
+    List,
     Get {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Id of certificate.
         id: String,
     },
     Delete {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Id of bundle id to revoke.
         id: String,
     },
 }
 
 impl BundleCommand {
-    fn run(self) -> Result<()> {
+    fn run(self, api_key: &Path) -> Result<()> {
+        let client = AppStoreConnectClient::from_json_path(api_key)?;
         match self {
-            Self::Register {
-                api_key,
-                identifier,
-                name,
-            } => {
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?
-                    .register_bundle_id(&identifier, &name)?;
+            Self::Register { identifier, name } => {
+                let resp = client.register_bundle_id(&identifier, &name)?;
                 print_bundle_id_header();
                 print_bundle_id(&resp.data);
             }
-            Self::List { api_key } => {
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?.list_bundle_ids()?;
+            Self::List => {
+                let resp = client.list_bundle_ids()?;
                 print_bundle_id_header();
                 for bundle_id in &resp.data {
                     print_bundle_id(bundle_id);
                 }
             }
-            Self::Get { api_key, id } => {
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?.get_bundle_id(&id)?;
+            Self::Get { id } => {
+                let resp = client.get_bundle_id(&id)?;
                 print_bundle_id_header();
                 print_bundle_id(&resp.data);
             }
-            Self::Delete { api_key, id } => {
-                AppStoreConnectClient::from_json_path(&api_key)?.delete_bundle_id(&id)?;
+            Self::Delete { id } => {
+                client.delete_bundle_id(&id)?;
             }
         }
         Ok(())
     }
-}
-
-fn parse_bundle_id_platform(s: &str) -> Result<BundleIdPlatform> {
-    Ok(match s {
-        "ios" => BundleIdPlatform::Ios,
-        "macos" => BundleIdPlatform::MacOs,
-        _ => anyhow::bail!("unsupported bundle id platform {}", s),
-    })
 }
 
 fn print_bundle_id_header() {
@@ -189,81 +156,54 @@ fn print_bundle_id(bundle_id: &BundleId) {
 #[derive(Subcommand)]
 enum CertificateCommand {
     Create {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Certificate type can be one of development, distribution or notarization.
         #[clap(long)]
-        r#type: String,
+        r#type: CertificateType,
         /// Path to certificate signing request.
         csr: PathBuf,
     },
-    List {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
-    },
+    List,
     Get {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Id of certificate.
         id: String,
     },
     Revoke {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Id of certificate to revoke.
         id: String,
     },
 }
 
 impl CertificateCommand {
-    fn run(self) -> Result<()> {
+    fn run(self, api_key: &Path) -> Result<()> {
+        let client = AppStoreConnectClient::from_json_path(api_key)?;
         match self {
-            Self::Create {
-                api_key,
-                csr,
-                r#type,
-            } => {
-                let r#type = parse_certificate_type(&r#type)?;
+            Self::Create { csr, r#type } => {
                 let csr = std::fs::read_to_string(csr)?;
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?
-                    .create_certificate(csr, r#type)?;
+                let resp = client.create_certificate(csr, r#type)?;
                 print_certificate_header();
                 print_certificate(&resp.data);
             }
-            Self::List { api_key } => {
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?.list_certificates()?;
+            Self::List => {
+                let resp = client.list_certificates()?;
                 print_certificate_header();
                 for cert in &resp.data {
                     print_certificate(cert);
                 }
             }
-            Self::Get { api_key, id } => {
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?.get_certificate(&id)?;
+            Self::Get { id } => {
+                let resp = client.get_certificate(&id)?;
                 let cer = pem::encode(&pem::Pem {
                     tag: "CERTIFICATE".into(),
                     contents: base64::decode(resp.data.attributes.certificate_content)?,
                 });
                 println!("{}", cer);
             }
-            Self::Revoke { api_key, id } => {
-                AppStoreConnectClient::from_json_path(&api_key)?.revoke_certificate(&id)?;
+            Self::Revoke { id } => {
+                client.revoke_certificate(&id)?;
             }
         }
         Ok(())
     }
-}
-
-fn parse_certificate_type(s: &str) -> Result<CertificateType> {
-    Ok(match s {
-        "development" => CertificateType::Development,
-        "distribution" => CertificateType::Distribution,
-        "notarization" => CertificateType::DeveloperIdApplication,
-        _ => anyhow::bail!("unsupported certificate type {}", s),
-    })
 }
 
 fn print_certificate_header() {
@@ -284,57 +224,45 @@ fn print_certificate(cert: &Certificate) {
 #[derive(Subcommand)]
 enum DeviceCommand {
     Register {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Name for device.
         #[clap(long)]
         name: String,
         /// Platform.
         #[clap(long)]
-        platform: String,
+        platform: BundleIdPlatform,
         /// Unique Device Identifier
         #[clap(long)]
         udid: String,
     },
-    List {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
-    },
+    List,
     Get {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Id of device.
         id: String,
     },
 }
 
 impl DeviceCommand {
-    fn run(self) -> Result<()> {
+    fn run(self, api_key: &Path) -> Result<()> {
+        let client = AppStoreConnectClient::from_json_path(api_key)?;
         match self {
             Self::Register {
-                api_key,
                 name,
                 platform,
                 udid,
             } => {
-                let platform = parse_bundle_id_platform(&platform)?;
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?
-                    .register_device(&name, platform, &udid)?;
+                let resp = client.register_device(&name, platform, &udid)?;
                 print_device_header();
                 print_device(&resp.data);
             }
-            Self::List { api_key } => {
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?.list_devices()?;
+            Self::List => {
+                let resp = client.list_devices()?;
                 print_device_header();
                 for device in &resp.data {
                     print_device(device);
                 }
             }
-            Self::Get { api_key, id } => {
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?.get_device(&id)?;
+            Self::Get { id } => {
+                let resp = client.get_device(&id)?;
                 print_device_header();
                 print_device(&resp.data);
             }
@@ -361,15 +289,12 @@ fn print_device(device: &Device) {
 #[derive(Subcommand)]
 enum ProfileCommand {
     Create {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Name for profile.
         #[clap(long)]
         name: String,
         /// Profile type.
         #[clap(long)]
-        profile_type: String,
+        profile_type: ProfileType,
         /// Bundle identifier id.
         #[clap(long)]
         bundle_id: String,
@@ -380,40 +305,29 @@ enum ProfileCommand {
         #[clap(long)]
         device: Option<Vec<String>>,
     },
-    List {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
-    },
+    List,
     Get {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Id of device.
         id: String,
     },
     Delete {
-        /// Path to unified api key.
-        #[clap(long)]
-        api_key: PathBuf,
         /// Id of device.
         id: String,
     },
 }
 
 impl ProfileCommand {
-    fn run(self) -> Result<()> {
+    fn run(self, api_key: &Path) -> Result<()> {
+        let client = AppStoreConnectClient::from_json_path(api_key)?;
         match self {
             Self::Create {
-                api_key,
                 name,
                 profile_type,
                 bundle_id,
                 certificate,
                 device,
             } => {
-                let profile_type = parse_profile_type(&profile_type)?;
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?.create_profile(
+                let resp = client.create_profile(
                     &name,
                     profile_type,
                     &bundle_id,
@@ -423,35 +337,24 @@ impl ProfileCommand {
                 print_profile_header();
                 print_profile(&resp.data);
             }
-            Self::List { api_key } => {
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?.list_profiles()?;
+            Self::List => {
+                let resp = client.list_profiles()?;
                 print_profile_header();
                 for profile in &resp.data {
                     print_profile(profile);
                 }
             }
-            Self::Get { api_key, id } => {
-                let resp = AppStoreConnectClient::from_json_path(&api_key)?.get_profile(&id)?;
+            Self::Get { id } => {
+                let resp = client.get_profile(&id)?;
                 let profile = base64::decode(resp.data.attributes.profile_content)?;
                 std::io::stdout().write_all(&profile)?;
             }
-            Self::Delete { api_key, id } => {
-                AppStoreConnectClient::from_json_path(&api_key)?.delete_profile(&id)?;
+            Self::Delete { id } => {
+                client.delete_profile(&id)?;
             }
         }
         Ok(())
     }
-}
-
-fn parse_profile_type(s: &str) -> Result<ProfileType> {
-    Ok(match s {
-        "ios-dev" => ProfileType::IosAppDevelopment,
-        "macos-dev" => ProfileType::MacAppDevelopment,
-        "ios-appstore" => ProfileType::IosAppStore,
-        "macos-appstore" => ProfileType::MacAppStore,
-        "notarization" => ProfileType::MacAppDirect,
-        _ => anyhow::bail!("unsupported profile type {}", s),
-    })
 }
 
 fn print_profile_header() {
