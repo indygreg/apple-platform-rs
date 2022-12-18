@@ -41,8 +41,9 @@
 
 use {
     crate::{
-        code_directory::CodeDirectoryBlob, code_requirement::CodeRequirements,
-        code_requirement::RequirementType, AppleCodesignError,
+        code_directory::CodeDirectoryBlob,
+        code_requirement::{CodeRequirements, RequirementType},
+        AppleCodesignError,
     },
     apple_xar::table_of_contents::ChecksumType as XarChecksumType,
     cryptographic_message_syntax::SignedData,

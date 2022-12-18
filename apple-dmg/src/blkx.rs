@@ -3,10 +3,12 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-use crate::koly::UdifChecksum;
-use anyhow::Result;
-use byteorder::{ReadBytesExt, WriteBytesExt, BE};
-use std::io::{Read, Write};
+use {
+    crate::koly::UdifChecksum,
+    anyhow::Result,
+    byteorder::{ReadBytesExt, WriteBytesExt, BE},
+    std::io::{Read, Write},
+};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BlkxTable {

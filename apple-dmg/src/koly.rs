@@ -3,9 +3,11 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-use anyhow::Result;
-use byteorder::{ReadBytesExt, WriteBytesExt, BE};
-use std::io::{Read, Seek, SeekFrom, Write};
+use {
+    anyhow::Result,
+    byteorder::{ReadBytesExt, WriteBytesExt, BE},
+    std::io::{Read, Seek, SeekFrom, Write},
+};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct UdifChecksum {

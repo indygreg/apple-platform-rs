@@ -122,8 +122,7 @@ mod test {
             embedded_signature::{Blob, CodeSigningSlot},
             macho::MachFile,
         },
-        anyhow::anyhow,
-        anyhow::Result,
+        anyhow::{anyhow, Result},
         plist::{Date, Uid},
         std::{
             process::Command,

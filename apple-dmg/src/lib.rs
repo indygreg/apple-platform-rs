@@ -3,25 +3,25 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-use anyhow::Result;
-use crc32fast::Hasher;
-use fatfs::{Dir, FileSystem, FormatVolumeOptions, FsOptions, ReadWriteSeek};
-use flate2::bufread::ZlibEncoder;
-use flate2::read::ZlibDecoder;
-use flate2::Compression;
-use fscommon::BufStream;
-use gpt::mbr::{PartRecord, ProtectiveMBR};
-use std::fs::File;
-use std::io::{BufReader, BufWriter, Cursor, Read, Seek, SeekFrom, Write};
-use std::path::Path;
+use {
+    anyhow::Result,
+    crc32fast::Hasher,
+    fatfs::{Dir, FileSystem, FormatVolumeOptions, FsOptions, ReadWriteSeek},
+    flate2::{bufread::ZlibEncoder, read::ZlibDecoder, Compression},
+    fscommon::BufStream,
+    gpt::mbr::{PartRecord, ProtectiveMBR},
+    std::{
+        fs::File,
+        io::{BufReader, BufWriter, Cursor, Read, Seek, SeekFrom, Write},
+        path::Path,
+    },
+};
 
 mod blkx;
 mod koly;
 mod xml;
 
-pub use crate::blkx::*;
-pub use crate::koly::*;
-pub use crate::xml::*;
+pub use crate::{blkx::*, koly::*, xml::*};
 
 pub struct DmgReader<R: Read + Seek> {
     koly: KolyTrailer,
@@ -246,8 +246,7 @@ pub fn create_dmg(dir: &Path, dmg: &Path, volume_label: &str, total_sectors: u32
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use gpt::disk::LogicalBlockSize;
+    use {super::*, gpt::disk::LogicalBlockSize};
 
     static DMG: &[u8] = include_bytes!("../assets/example.dmg");
 

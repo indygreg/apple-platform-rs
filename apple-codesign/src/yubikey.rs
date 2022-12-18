@@ -14,8 +14,10 @@ use {
     bytes::Bytes,
     log::{error, warn},
     signature::Signer,
-    std::ops::DerefMut,
-    std::sync::{Arc, Mutex, MutexGuard},
+    std::{
+        ops::DerefMut,
+        sync::{Arc, Mutex, MutexGuard},
+    },
     x509::SubjectPublicKeyInfo,
     x509_certificate::{
         asn1time, rfc3280, rfc5280, CapturedX509Certificate, EcdsaCurve, KeyAlgorithm,
@@ -24,7 +26,7 @@ use {
     yubikey::{
         certificate::{CertInfo, Certificate as YkCertificate},
         piv::{import_ecc_key, import_rsa_key, AlgorithmId, SlotId},
-        Error as YkError, MgmKey, YubiKey as RawYubiKey, {PinPolicy, TouchPolicy},
+        Error as YkError, MgmKey, PinPolicy, TouchPolicy, YubiKey as RawYubiKey,
     },
     zeroize::Zeroizing,
 };
