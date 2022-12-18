@@ -1,6 +1,6 @@
 allow-branch = ["main"]
 push-remote = "origin"
-pre-release-commit-message = "{{crate_name}}: release version {{version}}"
+pre-release-commit-message = "workspace: perform releases"
 tag-message = "{{crate_name}}: version {{version}}"
 tag-name = "{{crate_name}}/{{version}}"
 tag = true
