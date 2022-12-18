@@ -2,17 +2,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-pub mod api_token;
-pub mod notary_api;
+//! API Key
 
 use {
-    self::api_token::{AppStoreConnectToken, ConnectTokenEncoder},
-    crate::AppleCodesignError,
-    log::{debug, error},
-    reqwest::blocking::Client,
-    serde::{de::DeserializeOwned, Deserialize, Serialize},
-    serde_json::Value,
-    std::{fs::Permissions, io::Write, path::Path, sync::Mutex},
+    crate::{ConnectTokenEncoder, Error, Result},
+    anyhow::Context,
+    serde::{Deserialize, Serialize},
+    std::{fs::Permissions, io::Write, path::Path},
 };
 
 #[cfg(unix)]
@@ -57,17 +53,13 @@ impl UnifiedApiKey {
         issuer_id: impl ToString,
         key_id: impl ToString,
         path: impl AsRef<Path>,
-    ) -> Result<Self, AppleCodesignError> {
+    ) -> Result<Self> {
         let pem_data = std::fs::read(path.as_ref())?;
 
-        let parsed = pem::parse(pem_data).map_err(|e| {
-            AppleCodesignError::AppStoreConnectApiKey(format!("error parsing PEM: {}", e))
-        })?;
+        let parsed = pem::parse(pem_data).map_err(|_| InvalidPemPrivateKey)?;
 
         if parsed.tag != "PRIVATE KEY" {
-            return Err(AppleCodesignError::AppStoreConnectApiKey(
-                "does not look like a PRIVATE KEY".to_string(),
-            ));
+            return Err(InvalidPemPrivateKey.into());
         }
 
         let private_key = base64::encode(parsed.contents);
@@ -80,19 +72,19 @@ impl UnifiedApiKey {
     }
 
     /// Construct an instance from serialized JSON.
-    pub fn from_json(data: impl AsRef<[u8]>) -> Result<Self, AppleCodesignError> {
+    pub fn from_json(data: impl AsRef<[u8]>) -> Result<Self> {
         Ok(serde_json::from_slice(data.as_ref())?)
     }
 
     /// Construct an instance from a JSON file.
-    pub fn from_json_path(path: impl AsRef<Path>) -> Result<Self, AppleCodesignError> {
+    pub fn from_json_path(path: impl AsRef<Path>) -> Result<Self> {
         let data = std::fs::read(path.as_ref())?;
 
         Self::from_json(data)
     }
 
     /// Serialize this instance to a JSON object.
-    pub fn to_json_string(&self) -> Result<String, AppleCodesignError> {
+    pub fn to_json_string(&self) -> Result<String> {
         Ok(serde_json::to_string_pretty(&self)?)
     }
 
@@ -104,7 +96,7 @@ impl UnifiedApiKey {
     ///
     /// Permissions on the resulting file may not be as restrictive as desired. It is up
     /// to callers to additionally harden as desired.
-    pub fn write_json_file(&self, path: impl AsRef<Path>) -> Result<(), AppleCodesignError> {
+    pub fn write_json_file(&self, path: impl AsRef<Path>) -> Result<()> {
         let path = path.as_ref();
 
         if let Some(parent) = path.parent() {
@@ -124,77 +116,15 @@ impl UnifiedApiKey {
 }
 
 impl TryFrom<UnifiedApiKey> for ConnectTokenEncoder {
-    type Error = AppleCodesignError;
+    type Error = anyhow::Error;
 
-    fn try_from(value: UnifiedApiKey) -> Result<Self, Self::Error> {
-        let der = base64::decode(value.private_key).map_err(|e| {
-            AppleCodesignError::AppStoreConnectApiKey(format!(
-                "failed to base64 decode private key: {}",
-                e
-            ))
-        })?;
+    fn try_from(value: UnifiedApiKey) -> Result<Self> {
+        let der = base64::decode(value.private_key).context("invalid unified api key")?;
 
         Self::from_ecdsa_der(value.key_id, value.issuer_id, &der)
     }
 }
 
-/// A client for App Store Connect API.
-///
-/// The client isn't generic. Don't get any ideas.
-pub struct AppStoreConnectClient {
-    client: Client,
-    connect_token: ConnectTokenEncoder,
-    token: Mutex<Option<AppStoreConnectToken>>,
-}
-
-impl AppStoreConnectClient {
-    /// Create a new client to the App Store Connect API.
-    pub fn new(connect_token: ConnectTokenEncoder) -> Result<Self, AppleCodesignError> {
-        Ok(Self {
-            client: crate::ticket_lookup::default_client()?,
-            connect_token,
-            token: Mutex::new(None),
-        })
-    }
-
-    fn get_token(&self) -> Result<String, AppleCodesignError> {
-        let mut token = self.token.lock().unwrap();
-
-        // TODO need to handle token expiration.
-        if token.is_none() {
-            token.replace(self.connect_token.new_token(300)?);
-        }
-
-        Ok(token.as_ref().unwrap().clone())
-    }
-
-    pub(crate) fn send_request<T: DeserializeOwned>(
-        &self,
-        request: reqwest::blocking::RequestBuilder,
-    ) -> Result<T, AppleCodesignError> {
-        let request = request.build()?;
-        let url = request.url().to_string();
-
-        debug!("{} {}", request.method(), url);
-
-        let response = self.client.execute(request)?;
-
-        if response.status().is_success() {
-            Ok(response.json::<T>()?)
-        } else {
-            error!("HTTP error from {}", url);
-
-            let body = response.bytes()?;
-
-            if let Ok(value) = serde_json::from_slice::<Value>(body.as_ref()) {
-                for line in serde_json::to_string_pretty(&value)?.lines() {
-                    error!("{}", line);
-                }
-            } else {
-                error!("{}", String::from_utf8_lossy(body.as_ref()));
-            }
-
-            Err(AppleCodesignError::NotarizeServerError)
-        }
-    }
-}
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Error)]
+#[error("invalid PEM formatted private key")]
+pub struct InvalidPemPrivateKey;

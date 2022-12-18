@@ -16,12 +16,11 @@ and waiting on the availability of a notarization ticket.
 use {
     crate::{
         app_store_connect::{
-            api_token::ConnectTokenEncoder,
             notary_api::{
-                NewSubmissionResponse, NotaryApiClient, SubmissionResponse,
+                NewSubmissionResponse, SubmissionResponse,
                 SubmissionResponseStatus,
             },
-            AppStoreConnectClient,
+            AppStoreConnectClient, ConnectTokenEncoder,
         },
         reader::PathType,
         AppleCodesignError,
@@ -273,18 +272,22 @@ impl Notarizer {
 }
 
 impl Notarizer {
+    fn client(&self) -> Result<AppStoreConnectClient, AppleCodesignError> {
+        match &self.token_encoder {
+            Some(token) => Ok(AppStoreConnectClient::new(
+                token.clone(),
+            )?),
+            None => Err(AppleCodesignError::NotarizeNoAuthCredentials),
+        }
+    }
+
     /// Tell the notary service to expect an upload to S3.
     fn create_submission(
         &self,
         raw_digest: &[u8],
         name: &str,
     ) -> Result<NewSubmissionResponse, AppleCodesignError> {
-        let client = match &self.token_encoder {
-            Some(token) => Ok(NotaryApiClient::from(AppStoreConnectClient::new(
-                token.clone(),
-            )?)),
-            _ => Err(AppleCodesignError::NotarizeNoAuthCredentials),
-        }?;
+        let client = self.client()?;
 
         let digest = hex::encode(raw_digest);
         warn!(
@@ -376,6 +379,13 @@ impl Notarizer {
         Ok(NotarizationUpload::NotaryResponse(status))
     }
 
+    pub fn get_submission(
+        &self,
+        submission_id: &str,
+    ) -> Result<SubmissionResponse, AppleCodesignError> {
+        Ok(self.client()?.get_submission(submission_id)?)
+    }
+
     pub fn wait_on_notarization(
         &self,
         submission_id: &str,
@@ -390,14 +400,7 @@ impl Notarizer {
         let start_time = std::time::Instant::now();
 
         loop {
-            let client = match &self.token_encoder {
-                Some(token) => Ok(NotaryApiClient::from(AppStoreConnectClient::new(
-                    token.clone(),
-                )?)),
-                None => Err(AppleCodesignError::NotarizeNoAuthCredentials),
-            }?;
-
-            let status = client.get_submission(submission_id)?;
+            let status = self.get_submission(submission_id)?;
 
             let elapsed = start_time.elapsed();
 
@@ -428,13 +431,7 @@ impl Notarizer {
         submission_id: &str,
     ) -> Result<serde_json::Value, AppleCodesignError> {
         warn!("fetching notarization log for {}", submission_id);
-        let client = match &self.token_encoder {
-            Some(token) => Ok(NotaryApiClient::from(AppStoreConnectClient::new(
-                token.clone(),
-            )?)),
-            None => Err(AppleCodesignError::NotarizeNoAuthCredentials),
-        }?;
-        client.get_submission_log(submission_id)
+        Ok(self.client()?.get_submission_log(submission_id)?)
     }
 
     /// Waits on an app store package upload and fetches and logs the upload log.

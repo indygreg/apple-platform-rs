@@ -5,10 +5,11 @@
 //! App Store Connect API tokens.
 
 use {
-    crate::AppleCodesignError,
+    crate::Result,
     jsonwebtoken::{Algorithm, EncodingKey, Header},
     serde::{Deserialize, Serialize},
     std::{path::Path, time::SystemTime},
+    thiserror::Error,
 };
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -62,22 +63,14 @@ impl ConnectTokenEncoder {
     }
 
     /// Construct an instance from a DER encoded ECDSA private key.
-    pub fn from_ecdsa_der(
-        key_id: String,
-        issuer_id: String,
-        der_data: &[u8],
-    ) -> Result<Self, AppleCodesignError> {
+    pub fn from_ecdsa_der(key_id: String, issuer_id: String, der_data: &[u8]) -> Result<Self> {
         let encoding_key = EncodingKey::from_ec_der(der_data);
 
         Ok(Self::from_jwt_encoding_key(key_id, issuer_id, encoding_key))
     }
 
     /// Create a token from a PEM encoded ECDSA private key.
-    pub fn from_ecdsa_pem(
-        key_id: String,
-        issuer_id: String,
-        pem_data: &[u8],
-    ) -> Result<Self, AppleCodesignError> {
+    pub fn from_ecdsa_pem(key_id: String, issuer_id: String, pem_data: &[u8]) -> Result<Self> {
         let encoding_key = EncodingKey::from_ec_pem(pem_data)?;
 
         Ok(Self::from_jwt_encoding_key(key_id, issuer_id, encoding_key))
@@ -88,7 +81,7 @@ impl ConnectTokenEncoder {
         key_id: String,
         issuer_id: String,
         path: impl AsRef<Path>,
-    ) -> Result<Self, AppleCodesignError> {
+    ) -> Result<Self> {
         let data = std::fs::read(path.as_ref())?;
 
         Self::from_ecdsa_pem(key_id, issuer_id, &data)
@@ -98,7 +91,7 @@ impl ConnectTokenEncoder {
     ///
     /// e.g. `DEADBEEF42`. This looks for an `AuthKey_<id>.p8` file in default search
     /// locations like `~/.appstoreconnect/private_keys`.
-    pub fn from_api_key_id(key_id: String, issuer_id: String) -> Result<Self, AppleCodesignError> {
+    pub fn from_api_key_id(key_id: String, issuer_id: String) -> Result<Self> {
         let mut search_paths = vec![std::env::current_dir()?.join("private_keys")];
 
         if let Some(home) = dirs::home_dir() {
@@ -120,14 +113,14 @@ impl ConnectTokenEncoder {
             }
         }
 
-        Err(AppleCodesignError::AppStoreConnectApiKeyNotFound)
+        Err(MissingApiKey.into())
     }
 
     /// Mint a new JWT token.
     ///
     /// Using the private key and key metadata bound to this instance, we issue a new JWT
     /// for the requested duration.
-    pub fn new_token(&self, duration: u64) -> Result<AppStoreConnectToken, AppleCodesignError> {
+    pub fn new_token(&self, duration: u64) -> Result<AppStoreConnectToken> {
         let header = Header {
             kid: Some(self.key_id.clone()),
             alg: Algorithm::ES256,
@@ -151,3 +144,7 @@ impl ConnectTokenEncoder {
         Ok(token)
     }
 }
+
+#[derive(Clone, Copy, Debug, Error)]
+#[error("no app store connect api key found")]
+pub struct MissingApiKey;

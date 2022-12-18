@@ -16,6 +16,7 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.68"
+app-store-connect = { version = "0.1.0", path = "../app-store-connect" }
 aws-config = "0.52.0"
 aws-sdk-s3 = "0.22.0"
 aws-smithy-http = "0.52.0"
