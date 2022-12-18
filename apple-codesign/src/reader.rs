@@ -311,15 +311,23 @@ impl CmsSigner {
                         let data = value.deref().clone();
 
                         data.decode(|cons| {
-                            while let Some(_) = cons.take_opt_sequence(|cons| {
-                                let oid = bcder::Oid::take_from(cons)?;
-                                let value = bcder::OctetString::take_from(cons)?;
+                            loop {
+                                let res = cons.take_opt_sequence(|cons| {
+                                    let oid = bcder::Oid::take_from(cons)?;
+                                    let value = bcder::OctetString::take_from(cons)?;
 
-                                cdhash_digests
-                                    .push((format!("{}", oid), hex::encode(value.into_bytes())));
+                                    cdhash_digests.push((
+                                        format!("{}", oid),
+                                        hex::encode(value.into_bytes()),
+                                    ));
 
-                                Ok(())
-                            })? {}
+                                    Ok(())
+                                })?;
+
+                                if res.is_none() {
+                                    break;
+                                }
+                            }
 
                             Ok(())
                         })
