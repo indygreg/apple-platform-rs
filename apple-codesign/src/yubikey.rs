@@ -607,12 +607,12 @@ impl Sign for CertificateSigner {
     }
 
     fn signature_algorithm(&self) -> Result<SignatureAlgorithm, X509CertificateError> {
-        Ok(self.cert.signature_algorithm().ok_or(
-            X509CertificateError::UnknownSignatureAlgorithm(format!(
+        self.cert
+            .signature_algorithm()
+            .ok_or(X509CertificateError::UnknownSignatureAlgorithm(format!(
                 "{:?}",
                 self.cert.signature_algorithm_oid()
-            )),
-        )?)
+            )))
     }
 
     fn private_key_data(&self) -> Option<Vec<u8>> {
