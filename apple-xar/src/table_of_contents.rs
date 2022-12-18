@@ -238,10 +238,10 @@ impl ChecksumType {
     pub fn digest_data(&self, data: &[u8]) -> XarResult<Vec<u8>> {
         let mut h: Box<dyn DynDigest> = match self {
             Self::None => return Err(Error::Unsupported("cannot digest None checksum")),
-            Self::Md5 => Box::new(md5::Md5::default()),
-            Self::Sha1 => Box::new(sha1::Sha1::default()),
-            Self::Sha256 => Box::new(sha2::Sha256::default()),
-            Self::Sha512 => Box::new(sha2::Sha512::default()),
+            Self::Md5 => Box::<md5::Md5>::default(),
+            Self::Sha1 => Box::<sha1::Sha1>::default(),
+            Self::Sha256 => Box::<sha2::Sha256>::default(),
+            Self::Sha512 => Box::<sha2::Sha512>::default(),
         };
 
         h.update(data);
