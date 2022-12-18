@@ -1,3 +1,9 @@
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+// option. This file may not be copied, modified, or distributed
+// except according to those terms.
+
 use crate::{AppStoreConnectClient, Result};
 use rand::rngs::OsRng;
 use rsa::pkcs8::{EncodePrivateKey, LineEnding};
@@ -26,7 +32,7 @@ pub fn generate_key(api_key: &Path, ty: CertificateType, pem: &Path) -> Result<(
         .certificate_content;
     let cer = pem::encode(&pem::Pem {
         tag: "CERTIFICATE".into(),
-        contents: base64::decode(&cer)?,
+        contents: base64::decode(cer)?,
     });
     let mut f = File::create(pem)?;
     f.write_all(secret.to_pkcs8_pem(LineEnding::CRLF)?.as_bytes())?;
@@ -34,7 +40,7 @@ pub fn generate_key(api_key: &Path, ty: CertificateType, pem: &Path) -> Result<(
     Ok(())
 }
 
-const APPLE_CERTIFICATE_URL: &'static str = "https://api.appstoreconnect.apple.com/v1/certificates";
+const APPLE_CERTIFICATE_URL: &str = "https://api.appstoreconnect.apple.com/v1/certificates";
 
 impl AppStoreConnectClient {
     pub fn create_certificate(

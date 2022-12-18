@@ -1,3 +1,9 @@
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+// option. This file may not be copied, modified, or distributed
+// except according to those terms.
+
 use anyhow::Result;
 use app_store_connect::bundle_api::{BundleId, BundleIdPlatform};
 use app_store_connect::certs_api::{self, Certificate, CertificateType};
@@ -239,7 +245,7 @@ impl CertificateCommand {
                 let resp = AppStoreConnectClient::from_json_path(&api_key)?.get_certificate(&id)?;
                 let cer = pem::encode(&pem::Pem {
                     tag: "CERTIFICATE".into(),
-                    contents: base64::decode(&resp.data.attributes.certificate_content)?,
+                    contents: base64::decode(resp.data.attributes.certificate_content)?,
                 });
                 println!("{}", cer);
             }
@@ -426,7 +432,7 @@ impl ProfileCommand {
             }
             Self::Get { api_key, id } => {
                 let resp = AppStoreConnectClient::from_json_path(&api_key)?.get_profile(&id)?;
-                let profile = base64::decode(&resp.data.attributes.profile_content)?;
+                let profile = base64::decode(resp.data.attributes.profile_content)?;
                 std::io::stdout().write_all(&profile)?;
             }
             Self::Delete { api_key, id } => {
