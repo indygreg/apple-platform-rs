@@ -224,7 +224,7 @@ pub trait SessionJoinString<'de>: CborDecode<'de, ()> + CborEncode<()> {
 
     /// Obtain the raw bytes constituting the session join string.
     fn to_bytes(&self) -> Result<Vec<u8>> {
-        encode_sjs(Self::scheme(), &self)
+        encode_sjs(Self::scheme(), self)
             .map_err(|e| RemoteSignError::SessionJoinString(format!("CBOR encoding error: {}", e)))
     }
 }

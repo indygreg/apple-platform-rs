@@ -570,7 +570,7 @@ pub fn parse_pfx_data(
                         )
                     })?;
 
-                    signing_key = Some(InMemoryPrivateKey::from_pkcs8_der(&decrypted)?);
+                    signing_key = Some(InMemoryPrivateKey::from_pkcs8_der(decrypted)?);
                 }
                 p12::SafeBagKind::OtherBagKind(_) => {
                     return Err(AppleCodesignError::PfxParseError(

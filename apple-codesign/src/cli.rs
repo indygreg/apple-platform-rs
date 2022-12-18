@@ -467,14 +467,14 @@ fn add_certificate_source_args(app: Command) -> Command {
         Arg::new("remote_public_key")
             .long("remote-public-key")
             .action(ArgAction::Set)
-            .conflicts_with_all(&remote_initialization_args(Some("remote_public_key")))
+            .conflicts_with_all(remote_initialization_args(Some("remote_public_key")))
             .help("Base64 encoded public key data describing the signer"),
     )
     .arg(
         Arg::new("remote_public_key_pem_file")
             .long("remote-public-key-pem-file")
             .action(ArgAction::Set)
-            .conflicts_with_all(&remote_initialization_args(Some(
+            .conflicts_with_all(remote_initialization_args(Some(
                 "remote_public_key_pem_file",
             )))
             .help("PEM encoded public key data describing the signer"),
@@ -482,16 +482,14 @@ fn add_certificate_source_args(app: Command) -> Command {
     .arg(
         Arg::new("remote_shared_secret")
             .long("remote-shared-secret")
-            .conflicts_with_all(&remote_initialization_args(Some("remote_shared_secret")))
+            .conflicts_with_all(remote_initialization_args(Some("remote_shared_secret")))
             .action(ArgAction::Set)
             .help("Shared secret used for remote signing"),
     )
     .arg(
         Arg::new("remote_shared_secret_env")
             .long("remote-shared-secret-env")
-            .conflicts_with_all(&remote_initialization_args(Some(
-                "remote_shared_secret_env",
-            )))
+            .conflicts_with_all(remote_initialization_args(Some("remote_shared_secret_env")))
             .action(ArgAction::Set)
             .help("Environment variable holding the shared secret used for remote signing"),
     )
@@ -502,8 +500,8 @@ fn add_certificate_source_args(app: Command) -> Command {
             .default_value(crate::remote_signing::DEFAULT_SERVER_URL)
             .help("URL of a remote code signing server"),
     )
-    .group(ArgGroup::new("keychain").args(&["keychain_domain", "keychain_fingerprint"]))
-    .group(ArgGroup::new("remote_initialization").args(&remote_initialization_args(None)))
+    .group(ArgGroup::new("keychain").args(["keychain_domain", "keychain_fingerprint"]))
+    .group(ArgGroup::new("remote_initialization").args(remote_initialization_args(None)))
 }
 
 fn get_remote_signing_initiator(
@@ -598,7 +596,7 @@ fn collect_certificates_from_args(
             warn!("reading PEM data from {}", pem_source);
             let pem_data = std::fs::read(pem_source)?;
 
-            for pem in pem::parse_many(&pem_data).map_err(AppleCodesignError::CertificatePem)? {
+            for pem in pem::parse_many(pem_data).map_err(AppleCodesignError::CertificatePem)? {
                 match pem.tag.as_str() {
                     "CERTIFICATE" => {
                         certs.push(CapturedX509Certificate::from_der(pem.contents)?);
@@ -674,7 +672,7 @@ fn add_notary_api_args(app: Command) -> Command {
             .long("api-key-path")
             .action(ArgAction::Set)
             .value_parser(value_parser!(PathBuf))
-            .conflicts_with_all(&["api_issuer", "api_key"])
+            .conflicts_with_all(["api_issuer", "api_key"])
             .help("Path to a JSON file containing the API Key"),
     )
     .arg(
@@ -2293,7 +2291,7 @@ fn command_smartcard_scan(_args: &ArgMatches) -> Result<(), AppleCodesignError> 
                     "Device {}: Certificate in slot {:?} / {}",
                     index,
                     slot,
-                    hex::encode(&[u8::from(slot)])
+                    hex::encode([u8::from(slot)])
                 );
                 print_certificate_info(&cert)?;
                 println!();
@@ -2447,7 +2445,7 @@ fn command_verify(args: &ArgMatches) -> Result<(), AppleCodesignError> {
 
     let data = std::fs::read(path)?;
 
-    let problems = crate::verify::verify_macho_data(&data);
+    let problems = crate::verify::verify_macho_data(data);
 
     for problem in &problems {
         println!("{}", problem);
@@ -3003,7 +3001,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .arg(
                     Arg::new("smartcard_pin_env")
                         .long("smartcard-pin-env")
-                        .conflicts_with_all(&remote_initialization_args(Some(
+                        .conflicts_with_all(remote_initialization_args(Some(
                             "smartcard_pin_env",
                         )))
                         .action(ArgAction::Set)

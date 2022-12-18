@@ -31,7 +31,7 @@ use {
 
 /// A function that will attempt to resolve the PIN to unlock a YubiKey.
 pub trait PinCallback: Fn() -> Result<Vec<u8>, AppleCodesignError> + Send + Sync {}
-impl<T: Fn () -> Result<Vec<u8>, AppleCodesignError> + Send + Sync> PinCallback for T {}
+impl<T: Fn() -> Result<Vec<u8>, AppleCodesignError> + Send + Sync> PinCallback for T {}
 
 fn algorithm_from_certificate(
     cert: &CapturedX509Certificate,
@@ -271,7 +271,7 @@ impl YubiKey {
         attempt_authenticated_operation(
             yk.deref_mut(),
             |yk| {
-                let rsa_key = ::yubikey::piv::RsaKeyData::new(&p, &q);
+                let rsa_key = ::yubikey::piv::RsaKeyData::new(p, q);
 
                 import_rsa_key(yk, slot, algorithm, rsa_key, touch_policy, pin_policy)?;
 
@@ -556,13 +556,13 @@ impl Signer<Signature> for CertificateSigner {
         // Need to apply PKCS#1 padding for RSA.
         let digest = match algorithm_id {
             AlgorithmId::Rsa1024 => digest_algorithm
-                .rsa_pkcs1_encode(&message, 1024 / 8)
+                .rsa_pkcs1_encode(message, 1024 / 8)
                 .map_err(signature::Error::from_source)?,
             AlgorithmId::Rsa2048 => digest_algorithm
-                .rsa_pkcs1_encode(&message, 2048 / 8)
+                .rsa_pkcs1_encode(message, 2048 / 8)
                 .map_err(signature::Error::from_source)?,
-            AlgorithmId::EccP256 => digest_algorithm.digest_data(&message),
-            AlgorithmId::EccP384 => digest_algorithm.digest_data(&message),
+            AlgorithmId::EccP256 => digest_algorithm.digest_data(message),
+            AlgorithmId::EccP384 => digest_algorithm.digest_data(message),
         };
 
         let mut guard = self

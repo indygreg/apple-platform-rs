@@ -588,7 +588,7 @@ impl XarTableOfContents {
 
         let (rsa_signature, rsa_signature_verifies) = if let Some(sig) = xar.rsa_signature()? {
             (
-                Some(hex::encode(&sig.0)),
+                Some(hex::encode(sig.0)),
                 Some(xar.verify_rsa_checksum_signature().unwrap_or(false)),
             )
         } else {
@@ -637,8 +637,8 @@ impl XarTableOfContents {
             toc_checksum_reported_sha256_digest: hex::encode(
                 DigestType::Sha256.digest_data(&digest)?,
             ),
-            toc_checksum_actual_sha1: hex::encode(&toc_checksum_actual_sha1),
-            toc_checksum_actual_sha256: hex::encode(&toc_checksum_actual_sha256),
+            toc_checksum_actual_sha1: hex::encode(toc_checksum_actual_sha1),
+            toc_checksum_actual_sha256: hex::encode(toc_checksum_actual_sha256),
             checksum_verifies,
             signature: if let Some(sig) = &toc.signature {
                 Some(sig.try_into()?)

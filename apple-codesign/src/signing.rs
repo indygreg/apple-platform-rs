@@ -214,7 +214,7 @@ impl<'key> UnifiedSigner<'key> {
 
         if output_path.exists() {
             warn!("removing existing {}", output_path.display());
-            std::fs::remove_file(&output_path)?;
+            std::fs::remove_file(output_path)?;
         }
 
         warn!(
@@ -222,7 +222,7 @@ impl<'key> UnifiedSigner<'key> {
             output_path_temp.display(),
             output_path.display()
         );
-        std::fs::rename(&output_path_temp, &output_path)?;
+        std::fs::rename(&output_path_temp, output_path)?;
 
         Ok(())
     }

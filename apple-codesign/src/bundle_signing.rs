@@ -17,12 +17,12 @@ use {
     },
     apple_bundles::{BundlePackageType, DirectoryBundle, DirectoryBundleFile},
     log::{info, warn},
+    simple_file_manifest::create_symlink,
     std::{
         collections::BTreeMap,
         io::Write,
         path::{Path, PathBuf},
     },
-    simple_file_manifest::create_symlink,
 };
 
 /// Copy a bundle's contents to a destination directory.
@@ -299,7 +299,7 @@ impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
                     source_path.display(),
                     dest_path.display()
                 );
-                std::fs::copy(&source_path, &dest_path)?;
+                std::fs::copy(source_path, &dest_path)?;
                 filetime::set_file_mtime(&dest_path, mtime)?;
             }
         }
