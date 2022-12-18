@@ -509,7 +509,7 @@ impl DeveloperDirectory {
     /// of the path is performed.
     pub fn from_xcode_select() -> Result<Self, Error> {
         let output = Command::new("xcode-select")
-            .args(&["--print-path"])
+            .args(["--print-path"])
             .stderr(Stdio::null())
             .output()
             .map_err(Error::XcodeSelectRun)?;
@@ -691,7 +691,7 @@ pub fn command_line_tools_sdks_directory() -> Option<PathBuf> {
 /// The results are sorted according to the directory name. However, `Xcode.app` always
 /// sorts first so the default application name is always preferred.
 pub fn find_xcode_apps(applications_dir: &Path) -> Result<Vec<PathBuf>, Error> {
-    let dir = match std::fs::read_dir(&applications_dir) {
+    let dir = match std::fs::read_dir(applications_dir) {
         Ok(v) => Ok(v),
         Err(e) => {
             if e.kind() == std::io::ErrorKind::NotFound {
@@ -917,7 +917,7 @@ pub trait AppleSdk: Sized + AsRef<Path> {
     /// the case. Callers may want to filter out symlinked SDKs to avoid
     /// duplicates.
     fn find_in_directory(root: &Path) -> Result<Vec<Self>, Error> {
-        let dir = match std::fs::read_dir(&root) {
+        let dir = match std::fs::read_dir(root) {
             Ok(v) => Ok(v),
             Err(e) => {
                 if e.kind() == std::io::ErrorKind::NotFound {

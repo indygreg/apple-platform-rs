@@ -7,11 +7,11 @@
 use {
     crate::BundlePackageType,
     anyhow::{anyhow, Context, Result},
+    simple_file_manifest::{is_executable, FileEntry, FileManifest},
     std::{
         collections::HashSet,
         path::{Path, PathBuf},
     },
-    simple_file_manifest::{is_executable, FileEntry, FileManifest},
 };
 
 /// An Apple bundle backed by a filesystem/directory.
@@ -484,7 +484,7 @@ impl<'a> DirectoryBundleFile<'a> {
     pub fn is_in_code_signature_directory(&self) -> bool {
         let prefix = self.bundle.resolve_path("_CodeSignature");
 
-        self.absolute_path.starts_with(&prefix)
+        self.absolute_path.starts_with(prefix)
     }
 
     /// Obtain the symlink target for this file.
@@ -550,7 +550,7 @@ mod test {
 
         // Empty Info.plist fails.
         let plist_path = contents.join("Info.plist");
-        std::fs::write(&plist_path, &[])?;
+        std::fs::write(&plist_path, [])?;
         assert!(DirectoryBundle::new_from_path(&root).is_err());
 
         // Empty plist dictionary works.
@@ -583,7 +583,7 @@ mod test {
 
         // Empty Info.plist file fails.
         let plist_path = resources.join("Info.plist");
-        std::fs::write(&plist_path, &[])?;
+        std::fs::write(&plist_path, [])?;
         assert!(DirectoryBundle::new_from_path(&root).is_err());
 
         // Empty plist dictionary works.
@@ -610,7 +610,7 @@ mod test {
 
         let app_info_plist = contents.join("Info.plist");
         let empty = plist::Value::Dictionary(plist::Dictionary::new());
-        empty.to_file_xml(&app_info_plist)?;
+        empty.to_file_xml(app_info_plist)?;
 
         let frameworks = contents.join("Frameworks");
         let framework = frameworks.join("MyFramework.framework");
@@ -619,23 +619,23 @@ mod test {
         let versions = framework.join("Versions");
         create_dir_all(&versions)?;
         let framework_info_plist = resources.join("Info.plist");
-        empty.to_file_xml(&framework_info_plist)?;
+        empty.to_file_xml(framework_info_plist)?;
         let framework_resource_file_root = resources.join("root00.txt");
-        std::fs::write(&framework_resource_file_root, &[])?;
+        std::fs::write(framework_resource_file_root, [])?;
 
         let framework_child = resources.join("child_dir");
         create_dir_all(&framework_child)?;
         let framework_resource_file_child = framework_child.join("child00.txt");
-        std::fs::write(&framework_resource_file_child, &[])?;
+        std::fs::write(framework_resource_file_child, [])?;
 
         let a_resources = versions.join("A").join("Resources");
         create_dir_all(&a_resources)?;
         let b_resources = versions.join("B").join("Resources");
         create_dir_all(&b_resources)?;
         let a_plist = a_resources.join("Info.plist");
-        empty.to_file_xml(&a_plist)?;
+        empty.to_file_xml(a_plist)?;
         let b_plist = b_resources.join("Info.plist");
-        empty.to_file_xml(&b_plist)?;
+        empty.to_file_xml(b_plist)?;
 
         let bundle = DirectoryBundle::new_from_path(&root)?;
 
@@ -644,7 +644,7 @@ mod test {
         assert_eq!(
             nested
                 .iter()
-                .map(|x| x.0.replace("\\", "/"))
+                .map(|x| x.0.replace('\\', "/"))
                 .collect::<Vec<_>>(),
             vec![
                 "Contents/Frameworks/MyFramework.framework",
