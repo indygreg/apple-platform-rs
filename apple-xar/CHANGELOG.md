@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.12.0
+
+Released on 2022-12-18.
+
 * `FileChecksum` now deserializes UPPERCASE string variants without
   error. (#51)
 

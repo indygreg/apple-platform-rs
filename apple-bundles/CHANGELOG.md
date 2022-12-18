@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.16.0
+
+Released on 2022-12-18.
+
 * Look for `Info.plist` in correct location in shallow framework bundles. This
   fixes an issue where shallow framework bundles weren't correctly identified
   as such. (#46)

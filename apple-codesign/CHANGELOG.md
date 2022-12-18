@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.21.0
+
+Released on 2022-12-18.
+
 * Embedded entitlements XML is now used when estimating the size of signatures.
   Previously, this data could cause us to not reserve enough space for the
   signature, causing signing to fail. (#32, #40)

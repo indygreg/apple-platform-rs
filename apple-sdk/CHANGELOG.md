@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.3.0
+
+Released on 2022-12-18.
+
 * Project moved from https://github.com/indygreg/toolchain-tools to
   https://github.com/indygreg/apple-platform-rs.
 
