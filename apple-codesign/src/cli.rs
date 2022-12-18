@@ -561,6 +561,7 @@ fn get_remote_signing_initiator(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn collect_certificates_from_args(
     args: &ArgMatches,
     scan_smartcard: bool,
