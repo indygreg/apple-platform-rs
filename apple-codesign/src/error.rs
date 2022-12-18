@@ -358,4 +358,7 @@ pub enum AppleCodesignError {
 
     #[error("s3 upload error: {0}")]
     AwsS3Error(#[from] aws_sdk_s3::Error),
+
+    #[error("bad time value")]
+    BadTime,
 }

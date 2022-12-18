@@ -84,7 +84,10 @@ impl BomPath {
         path: String,
         record: &crate::format::BomBlockPathRecord,
     ) -> Result<Self, Error> {
-        let mtime = Utc.timestamp(record.mtime as _, 0);
+        let mtime = Utc
+            .timestamp_opt(record.mtime as _, 0)
+            .single()
+            .ok_or(Error::BadTime)?;
 
         let path_type = BomPathType::from(record.path_type);
 

@@ -74,7 +74,11 @@ pub trait CpioHeader: Debug {
 
     /// Modified time as a [DateTime].
     fn modified_time(&self) -> DateTime<Utc> {
-        DateTime::<Utc>::from_utc(NaiveDateTime::from_timestamp(self.mtime() as _, 0), Utc)
+        DateTime::<Utc>::from_utc(
+            NaiveDateTime::from_timestamp_opt(self.mtime() as _, 0)
+                .expect("out of range timestamp"),
+            Utc,
+        )
     }
 
     /// File size in bytes.

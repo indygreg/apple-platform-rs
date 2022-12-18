@@ -31,4 +31,7 @@ pub enum Error {
 
     #[error("unknown block type")]
     UnknownBlockType,
+
+    #[error("invalid time value")]
+    BadTime,
 }

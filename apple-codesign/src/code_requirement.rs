@@ -999,7 +999,12 @@ impl MatchType {
                 let value = data.pread_with::<i64>(0, scroll::BE)?;
 
                 Ok((
-                    CodeRequirementMatchExpression::On(chrono::Utc.timestamp(value, 0)),
+                    CodeRequirementMatchExpression::On(
+                        chrono::Utc
+                            .timestamp_opt(value, 0)
+                            .single()
+                            .ok_or(AppleCodesignError::BadTime)?,
+                    ),
                     &data[8..],
                 ))
             }
@@ -1007,7 +1012,12 @@ impl MatchType {
                 let value = data.pread_with::<i64>(0, scroll::BE)?;
 
                 Ok((
-                    CodeRequirementMatchExpression::Before(chrono::Utc.timestamp(value, 0)),
+                    CodeRequirementMatchExpression::Before(
+                        chrono::Utc
+                            .timestamp_opt(value, 0)
+                            .single()
+                            .ok_or(AppleCodesignError::BadTime)?,
+                    ),
                     &data[8..],
                 ))
             }
@@ -1015,7 +1025,12 @@ impl MatchType {
                 let value = data.pread_with::<i64>(0, scroll::BE)?;
 
                 Ok((
-                    CodeRequirementMatchExpression::After(chrono::Utc.timestamp(value, 0)),
+                    CodeRequirementMatchExpression::After(
+                        chrono::Utc
+                            .timestamp_opt(value, 0)
+                            .single()
+                            .ok_or(AppleCodesignError::BadTime)?,
+                    ),
                     &data[8..],
                 ))
             }
@@ -1023,7 +1038,12 @@ impl MatchType {
                 let value = data.pread_with::<i64>(0, scroll::BE)?;
 
                 Ok((
-                    CodeRequirementMatchExpression::OnOrBefore(chrono::Utc.timestamp(value, 0)),
+                    CodeRequirementMatchExpression::OnOrBefore(
+                        chrono::Utc
+                            .timestamp_opt(value, 0)
+                            .single()
+                            .ok_or(AppleCodesignError::BadTime)?,
+                    ),
                     &data[8..],
                 ))
             }
@@ -1031,7 +1051,12 @@ impl MatchType {
                 let value = data.pread_with::<i64>(0, scroll::BE)?;
 
                 Ok((
-                    CodeRequirementMatchExpression::OnOrAfter(chrono::Utc.timestamp(value, 0)),
+                    CodeRequirementMatchExpression::OnOrAfter(
+                        chrono::Utc
+                            .timestamp_opt(value, 0)
+                            .single()
+                            .ok_or(AppleCodesignError::BadTime)?,
+                    ),
                     &data[8..],
                 ))
             }
@@ -1934,7 +1959,9 @@ mod test {
             els,
             CodeRequirements(vec![CodeRequirementExpression::InfoPlistKeyField(
                 "key".into(),
-                CodeRequirementMatchExpression::On(chrono::Utc.timestamp(1616890416, 0)),
+                CodeRequirementMatchExpression::On(
+                    chrono::Utc.timestamp_opt(1616890416, 0).unwrap()
+                ),
             )])
         );
         assert!(data.is_empty());
@@ -1952,7 +1979,9 @@ mod test {
             els,
             CodeRequirements(vec![CodeRequirementExpression::InfoPlistKeyField(
                 "key".into(),
-                CodeRequirementMatchExpression::Before(chrono::Utc.timestamp(1616890416, 0)),
+                CodeRequirementMatchExpression::Before(
+                    chrono::Utc.timestamp_opt(1616890416, 0).unwrap()
+                ),
             )])
         );
         assert!(data.is_empty());
@@ -1970,7 +1999,9 @@ mod test {
             els,
             CodeRequirements(vec![CodeRequirementExpression::InfoPlistKeyField(
                 "key".into(),
-                CodeRequirementMatchExpression::After(chrono::Utc.timestamp(1616890416, 0)),
+                CodeRequirementMatchExpression::After(
+                    chrono::Utc.timestamp_opt(1616890416, 0).unwrap()
+                ),
             )])
         );
         assert!(data.is_empty());
@@ -1988,7 +2019,9 @@ mod test {
             els,
             CodeRequirements(vec![CodeRequirementExpression::InfoPlistKeyField(
                 "key".into(),
-                CodeRequirementMatchExpression::OnOrBefore(chrono::Utc.timestamp(1616890416, 0)),
+                CodeRequirementMatchExpression::OnOrBefore(
+                    chrono::Utc.timestamp_opt(1616890416, 0).unwrap()
+                ),
             )])
         );
         assert!(data.is_empty());
@@ -2006,7 +2039,9 @@ mod test {
             els,
             CodeRequirements(vec![CodeRequirementExpression::InfoPlistKeyField(
                 "key".into(),
-                CodeRequirementMatchExpression::OnOrAfter(chrono::Utc.timestamp(1616890416, 0)),
+                CodeRequirementMatchExpression::OnOrAfter(
+                    chrono::Utc.timestamp_opt(1616890416, 0).unwrap()
+                ),
             )])
         );
         assert!(data.is_empty());
