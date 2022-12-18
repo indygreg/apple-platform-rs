@@ -113,7 +113,7 @@ impl ConnectTokenEncoder {
         let filename = format!("AuthKey_{}.p8", key_id);
 
         for path in search_paths {
-            let candidate = path.join(&filename);
+            let candidate = path.join(filename.as_str());
 
             if candidate.exists() {
                 return Self::from_ecdsa_pem_path(key_id, issuer_id, candidate);
