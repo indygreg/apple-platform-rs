@@ -39,6 +39,8 @@ jobs:
       SCCACHE_S3_USE_SSL: '1'
       # Prevent sccache server from stopping due to inactivity.
       SCCACHE_IDLE_TIMEOUT: '0'
+      SCCACHE_ERROR_LOG: /tmp/sccache_log.txt
+      SCCACHE_LOG: debug
     steps:
       - uses: actions/checkout@v3
 
@@ -73,3 +75,5 @@ jobs:
       - name: Stop sccache
         run: |
           sccache --stop-server
+
+          cat /tmp/sccache_log.txt
