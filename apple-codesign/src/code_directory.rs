@@ -443,7 +443,7 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
             .max()
             .unwrap_or(0);
 
-        cursor.iowrite_with(highest_slot as u32, scroll::BE)?;
+        cursor.iowrite_with(highest_slot, scroll::BE)?;
         cursor.iowrite_with(self.code_digests.len() as u32, scroll::BE)?;
         cursor.iowrite_with(self.code_limit, scroll::BE)?;
         cursor.iowrite_with(self.digest_size, scroll::BE)?;
