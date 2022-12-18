@@ -692,9 +692,13 @@ impl<'a> MachFile<'a> {
             .get(index)
             .ok_or(AppleCodesignError::InvalidMachOIndex(index))
     }
+}
 
-    /// Produce an iterator over each [MachOBinary], consuming self.
-    pub fn into_iter(self) -> impl Iterator<Item = MachOBinary<'a>> {
+impl<'a> IntoIterator for MachFile<'a> {
+    type Item = MachOBinary<'a>;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
         self.machos.into_iter()
     }
 }
