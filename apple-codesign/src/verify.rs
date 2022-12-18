@@ -122,22 +122,22 @@ impl std::fmt::Display for VerificationProblem {
                 format!(
                     "code digest missing entry at index {} for digest {}",
                     index,
-                    hex::encode(&digest)
+                    hex::encode(digest)
                 )
             }
             VerificationProblemType::CodeDigestExtraEntry(index, digest) => {
                 format!(
                     "code digest contains extra entry index {} with digest {}",
                     index,
-                    hex::encode(&digest)
+                    hex::encode(digest)
                 )
             }
             VerificationProblemType::CodeDigestMismatch(index, cd_digest, actual_digest) => {
                 format!(
                     "code digest mismatch for entry {}; recorded digest {}, actual {}",
                     index,
-                    hex::encode(&cd_digest),
-                    hex::encode(&actual_digest)
+                    hex::encode(cd_digest),
+                    hex::encode(actual_digest)
                 )
             }
             VerificationProblemType::SlotDigestMissing(slot) => {
