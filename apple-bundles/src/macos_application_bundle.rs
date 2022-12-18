@@ -11,8 +11,8 @@ for documentation of the macOS Application Bundle format.
 use {
     crate::BundlePackageType,
     anyhow::{anyhow, Context, Result},
-    std::path::{Path, PathBuf},
     simple_file_manifest::{FileEntry, FileManifest, FileManifestError},
+    std::path::{Path, PathBuf},
 };
 
 /// Primitive used to iteratively construct a macOS Application Bundle.

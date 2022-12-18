@@ -37,7 +37,9 @@ use {
 ///
 /// The record name is derived from the digest of the code directory of the
 /// main binary within the bundle.
-pub fn record_name_from_executable_bundle(bundle: &DirectoryBundle) -> Result<String, AppleCodesignError> {
+pub fn record_name_from_executable_bundle(
+    bundle: &DirectoryBundle,
+) -> Result<String, AppleCodesignError> {
     let main_exe = bundle
         .files(false)
         .map_err(AppleCodesignError::DirectoryBundle)?

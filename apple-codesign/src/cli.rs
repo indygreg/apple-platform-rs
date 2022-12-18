@@ -37,7 +37,7 @@ use {
 #[cfg(feature = "yubikey")]
 use {
     crate::yubikey::YubiKey,
-    ::yubikey::{PinPolicy, TouchPolicy},
+    yubikey::{PinPolicy, TouchPolicy},
 };
 
 #[cfg(target_os = "macos")]
