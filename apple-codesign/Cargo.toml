@@ -35,7 +35,7 @@ elliptic-curve = { version = "0.12.3", features = ["arithmetic", "pkcs8"] }
 env_logger = "0.10.0"
 filetime = "0.2.19"
 glob = "0.3.0"
-goblin = "0.5.4"
+goblin = "0.6.0"
 hex = "0.4.3"
 jsonwebtoken = "8.2.0"
 log = "0.4.17"

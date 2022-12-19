@@ -7,6 +7,7 @@
 Released on ReleaseDate.
 
 * Cargo.toml now defines patch version for all dependencies.
+* goblin crate upgraded from 0.5 to 0.6.
 
 ## 0.21.0
 

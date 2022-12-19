@@ -27,7 +27,7 @@ use {
         },
         parse_magic_and_ctx,
         segment::Segment,
-        Mach, MachO,
+        Mach, MachO, SingleArch,
     },
     rayon::prelude::*,
     scroll::Pread,
@@ -659,7 +659,10 @@ impl<'a> MachFile<'a> {
                 let mut machos = vec![];
 
                 for (index, arch) in multiarch.arches()?.into_iter().enumerate() {
-                    let macho = multiarch.get(index)?;
+                    let macho = match multiarch.get(index)? {
+                        SingleArch::MachO(m) => m,
+                        SingleArch::Archive(_) => continue,
+                    };
 
                     machos.push(MachOBinary {
                         index: Some(index),
