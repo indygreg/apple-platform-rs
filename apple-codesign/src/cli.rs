@@ -13,6 +13,7 @@ use {
         embedded_signature::{Blob, CodeSigningSlot, DigestType, RequirementSetBlob},
         error::AppleCodesignError,
         macho::MachFile,
+        notarization::Notarizer,
         reader::SignatureReader,
         remote_signing::{
             session_negotiation::{
@@ -1898,23 +1899,18 @@ specify `--staple`. This implies `--wait`.
 ";
 
 /// Obtain a notarization client from arguments.
-fn notarizer_from_args(
-    args: &ArgMatches,
-) -> Result<crate::notarization::Notarizer, AppleCodesignError> {
+fn notarizer_from_args(args: &ArgMatches) -> Result<Notarizer, AppleCodesignError> {
     let api_key_path = args.get_one::<PathBuf>("api_key_path");
     let api_issuer = args.get_one::<String>("api_issuer");
     let api_key = args.get_one::<String>("api_key");
 
-    let mut notarizer = crate::notarization::Notarizer::new()?;
-
     if let Some(api_key_path) = api_key_path {
-        let unified = UnifiedApiKey::from_json_path(api_key_path)?;
-        notarizer.set_token_encoder(unified.try_into()?);
+        Notarizer::from_api_key(api_key_path)
     } else if let (Some(issuer), Some(key)) = (api_issuer, api_key) {
-        notarizer.set_api_key(issuer, key)?;
+        Notarizer::from_api_key_id(issuer, key)
+    } else {
+        Err(AppleCodesignError::NotarizeNoAuthCredentials)
     }
-
-    Ok(notarizer)
 }
 
 fn notarizer_wait_duration(args: &ArgMatches) -> Result<std::time::Duration, AppleCodesignError> {

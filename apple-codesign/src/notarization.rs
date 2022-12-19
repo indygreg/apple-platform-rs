@@ -13,14 +13,11 @@ This module implements functionality for uploading content to Apple
 and waiting on the availability of a notarization ticket.
 */
 
+pub use app_store_connect::notary_api::*;
 use {
-    crate::{
-        reader::PathType,
-        AppleCodesignError,
-    },
+    crate::{reader::PathType, AppleCodesignError},
     app_store_connect::{
-        notary_api::{NewSubmissionResponse, SubmissionResponse, SubmissionResponseStatus},
-        AppStoreConnectClient, ConnectTokenEncoder,
+        AppStoreConnectClient, ConnectTokenEncoder, UnifiedApiKey,
     },
     apple_bundles::DirectoryBundle,
     aws_sdk_s3::{Credentials, Region},
@@ -143,7 +140,7 @@ enum UploadKind {
 /// and incorporating it into the entity being signed.
 #[derive(Clone)]
 pub struct Notarizer {
-    token_encoder: Option<ConnectTokenEncoder>,
+    token_encoder: ConnectTokenEncoder,
 
     /// How long to wait between polling the server for upload status.
     wait_poll_interval: Duration,
@@ -151,36 +148,28 @@ pub struct Notarizer {
 
 impl Notarizer {
     /// Construct a new instance.
-    pub fn new() -> Result<Self, AppleCodesignError> {
-        Ok(Self {
-            token_encoder: None,
+    fn new(token_encoder: ConnectTokenEncoder) -> Self {
+        Self {
+            token_encoder,
             wait_poll_interval: Duration::from_secs(3),
-        })
-    }
-
-    /// Define the App Store Connect JWT token encoder to use.
-    ///
-    /// This is the most generic way to define the credentials for this client.
-    pub fn set_token_encoder(&mut self, encoder: ConnectTokenEncoder) {
-        self.token_encoder = Some(encoder);
+        }
     }
 
     /// Set the API key used to upload.
     ///
     /// The API issuer is required when using an API key.
-    pub fn set_api_key(
-        &mut self,
-        api_issuer: impl ToString,
-        api_key: impl ToString,
-    ) -> Result<(), AppleCodesignError> {
-        let api_key = api_key.to_string();
-        let api_issuer = api_issuer.to_string();
+    pub fn from_api_key_id(
+        issuer_id: impl ToString,
+        key_id: impl ToString,
+    ) -> Result<Self, AppleCodesignError> {
+        Ok(Self::new(ConnectTokenEncoder::from_api_key_id(
+            key_id.to_string(),
+            issuer_id.to_string(),
+        )?))
+    }
 
-        let encoder = ConnectTokenEncoder::from_api_key_id(api_key, api_issuer)?;
-
-        self.set_token_encoder(encoder);
-
-        Ok(())
+    pub fn from_api_key(path: &Path) -> Result<Self, AppleCodesignError> {
+        Ok(Self::new(UnifiedApiKey::from_json_path(path)?.try_into()?))
     }
 
     /// Attempt to notarize an asset defined by a filesystem path.
@@ -270,10 +259,7 @@ impl Notarizer {
 
 impl Notarizer {
     fn client(&self) -> Result<AppStoreConnectClient, AppleCodesignError> {
-        match &self.token_encoder {
-            Some(token) => Ok(AppStoreConnectClient::new(token.clone())?),
-            None => Err(AppleCodesignError::NotarizeNoAuthCredentials),
-        }
+        Ok(AppStoreConnectClient::new(self.token_encoder.clone())?)
     }
 
     /// Tell the notary service to expect an upload to S3.
