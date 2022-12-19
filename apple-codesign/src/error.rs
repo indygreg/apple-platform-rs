@@ -82,9 +82,6 @@ pub enum AppleCodesignError {
     #[error("error parsing version string: {0}")]
     VersionParse(#[from] semver::Error),
 
-    #[error("JWT error: {0}")]
-    Jwt(#[from] jsonwebtoken::errors::Error),
-
     #[error("XAR error: {0}")]
     Xar(#[from] apple_xar::Error),
 
@@ -364,4 +361,7 @@ pub enum AppleCodesignError {
 
     #[error("bad time value")]
     BadTime,
+
+    #[error("{0}")]
+    Anyhow(#[from] anyhow::Error),
 }

@@ -73,7 +73,10 @@ impl DirectoryBundle {
         // case it's safe to check for the existence of the .framework path extension because iOS frameworks
         // aren't versioned. It's furthermore necessary to perform this check, otherwise we would end up
         // assuming that all bundles are frameworks.
-        let framework_plist = if !framework_plist_deep.exists() && root_name.ends_with(".framework") && framework_plist_shallow.exists() {
+        let framework_plist = if !framework_plist_deep.exists()
+            && root_name.ends_with(".framework")
+            && framework_plist_shallow.exists()
+        {
             framework_plist_shallow
         } else {
             framework_plist_deep
