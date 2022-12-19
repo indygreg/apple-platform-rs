@@ -8,6 +8,8 @@ Released on ReleaseDate.
 
 * Cargo.toml now defines patch version for all dependencies.
 * goblin crate upgraded from 0.5 to 0.6.
+* App Store Connect API code extracted to its own crate, `app-store-connect`.
+  The new crate lives in the same repository as this one. (#54)
 
 ## 0.21.0
 

@@ -33,6 +33,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2cb2f989d18dd141ab8ae82f64d1a8cdd37e0840f73a406896cf5e99502fab61"
 
 [[package]]
+name = "app-store-connect"
+version = "0.1.0-pre"
+dependencies = [
+ "anyhow",
+ "base64 0.20.0",
+ "clap",
+ "dirs",
+ "env_logger",
+ "jsonwebtoken",
+ "log",
+ "pem",
+ "rand",
+ "reqwest",
+ "rsa",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "x509-certificate",
+]
+
+[[package]]
 name = "apple-bom"
 version = "0.1.0-pre"
 dependencies = [
@@ -61,6 +82,7 @@ name = "apple-codesign"
 version = "0.22.0-pre"
 dependencies = [
  "anyhow",
+ "app-store-connect",
  "apple-bundles",
  "apple-flat-package",
  "apple-xar",
@@ -86,7 +108,6 @@ dependencies = [
  "goblin",
  "hex",
  "indoc",
- "jsonwebtoken",
  "log",
  "md-5",
  "minicbor",
@@ -772,10 +793,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4d63b9e9c07271b9957ad22c173bae2a4d9a81127680962039296abcd2f8251d"
 dependencies = [
  "bitflags",
+ "clap_derive",
  "clap_lex",
  "is-terminal",
+ "once_cell",
  "strsim",
  "termcolor",
+]
+
+[[package]]
+name = "clap_derive"
+version = "4.0.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0177313f9f02afc995627906bbd8967e2be069f5261954222dac78290c2b9014"
+dependencies = [
+ "heck",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2260,6 +2296,30 @@ name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
+
+[[package]]
+name = "proc-macro-error"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
+dependencies = [
+ "proc-macro-error-attr",
+ "proc-macro2",
+ "quote",
+ "syn",
+ "version_check",
+]
+
+[[package]]
+name = "proc-macro-error-attr"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "version_check",
+]
 
 [[package]]
 name = "proc-macro2"

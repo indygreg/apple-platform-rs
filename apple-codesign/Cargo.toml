@@ -37,7 +37,6 @@ filetime = "0.2.19"
 glob = "0.3.0"
 goblin = "0.6.0"
 hex = "0.4.3"
-jsonwebtoken = "8.2.0"
 log = "0.4.17"
 md-5 = "0.10.5"
 minicbor = { version = "0.19.0", features = ["derive", "std"] }
@@ -80,6 +79,10 @@ yubikey = { version = "0.7.0", optional = true, features = ["untested"] }
 zeroize = { version = "1.5.7", features = ["zeroize_derive"] }
 zip = { version = "0.6.3", default-features = false, features = ["deflate"] }
 zip_structs = "0.2.1"
+
+[dependencies.app-store-connect]
+path = "../app-store-connect"
+version = "0.1.0-pre"
 
 [dependencies.apple-bundles]
 path = "../apple-bundles"
