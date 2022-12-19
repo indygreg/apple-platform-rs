@@ -19,7 +19,7 @@ use std::path::{Path, PathBuf};
 struct Args {
     /// Path to unified api key.
     #[clap(long, global = true)]
-    api_key: PathBuf,
+    api_key: Option<PathBuf>,
     #[clap(subcommand)]
     command: Commands,
 }
@@ -27,7 +27,11 @@ struct Args {
 fn main() -> Result<()> {
     env_logger::init();
     let args = Args::parse();
-    args.command.run(&args.api_key)
+    if let Some(api_key) = args.api_key.as_ref() {
+        args.command.run(api_key)
+    } else {
+        anyhow::bail!("missing --api-key");
+    }
 }
 
 #[derive(Subcommand)]
