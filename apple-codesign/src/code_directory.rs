@@ -594,8 +594,7 @@ impl<'a> CodeDirectoryBlob<'a> {
     ) -> Result<(), AppleCodesignError> {
         if !slot.is_code_directory_specials_expressible() {
             return Err(AppleCodesignError::LogicError(format!(
-                "slot {:?} cannot have its digest expressed on code directories",
-                slot
+                "slot {slot:?} cannot have its digest expressed on code directories"
             )));
         }
 

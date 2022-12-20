@@ -219,8 +219,7 @@ pub fn derive_designated_requirements(
         CertificateProfile::AppleDevelopment | CertificateProfile::AppleDistribution => {
             let cn = cert.subject_common_name().ok_or_else(|| {
                 AppleCodesignError::PolicyFormulationError(format!(
-                    "(deriving for {:?}) certificate common name not available",
-                    profile
+                    "(deriving for {profile:?}) certificate common name not available"
                 ))
             })?;
 
@@ -255,8 +254,7 @@ pub fn derive_designated_requirements(
         CertificateProfile::DeveloperIdApplication => {
             let team_id = cert.apple_team_id().ok_or_else(|| {
                 AppleCodesignError::PolicyFormulationError(format!(
-                    "(deriving for {:?}) could not find team identifier in signing certificate",
-                    profile
+                    "(deriving for {profile:?}) could not find team identifier in signing certificate"
                 ))
             })?;
 
@@ -298,8 +296,7 @@ pub fn derive_designated_requirements(
         }
         CertificateProfile::MacInstallerDistribution | CertificateProfile::DeveloperIdInstaller => {
             Err(AppleCodesignError::PolicyFormulationError(format!(
-                "(deriving for {:?}) we do not know how to handle this policy",
-                profile
+                "(deriving for {profile:?}) we do not know how to handle this policy"
             )))
         }
     }

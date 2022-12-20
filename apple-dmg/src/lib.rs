@@ -170,7 +170,7 @@ impl<W: Write + Seek> DmgWriter<W> {
     pub fn finish(mut self) -> Result<()> {
         let mut xml = vec![];
         plist::to_writer_xml(&mut xml, &self.xml)?;
-        let pos = self.w.seek(SeekFrom::Current(0))?;
+        let pos = self.w.stream_position()?;
         let data_digest = self.data_hasher.finalize();
         let main_digest = self.main_hasher.finalize();
         let koly = KolyTrailer::new(
@@ -255,10 +255,10 @@ mod tests {
         println!("{:?}", dmg.plist());
         for partition in dmg.plist().partitions() {
             let table = partition.table()?;
-            println!("{:?}", table);
+            println!("{table:?}");
             println!("table checksum 0x{:x}", u32::from(table.checksum));
             for (i, chunk) in table.chunks.iter().enumerate() {
-                println!("{} {:?}", i, chunk);
+                println!("{i} {chunk:?}");
             }
         }
         Ok(())
@@ -314,9 +314,9 @@ mod tests {
     fn read_dmg_partition_mbr() -> Result<()> {
         let mut dmg = DmgReader::new(Cursor::new(DMG))?;
         let mbr = dmg.partition_data(0)?;
-        println!("{:?}", mbr);
+        println!("{mbr:?}");
         let mbr = ProtectiveMBR::from_bytes(&mbr, LogicalBlockSize::Lb512)?;
-        println!("{:?}", mbr);
+        println!("{mbr:?}");
         Ok(())
     }
 

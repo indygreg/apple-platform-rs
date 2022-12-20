@@ -200,7 +200,7 @@ impl Stapler {
 
         let digest_type: u8 = cd.digest_type.into();
 
-        let record_name = format!("2/{}/{}", digest_type, digest);
+        let record_name = format!("2/{digest_type}/{digest}");
 
         let response = lookup_notarization_ticket(&self.client, &record_name)?;
 
@@ -238,7 +238,7 @@ impl Stapler {
         let digest_type = DigestType::try_from(reader.table_of_contents().checksum.style)?;
         let digest_type: u8 = digest_type.into();
 
-        let record_name = format!("2/{}/{}", digest_type, digest);
+        let record_name = format!("2/{digest_type}/{digest}");
 
         let response = lookup_notarization_ticket(&self.client, &record_name)?;
 

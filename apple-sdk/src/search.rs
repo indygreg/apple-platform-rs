@@ -276,7 +276,7 @@ impl Display for SdkSearchEvent {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::SearchingLocation(location) => {
-                f.write_fmt(format_args!("searching {}", location))
+                f.write_fmt(format_args!("searching {location}"))
             }
             Self::PlatformDirectoryInclude(path) => f.write_fmt(format_args!(
                 "searching Platform directory {}",
@@ -286,15 +286,15 @@ impl Display for SdkSearchEvent {
                 "excluding Platform directory {}",
                 path.display()
             )),
-            Self::SdkFilterSkip(sdk) => f.write_fmt(format_args!("SDK {} bypasses filter", sdk)),
+            Self::SdkFilterSkip(sdk) => f.write_fmt(format_args!("SDK {sdk} bypasses filter")),
             Self::SdkFilterMatch(sdk) => {
-                f.write_fmt(format_args!("SDK {} matches search filter", sdk))
+                f.write_fmt(format_args!("SDK {sdk} matches search filter"))
             }
             Self::SdkFilterExclude(sdk, reason) => {
-                f.write_fmt(format_args!("SDK {} discarded because {}", sdk, reason))
+                f.write_fmt(format_args!("SDK {sdk} discarded because {reason}"))
             }
             Self::Sorting(count, sorting) => {
-                f.write_fmt(format_args!("sorting {} SDKs by {}", count, sorting))
+                f.write_fmt(format_args!("sorting {count} SDKs by {sorting}"))
             }
         }
     }
@@ -618,8 +618,7 @@ impl SdkSearch {
                         cb(SdkSearchEvent::SdkFilterExclude(
                             sdk_path,
                             format!(
-                                "SDK version {} < minimum version {}",
-                                sdk_version, min_version
+                                "SDK version {sdk_version} < minimum version {min_version}"
                             ),
                         ));
                     }
@@ -632,8 +631,7 @@ impl SdkSearch {
                     cb(SdkSearchEvent::SdkFilterExclude(
                         sdk_path,
                         format!(
-                            "Unknown SDK version fails to meet minimum version {}",
-                            min_version
+                            "Unknown SDK version fails to meet minimum version {min_version}"
                         ),
                     ));
                 }
@@ -649,8 +647,7 @@ impl SdkSearch {
                         cb(SdkSearchEvent::SdkFilterExclude(
                             sdk_path,
                             format!(
-                                "SDK version {} > maximum version {}",
-                                sdk_version, max_version
+                                "SDK version {sdk_version} > maximum version {max_version}"
                             ),
                         ));
                     }
@@ -664,8 +661,7 @@ impl SdkSearch {
                     cb(SdkSearchEvent::SdkFilterExclude(
                         sdk_path,
                         format!(
-                            "Unknown SDK version fails to meet maximum version {}",
-                            max_version
+                            "Unknown SDK version fails to meet maximum version {max_version}"
                         ),
                     ));
                 }
@@ -679,7 +675,7 @@ impl SdkSearch {
                 if let Some(cb) = &self.progress_callback {
                     cb(SdkSearchEvent::SdkFilterExclude(
                         sdk_path,
-                        format!("does not support deployment target {}:{}", target, version),
+                        format!("does not support deployment target {target}:{version}"),
                     ));
                 }
 

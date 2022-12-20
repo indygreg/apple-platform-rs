@@ -163,12 +163,12 @@ impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::XcodeSelectRun(err) => {
-                f.write_fmt(format_args!("Error running xcode-select: {}", err))
+                f.write_fmt(format_args!("Error running xcode-select: {err}"))
             }
             Self::XcodeSelectBadStatus(v) => {
-                f.write_fmt(format_args!("Error running xcode-select: {}", v))
+                f.write_fmt(format_args!("Error running xcode-select: {v}"))
             }
-            Self::Io(err) => f.write_fmt(format_args!("I/O error: {}", err)),
+            Self::Io(err) => f.write_fmt(format_args!("I/O error: {err}")),
             Self::DeveloperDirectoryNotFound => f.write_str("could not find a Developer Directory"),
             Self::PathNotDeveloper(p) => f.write_fmt(format_args!(
                 "path is not a Developer directory: {}",
@@ -181,21 +181,21 @@ impl Display for Error {
             Self::PathNotSdk(p) => {
                 f.write_fmt(format_args!("path is not an Apple SDK: {}", p.display()))
             }
-            Self::VersionParse(s) => f.write_fmt(format_args!("malformed version string: {}", s)),
-            Self::FunctionalityNotSupported(s) => f.write_fmt(format_args!("not supported: {}", s)),
+            Self::VersionParse(s) => f.write_fmt(format_args!("malformed version string: {s}")),
+            Self::FunctionalityNotSupported(s) => f.write_fmt(format_args!("not supported: {s}")),
             Self::PlistNotDictionary => f.write_str("plist value not a dictionary"),
-            Self::PlistKeyMissing(key) => f.write_fmt(format_args!("plist key missing: {}", key)),
+            Self::PlistKeyMissing(key) => f.write_fmt(format_args!("plist key missing: {key}")),
             Self::PlistKeyNotDictionary(key) => {
-                f.write_fmt(format_args!("plist key not a dictionary: {}", key))
+                f.write_fmt(format_args!("plist key not a dictionary: {key}"))
             }
             Self::PlistKeyNotString(key) => {
-                f.write_fmt(format_args!("plist key not a string: {}", key))
+                f.write_fmt(format_args!("plist key not a string: {key}"))
             }
             #[cfg(feature = "parse")]
-            Self::SerdeJson(err) => f.write_fmt(format_args!("JSON parsing error: {}", err)),
+            Self::SerdeJson(err) => f.write_fmt(format_args!("JSON parsing error: {err}")),
             #[cfg(feature = "plist")]
-            Self::Plist(err) => f.write_fmt(format_args!("plist error: {}", err)),
-            Self::UnknownTarget(target) => f.write_fmt(format_args!("unknown target: {}", target)),
+            Self::Plist(err) => f.write_fmt(format_args!("plist error: {err}")),
+            Self::UnknownTarget(target) => f.write_fmt(format_args!("unknown target: {target}")),
         }
     }
 }
@@ -810,7 +810,7 @@ impl SdkVersion {
     pub fn semantic_version(&self) -> Result<String, Error> {
         let (x, y, z) = self.normalized_version()?;
 
-        Ok(format!("{}.{}.{}", x, y, z))
+        Ok(format!("{x}.{y}.{z}"))
     }
 }
 

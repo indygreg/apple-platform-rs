@@ -380,7 +380,7 @@ impl DirectoryBundle {
 
             if descend {
                 for (path, nested) in bundle.nested_bundles(true)? {
-                    bundles.push((format!("{}/{}", root_relative, path), nested));
+                    bundles.push((format!("{root_relative}/{path}"), nested));
                 }
             }
 
@@ -477,7 +477,7 @@ impl<'a> DirectoryBundleFile<'a> {
             if self.bundle.shallow() {
                 Ok(self.absolute_path == self.bundle.resolve_path(main))
             } else {
-                Ok(self.absolute_path == self.bundle.resolve_path(format!("MacOS/{}", main)))
+                Ok(self.absolute_path == self.bundle.resolve_path(format!("MacOS/{main}")))
             }
         } else {
             Ok(false)
@@ -623,7 +623,7 @@ mod test {
 
         let plist_path = root.join("Info.plist");
         let empty = plist::Value::from(plist::Dictionary::new());
-        empty.to_file_xml(&plist_path)?;
+        empty.to_file_xml(plist_path)?;
 
         let bundle = DirectoryBundle::new_from_path(&root)?;
         assert_eq!(bundle.package_type, BundlePackageType::Framework);
@@ -644,7 +644,7 @@ mod test {
 
         let plist_path = root.join("Info.plist");
         let empty = plist::Value::from(plist::Dictionary::new());
-        empty.to_file_xml(&plist_path)?;
+        empty.to_file_xml(plist_path)?;
 
         let bundle = DirectoryBundle::new_from_path(&root)?;
         assert_eq!(bundle.package_type, BundlePackageType::Bundle);

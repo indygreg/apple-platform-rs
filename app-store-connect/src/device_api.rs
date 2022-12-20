@@ -52,7 +52,7 @@ impl AppStoreConnectClient {
         let token = self.get_token()?;
         let req = self
             .client
-            .get(format!("{}/{}", APPLE_CERTIFICATE_URL, id))
+            .get(format!("{APPLE_CERTIFICATE_URL}/{id}"))
             .bearer_auth(token)
             .header("Accept", "application/json");
         Ok(self.send_request(req)?.json()?)

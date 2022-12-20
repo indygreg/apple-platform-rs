@@ -200,7 +200,7 @@ impl CertificateCommand {
                     tag: "CERTIFICATE".into(),
                     contents: base64::decode(resp.data.attributes.certificate_content)?,
                 });
-                println!("{}", cer);
+                println!("{cer}");
             }
             Self::Revoke { id } => {
                 client.revoke_certificate(&id)?;

@@ -317,7 +317,7 @@ impl CmsSigner {
                                     let value = bcder::OctetString::take_from(cons)?;
 
                                     cdhash_digests.push((
-                                        format!("{}", oid),
+                                        format!("{oid}"),
                                         hex::encode(value.into_bytes()),
                                     ));
 
@@ -431,7 +431,7 @@ impl<'a> TryFrom<CodeDirectoryBlob<'a>> for CodeDirectory {
 
         let slot_digests = temp
             .into_iter()
-            .map(|(slot, digest)| format!("{:?}: {}", slot, digest))
+            .map(|(slot, digest)| format!("{slot:?}: {digest}"))
             .collect::<Vec<_>>();
 
         Ok(Self {
@@ -442,7 +442,7 @@ impl<'a> TryFrom<CodeDirectoryBlob<'a>> for CodeDirectory {
             signed_entity_size: cd.code_limit as _,
             digest_type: format!("{}", cd.digest_type),
             platform: cd.platform,
-            executable_segment_flags: cd.exec_seg_flags.map(|x| format!("{:?}", x)),
+            executable_segment_flags: cd.exec_seg_flags.map(|x| format!("{x:?}")),
             runtime_version: cd
                 .runtime
                 .map(|x| format!("{}", crate::macho::parse_version_nibbles(x))),
@@ -486,7 +486,7 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
         let alternative_code_directories = sig
             .alternate_code_directories()?
             .into_iter()
-            .map(|(slot, cd)| Ok((format!("{:?}", slot), CodeDirectory::try_from(*cd)?)))
+            .map(|(slot, cd)| Ok((format!("{slot:?}"), CodeDirectory::try_from(*cd)?)))
             .collect::<Result<Vec<_>, AppleCodesignError>>()?;
 
         if let Some(blob) = sig.entitlements()? {
@@ -498,14 +498,14 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
 
             for (req, blob) in req.requirements {
                 let reqs = blob.parse_expressions()?;
-                temp.push((req, format!("{}", reqs)));
+                temp.push((req, format!("{reqs}")));
             }
 
             temp.sort_by(|(a, _), (b, _)| a.cmp(b));
 
             code_requirements = temp
                 .into_iter()
-                .map(|(req, value)| format!("{}: {}", req, value))
+                .map(|(req, value)| format!("{req}: {value}"))
                 .collect::<Vec<_>>();
         }
 
@@ -874,7 +874,7 @@ impl SignatureReader {
             let mut entity = entity.clone();
 
             if let Some(index) = macho.index {
-                entity.sub_path = Some(format!("macho-index:{}", index));
+                entity.sub_path = Some(format!("macho-index:{index}"));
             }
 
             entity.entity = SignatureEntity::MachO(Self::resolve_macho_entity(macho)?);

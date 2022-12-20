@@ -187,8 +187,7 @@ impl AppStoreConnectClient {
         let req = self
             .client
             .get(format!(
-                "{}/{}",
-                APPLE_NOTARY_SUBMIT_SOFTWARE_URL, submission_id
+                "{APPLE_NOTARY_SUBMIT_SOFTWARE_URL}/{submission_id}"
             ))
             .bearer_auth(token)
             .header("Accept", "application/json");
@@ -203,8 +202,7 @@ impl AppStoreConnectClient {
         let req = self
             .client
             .get(format!(
-                "{}/{}/logs",
-                APPLE_NOTARY_SUBMIT_SOFTWARE_URL, submission_id
+                "{APPLE_NOTARY_SUBMIT_SOFTWARE_URL}/{submission_id}/logs"
             ))
             .bearer_auth(token)
             .header("Accept", "application/json");

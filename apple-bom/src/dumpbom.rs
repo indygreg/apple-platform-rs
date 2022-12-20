@@ -68,7 +68,7 @@ fn main_impl() -> BomResult<()> {
         "blocks-index" => {
             println!("{} total blocks", bom.blocks.count);
             for (i, entry) in bom.blocks.blocks.iter().enumerate() {
-                println!("#{}: {:?}", i, entry);
+                println!("#{i}: {entry:?}");
             }
         }
         "blocks" => {
@@ -76,7 +76,7 @@ fn main_impl() -> BomResult<()> {
             for i in 0..bom.header.number_of_blocks as usize + 1 {
                 match BomBlock::try_parse(&bom, i) {
                     Ok(block) => {
-                        println!("#{}: {:?}", i, block);
+                        println!("#{i}: {block:?}");
                     }
                     Err(_) => {
                         println!("#{}: (unknown) {}", i, hex::encode(bom.block_data(i)?));
@@ -115,7 +115,7 @@ fn main_impl() -> BomResult<()> {
             println!("{:#?}", bom.vindex()?);
         }
         _ => {
-            return Err(Error::CliBadArgs(format!("unhandled action: {}", action)));
+            return Err(Error::CliBadArgs(format!("unhandled action: {action}")));
         }
     }
 
@@ -126,7 +126,7 @@ fn main() {
     let exit_code = match main_impl() {
         Ok(()) => 0,
         Err(err) => {
-            eprintln!("Error: {:?}", err);
+            eprintln!("Error: {err:?}");
             1
         }
     };

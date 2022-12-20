@@ -565,7 +565,7 @@ impl std::fmt::Display for Platform {
             Self::TvOsSimulator => f.write_str("tvOSSimulator"),
             Self::WatchOsSimulator => f.write_str("watchOSSimulator"),
             Self::DriverKit => f.write_str("driverKit"),
-            Self::Unknown(v) => f.write_fmt(format_args!("Unknown ({})", v)),
+            Self::Unknown(v) => f.write_fmt(format_args!("Unknown ({v})")),
         }
     }
 }

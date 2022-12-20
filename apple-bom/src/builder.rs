@@ -277,7 +277,7 @@ impl BomBuilder {
             }
 
             // Now handle the file entry itself.
-            let path = format!("./{}", index_path);
+            let path = format!("./{index_path}");
             let parent_path = &path[0..path.rfind('/').expect("/ should appear in path")];
             let parent_path_id = *path_to_path_id
                 .get(parent_path)

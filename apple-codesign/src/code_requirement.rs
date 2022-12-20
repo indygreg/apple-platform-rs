@@ -117,7 +117,7 @@ impl std::fmt::Display for RequirementType {
             Self::Designated => f.write_str("designated(3)"),
             Self::Library => f.write_str("library(4)"),
             Self::Plugin => f.write_str("plugin(5)"),
-            Self::Unknown(v) => f.write_fmt(format_args!("unknown({})", v)),
+            Self::Unknown(v) => f.write_fmt(format_args!("unknown({v})")),
         }
     }
 }
@@ -160,7 +160,7 @@ fn format_certificate_slot(slot: i32) -> String {
     match slot {
         -1 => "root".to_string(),
         0 => "leaf".to_string(),
-        _ => format!("{}", slot),
+        _ => format!("{slot}"),
     }
 }
 
@@ -671,22 +671,22 @@ impl<'a> Display for CodeRequirementExpression<'a> {
         match self {
             Self::False => f.write_str("never"),
             Self::True => f.write_str("always"),
-            Self::Identifier(value) => f.write_fmt(format_args!("identifier \"{}\"", value)),
+            Self::Identifier(value) => f.write_fmt(format_args!("identifier \"{value}\"")),
             Self::AnchorApple => f.write_str("anchor apple"),
             Self::AnchorCertificateHash(slot, digest) => {
                 f.write_fmt(format_args!("anchor {} H\"{}\"", slot, hex::encode(digest)))
             }
             Self::InfoKeyValueLegacy(key, value) => {
-                f.write_fmt(format_args!("info[{}] = \"{}\"", key, value))
+                f.write_fmt(format_args!("info[{key}] = \"{value}\""))
             }
-            Self::And(a, b) => f.write_fmt(format_args!("({}) and ({})", a, b)),
-            Self::Or(a, b) => f.write_fmt(format_args!("({}) or ({})", a, b)),
+            Self::And(a, b) => f.write_fmt(format_args!("({a}) and ({b})")),
+            Self::Or(a, b) => f.write_fmt(format_args!("({a}) or ({b})")),
             Self::CodeDirectoryHash(digest) => {
                 f.write_fmt(format_args!("cdhash H\"{}\"", hex::encode(digest)))
             }
-            Self::Not(expr) => f.write_fmt(format_args!("!({})", expr)),
+            Self::Not(expr) => f.write_fmt(format_args!("!({expr})")),
             Self::InfoPlistKeyField(key, expr) => {
-                f.write_fmt(format_args!("info [{}] {}", key, expr))
+                f.write_fmt(format_args!("info [{key}] {expr}"))
             }
             Self::CertificateField(slot, field, expr) => f.write_fmt(format_args!(
                 "certificate {}[{}] {}",
@@ -695,7 +695,7 @@ impl<'a> Display for CodeRequirementExpression<'a> {
                 expr
             )),
             Self::CertificateTrusted(slot) => {
-                f.write_fmt(format_args!("certificate {} trusted", slot))
+                f.write_fmt(format_args!("certificate {slot} trusted"))
             }
             Self::AnchorTrusted => f.write_str("anchor trusted"),
             Self::CertificateGeneric(slot, oid, expr) => f.write_fmt(format_args!(
@@ -706,7 +706,7 @@ impl<'a> Display for CodeRequirementExpression<'a> {
             )),
             Self::AnchorAppleGeneric => f.write_str("anchor apple generic"),
             Self::EntitlementsKey(key, expr) => {
-                f.write_fmt(format_args!("entitlement [{}] {}", key, expr))
+                f.write_fmt(format_args!("entitlement [{key}] {expr}"))
             }
             Self::CertificatePolicy(slot, oid, expr) => f.write_fmt(format_args!(
                 "certificate {}[policy.{}] {}",
@@ -714,9 +714,9 @@ impl<'a> Display for CodeRequirementExpression<'a> {
                 oid,
                 expr
             )),
-            Self::NamedAnchor(name) => f.write_fmt(format_args!("anchor apple {}", name)),
-            Self::NamedCode(name) => f.write_fmt(format_args!("({})", name)),
-            Self::Platform(platform) => f.write_fmt(format_args!("platform = {}", platform)),
+            Self::NamedAnchor(name) => f.write_fmt(format_args!("anchor apple {name}")),
+            Self::NamedCode(name) => f.write_fmt(format_args!("({name})")),
+            Self::Platform(platform) => f.write_fmt(format_args!("platform = {platform}")),
             Self::Notarized => f.write_str("notarized"),
             Self::CertificateFieldDate(slot, oid, expr) => f.write_fmt(format_args!(
                 "certificate {}[timestamp.{}] {}",
@@ -1166,19 +1166,19 @@ impl<'a> Display for CodeRequirementMatchExpression<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Exists => f.write_str("/* exists */"),
-            Self::Equal(value) => f.write_fmt(format_args!("= \"{}\"", value)),
-            Self::Contains(value) => f.write_fmt(format_args!("~ \"{}\"", value)),
-            Self::BeginsWith(value) => f.write_fmt(format_args!("= \"{}*\"", value)),
-            Self::EndsWith(value) => f.write_fmt(format_args!("= \"*{}\"", value)),
-            Self::LessThan(value) => f.write_fmt(format_args!("< \"{}\"", value)),
-            Self::GreaterThan(value) => f.write_fmt(format_args!("> \"{}\"", value)),
-            Self::LessThanEqual(value) => f.write_fmt(format_args!("<= \"{}\"", value)),
-            Self::GreaterThanEqual(value) => f.write_fmt(format_args!(">= \"{}\"", value)),
-            Self::On(value) => f.write_fmt(format_args!("= \"{}\"", value)),
-            Self::Before(value) => f.write_fmt(format_args!("< \"{}\"", value)),
-            Self::After(value) => f.write_fmt(format_args!("> \"{}\"", value)),
-            Self::OnOrBefore(value) => f.write_fmt(format_args!("<= \"{}\"", value)),
-            Self::OnOrAfter(value) => f.write_fmt(format_args!(">= \"{}\"", value)),
+            Self::Equal(value) => f.write_fmt(format_args!("= \"{value}\"")),
+            Self::Contains(value) => f.write_fmt(format_args!("~ \"{value}\"")),
+            Self::BeginsWith(value) => f.write_fmt(format_args!("= \"{value}*\"")),
+            Self::EndsWith(value) => f.write_fmt(format_args!("= \"*{value}\"")),
+            Self::LessThan(value) => f.write_fmt(format_args!("< \"{value}\"")),
+            Self::GreaterThan(value) => f.write_fmt(format_args!("> \"{value}\"")),
+            Self::LessThanEqual(value) => f.write_fmt(format_args!("<= \"{value}\"")),
+            Self::GreaterThanEqual(value) => f.write_fmt(format_args!(">= \"{value}\"")),
+            Self::On(value) => f.write_fmt(format_args!("= \"{value}\"")),
+            Self::Before(value) => f.write_fmt(format_args!("< \"{value}\"")),
+            Self::After(value) => f.write_fmt(format_args!("> \"{value}\"")),
+            Self::OnOrBefore(value) => f.write_fmt(format_args!("<= \"{value}\"")),
+            Self::OnOrAfter(value) => f.write_fmt(format_args!(">= \"{value}\"")),
             Self::Absent => f.write_str("absent"),
         }
     }
@@ -1265,7 +1265,7 @@ impl<'a> DerefMut for CodeRequirements<'a> {
 impl<'a> Display for CodeRequirements<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (i, expr) in self.0.iter().enumerate() {
-            f.write_fmt(format_args!("{}: {};", i, expr))?;
+            f.write_fmt(format_args!("{i}: {expr};"))?;
         }
 
         Ok(())

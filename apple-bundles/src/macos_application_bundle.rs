@@ -341,7 +341,7 @@ impl MacOsApplicationBundleBuilder {
     /// builder will not be touched.
     pub fn materialize_bundle(&self, dest_dir: impl AsRef<Path>) -> Result<PathBuf> {
         let bundle_name = self.bundle_name().context("resolving bundle name")?;
-        let bundle_dir = dest_dir.as_ref().join(format!("{}.app", bundle_name));
+        let bundle_dir = dest_dir.as_ref().join(format!("{bundle_name}.app"));
 
         self.files
             .materialize_files(&bundle_dir)

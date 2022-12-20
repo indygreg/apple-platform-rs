@@ -59,7 +59,7 @@ fn write_octal(value: u64, writer: &mut impl Write, size: usize) -> CpioResult<(
         return Err(Error::ValueTooLarge);
     }
 
-    let s = format!("{:o}", value);
+    let s = format!("{value:o}");
 
     for _ in 0..size - s.len() {
         writer.write_all(b"0")?;
@@ -388,7 +388,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
         if path.starts_with("./") {
             path.to_string()
         } else {
-            format!("./{}", path)
+            format!("./{path}")
         }
     }
 
@@ -600,7 +600,7 @@ mod tests {
                 1 => "./child",
                 2 => "./child/grandchild",
                 3 => "./child/grandchild/exe",
-                _ => panic!("unexpected entry in archive: {:?}", header),
+                _ => panic!("unexpected entry in archive: {header:?}"),
             };
 
             assert_eq!(header.name(), wanted_filename);

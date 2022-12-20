@@ -105,22 +105,18 @@ impl std::fmt::Display for SettingsScope {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Main => f.write_str("main signing target"),
-            Self::Path(path) => f.write_fmt(format_args!("path {}", path)),
+            Self::Path(path) => f.write_fmt(format_args!("path {path}")),
             Self::MultiArchIndex(index) => f.write_fmt(format_args!(
-                "fat/universal Mach-O binaries at index {}",
-                index
+                "fat/universal Mach-O binaries at index {index}"
             )),
             Self::MultiArchCpuType(cpu_type) => f.write_fmt(format_args!(
-                "fat/universal Mach-O binaries for CPU {}",
-                cpu_type
+                "fat/universal Mach-O binaries for CPU {cpu_type}"
             )),
             Self::PathMultiArchIndex(path, index) => f.write_fmt(format_args!(
-                "fat/universal Mach-O binaries at index {} under path {}",
-                index, path
+                "fat/universal Mach-O binaries at index {index} under path {path}"
             )),
             Self::PathMultiArchCpuType(path, cpu_type) => f.write_fmt(format_args!(
-                "fat/universal Mach-O binaries for CPU {} under path {}",
-                cpu_type, path
+                "fat/universal Mach-O binaries for CPU {cpu_type} under path {path}"
             )),
         }
     }
@@ -142,8 +138,7 @@ impl SettingsScope {
 
                         if key != "cpu_type" {
                             return Err(AppleCodesignError::ParseSettingsScope(format!(
-                                "in '@{}', {} not recognized; must be cpu_type",
-                                at_expr, key
+                                "in '@{at_expr}', {key} not recognized; must be cpu_type"
                             )));
                         }
 
@@ -160,20 +155,17 @@ impl SettingsScope {
                         match value.parse::<u32>() {
                             Ok(cpu_type) => Ok((None, Some(cpu_type as CpuType))),
                             Err(_) => Err(AppleCodesignError::ParseSettingsScope(format!(
-                                "in '@{}', cpu_arch value {} not recognized",
-                                at_expr, value
+                                "in '@{at_expr}', cpu_arch value {value} not recognized"
                             ))),
                         }
                     } else {
                         Err(AppleCodesignError::ParseSettingsScope(format!(
-                            "'{}' sub-expression isn't of form <key>=<value>",
-                            v
+                            "'{v}' sub-expression isn't of form <key>=<value>"
                         )))
                     }
                 } else {
                     Err(AppleCodesignError::ParseSettingsScope(format!(
-                        "in '{}', @ expression not recognized",
-                        at_expr
+                        "in '{at_expr}', @ expression not recognized"
                     )))
                 }
             }
@@ -868,7 +860,7 @@ impl<'key> SigningSettings<'key> {
     /// Convert this instance to settings appropriate for a nested bundle.
     #[must_use]
     pub fn as_nested_bundle_settings(&self, bundle_path: &str) -> Self {
-        self.clone_strip_prefix(bundle_path, format!("{}/", bundle_path))
+        self.clone_strip_prefix(bundle_path, format!("{bundle_path}/"))
     }
 
     /// Convert this instance to settings appropriate for a Mach-O binary in a bundle.

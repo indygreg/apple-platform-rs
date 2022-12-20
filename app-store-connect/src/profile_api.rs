@@ -78,7 +78,7 @@ impl AppStoreConnectClient {
         let token = self.get_token()?;
         let req = self
             .client
-            .get(format!("{}/{}", APPLE_CERTIFICATE_URL, id))
+            .get(format!("{APPLE_CERTIFICATE_URL}/{id}"))
             .bearer_auth(token)
             .header("Accept", "application/json");
         Ok(self.send_request(req)?.json()?)
@@ -88,7 +88,7 @@ impl AppStoreConnectClient {
         let token = self.get_token()?;
         let req = self
             .client
-            .delete(format!("{}/{}", APPLE_CERTIFICATE_URL, id))
+            .delete(format!("{APPLE_CERTIFICATE_URL}/{id}"))
             .bearer_auth(token);
         self.send_request(req)?;
         Ok(())
@@ -161,7 +161,7 @@ impl std::fmt::Display for ProfileType {
             Self::MacAppStore => "MAC_APP_STORE",
             Self::MacAppDirect => "MAC_APP_DIRECT",
         };
-        write!(f, "{}", s)
+        write!(f, "{s}")
     }
 }
 

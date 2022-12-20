@@ -760,18 +760,17 @@ fn print_certificate_info(cert: &CapturedX509Certificate) -> Result<(), AppleCod
         hex::encode(cert.sha256_fingerprint()?)
     );
     if let Some(alg) = cert.key_algorithm() {
-        println!("Key Algorithm:               {}", alg);
+        println!("Key Algorithm:               {alg}");
     }
     if let Some(alg) = cert.signature_algorithm() {
-        println!("Signature Algorithm:         {}", alg);
+        println!("Signature Algorithm:         {alg}");
     }
     println!(
         "Public Key Data:             {}",
         base64::encode(
             cert.to_public_key_der()
                 .map_err(|e| AppleCodesignError::X509Parse(format!(
-                    "error constructing SPKI: {}",
-                    e
+                    "error constructing SPKI: {e}"
                 )))?
         )
     );
@@ -794,7 +793,7 @@ fn print_certificate_info(cert: &CapturedX509Certificate) -> Result<(), AppleCod
     println!(
         "Guessed Certificate Profile: {}",
         if let Some(profile) = cert.apple_guess_profile() {
-            format!("{:?}", profile)
+            format!("{profile:?}")
         } else {
             "none".to_string()
         }
@@ -824,8 +823,7 @@ fn print_certificate_info(cert: &CapturedX509Certificate) -> Result<(), AppleCod
         "\n{}",
         cert.to_public_key_pem(Default::default())
             .map_err(|e| AppleCodesignError::X509Parse(format!(
-                "error constructing SPKI: {}",
-                e
+                "error constructing SPKI: {e}"
             )))?
     );
     print!("\n{}", cert.encode_pem());
@@ -988,7 +986,7 @@ fn command_analyze_certificate(args: &ArgMatches) -> Result<(), AppleCodesignErr
     let certs = collect_certificates_from_args(args, true)?.1;
 
     for (i, cert) in certs.into_iter().enumerate() {
-        println!("# Certificate {}", i);
+        println!("# Certificate {i}");
         println!();
         print_certificate_info(&cert)?;
         println!();
@@ -1047,17 +1045,17 @@ fn command_diff_signatures(args: &ArgMatches) -> Result<(), AppleCodesignError> 
         match item {
             Difference::Same(ref x) => {
                 for line in x.lines() {
-                    println!(" {}", line);
+                    println!(" {line}");
                 }
             }
             Difference::Add(ref x) => {
                 for line in x.lines() {
-                    println!("+{}", line);
+                    println!("+{line}");
                 }
             }
             Difference::Rem(ref x) => {
                 for line in x.lines() {
-                    println!("-{}", line);
+                    println!("-{line}");
                 }
             }
         }
@@ -1275,7 +1273,7 @@ fn print_signed_data(
         );
 
         if let Some(tsp_signed_data) = signer.time_stamp_token_signed_data()? {
-            let prefix = format!("{}signer #{}: time-stamp token: ", prefix, i);
+            let prefix = format!("{prefix}signer #{i}: time-stamp token: ");
 
             print_signed_data(&prefix, &tsp_signed_data, None)?;
         }
@@ -1306,7 +1304,7 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
 
             for blob in embedded.blobs {
                 let parsed = blob.into_parsed_blob()?;
-                println!("{:#?}", parsed);
+                println!("{parsed:#?}");
             }
         }
         "cms-info" => {
@@ -1362,7 +1360,7 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
             if let Some(signed_data) = embedded.signed_data()? {
-                println!("{:#?}", signed_data);
+                println!("{signed_data:#?}");
             } else {
                 eprintln!("no CMS data");
             }
@@ -1405,7 +1403,7 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
             if let Some(cd) = embedded.code_directory()? {
-                println!("{:#?}", cd);
+                println!("{cd:#?}");
             } else {
                 eprintln!("no code directory");
             }
@@ -1522,7 +1520,7 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
             if let Some(reqs) = embedded.code_requirements()? {
                 for (typ, req) in &reqs.requirements {
                     for expr in req.parse_expressions()?.iter() {
-                        println!("{} => {:#?}", typ, expr);
+                        println!("{typ} => {expr:#?}");
                     }
                 }
             } else {
@@ -1560,7 +1558,7 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
             if let Some(reqs) = embedded.code_requirements()? {
                 for (typ, req) in &reqs.requirements {
                     for expr in req.parse_expressions()?.iter() {
-                        println!("{} => {}", typ, expr);
+                        println!("{typ} => {expr}");
                     }
                 }
             } else {
@@ -1642,7 +1640,7 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
                 );
             }
         }
-        _ => panic!("unhandled format: {}", format),
+        _ => panic!("unhandled format: {format}"),
     }
 
     Ok(())
@@ -1677,7 +1675,7 @@ fn command_generate_certificate_signing_request(
     builder
         .subject()
         .append_common_name_utf8_string("Apple Code Signing CSR")
-        .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{:?}", e)))?;
+        .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{e:?}")))?;
 
     warn!("generating CSR; you may be prompted to enter credentials to unlock the signing key");
     let pem = builder
@@ -1693,7 +1691,7 @@ fn command_generate_certificate_signing_request(
         std::fs::write(&dest_path, pem.as_bytes())?;
     }
 
-    print!("{}", pem);
+    print!("{pem}");
 
     Ok(())
 }
@@ -1707,8 +1705,7 @@ fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), App
         "ecdsa" => KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1),
         "ed25519" => KeyAlgorithm::Ed25519,
         value => panic!(
-            "algorithm values should have been validated by arg parser: {}",
-            value
+            "algorithm values should have been validated by arg parser: {value}"
         ),
     };
 
@@ -1752,8 +1749,8 @@ fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), App
     let mut wrote_file = false;
 
     if let Some(pem_filename) = pem_filename {
-        let cert_path = PathBuf::from(format!("{}.crt", pem_filename));
-        let key_path = PathBuf::from(format!("{}.key", pem_filename));
+        let cert_path = PathBuf::from(format!("{pem_filename}.crt"));
+        let key_path = PathBuf::from(format!("{pem_filename}.key"));
 
         if let Some(parent) = cert_path.parent() {
             std::fs::create_dir_all(parent)?;
@@ -1768,8 +1765,8 @@ fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), App
     }
 
     if !wrote_file {
-        print!("{}", cert_pem);
-        print!("{}", key_pem);
+        print!("{cert_pem}");
+        print!("{key_pem}");
     }
 
     Ok(())
@@ -1932,7 +1929,7 @@ fn command_notary_log(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let log = notarizer.fetch_notarization_log(submission_id)?;
 
     for line in serde_json::to_string_pretty(&log)?.lines() {
-        println!("{}", line);
+        println!("{line}");
     }
 
     Ok(())
@@ -2000,12 +1997,12 @@ fn command_parse_code_signing_requirement(args: &ArgMatches) -> Result<(), Apple
             .as_str()
         {
             "csrl" => {
-                println!("{}", requirement);
+                println!("{requirement}");
             }
             "expression-tree" => {
-                println!("{:#?}", requirement);
+                println!("{requirement:#?}");
             }
-            format => panic!("unhandled format: {}", format),
+            format => panic!("unhandled format: {format}"),
         }
     }
 
@@ -2445,7 +2442,7 @@ fn command_verify(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let problems = crate::verify::verify_macho_data(data);
 
     for problem in &problems {
-        println!("{}", problem);
+        println!("{problem}");
     }
 
     if problems.is_empty() {

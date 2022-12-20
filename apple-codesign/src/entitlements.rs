@@ -65,7 +65,7 @@ pub fn der_encode_entitlements_plist(value: &Value) -> Result<Vec<u8>, AppleCode
             Ok(())
         })
     })
-    .map_err(|e| AppleCodesignError::EntitlementsDerEncode(format!("{}", e)))
+    .map_err(|e| AppleCodesignError::EntitlementsDerEncode(format!("{e}")))
 }
 
 /// Convert an entitlements plist to [ExecutableSegmentFlags].
@@ -185,7 +185,7 @@ mod test {
 
         let in_path = temp_dir.path().join("original");
         let entitlements_path = temp_dir.path().join("entitlements.xml");
-        std::fs::copy(&this_exe, &in_path)?;
+        std::fs::copy(this_exe, &in_path)?;
         {
             let mut fh = std::fs::File::create(&entitlements_path)?;
             value.to_writer_xml(&mut fh)?;

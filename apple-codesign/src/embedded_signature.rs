@@ -200,7 +200,7 @@ impl std::fmt::Debug for CodeSigningSlot {
                 f.write_fmt(format_args!("Identification ({})", u32::from(*self)))
             }
             Self::Ticket => f.write_fmt(format_args!("Ticket ({})", u32::from(*self))),
-            Self::Unknown(value) => f.write_fmt(format_args!("Unknown ({})", value)),
+            Self::Unknown(value) => f.write_fmt(format_args!("Unknown ({value})")),
         }
     }
 }
@@ -389,7 +389,7 @@ impl Display for DigestType {
             DigestType::Sha256Truncated => f.write_str("sha256-truncated"),
             DigestType::Sha384 => f.write_str("sha384"),
             DigestType::Sha512 => f.write_str("sha512"),
-            DigestType::Unknown(v) => f.write_fmt(format_args!("unknown: {}", v)),
+            DigestType::Unknown(v) => f.write_fmt(format_args!("unknown: {v}")),
         }
     }
 }

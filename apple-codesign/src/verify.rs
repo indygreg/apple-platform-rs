@@ -79,18 +79,18 @@ impl std::fmt::Display for VerificationProblem {
         let context = match (&self.context.path, &self.context.fat_index) {
             (None, None) => None,
             (Some(path), None) => Some(format!("{}", path.display())),
-            (None, Some(index)) => Some(format!("@{}", index)),
+            (None, Some(index)) => Some(format!("@{index}")),
             (Some(path), Some(index)) => Some(format!("{}@{}", path.display(), index)),
         };
 
         let message = match &self.problem {
-            VerificationProblemType::IoError(e) => format!("I/O error: {}", e),
-            VerificationProblemType::MachOParseError(e) => format!("Mach-O parse failure: {}", e),
+            VerificationProblemType::IoError(e) => format!("I/O error: {e}"),
+            VerificationProblemType::MachOParseError(e) => format!("Mach-O parse failure: {e}"),
             VerificationProblemType::NoMachOSignatureData => {
                 "Mach-O signature data not found".to_string()
             }
             VerificationProblemType::MachOSignatureError(e) => {
-                format!("error parsing Mach-O signature data: {:?}", e)
+                format!("error parsing Mach-O signature data: {e:?}")
             }
             VerificationProblemType::LinkeditNotLastSegment => {
                 "__LINKEDIT isn't last Mach-O segment".to_string()
@@ -101,22 +101,21 @@ impl std::fmt::Display for VerificationProblem {
             VerificationProblemType::NoCryptographicSignature => {
                 "no cryptographic signature present".to_string()
             }
-            VerificationProblemType::CmsError(e) => format!("CMS error: {}", e),
+            VerificationProblemType::CmsError(e) => format!("CMS error: {e}"),
             VerificationProblemType::CmsOldDigestAlgorithm(alg) => {
-                format!("insecure digest algorithm used: {:?}", alg)
+                format!("insecure digest algorithm used: {alg:?}")
             }
             VerificationProblemType::CmsOldSignatureAlgorithm(alg) => {
-                format!("insecure signature algorithm used: {:?}", alg)
+                format!("insecure signature algorithm used: {alg:?}")
             }
             VerificationProblemType::NoCodeDirectory => "no code directory".to_string(),
             VerificationProblemType::CodeDirectoryOldDigestAlgorithm(hash_type) => {
                 format!(
-                    "insecure digest algorithm used in code directory: {:?}",
-                    hash_type
+                    "insecure digest algorithm used in code directory: {hash_type:?}"
                 )
             }
             VerificationProblemType::CodeDigestError(e) => {
-                format!("error computing code digests: {:?}", e)
+                format!("error computing code digests: {e:?}")
             }
             VerificationProblemType::CodeDigestMissingEntry(index, digest) => {
                 format!(
@@ -141,7 +140,7 @@ impl std::fmt::Display for VerificationProblem {
                 )
             }
             VerificationProblemType::SlotDigestMissing(slot) => {
-                format!("missing digest for slot {:?}", slot)
+                format!("missing digest for slot {slot:?}")
             }
             VerificationProblemType::ExtraSlotDigest(slot, digest) => {
                 format!(
@@ -159,12 +158,12 @@ impl std::fmt::Display for VerificationProblem {
                 )
             }
             VerificationProblemType::SlotDigestError(e) => {
-                format!("error computing slot digest: {:?}", e)
+                format!("error computing slot digest: {e:?}")
             }
         };
 
         match context {
-            Some(context) => f.write_fmt(format_args!("{}: {}", context, message)),
+            Some(context) => f.write_fmt(format_args!("{context}: {message}")),
             None => f.write_str(&message),
         }
     }

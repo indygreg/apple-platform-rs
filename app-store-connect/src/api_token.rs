@@ -105,7 +105,7 @@ impl ConnectTokenEncoder {
         }
 
         // AuthKey_<apiKey>.p8
-        let filename = format!("AuthKey_{}.p8", key_id);
+        let filename = format!("AuthKey_{key_id}.p8");
 
         for path in search_paths {
             let candidate = path.join(filename.as_str());

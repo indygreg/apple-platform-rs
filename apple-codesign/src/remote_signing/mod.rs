@@ -743,7 +743,7 @@ impl PairedClient {
 
                     response = Some(self.decrypt_peer_message(&message)?);
                 }
-                m => return Err(RemoteSignError::ServerUnexpectedMessage(format!("{:?}", m))),
+                m => return Err(RemoteSignError::ServerUnexpectedMessage(format!("{m:?}"))),
             }
         }
 
@@ -1023,7 +1023,7 @@ impl<'key> SigningClient<'key> {
         let signature = self
             .signing_key
             .try_sign(&message)
-            .map_err(|e| RemoteSignError::Crypto(format!("when creating signature: {}", e)))?;
+            .map_err(|e| RemoteSignError::Crypto(format!("when creating signature: {e}")))?;
         let algorithm = self.signing_key.signature_algorithm()?;
 
         let oid = Oid::from(algorithm);

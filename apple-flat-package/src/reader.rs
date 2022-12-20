@@ -88,7 +88,7 @@ impl<R: Read + Seek + Sized + Debug> PkgReader<R> {
         let prefix = if path_prefix.is_empty() {
             "".to_string()
         } else {
-            format!("{}/", path_prefix)
+            format!("{path_prefix}/")
         };
 
         let mut bom_data = None;

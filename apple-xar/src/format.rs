@@ -76,7 +76,7 @@ impl Display for XarChecksum {
             XarChecksum::Md5 => f.write_str("MD5"),
             XarChecksum::Sha256 => f.write_str("SHA-256"),
             XarChecksum::Sha512 => f.write_str("SHA-512"),
-            XarChecksum::Other(v) => f.write_fmt(format_args!("unknown ({})", v)),
+            XarChecksum::Other(v) => f.write_fmt(format_args!("unknown ({v})")),
         }
     }
 }

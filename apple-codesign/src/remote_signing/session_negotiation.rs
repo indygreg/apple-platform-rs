@@ -225,7 +225,7 @@ pub trait SessionJoinString<'de>: CborDecode<'de, ()> + CborEncode<()> {
     /// Obtain the raw bytes constituting the session join string.
     fn to_bytes(&self) -> Result<Vec<u8>> {
         encode_sjs(Self::scheme(), self)
-            .map_err(|e| RemoteSignError::SessionJoinString(format!("CBOR encoding error: {}", e)))
+            .map_err(|e| RemoteSignError::SessionJoinString(format!("CBOR encoding error: {e}")))
     }
 }
 
@@ -482,7 +482,7 @@ impl PublicKeyInitiator {
     /// Create a new initiator using public key agreement.
     pub fn new(peer_public_key: impl AsRef<[u8]>, server_url: Option<String>) -> Result<Self> {
         let spki = SubjectPublicKeyInfo::from_der(peer_public_key.as_ref())
-            .map_err(|e| RemoteSignError::Crypto(format!("when parsing SPKI data: {}", e)))?;
+            .map_err(|e| RemoteSignError::Crypto(format!("when parsing SPKI data: {e}")))?;
 
         let session_id = uuid::Uuid::new_v4().to_string();
 
@@ -515,7 +515,7 @@ impl PublicKeyInitiator {
 
         // The unique AES key is used to encrypt the main CBOR message.
         let mut message_ciphertext = minicbor::to_vec(peer_message)
-            .map_err(|e| RemoteSignError::Crypto(format!("CBOR encode error: {}", e)))?;
+            .map_err(|e| RemoteSignError::Crypto(format!("CBOR encode error: {e}")))?;
         let aes_key = UnboundKey::new(&AES_128_GCM, &aes_key_data).map_err(|_| {
             RemoteSignError::Crypto("failed to load AES encryption key into ring".into())
         })?;
@@ -530,14 +530,14 @@ impl PublicKeyInitiator {
             x if x == OID_PKCS1_RSAENCRYPTION.as_bytes() => {
                 let public_key =
                     RsaPublicKeyAsn1::from_der(spki.subject_public_key).map_err(|e| {
-                        RemoteSignError::Crypto(format!("when parsing RSA public key: {}", e))
+                        RemoteSignError::Crypto(format!("when parsing RSA public key: {e}"))
                     })?;
 
                 let n = BigUint::from_bytes_be(public_key.modulus.as_bytes());
                 let e = BigUint::from_bytes_be(public_key.public_exponent.as_bytes());
 
                 let rsa_public = RsaPublicKey::new(n, e).map_err(|e| {
-                    RemoteSignError::Crypto(format!("when constructing RSA public key: {}", e))
+                    RemoteSignError::Crypto(format!("when constructing RSA public key: {e}"))
                 })?;
 
                 let padding = PaddingScheme::new_oaep::<sha2::Sha256>();
@@ -545,7 +545,7 @@ impl PublicKeyInitiator {
                 rsa_public
                     .encrypt(&mut rand::thread_rng(), padding, &aes_key_data)
                     .map_err(|e| {
-                        RemoteSignError::Crypto(format!("RSA public key encryption error: {}", e))
+                        RemoteSignError::Crypto(format!("RSA public key encryption error: {e}"))
                     })?
             }
             _ => {
@@ -558,7 +558,7 @@ impl PublicKeyInitiator {
 
         let public_key = spki
             .to_vec()
-            .map_err(|e| RemoteSignError::Crypto(format!("when encoding SPKI to DER: {}", e)))?;
+            .map_err(|e| RemoteSignError::Crypto(format!("when encoding SPKI to DER: {e}")))?;
 
         let sjs = PublicKeySessionJoinString {
             aes_ciphertext,
@@ -619,7 +619,7 @@ impl SessionJoinPeerPreJoin for PublicKeyPeerPreJoined {
 
         // The plaintext is a CBOR encoded message.
         let message = minicbor::decode::<PublicKeySecretMessage>(cbor_plaintext)
-            .map_err(|e| RemoteSignError::Crypto(format!("CBOR decode error: {}", e)))?;
+            .map_err(|e| RemoteSignError::Crypto(format!("CBOR decode error: {e}")))?;
 
         let agreement_private = EphemeralPrivateKey::generate(&X25519, &SystemRandom::new())
             .map_err(|_| {
@@ -718,7 +718,7 @@ impl SessionInitiatePeer for SharedSecretInitiator {
         })?;
 
         let shared_key = self.spake.finish(&spake_b).map_err(|e| {
-            RemoteSignError::Crypto(format!("error finishing SPAKE2 key negotiation: {}", e))
+            RemoteSignError::Crypto(format!("error finishing SPAKE2 key negotiation: {e}"))
         })?;
 
         let (sealing, opening) = derive_aead_keys(
@@ -823,7 +823,7 @@ pub struct SharedSecretHandshakePeer {
 impl SessionJoinPeerHandshake for SharedSecretHandshakePeer {
     fn negotiate_session(self: Box<Self>) -> Result<PeerKeys> {
         let shared_key = self.spake.finish(&self.role_a_init_message).map_err(|e| {
-            RemoteSignError::Crypto(format!("error finishing SPAKE2 key negotiation: {}", e))
+            RemoteSignError::Crypto(format!("error finishing SPAKE2 key negotiation: {e}"))
         })?;
 
         let (sealing, opening) = derive_aead_keys(
@@ -884,7 +884,7 @@ pub fn create_session_joiner(
     match scheme {
         _ if scheme == PublicKeySessionJoinString::scheme() => {
             let sjs = PublicKeySessionJoinString::decode(&mut decoder, &mut ()).map_err(|e| {
-                RemoteSignError::SessionJoinString(format!("error decoding payload: {}", e))
+                RemoteSignError::SessionJoinString(format!("error decoding payload: {e}"))
             })?;
 
             Ok(Box::new(PublicKeyPeerPreJoined::new(sjs)?) as Box<dyn SessionJoinPeerPreJoin>)
@@ -892,14 +892,13 @@ pub fn create_session_joiner(
         _ if scheme == SharedSecretSessionJoinString::scheme() => {
             let sjs =
                 SharedSecretSessionJoinString::decode(&mut decoder, &mut ()).map_err(|e| {
-                    RemoteSignError::SessionJoinString(format!("error decoding payload: {}", e))
+                    RemoteSignError::SessionJoinString(format!("error decoding payload: {e}"))
                 })?;
 
             Ok(Box::new(SharedSecretPeerPreJoined::new(sjs)?) as Box<dyn SessionJoinPeerPreJoin>)
         }
         _ => Err(RemoteSignError::SessionJoinString(format!(
-            "unknown scheme: {}",
-            scheme
+            "unknown scheme: {scheme}"
         ))),
     }
 }

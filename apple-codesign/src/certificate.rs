@@ -1073,7 +1073,7 @@ impl AppleCertificateBuilder for X509CertificateBuilder {
         // different value. But the team id does still appear.
         self.subject()
             .append_utf8_string(Oid(OID_USER_ID.as_ref().into()), team_id)
-            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{:?}", e)))?;
+            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{e:?}")))?;
 
         // Common Name is derived from the profile in use.
 
@@ -1081,41 +1081,40 @@ impl AppleCertificateBuilder for X509CertificateBuilder {
 
         let common_name =
             if extensions.contains(&CodeSigningCertificateExtension::DeveloperIdApplication) {
-                format!("Developer ID Application: {} ({})", person_name, team_id)
+                format!("Developer ID Application: {person_name} ({team_id})")
             } else if extensions.contains(&CodeSigningCertificateExtension::DeveloperIdInstaller) {
-                format!("Developer ID Installer: {} ({})", person_name, team_id)
+                format!("Developer ID Installer: {person_name} ({team_id})")
             } else if extensions
                 .contains(&CodeSigningCertificateExtension::AppleDeveloperCertificateSubmission)
             {
-                format!("Apple Distribution: {} ({})", person_name, team_id)
+                format!("Apple Distribution: {person_name} ({team_id})")
             } else if extensions
                 .contains(&CodeSigningCertificateExtension::AppleMacAppSigningSubmission)
             {
                 format!(
-                    "3rd Party Mac Developer Installer: {} ({})",
-                    person_name, team_id
+                    "3rd Party Mac Developer Installer: {person_name} ({team_id})"
                 )
             } else if extensions.contains(&CodeSigningCertificateExtension::MacDeveloper) {
-                format!("Apple Development: {} ({})", person_name, team_id)
+                format!("Apple Development: {person_name} ({team_id})")
             } else {
-                format!("{} ({})", person_name, team_id)
+                format!("{person_name} ({team_id})")
             };
 
         self.subject()
             .append_common_name_utf8_string(&common_name)
-            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{:?}", e)))?;
+            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{e:?}")))?;
 
         self.subject()
             .append_organizational_unit_utf8_string(team_id)
-            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{:?}", e)))?;
+            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{e:?}")))?;
 
         self.subject()
             .append_organization_utf8_string(person_name)
-            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{:?}", e)))?;
+            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{e:?}")))?;
 
         self.subject()
             .append_printable_string(Oid(OID_COUNTRY_NAME.as_ref().into()), country)
-            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{:?}", e)))?;
+            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{e:?}")))?;
 
         Ok(())
     }
@@ -1123,7 +1122,7 @@ impl AppleCertificateBuilder for X509CertificateBuilder {
     fn apple_email_address(&mut self, address: &str) -> Result<(), AppleCodesignError> {
         self.subject()
             .append_utf8_string(Oid(OID_EMAIL_ADDRESS.as_ref().into()), address)
-            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{:?}", e)))?;
+            .map_err(|e| AppleCodesignError::CertificateBuildError(format!("{e:?}")))?;
 
         Ok(())
     }
@@ -1211,8 +1210,7 @@ impl AppleCertificateBuilder for X509CertificateBuilder {
             // them, don't take chances.
             _ => {
                 return Err(AppleCodesignError::CertificateBuildError(format!(
-                    "don't know how to handle code signing extension {:?}",
-                    extension
+                    "don't know how to handle code signing extension {extension:?}"
                 )));
             }
         };

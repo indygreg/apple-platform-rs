@@ -83,8 +83,7 @@ impl TryFrom<&Value> for FilesValue {
                         "hash" => {
                             let data = value.as_data().ok_or_else(|| {
                                 AppleCodesignError::ResourcesPlistParse(format!(
-                                    "expected <data> for files <dict> entry, got {:?}",
-                                    value
+                                    "expected <data> for files <dict> entry, got {value:?}"
                                 ))
                             })?;
 
@@ -93,8 +92,7 @@ impl TryFrom<&Value> for FilesValue {
                         "optional" => {
                             let v = value.as_boolean().ok_or_else(|| {
                                 AppleCodesignError::ResourcesPlistParse(format!(
-                                    "expected boolean for optional key, got {:?}",
-                                    value
+                                    "expected boolean for optional key, got {value:?}"
                                 ))
                             })?;
 
@@ -102,8 +100,7 @@ impl TryFrom<&Value> for FilesValue {
                         }
                         key => {
                             return Err(AppleCodesignError::ResourcesPlistParse(format!(
-                                "unexpected key in files dict: {}",
-                                key
+                                "unexpected key in files dict: {key}"
                             )));
                         }
                     }
@@ -118,8 +115,7 @@ impl TryFrom<&Value> for FilesValue {
                 }
             }
             _ => Err(AppleCodesignError::ResourcesPlistParse(format!(
-                "bad value in files <dict>; expected <data> or <dict>, got {:?}",
-                v
+                "bad value in files <dict>; expected <data> or <dict>, got {v:?}"
             ))),
         }
     }
@@ -192,8 +188,7 @@ impl TryFrom<&Value> for Files2Value {
                 "cdhash" => {
                     let data = value.as_data().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expected <data> for files2 cdhash entry, got {:?}",
-                            value
+                            "expected <data> for files2 cdhash entry, got {value:?}"
                         ))
                     })?;
 
@@ -202,8 +197,7 @@ impl TryFrom<&Value> for Files2Value {
                 "hash" => {
                     let data = value.as_data().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expected <data> for files2 hash entry, got {:?}",
-                            value
+                            "expected <data> for files2 hash entry, got {value:?}"
                         ))
                     })?;
 
@@ -212,8 +206,7 @@ impl TryFrom<&Value> for Files2Value {
                 "hash2" => {
                     let data = value.as_data().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expected <data> for files2 hash2 entry, got {:?}",
-                            value
+                            "expected <data> for files2 hash2 entry, got {value:?}"
                         ))
                     })?;
 
@@ -222,8 +215,7 @@ impl TryFrom<&Value> for Files2Value {
                 "optional" => {
                     let v = value.as_boolean().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expected bool for optional key, got {:?}",
-                            value
+                            "expected bool for optional key, got {value:?}"
                         ))
                     })?;
 
@@ -232,8 +224,7 @@ impl TryFrom<&Value> for Files2Value {
                 "requirement" => {
                     let v = value.as_string().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expected string for requirement key, got {:?}",
-                            value
+                            "expected string for requirement key, got {value:?}"
                         ))
                     })?;
 
@@ -245,8 +236,7 @@ impl TryFrom<&Value> for Files2Value {
                             .as_string()
                             .ok_or_else(|| {
                                 AppleCodesignError::ResourcesPlistParse(format!(
-                                    "expected string for symlink key, got {:?}",
-                                    value
+                                    "expected string for symlink key, got {value:?}"
                                 ))
                             })?
                             .to_string(),
@@ -254,8 +244,7 @@ impl TryFrom<&Value> for Files2Value {
                 }
                 key => {
                     return Err(AppleCodesignError::ResourcesPlistParse(format!(
-                        "unexpected key in files2 dict entry: {}",
-                        key
+                        "unexpected key in files2 dict entry: {key}"
                     )));
                 }
             }
@@ -334,31 +323,27 @@ impl TryFrom<&Value> for RulesValue {
                         "omit" => {
                             omit = Some(value.as_boolean().ok_or_else(|| {
                                 AppleCodesignError::ResourcesPlistParse(format!(
-                                    "rules omit key value not a boolean; got {:?}",
-                                    value
+                                    "rules omit key value not a boolean; got {value:?}"
                                 ))
                             })?);
                         }
                         "optional" => {
                             optional = Some(value.as_boolean().ok_or_else(|| {
                                 AppleCodesignError::ResourcesPlistParse(format!(
-                                    "rules optional key value not a boolean, got {:?}",
-                                    value
+                                    "rules optional key value not a boolean, got {value:?}"
                                 ))
                             })?);
                         }
                         "weight" => {
                             weight = Some(value.as_real().ok_or_else(|| {
                                 AppleCodesignError::ResourcesPlistParse(format!(
-                                    "rules weight key value not a real, got {:?}",
-                                    value
+                                    "rules weight key value not a real, got {value:?}"
                                 ))
                             })?);
                         }
                         key => {
                             return Err(AppleCodesignError::ResourcesPlistParse(format!(
-                                "extra key in rules dict: {}",
-                                key
+                                "extra key in rules dict: {key}"
                             )));
                         }
                     }
@@ -426,39 +411,34 @@ impl TryFrom<&Value> for Rules2Value {
                 "nested" => {
                     nested = Some(value.as_boolean().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expected bool for rules2 nested key, got {:?}",
-                            value
+                            "expected bool for rules2 nested key, got {value:?}"
                         ))
                     })?);
                 }
                 "omit" => {
                     omit = Some(value.as_boolean().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expected bool for rules2 omit key, got {:?}",
-                            value
+                            "expected bool for rules2 omit key, got {value:?}"
                         ))
                     })?);
                 }
                 "optional" => {
                     optional = Some(value.as_boolean().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expected bool for rules2 optional key, got {:?}",
-                            value
+                            "expected bool for rules2 optional key, got {value:?}"
                         ))
                     })?);
                 }
                 "weight" => {
                     weight = Some(value.as_real().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expected real for rules2 weight key, got {:?}",
-                            value
+                            "expected real for rules2 weight key, got {value:?}"
                         ))
                     })?);
                 }
                 key => {
                     return Err(AppleCodesignError::ResourcesPlistParse(format!(
-                        "unexpected key in rules dict entry: {}",
-                        key
+                        "unexpected key in rules dict entry: {key}"
                     )));
                 }
             }
@@ -660,8 +640,7 @@ impl CodeResources {
                 "files" => {
                     let dict = value.as_dictionary().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expecting files to be a dict, got {:?}",
-                            value
+                            "expecting files to be a dict, got {value:?}"
                         ))
                     })?;
 
@@ -672,8 +651,7 @@ impl CodeResources {
                 "files2" => {
                     let dict = value.as_dictionary().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expecting files2 to be a dict, got {:?}",
-                            value
+                            "expecting files2 to be a dict, got {value:?}"
                         ))
                     })?;
 
@@ -684,8 +662,7 @@ impl CodeResources {
                 "rules" => {
                     let dict = value.as_dictionary().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expecting rules to be a dict, got {:?}",
-                            value
+                            "expecting rules to be a dict, got {value:?}"
                         ))
                     })?;
 
@@ -696,8 +673,7 @@ impl CodeResources {
                 "rules2" => {
                     let dict = value.as_dictionary().ok_or_else(|| {
                         AppleCodesignError::ResourcesPlistParse(format!(
-                            "expecting rules2 to be a dict, got {:?}",
-                            value
+                            "expecting rules2 to be a dict, got {value:?}"
                         ))
                     })?;
 
@@ -707,8 +683,7 @@ impl CodeResources {
                 }
                 key => {
                     return Err(AppleCodesignError::ResourcesPlistParse(format!(
-                        "unexpected key in root dict: {}",
-                        key
+                        "unexpected key in root dict: {key}"
                     )));
                 }
             }

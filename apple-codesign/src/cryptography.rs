@@ -93,8 +93,7 @@ impl TryFrom<InMemoryRsaKey> for InMemorySigningKeyPair {
     fn try_from(value: InMemoryRsaKey) -> Result<Self, Self::Error> {
         let key_pair = RsaKeyPair::from_der(value.private_key.as_bytes()).map_err(|e| {
             AppleCodesignError::CertificateGeneric(format!(
-                "error importing RSA key to ring: {}",
-                e
+                "error importing RSA key to ring: {e}"
             ))
         })?;
 
@@ -116,13 +115,13 @@ impl EncodePrivateKey for InMemoryRsaKey {
 impl PublicKeyPeerDecrypt for InMemoryRsaKey {
     fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, RemoteSignError> {
         let key = RsaConstructedKey::from_pkcs1_der(self.private_key.as_bytes())
-            .map_err(|e| RemoteSignError::Crypto(format!("failed to parse RSA key: {}", e)))?;
+            .map_err(|e| RemoteSignError::Crypto(format!("failed to parse RSA key: {e}")))?;
 
         let padding = PaddingScheme::new_oaep::<sha2::Sha256>();
 
         let plaintext = key
             .decrypt(padding, ciphertext)
-            .map_err(|e| RemoteSignError::Crypto(format!("RSA decryption failure: {}", e)))?;
+            .map_err(|e| RemoteSignError::Crypto(format!("RSA decryption failure: {e}")))?;
 
         Ok(plaintext)
     }
@@ -177,8 +176,7 @@ where
         )
         .map_err(|e| {
             AppleCodesignError::CertificateGeneric(format!(
-                "unable to convert ECDSA private key: {}",
-                e
+                "unable to convert ECDSA private key: {e}"
             ))
         })?;
 
@@ -233,8 +231,7 @@ impl TryFrom<InMemoryEd25519Key> for InMemorySigningKeyPair {
         let key_pair =
             Ed25519KeyPair::from_seed_unchecked(key.private_key.as_ref()).map_err(|e| {
                 AppleCodesignError::CertificateGeneric(format!(
-                    "unable to convert ED25519 private key: {}",
-                    e
+                    "unable to convert ED25519 private key: {e}"
                 ))
             })?;
 
@@ -445,7 +442,7 @@ impl InMemoryPrivateKey {
     /// Construct an instance by parsing PKCS#1 DER data.
     pub fn from_pkcs1_der(data: impl AsRef<[u8]>) -> Result<Self, AppleCodesignError> {
         let key = InMemoryRsaKey::from_der(data.as_ref()).map_err(|e| {
-            AppleCodesignError::CertificateGeneric(format!("when parsing PKCS#1 data: {}", e))
+            AppleCodesignError::CertificateGeneric(format!("when parsing PKCS#1 data: {e}"))
         })?;
 
         Ok(Self::Rsa(key))
@@ -454,13 +451,12 @@ impl InMemoryPrivateKey {
     /// Construct an instance by parsing PKCS#8 DER data.
     pub fn from_pkcs8_der(data: impl AsRef<[u8]>) -> Result<Self, AppleCodesignError> {
         let pki = PrivateKeyInfo::try_from(data.as_ref()).map_err(|e| {
-            AppleCodesignError::CertificateGeneric(format!("when parsing PKCS#8 data: {}", e))
+            AppleCodesignError::CertificateGeneric(format!("when parsing PKCS#8 data: {e}"))
         })?;
 
         pki.try_into().map_err(|e| {
             AppleCodesignError::CertificateGeneric(format!(
-                "when converting parsed PKCS#8 to a private key: {}",
-                e
+                "when converting parsed PKCS#8 to a private key: {e}"
             ))
         })
     }
@@ -493,7 +489,7 @@ pub fn parse_pfx_data(
     password: &str,
 ) -> Result<(CapturedX509Certificate, InMemoryPrivateKey), AppleCodesignError> {
     let pfx = p12::PFX::parse(data).map_err(|e| {
-        AppleCodesignError::PfxParseError(format!("data does not appear to be PFX: {:?}", e))
+        AppleCodesignError::PfxParseError(format!("data does not appear to be PFX: {e:?}"))
     })?;
 
     if !pfx.verify_mac(password) {
@@ -515,7 +511,7 @@ pub fn parse_pfx_data(
         reader.collect_sequence_of(p12::ContentInfo::parse)
     })
     .map_err(|e| {
-        AppleCodesignError::PfxParseError(format!("failed parsing inner ContentInfo: {:?}", e))
+        AppleCodesignError::PfxParseError(format!("failed parsing inner ContentInfo: {e:?}"))
     })?;
 
     let bmp_password = bmp_string(password);
@@ -545,8 +541,7 @@ pub fn parse_pfx_data(
         })
         .map_err(|e| {
             AppleCodesignError::PfxParseError(format!(
-                "failed parsing SafeBag within inner Data: {:?}",
-                e
+                "failed parsing SafeBag within inner Data: {e:?}"
             ))
         })?;
 

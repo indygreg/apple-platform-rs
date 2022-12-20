@@ -290,7 +290,7 @@ impl File {
             .ok_or(Error::TableOfContentsCorrupted("missing file name"))?;
 
         let full_path = if let Some(d) = directory {
-            format!("{}/{}", d, name)
+            format!("{d}/{name}")
         } else {
             name.clone()
         };
@@ -358,7 +358,7 @@ impl File {
 
         if let Some(v) = &self.gid {
             writer.write(XmlEvent::start_element("gid"))?;
-            writer.write(XmlEvent::characters(&format!("{}", v)))?;
+            writer.write(XmlEvent::characters(&format!("{v}")))?;
             writer.write(XmlEvent::end_element())?;
         }
 
@@ -370,7 +370,7 @@ impl File {
 
         if let Some(v) = &self.uid {
             writer.write(XmlEvent::start_element("uid"))?;
-            writer.write(XmlEvent::characters(&format!("{}", v)))?;
+            writer.write(XmlEvent::characters(&format!("{v}")))?;
             writer.write(XmlEvent::end_element())?;
         }
 
@@ -382,13 +382,13 @@ impl File {
 
         if let Some(v) = &self.deviceno {
             writer.write(XmlEvent::start_element("deviceno"))?;
-            writer.write(XmlEvent::characters(&format!("{}", v)))?;
+            writer.write(XmlEvent::characters(&format!("{v}")))?;
             writer.write(XmlEvent::end_element())?;
         }
 
         if let Some(v) = &self.inode {
             writer.write(XmlEvent::start_element("inode"))?;
-            writer.write(XmlEvent::characters(&format!("{}", v)))?;
+            writer.write(XmlEvent::characters(&format!("{v}")))?;
             writer.write(XmlEvent::end_element())?;
         }
 
@@ -684,8 +684,7 @@ impl X509Data {
                 // The data in the XML isn't armored. So we add armoring so it can
                 // be decoded by the pem crate.
                 let data = format!(
-                    "-----BEGIN CERTIFICATE-----\r\n{}\r\n-----END CERTIFICATE-----\r\n",
-                    data
+                    "-----BEGIN CERTIFICATE-----\r\n{data}\r\n-----END CERTIFICATE-----\r\n"
                 );
 
                 CapturedX509Certificate::from_pem(data)

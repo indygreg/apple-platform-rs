@@ -256,7 +256,7 @@ impl SignedMachOInfo {
         let digest = hex::encode(digest);
 
         // Unsure what the leading `2/` means.
-        Ok(format!("2/{}/{}", digest_type, digest))
+        Ok(format!("2/{digest_type}/{digest}"))
     }
 }
 
