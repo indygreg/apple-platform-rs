@@ -53,7 +53,7 @@ jobs:
       SCCACHE_S3_USE_SSL: '1'
       # Prevent sccache server from stopping due to inactivity.
       SCCACHE_IDLE_TIMEOUT: '0'
-
+      CARGO_INCREMENTAL: '0'
       # This forces the lzma-sys crate to link liblzma statically. Ideally we'd do
       # this with a crate feature. But the xz2 crate didn't expose that feature at the
       # time this workaround was introduced.
