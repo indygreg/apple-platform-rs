@@ -1,6 +1,6 @@
 [package]
 name = "apple-dmg"
-version = "0.2.0-pre"
+version = "0.2.0"
 edition = "2021"
 description = "Library for reading and writing dmg images."
 repository = "https://github.com/indygreg/apple-platform-rs"

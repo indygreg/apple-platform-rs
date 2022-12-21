@@ -34,7 +34,7 @@ checksum = "2cb2f989d18dd141ab8ae82f64d1a8cdd37e0840f73a406896cf5e99502fab61"
 
 [[package]]
 name = "app-store-connect"
-version = "0.1.0-pre"
+version = "0.1.0"
 dependencies = [
  "anyhow",
  "base64 0.20.0",
@@ -68,7 +68,7 @@ dependencies = [
 
 [[package]]
 name = "apple-bundles"
-version = "0.17.0-pre"
+version = "0.17.0"
 dependencies = [
  "anyhow",
  "plist",
@@ -79,7 +79,7 @@ dependencies = [
 
 [[package]]
 name = "apple-codesign"
-version = "0.22.0-pre"
+version = "0.22.0"
 dependencies = [
  "anyhow",
  "app-store-connect",
@@ -156,7 +156,7 @@ dependencies = [
 
 [[package]]
 name = "apple-dmg"
-version = "0.2.0-pre"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -174,7 +174,7 @@ dependencies = [
 
 [[package]]
 name = "apple-flat-package"
-version = "0.13.0-pre"
+version = "0.13.0"
 dependencies = [
  "apple-xar",
  "cpio-archive",
@@ -187,7 +187,7 @@ dependencies = [
 
 [[package]]
 name = "apple-sdk"
-version = "0.4.0-pre"
+version = "0.4.0"
 dependencies = [
  "plist",
  "serde",
@@ -196,7 +196,7 @@ dependencies = [
 
 [[package]]
 name = "apple-xar"
-version = "0.13.0-pre"
+version = "0.13.0"
 dependencies = [
  "base64 0.20.0",
  "bcder",
@@ -913,7 +913,7 @@ checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
 
 [[package]]
 name = "cpio-archive"
-version = "0.7.0-pre"
+version = "0.7.0"
 dependencies = [
  "chrono",
  "is_executable",
