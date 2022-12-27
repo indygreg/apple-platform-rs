@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+* cryptographic-message-syntax 0.19 -> 0.20.
+* once_cell 1.16 -> 1.17.
+* x509-certificate 0.16 -> 0.17.
+
 ## 0.22.0
 
 Released on 2022-12-21.
