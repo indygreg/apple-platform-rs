@@ -8,6 +8,7 @@ mod api_key;
 mod api_token;
 pub mod bundle_api;
 pub mod certs_api;
+pub mod cli;
 pub mod device_api;
 pub mod notary_api;
 pub mod profile_api;

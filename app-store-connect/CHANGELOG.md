@@ -6,6 +6,7 @@
 
 Released on ReleaseDate.
 
+* CLI code moved from `main.rs` to a `cli` module.
 * x509-certificate 0.16 -> 0.17.
 
 ## 0.1.0
