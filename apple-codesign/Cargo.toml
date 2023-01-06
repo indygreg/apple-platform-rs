@@ -68,7 +68,7 @@ spki = { version = "0.6.0", features = ["pem"] }
 subtle = "2.4.1"
 tempfile = "3.3.0"
 thiserror = "1.0.38"
-tokio = { version = "1.21.2", features = ["rt"] }
+tokio = { version = "1.23.1", features = ["rt"] }
 tungstenite = { version = "0.18.0", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.2.2", features = ["v4"] }
 x509 = "0.2.0"
