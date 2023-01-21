@@ -9,6 +9,7 @@
 use {
     crate::{ConnectTokenEncoder, Error, Result},
     anyhow::Context,
+    base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
     serde::{Deserialize, Serialize},
     std::{fs::Permissions, io::Write, path::Path},
 };
@@ -64,7 +65,7 @@ impl UnifiedApiKey {
             return Err(InvalidPemPrivateKey.into());
         }
 
-        let private_key = base64::encode(parsed.contents);
+        let private_key = STANDARD_ENGINE.encode(parsed.contents);
 
         Ok(Self {
             issuer_id: issuer_id.to_string(),
@@ -121,7 +122,9 @@ impl TryFrom<UnifiedApiKey> for ConnectTokenEncoder {
     type Error = anyhow::Error;
 
     fn try_from(value: UnifiedApiKey) -> Result<Self> {
-        let der = base64::decode(value.private_key).context("invalid unified api key")?;
+        let der = STANDARD_ENGINE
+            .decode(value.private_key)
+            .context("invalid unified api key")?;
 
         Self::from_ecdsa_der(value.key_id, value.issuer_id, &der)
     }

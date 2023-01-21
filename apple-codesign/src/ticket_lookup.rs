@@ -6,6 +6,7 @@
 
 use {
     crate::AppleCodesignError,
+    base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
     log::warn,
     reqwest::blocking::{Client, ClientBuilder},
     serde::{Deserialize, Serialize},
@@ -121,7 +122,8 @@ impl TicketLookupResponseRecordSuccess {
             Some(field) => {
                 if field.typ == "BYTES" {
                     Some(
-                        base64::decode(&field.value)
+                        STANDARD_ENGINE
+                            .decode(&field.value)
                             .map_err(AppleCodesignError::NotarizationRecordDecodeFailure),
                     )
                 } else {

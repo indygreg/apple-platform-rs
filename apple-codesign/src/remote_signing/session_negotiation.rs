@@ -9,6 +9,7 @@
 
 use {
     crate::remote_signing::RemoteSignError,
+    base64::Engine,
     der::{Decode, Encode},
     minicbor::{encode::Write, Decode as CborDecode, Decoder, Encode as CborEncode, Encoder},
     oid_registry::OID_PKCS1_RSAENCRYPTION,
@@ -31,13 +32,8 @@ use {
 
 type Result<T> = std::result::Result<T, RemoteSignError>;
 
-fn base64_engine() -> impl base64::engine::Engine {
-    base64::engine::fast_portable::FastPortable::from(
-        &base64::alphabet::URL_SAFE,
-        base64::engine::fast_portable::FastPortableConfig::new()
-            .with_encode_padding(false)
-            .with_decode_padding_mode(base64::engine::DecodePaddingMode::RequireNone),
-    )
+fn base64_engine() -> impl Engine {
+    base64::engine::general_purpose::URL_SAFE_NO_PAD
 }
 
 /// A generator of nonces that is a simple incrementing counter.
@@ -346,10 +342,7 @@ pub trait SessionInitiatePeer {
 
     /// Obtain the base 64 encoded session join string.
     fn session_join_string_base64(&self) -> Result<String> {
-        Ok(base64::encode_engine(
-            self.session_join_string_bytes()?,
-            &base64_engine(),
-        ))
+        Ok(base64_engine().encode(self.session_join_string_bytes()?))
     }
 
     /// Obtain the PEM encoded session join string.
@@ -862,7 +855,7 @@ pub fn create_session_joiner(
             ));
         }
     } else {
-        base64::decode_engine(trimmed.as_bytes(), &base64_engine())?
+        base64_engine().decode(trimmed.as_bytes())?
     };
 
     let mut decoder = Decoder::new(&sjs);

@@ -15,6 +15,7 @@ use {
         },
         AppleCodesignError,
     },
+    base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
     bcder::{
         encode::{PrimitiveContent, Values},
         Mode, Oid,
@@ -506,7 +507,9 @@ impl UnjoinedSigningClient {
             Some(ClientPayload::CreateSession {
                 session_id: session_id.clone(),
                 ttl: 600,
-                context: initiator.session_create_context().map(base64::encode),
+                context: initiator
+                    .session_create_context()
+                    .map(|x| STANDARD_ENGINE.encode(x)),
             }),
         )?;
 
@@ -526,7 +529,7 @@ impl UnjoinedSigningClient {
         warn!("signer joined session; deriving shared encryption key");
 
         let context = if let Some(context) = joined.context {
-            Some(base64::decode(context)?)
+            Some(STANDARD_ENGINE.decode(context)?)
         } else {
             None
         };
@@ -571,7 +574,7 @@ impl UnjoinedSigningClient {
             ApiMethod::JoinSession,
             Some(ClientPayload::JoinSession {
                 session_id: session_id.clone(),
-                context: join_context.peer_context.map(base64::encode),
+                context: join_context.peer_context.map(|x| STANDARD_ENGINE.encode(x)),
             }),
         )?;
 
@@ -675,7 +678,7 @@ impl PairedClient {
         &mut self,
         message: &ServerPeerMessage,
     ) -> Result<PeerMessage, RemoteSignError> {
-        let ciphertext = base64::decode(&message.message)?;
+        let ciphertext = STANDARD_ENGINE.decode(&message.message)?;
 
         let plaintext = self.keys.open(ciphertext)?;
 
@@ -702,7 +705,7 @@ impl PairedClient {
             ApiMethod::SendMessage,
             Some(ClientPayload::SendMessage {
                 session_id: self.session_id.clone(),
-                message: base64::encode(ciphertext),
+                message: STANDARD_ENGINE.encode(ciphertext),
             }),
         )?;
 
@@ -807,11 +810,11 @@ impl PairedClient {
         let cert = res.as_signing_certificate()?;
 
         if let Some(cert) = cert.certificates.get(0) {
-            let cert_der = base64::decode(&cert.certificate)?;
+            let cert_der = STANDARD_ENGINE.decode(&cert.certificate)?;
             let chain_der = cert
                 .chain
                 .iter()
-                .map(base64::decode)
+                .map(|x| STANDARD_ENGINE.decode(x))
                 .collect::<Result<Vec<_>, base64::DecodeError>>()?;
 
             let cert = CapturedX509Certificate::from_der(cert_der)?;
@@ -858,7 +861,7 @@ impl Signer<Signature> for InitiatorClient {
             .send_encrypted_message(
                 PeerMessageType::SignRequest,
                 Some(PeerPayload::SignRequest(PeerSignRequest {
-                    message: base64::encode(message),
+                    message: STANDARD_ENGINE.encode(message),
                 })),
             )
             .map_err(signature::Error::from_source)?;
@@ -875,10 +878,12 @@ impl Signer<Signature> for InitiatorClient {
 
         warn!("received signature from remote signer");
 
-        let signature =
-            base64::decode(&peer_signature.signature).map_err(signature::Error::from_source)?;
-        let oid_der =
-            base64::decode(&peer_signature.algorithm_oid).map_err(signature::Error::from_source)?;
+        let signature = STANDARD_ENGINE
+            .decode(&peer_signature.signature)
+            .map_err(signature::Error::from_source)?;
+        let oid_der = STANDARD_ENGINE
+            .decode(&peer_signature.algorithm_oid)
+            .map_err(signature::Error::from_source)?;
 
         bcder::decode::Constructed::decode(oid_der.as_ref(), Mode::Der, |cons| {
             Oid::take_from(cons)
@@ -990,14 +995,14 @@ impl<'key> SigningClient<'key> {
             PeerMessageType::SigningCertificate,
             Some(PeerPayload::SigningCertificate(PeerSigningCertificate {
                 certificates: vec![PeerCertificate {
-                    certificate: base64::encode(self.signing_cert.encode_der()?),
+                    certificate: STANDARD_ENGINE.encode(self.signing_cert.encode_der()?),
                     chain: self
                         .certificates
                         .iter()
                         .map(|cert| {
                             let der = cert.encode_der()?;
 
-                            Ok(base64::encode(der))
+                            Ok(STANDARD_ENGINE.encode(der))
                         })
                         .collect::<Result<Vec<_>, RemoteSignError>>()?,
                 }],
@@ -1014,7 +1019,7 @@ impl<'key> SigningClient<'key> {
         mut client: RefMut<PairedClient>,
         request: PeerSignRequest,
     ) -> Result<(), RemoteSignError> {
-        let message = base64::decode(&request.message)?;
+        let message = STANDARD_ENGINE.decode(&request.message)?;
 
         warn!(
             "creating signature for remote message: {}",
@@ -1034,9 +1039,9 @@ impl<'key> SigningClient<'key> {
         client.send_encrypted_message(
             PeerMessageType::Signature,
             Some(PeerPayload::Signature(PeerSignature {
-                message: base64::encode(message),
-                signature: base64::encode(signature),
-                algorithm_oid: base64::encode(oid_der),
+                message: STANDARD_ENGINE.encode(message),
+                signature: STANDARD_ENGINE.encode(signature),
+                algorithm_oid: STANDARD_ENGINE.encode(oid_der),
             })),
         )?;
 

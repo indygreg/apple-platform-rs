@@ -10,6 +10,7 @@ use crate::device_api::Device;
 use crate::profile_api::{Profile, ProfileType};
 use crate::{AppStoreConnectClient, UnifiedApiKey};
 use anyhow::Result;
+use base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine};
 use clap::{Parser, Subcommand};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -188,7 +189,7 @@ impl CertificateCommand {
                 let resp = client.get_certificate(&id)?;
                 let cer = pem::encode(&pem::Pem {
                     tag: "CERTIFICATE".into(),
-                    contents: base64::decode(resp.data.attributes.certificate_content)?,
+                    contents: STANDARD_ENGINE.decode(resp.data.attributes.certificate_content)?,
                 });
                 println!("{cer}");
             }
@@ -340,7 +341,7 @@ impl ProfileCommand {
             }
             Self::Get { id } => {
                 let resp = client.get_profile(&id)?;
-                let profile = base64::decode(resp.data.attributes.profile_content)?;
+                let profile = STANDARD_ENGINE.decode(resp.data.attributes.profile_content)?;
                 std::io::stdout().write_all(&profile)?;
             }
             Self::Delete { id } => {

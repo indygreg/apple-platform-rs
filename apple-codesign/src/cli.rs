@@ -26,6 +26,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     app_store_connect::UnifiedApiKey,
+    base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
     clap::{value_parser, Arg, ArgAction, ArgGroup, ArgMatches, Command},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
@@ -513,7 +514,7 @@ fn get_remote_signing_initiator(
         .map(|x| x.to_string());
 
     if let Some(public_key_data) = args.get_one::<String>("remote_public_key") {
-        let public_key_data = base64::decode(public_key_data)?;
+        let public_key_data = STANDARD_ENGINE.decode(public_key_data)?;
 
         Ok(Box::new(PublicKeyInitiator::new(
             public_key_data,
@@ -767,7 +768,7 @@ fn print_certificate_info(cert: &CapturedX509Certificate) -> Result<(), AppleCod
     }
     println!(
         "Public Key Data:             {}",
-        base64::encode(
+        STANDARD_ENGINE.encode(
             cert.to_public_key_der()
                 .map_err(|e| AppleCodesignError::X509Parse(format!(
                     "error constructing SPKI: {e}"
@@ -822,9 +823,7 @@ fn print_certificate_info(cert: &CapturedX509Certificate) -> Result<(), AppleCod
     print!(
         "\n{}",
         cert.to_public_key_pem(Default::default())
-            .map_err(|e| AppleCodesignError::X509Parse(format!(
-                "error constructing SPKI: {e}"
-            )))?
+            .map_err(|e| AppleCodesignError::X509Parse(format!("error constructing SPKI: {e}")))?
     );
     print!("\n{}", cert.encode_pem());
 
@@ -1620,23 +1619,23 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
                 );
                 println!(
                     "  sha1-base64: {}",
-                    base64::encode(blob.digest_with(DigestType::Sha1)?)
+                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha1)?)
                 );
                 println!(
                     "  sha256-base64: {}",
-                    base64::encode(blob.digest_with(DigestType::Sha256)?)
+                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha256)?)
                 );
                 println!(
                     "  sha256-truncated-base64: {}",
-                    base64::encode(blob.digest_with(DigestType::Sha256Truncated)?)
+                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha256Truncated)?)
                 );
                 println!(
                     "  sha384-base64: {}",
-                    base64::encode(blob.digest_with(DigestType::Sha384)?)
+                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha384)?)
                 );
                 println!(
                     "  sha512-base64: {}",
-                    base64::encode(blob.digest_with(DigestType::Sha512)?)
+                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha512)?)
                 );
             }
         }
@@ -1704,9 +1703,7 @@ fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), App
     {
         "ecdsa" => KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1),
         "ed25519" => KeyAlgorithm::Ed25519,
-        value => panic!(
-            "algorithm values should have been validated by arg parser: {value}"
-        ),
+        value => panic!("algorithm values should have been validated by arg parser: {value}"),
     };
 
     let profile = args

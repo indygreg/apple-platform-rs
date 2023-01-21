@@ -5,6 +5,7 @@
 // except according to those terms.
 
 use crate::{AppStoreConnectClient, Result};
+use base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine};
 use rand::rngs::OsRng;
 use rsa::pkcs8::{EncodePrivateKey, LineEnding};
 use rsa::RsaPrivateKey;
@@ -32,7 +33,7 @@ pub fn generate_signing_certificate(api_key: &Path, ty: CertificateType, pem: &P
         .certificate_content;
     let cer = pem::encode(&pem::Pem {
         tag: "CERTIFICATE".into(),
-        contents: base64::decode(cer)?,
+        contents: STANDARD_ENGINE.decode(cer)?,
     });
     let mut f = File::create(pem)?;
     f.write_all(secret.to_pkcs8_pem(LineEnding::CRLF)?.as_bytes())?;

@@ -6,6 +6,7 @@
 
 use {
     crate::{format::XarChecksum, Error, XarResult},
+    base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
     digest::DynDigest,
     serde::Deserialize,
     std::{
@@ -637,7 +638,7 @@ impl KeyInfo {
                 x509_certificate: certs
                     .map(|cert| {
                         let der = cert.encode_der()?;
-                        let s = base64::encode(der);
+                        let s = STANDARD_ENGINE.encode(der);
 
                         let mut lines = vec![];
 
