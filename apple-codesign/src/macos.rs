@@ -17,12 +17,13 @@ use {
     security_framework::{
         certificate::SecCertificate,
         item::{ItemClass, ItemSearchOptions, Reference, SearchResult},
-        key::{Algorithm as KeychainAlgorithm, SecKey},
+        key::SecKey,
         os::macos::{
             item::ItemSearchOptionsExt,
             keychain::{SecKeychain, SecPreferencesDomain},
         },
     },
+    security_framework_sys::key::Algorithm as KeychainAlgorithm,
     signature::Signer,
     std::ops::Deref,
     x509_certificate::{
