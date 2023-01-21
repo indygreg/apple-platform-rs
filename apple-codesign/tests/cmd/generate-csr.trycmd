@@ -38,6 +38,6 @@ Options:
       --remote-signing-url <remote_signing_url>
           URL of a remote code signing server [default: wss://ws.codesign.gregoryszorc.com/]
   -h, --help
-          Print help information
+          Print help
 
 ```

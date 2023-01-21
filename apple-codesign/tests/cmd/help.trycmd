@@ -32,8 +32,8 @@ Commands:
 
 Options:
   -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
-  -h, --help        Print help information
-  -V, --version     Print version information
+  -h, --help        Print help
+  -V, --version     Print version
 
 ```
 
@@ -70,7 +70,7 @@ Commands:
 
 Options:
   -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
-  -h, --help        Print help information
-  -V, --version     Print version information
+  -h, --help        Print help
+  -V, --version     Print version
 
 ```
