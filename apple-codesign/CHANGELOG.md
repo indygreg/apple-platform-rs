@@ -6,6 +6,7 @@
 
 Released on ReleaseDate.
 
+* Minimum supported Rust version changed from 1.62.1 to 1.64.0.
 * cryptographic-message-syntax 0.19 -> 0.20.
 * once_cell 1.16 -> 1.17.
 * x509-certificate 0.16 -> 0.17.
