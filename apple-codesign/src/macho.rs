@@ -731,7 +731,7 @@ mod tests {
         for entry in dir {
             let entry = entry.unwrap();
 
-            if let Ok(mut fh) = std::fs::File::open(&entry.path()) {
+            if let Ok(mut fh) = std::fs::File::open(entry.path()) {
                 let mut magic = [0; 4];
 
                 if let Ok(size) = fh.read(&mut magic) {
