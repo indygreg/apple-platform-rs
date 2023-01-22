@@ -10,65 +10,11 @@ on:
   workflow_dispatch:
 jobs:
   build-and-test:
-    strategy:
-      fail-fast: false
-      matrix:
-        rust_toolchain:
-          - 'stable'
-          - 'beta'
-          - 'nightly'
-          - '1.64.0'
-        target:
-          - os: 'ubuntu-22.04'
-            triple: 'x86_64-unknown-linux-gnu'
-          - os: 'macos-12'
-            triple: 'x86_64-apple-darwin'
-          - os: 'windows-2022'
-            triple: 'x86_64-pc-windows-msvc'
-    continue-on-error: ${{ matrix.rust_toolchain == 'nightly' }}
-    runs-on: ${{ matrix.target.os }}
-    env:
-      IN_CI: '1'
-      AWS_REGION: us-west-2
+    uses: indygreg/actions/.github/workflows/rust-workspace-build-and-test.yml@17e164ddad825b3fcc1ec8924fb81afe2256b43b
+    with:
+      actions_ref: "17e164ddad825b3fcc1ec8924fb81afe2256b43b"
+      msrv: "1.64.0"
+      sccache_s3_bucket: apple-platform-rs-sccache
+    secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      CARGO_INCREMENTAL: '0'
-      CARGO_TERM_COLOR: always
-      SCCACHE_BUCKET: 'apple-platform-rs-sccache'
-      SCCACHE_S3_USE_SSL: '1'
-      # Prevent sccache server from stopping due to inactivity.
-      SCCACHE_IDLE_TIMEOUT: '0'
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Conditionally Enable sccache
-        shell: bash
-        run: |
-          if [ -n "${AWS_SECRET_ACCESS_KEY}" ]; then
-            echo "enabling sccache"
-            echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-          fi
-
-      - uses: ./.github/actions/rust-bootstrap
-        with:
-          rust_toolchain: ${{ matrix.rust_toolchain }}
-          rust_target: ${{ matrix.target.triple }}
-
-      - name: Build Workspace
-        run: |
-          rustc --version
-          cargo build --workspace
-          cargo nextest run --no-run --workspace
-
-      - name: Test Workspace
-        run: |
-          cargo nextest run --no-fail-fast --success-output immediate-final --workspace
-
-      - uses: actions-rs/clippy@master
-        if: ${{ matrix.rust_toolchain == 'stable' || matrix.rust_toolchain == 'beta' }}
-        with:
-          args: --workspace
-
-      - name: Stop sccache
-        run: |
-          sccache --stop-server

@@ -10,11 +10,14 @@ on:
   workflow_dispatch:
 jobs:
   exes:
-    uses: ./.github/workflows/build-exe.yml
+    uses: indygreg/actions/.github/workflows/rust-exe.yml@17e164ddad825b3fcc1ec8924fb81afe2256b43b
     with:
+      actions_ref: "17e164ddad825b3fcc1ec8924fb81afe2256b43b"
       bin: rcodesign
       extra_build_args_macos: '--all-features'
       extra_build_args_windows: '--all-features'
+      just_bootstrap: true
+      sccache_s3_bucket: apple-platform-rs-sccache
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

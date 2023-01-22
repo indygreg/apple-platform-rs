@@ -13,54 +13,12 @@ macosx_deployment_target := if os() == "macos" {
   ""
 }
 
-actions-install-sccache-linux:
-  python3 scripts/secure_download.py \
-    https://github.com/mozilla/sccache/releases/download/v0.3.3/sccache-v0.3.3-x86_64-unknown-linux-musl.tar.gz \
-    427bd2151a1b01cd9b094d842e22c445b30f3c645f171a9a62ea55270f06bf23 \
-    sccache.tar.gz
-  tar -xvzf sccache.tar.gz
-  mv sccache-v0.3.3-x86_64-unknown-linux-musl/sccache /home/runner/.cargo/bin/sccache
-  rm -rf sccache*
-  chmod +x /home/runner/.cargo/bin/sccache
-
-actions-install-sccache-macos:
-  python3 scripts/secure_download.py \
-    https://github.com/mozilla/sccache/releases/download/v0.3.3/sccache-v0.3.3-x86_64-apple-darwin.tar.gz \
-    e68aa0e2716e9cceff7912e09d8028df34cd63d8d60cae832a2d5f5c94da1828 \
-    sccache.tar.gz
-  tar -xvzf sccache.tar.gz
-  mv sccache-v0.3.3-x86_64-apple-darwin/sccache /Users/runner/.cargo/bin/sccache
-  rm -rf sccache*
-  chmod +x /Users/runner/.cargo/bin/sccache
-
-actions-install-sccache-windows:
-  python3 scripts/secure_download.py \
-    https://github.com/mozilla/sccache/releases/download/v0.3.3/sccache-v0.3.3-x86_64-pc-windows-msvc.tar.gz \
-    b37b55b6e45737562450a98cd4e5c91e58540febdbbda5c575acf80314a2b3ea \
-    sccache.tar.gz
-  tar -xvzf sccache.tar.gz
-  mv sccache-v0.3.3-x86_64-pc-windows-msvc/sccache.exe C:/Users/runneradmin/.cargo/bin/sccache.exe
-
-actions-bootstrap-rust-linux: actions-install-sccache-linux
+actions-bootstrap-rust-linux:
   sudo apt install -y --no-install-recommends libpcsclite-dev musl-tools
 
-actions-bootstrap-rust-macos: actions-install-sccache-macos
+actions-bootstrap-rust-macos:
 
-actions-bootstrap-rust-windows: actions-install-sccache-windows
-
-actions-macos-universal exe:
-  #!/usr/bin/env bash
-  set -eo pipefail
-
-  mkdir -p uploads
-  lipo {{exe}}-x86-64/{{exe}} {{exe}}-aarch64/{{exe}} -create -output uploads/{{exe}}
-  chmod +x uploads/{{exe}}
-  lipo uploads/{{exe}} -info
-
-  # There might be a COPYING file with licensing info. If so, preserve it.
-  if [ -e "{{exe}}-aarch64/COPYING" ]; then
-    cp -v {{exe}}-aarch64/COPYING uploads/
-  fi
+actions-bootstrap-rust-windows:
 
 # Trigger a workflow on a branch.
 ci-run workflow branch="ci-test":
