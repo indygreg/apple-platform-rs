@@ -23,7 +23,7 @@ use {
         hkdf::{Salt, HKDF_SHA256},
         rand::{SecureRandom, SystemRandom},
     },
-    rsa::{BigUint, PaddingScheme, PublicKey, RsaPublicKey},
+    rsa::{BigUint, Oaep, PublicKey, RsaPublicKey},
     scroll::{Pwrite, LE},
     spake2::{Ed25519Group, Identity, Password, Spake2},
     spki::SubjectPublicKeyInfo,
@@ -533,7 +533,7 @@ impl PublicKeyInitiator {
                     RemoteSignError::Crypto(format!("when constructing RSA public key: {e}"))
                 })?;
 
-                let padding = PaddingScheme::new_oaep::<sha2::Sha256>();
+                let padding = Oaep::new::<sha2::Sha256>();
 
                 rsa_public
                     .encrypt(&mut rand::thread_rng(), padding, &aes_key_data)

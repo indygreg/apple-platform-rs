@@ -23,7 +23,7 @@ use {
     pkcs8::{AlgorithmIdentifier, EncodePrivateKey, ObjectIdentifier, PrivateKeyInfo},
     ring::signature::{EcdsaKeyPair, Ed25519KeyPair, KeyPair, RsaKeyPair},
     rsa::{
-        algorithms::mgf1_xor, pkcs1::DecodeRsaPrivateKey, BigUint, PaddingScheme,
+        algorithms::mgf1_xor, pkcs1::DecodeRsaPrivateKey, BigUint, Oaep,
         RsaPrivateKey as RsaConstructedKey,
     },
     signature::Signer,
@@ -92,9 +92,7 @@ impl TryFrom<InMemoryRsaKey> for InMemorySigningKeyPair {
 
     fn try_from(value: InMemoryRsaKey) -> Result<Self, Self::Error> {
         let key_pair = RsaKeyPair::from_der(value.private_key.as_bytes()).map_err(|e| {
-            AppleCodesignError::CertificateGeneric(format!(
-                "error importing RSA key to ring: {e}"
-            ))
+            AppleCodesignError::CertificateGeneric(format!("error importing RSA key to ring: {e}"))
         })?;
 
         Ok(InMemorySigningKeyPair::Rsa(
@@ -117,7 +115,7 @@ impl PublicKeyPeerDecrypt for InMemoryRsaKey {
         let key = RsaConstructedKey::from_pkcs1_der(self.private_key.as_bytes())
             .map_err(|e| RemoteSignError::Crypto(format!("failed to parse RSA key: {e}")))?;
 
-        let padding = PaddingScheme::new_oaep::<sha2::Sha256>();
+        let padding = Oaep::new::<sha2::Sha256>();
 
         let plaintext = key
             .decrypt(padding, ciphertext)

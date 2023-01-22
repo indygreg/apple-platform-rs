@@ -46,7 +46,7 @@ dependencies = [
  "pem",
  "rand",
  "reqwest",
- "rsa",
+ "rsa 0.8.1",
  "serde",
  "serde_json",
  "thiserror",
@@ -114,7 +114,7 @@ dependencies = [
  "oid-registry",
  "once_cell",
  "p12",
- "p256",
+ "p256 0.12.0",
  "pem",
  "pkcs1",
  "pkcs8",
@@ -125,7 +125,7 @@ dependencies = [
  "regex",
  "reqwest",
  "ring",
- "rsa",
+ "rsa 0.8.1",
  "scroll",
  "security-framework",
  "security-framework-sys",
@@ -134,7 +134,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "sha2",
- "signature",
+ "signature 2.0.0",
  "simple-file-manifest",
  "spake2",
  "spki",
@@ -215,7 +215,7 @@ dependencies = [
  "serde-xml-rs",
  "sha1",
  "sha2",
- "signature",
+ "signature 2.0.0",
  "thiserror",
  "url",
  "x509-certificate",
@@ -1043,9 +1043,9 @@ dependencies = [
 
 [[package]]
 name = "cryptographic-message-syntax"
-version = "0.20.0"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47c360192dec998f5375c8554e5293899ffe49699071946a96bd9a02d46d6f0a"
+checksum = "316f7e1fc41104cf123036d5cb6af2bfad4baa6a2e9acd0bed9ee12c8d24464a"
 dependencies = [
  "bcder",
  "bytes",
@@ -1054,7 +1054,7 @@ dependencies = [
  "pem",
  "reqwest",
  "ring",
- "signature",
+ "signature 2.0.0",
  "x509-certificate",
 ]
 
@@ -1246,7 +1246,18 @@ dependencies = [
  "der",
  "elliptic-curve",
  "rfc6979",
- "signature",
+ "signature 1.6.4",
+]
+
+[[package]]
+name = "ecdsa"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82508ce57bd2b245e9914411800f87fd8fc8288f501bb26919cb9b2ee964028f"
+dependencies = [
+ "der",
+ "elliptic-curve",
+ "signature 2.0.0",
 ]
 
 [[package]]
@@ -2162,9 +2173,20 @@ version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51f44edd08f51e2ade572f141051021c5af22677e42b7dd28a88155151c33594"
 dependencies = [
- "ecdsa",
+ "ecdsa 0.14.8",
  "elliptic-curve",
  "sha2",
+]
+
+[[package]]
+name = "p256"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49c124b3cbce43bcbac68c58ec181d98ed6cc7e6d0aa7c3ba97b2563410b0e55"
+dependencies = [
+ "ecdsa 0.15.0",
+ "elliptic-curve",
+ "primeorder",
 ]
 
 [[package]]
@@ -2173,7 +2195,7 @@ version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfc8c5bf642dde52bb9e87c0ecd8ca5a76faac2eeed98dedb7c717997e1080aa"
 dependencies = [
- "ecdsa",
+ "ecdsa 0.14.8",
  "elliptic-curve",
  "sha2",
 ]
@@ -2315,6 +2337,15 @@ name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
+
+[[package]]
+name = "primeorder"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b54f7131b3dba65a2f414cf5bd25b66d4682e4608610668eae785750ba4c5b2"
+dependencies = [
+ "elliptic-curve",
+]
 
 [[package]]
 name = "proc-macro-error"
@@ -2598,8 +2629,28 @@ dependencies = [
  "pkcs1",
  "pkcs8",
  "rand_core 0.6.4",
- "signature",
+ "signature 1.6.4",
  "smallvec",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "rsa"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "89b3896c9b7790b70a9aa314a30e4ae114200992a19c96cbe0ca6070edd32ab8"
+dependencies = [
+ "byteorder",
+ "digest 0.10.6",
+ "num-bigint-dig",
+ "num-integer",
+ "num-iter",
+ "num-traits",
+ "pkcs1",
+ "pkcs8",
+ "rand_core 0.6.4",
+ "signature 2.0.0",
  "subtle",
  "zeroize",
 ]
@@ -2909,6 +2960,16 @@ name = "signature"
 version = "1.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "74233d3b3b2f6d4b006dc19dee745e73e2a6bfb6f93607cd3b02bd5b00797d7c"
+dependencies = [
+ "digest 0.10.6",
+ "rand_core 0.6.4",
+]
+
+[[package]]
+name = "signature"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8fe458c98333f9c8152221191a77e2a44e8325d0193484af2e9421a53019e57d"
 dependencies = [
  "digest 0.10.6",
  "rand_core 0.6.4",
@@ -3726,9 +3787,9 @@ dependencies = [
 
 [[package]]
 name = "x509-certificate"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9265d77682c80a848c9311214f2e42c3d07ac016d3fb70782bd082afaad15d20"
+checksum = "b6ae06cd45e681e1ae216e2e668e30ce1c4f02db026374bde8c0644684af1721"
 dependencies = [
  "bcder",
  "bytes",
@@ -3737,7 +3798,7 @@ dependencies = [
  "hex",
  "pem",
  "ring",
- "signature",
+ "signature 2.0.0",
  "spki",
  "thiserror",
 ]
@@ -3811,12 +3872,12 @@ dependencies = [
  "num-bigint-dig",
  "num-integer",
  "num-traits",
- "p256",
+ "p256 0.11.1",
  "p384",
  "pbkdf2",
  "pcsc",
  "rand_core 0.6.4",
- "rsa",
+ "rsa 0.7.2",
  "secrecy",
  "sha1",
  "sha2",
