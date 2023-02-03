@@ -78,8 +78,12 @@ impl NewcHeader {
             .to_string();
 
         // Pad to 4 byte boundary.
-        let mut pad = vec![0u8; name_data.len() % 4];
-        reader.read_exact(&mut pad)?;
+        // MAGIC: 6 bytes = 4 + 2 bytes
+        // name: maybe out of align
+        // all other fields are aligned
+        let mut pad = [0u8; 4];
+        let pad_len = name_data.len().wrapping_add(2).wrapping_neg() % 4;
+        reader.read_exact(&mut pad[..pad_len])?;
 
         Ok(Self {
             inode,
@@ -186,7 +190,7 @@ impl<T: Read + Sized> CpioReader<T> for NewcReader<T> {
                 Ok(None)
             } else {
                 self.entry_reader = Some(reader.take(header.file_size as _));
-                self.entry_data_pad = header.file_size as usize % 4;
+                self.entry_data_pad = (header.file_size.wrapping_neg() % 4) as usize;
                 Ok(Some(Box::new(header)))
             }
         } else {
@@ -205,8 +209,8 @@ impl<T: Read + Sized> CpioReader<T> for NewcReader<T> {
 
             let mut reader = reader.into_inner();
 
-            let mut pad = vec![0u8; self.entry_data_pad];
-            reader.read_exact(&mut pad)?;
+            let mut pad = [0u8; 4];
+            reader.read_exact(&mut pad[..self.entry_data_pad])?;
             self.entry_data_pad = 0;
 
             // Only restore the archive reader if we haven't seen the trailer,
