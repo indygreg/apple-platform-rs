@@ -15,6 +15,7 @@ Released on ReleaseDate.
 * x509-certificate 0.16 -> 0.18.
 * aws crates 0.53 -> 0.54.
 * dirs 4.0 -> 5.0.
+* bitflags 1.3 -> 2.0.
 
 ## 0.22.0
 

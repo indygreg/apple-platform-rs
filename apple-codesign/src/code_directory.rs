@@ -23,7 +23,7 @@ bitflags::bitflags! {
     ///
     /// These flags are embedded in the Code Directory and govern use of the embedded
     /// signature.
-    #[derive(Default)]
+    #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
     pub struct CodeSignatureFlags: u32 {
         /// Code may act as a host that controls and supervises guest code.
         const HOST = 0x0001;
@@ -97,7 +97,7 @@ impl CodeSignatureFlags {
 
 bitflags::bitflags! {
     /// Flags that influence behavior of executable segment.
-    #[derive(Default)]
+    #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
     pub struct ExecutableSegmentFlags: u64 {
         /// Executable segment belongs to main binary.
         const MAIN_BINARY = 0x0001;
@@ -245,7 +245,7 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
 
         let version = data.gread_with(offset, scroll::BE)?;
         let flags = data.gread_with::<u32>(offset, scroll::BE)?;
-        let flags = unsafe { CodeSignatureFlags::from_bits_unchecked(flags) };
+        let flags = CodeSignatureFlags::from_bits_retain(flags);
         assert_eq!(*offset, 0x10);
         let digest_offset = data.gread_with::<u32>(offset, scroll::BE)?;
         let ident_offset = data.gread_with::<u32>(offset, scroll::BE)?;
@@ -306,8 +306,8 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
                 (None, None, None)
             };
 
-        let exec_seg_flags = exec_seg_flags
-            .map(|flags| unsafe { ExecutableSegmentFlags::from_bits_unchecked(flags) });
+        let exec_seg_flags =
+            exec_seg_flags.map(|flags| ExecutableSegmentFlags::from_bits_retain(flags));
 
         let (runtime, pre_encrypt_offset) =
             if version >= CodeDirectoryVersion::SupportsRuntime as u32 {
@@ -421,7 +421,7 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
         // we build up the data structure.
 
         cursor.iowrite_with(self.version, scroll::BE)?;
-        cursor.iowrite_with(self.flags.bits, scroll::BE)?;
+        cursor.iowrite_with(self.flags.bits(), scroll::BE)?;
         let digest_offset_cursor_position = cursor.position();
         cursor.iowrite_with(0u32, scroll::BE)?;
         let ident_offset_cursor_position = cursor.position();
@@ -476,7 +476,7 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
                         cursor.iowrite_with(
                             self.exec_seg_flags
                                 .unwrap_or_else(ExecutableSegmentFlags::empty)
-                                .bits,
+                                .bits(),
                             scroll::BE,
                         )?;
 
