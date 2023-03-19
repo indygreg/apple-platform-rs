@@ -11,6 +11,7 @@ Released on ReleaseDate.
 Released on 2022-12-21.
 
 * Cargo.toml now defines patch version for all dependencies.
+* Minimum supported Rust version is now 1.65.
 
 ## 0.16.0
 
