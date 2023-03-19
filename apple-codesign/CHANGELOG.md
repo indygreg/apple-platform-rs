@@ -13,6 +13,7 @@ Released on ReleaseDate.
 * rsa 0.7 -> 0.8.
 * signature 1.6 -> 2.0.
 * x509-certificate 0.16 -> 0.18.
+* aws crates 0.53 -> 0.54.
 
 ## 0.22.0
 
