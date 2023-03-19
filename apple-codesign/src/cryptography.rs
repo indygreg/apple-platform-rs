@@ -13,20 +13,21 @@ use {
     der::{asn1, Decode, Document, Encode, SecretDocument},
     elliptic_curve::{
         sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
-        AffinePoint, Curve, FieldSize, ProjectiveArithmetic, SecretKey as ECSecretKey,
+        AffinePoint, Curve, CurveArithmetic, FieldBytesSize, SecretKey as ECSecretKey,
     },
     oid_registry::{
         OID_EC_P256, OID_KEY_TYPE_EC_PUBLIC_KEY, OID_PKCS1_RSAENCRYPTION, OID_SIG_ED25519,
     },
     p256::NistP256,
     pkcs1::RsaPrivateKey,
-    pkcs8::{AlgorithmIdentifier, EncodePrivateKey, ObjectIdentifier, PrivateKeyInfo},
+    pkcs8::{EncodePrivateKey, ObjectIdentifier, PrivateKeyInfo},
     ring::signature::{EcdsaKeyPair, Ed25519KeyPair, KeyPair, RsaKeyPair},
     rsa::{
         algorithms::mgf1_xor, pkcs1::DecodeRsaPrivateKey, BigUint, Oaep,
         RsaPrivateKey as RsaConstructedKey,
     },
     signature::Signer,
+    spki::AlgorithmIdentifier,
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     x509_certificate::{
         CapturedX509Certificate, EcdsaCurve, InMemorySigningKeyPair, KeyAlgorithm, KeyInfoSigner,
@@ -104,7 +105,7 @@ impl TryFrom<InMemoryRsaKey> for InMemorySigningKeyPair {
 
 impl EncodePrivateKey for InMemoryRsaKey {
     fn to_pkcs8_der(&self) -> pkcs8::Result<SecretDocument> {
-        let raw = PrivateKeyInfo::new(pkcs1::ALGORITHM_ID, self.private_key.as_bytes()).to_vec()?;
+        let raw = PrivateKeyInfo::new(pkcs1::ALGORITHM_ID, self.private_key.as_bytes()).to_der()?;
 
         Ok(Document::from_der(&raw)?.into_secret())
     }
@@ -128,9 +129,9 @@ impl PublicKeyPeerDecrypt for InMemoryRsaKey {
 #[derive(Clone, Debug)]
 pub struct InMemoryEcdsaKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     curve: ObjectIdentifier,
     secret_key: ECSecretKey<C>,
@@ -138,9 +139,9 @@ where
 
 impl<C> InMemoryEcdsaKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     pub fn curve(&self) -> Result<EcdsaCurve, AppleCodesignError> {
         match self.curve.as_bytes() {
@@ -155,16 +156,16 @@ where
 
 impl<C> TryFrom<InMemoryEcdsaKey<C>> for InMemorySigningKeyPair
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     type Error = AppleCodesignError;
 
     fn try_from(key: InMemoryEcdsaKey<C>) -> Result<Self, Self::Error> {
         let curve = key.curve()?;
 
-        let private_key = key.secret_key.to_be_bytes();
+        let private_key = key.secret_key.to_bytes();
         let public_key = key.secret_key.public_key().to_encoded_point(false);
 
         let key_pair = EcdsaKeyPair::from_private_key_and_public_key(
@@ -184,9 +185,9 @@ where
 
 impl<C> EncodePrivateKey for InMemoryEcdsaKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn to_pkcs8_der(&self) -> pkcs8::Result<SecretDocument> {
         let private_key = self.secret_key.to_sec1_der()?;
@@ -206,9 +207,9 @@ where
 
 impl<C> PublicKeyPeerDecrypt for InMemoryEcdsaKey<C>
 where
-    C: Curve + ProjectiveArithmetic,
+    C: Curve + CurveArithmetic,
     AffinePoint<C>: FromEncodedPoint<C> + ToEncodedPoint<C>,
-    FieldSize<C>: ModulusSize,
+    FieldBytesSize<C>: ModulusSize,
 {
     fn decrypt(&self, _ciphertext: &[u8]) -> Result<Vec<u8>, RemoteSignError> {
         Err(RemoteSignError::Crypto(
@@ -245,7 +246,7 @@ impl EncodePrivateKey for InMemoryEd25519Key {
         };
 
         let key_ref: &[u8] = self.private_key.as_ref();
-        let value = Zeroizing::new(asn1::OctetString::new(key_ref)?.to_vec()?);
+        let value = Zeroizing::new(asn1::OctetString::new(key_ref)?.to_der()?);
 
         PrivateKeyInfo::new(algorithm, value.as_ref()).try_into()
     }
@@ -370,7 +371,7 @@ impl Sign for InMemoryPrivateKey {
 
                 Bytes::copy_from_slice(
                     key.public_key()
-                        .to_vec()
+                        .to_der()
                         .expect("RSA public key DER encoding should not fail")
                         .as_ref(),
                 )
@@ -388,7 +389,7 @@ impl Sign for InMemoryPrivateKey {
 
     fn private_key_data(&self) -> Option<Vec<u8>> {
         match self {
-            Self::EcdsaP256(key) => Some(key.secret_key.to_be_bytes().to_vec()),
+            Self::EcdsaP256(key) => Some(key.secret_key.to_bytes().to_vec()),
             Self::Ed25519(key) => Some((*key.private_key).clone()),
             Self::Rsa(key) => Some(key.private_key.as_bytes().to_vec()),
         }

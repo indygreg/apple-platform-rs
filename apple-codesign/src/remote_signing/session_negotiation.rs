@@ -26,7 +26,7 @@ use {
     rsa::{BigUint, Oaep, PublicKey, RsaPublicKey},
     scroll::{Pwrite, LE},
     spake2::{Ed25519Group, Identity, Password, Spake2},
-    spki::SubjectPublicKeyInfo,
+    spki::SubjectPublicKeyInfoRef,
     std::fmt::{Display, Formatter},
 };
 
@@ -474,7 +474,7 @@ impl SessionInitiatePeer for PublicKeyInitiator {
 impl PublicKeyInitiator {
     /// Create a new initiator using public key agreement.
     pub fn new(peer_public_key: impl AsRef<[u8]>, server_url: Option<String>) -> Result<Self> {
-        let spki = SubjectPublicKeyInfo::from_der(peer_public_key.as_ref())
+        let spki = SubjectPublicKeyInfoRef::from_der(peer_public_key.as_ref())
             .map_err(|e| RemoteSignError::Crypto(format!("when parsing SPKI data: {e}")))?;
 
         let session_id = uuid::Uuid::new_v4().to_string();
@@ -521,8 +521,8 @@ impl PublicKeyInitiator {
 
         let aes_ciphertext = match spki.algorithm.oid.as_ref() {
             x if x == OID_PKCS1_RSAENCRYPTION.as_bytes() => {
-                let public_key =
-                    RsaPublicKeyAsn1::from_der(spki.subject_public_key).map_err(|e| {
+                let public_key = RsaPublicKeyAsn1::from_der(spki.subject_public_key.raw_bytes())
+                    .map_err(|e| {
                         RemoteSignError::Crypto(format!("when parsing RSA public key: {e}"))
                     })?;
 
@@ -550,7 +550,7 @@ impl PublicKeyInitiator {
         };
 
         let public_key = spki
-            .to_vec()
+            .to_der()
             .map_err(|e| RemoteSignError::Crypto(format!("when encoding SPKI to DER: {e}")))?;
 
         let sjs = PublicKeySessionJoinString {
