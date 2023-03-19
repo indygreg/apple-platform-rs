@@ -14,6 +14,7 @@ Released on ReleaseDate.
 * signature 1.6 -> 2.0.
 * x509-certificate 0.16 -> 0.18.
 * aws crates 0.53 -> 0.54.
+* dirs 4.0 -> 5.0.
 
 ## 0.22.0
 
