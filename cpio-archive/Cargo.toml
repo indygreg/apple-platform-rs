@@ -11,7 +11,7 @@ repository = "https://github.com/indygreg/apple-platform-rs.git"
 readme = "README.md"
 
 [dependencies]
-chrono = "0.4.23"
+chrono = "0.4.24"
 is_executable = "1.0.1"
 simple-file-manifest = "0.11.0"
-thiserror = "1.0.38"
+thiserror = "1.0.40"

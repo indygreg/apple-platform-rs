@@ -11,18 +11,18 @@ repository = "https://github.com/indygreg/apple-platform-rs.git"
 readme = "README.md"
 
 [dependencies]
-anyhow = "1.0.68"
+anyhow = "1.0.70"
 base64 = "0.21.0"
-clap = { version = "4.1.1", features = ["derive"] }
+clap = { version = "4.1.11", features = ["derive"] }
 dirs = "5.0.0"
 env_logger = "0.10.0"
-jsonwebtoken = "8.2.0"
+jsonwebtoken = "8.3.0"
 log = "0.4.17"
 pem = "1.1.1"
 rand = "0.8.5"
 reqwest = { version = "0.11.14", default-features = false, features = ["blocking", "json", "rustls-tls"] }
-rsa = "0.8.1"
-serde = { version = "1.0.152", features = ["derive"] }
-serde_json = "1.0.91"
-thiserror = "1.0.38"
+rsa = "0.8.2"
+serde = { version = "1.0.157", features = ["derive"] }
+serde_json = "1.0.94"
+thiserror = "1.0.40"
 x509-certificate = "0.19.0"
