@@ -10,6 +10,7 @@ Released on ReleaseDate.
 * CLI code moved from `main.rs` to a `cli` module.
 * rsa 0.7 -> 0.8.
 * x509-certificate 0.16 -> 0.18.
+* dirs 4.0.0 -> 5.0.0.
 
 ## 0.1.0
 
