@@ -353,9 +353,11 @@ pub enum AppleCodesignError {
     #[error("remote signing error: {0}")]
     RemoteSign(#[from] RemoteSignError),
 
+    #[cfg(feature = "notarize")]
     #[error("bytestream creation error: {0}")]
     AwsByteStream(#[from] aws_smithy_http::byte_stream::error::Error),
 
+    #[cfg(feature = "notarize")]
     #[error("s3 upload error: {0}")]
     AwsS3Error(#[from] aws_sdk_s3::Error),
 

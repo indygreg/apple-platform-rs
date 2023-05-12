@@ -13,7 +13,6 @@ use {
         embedded_signature::{Blob, CodeSigningSlot, DigestType, RequirementSetBlob},
         error::AppleCodesignError,
         macho::MachFile,
-        notarization::Notarizer,
         reader::SignatureReader,
         remote_signing::{
             session_negotiation::{
@@ -25,7 +24,6 @@ use {
         signing::UnifiedSigner,
         signing_settings::{SettingsScope, SigningSettings},
     },
-    app_store_connect::UnifiedApiKey,
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
     clap::{value_parser, Arg, ArgAction, ArgGroup, ArgMatches, Command},
     cryptographic_message_syntax::SignedData,
@@ -35,6 +33,9 @@ use {
     std::{io::Write, path::PathBuf, str::FromStr},
     x509_certificate::{CapturedX509Certificate, EcdsaCurve, KeyAlgorithm, X509CertificateBuilder},
 };
+
+#[cfg(feature = "notarize")]
+use crate::notarization::Notarizer;
 
 #[cfg(feature = "yubikey")]
 use {
@@ -1063,6 +1064,7 @@ fn command_diff_signatures(args: &ArgMatches) -> Result<(), AppleCodesignError> 
     Ok(())
 }
 
+#[cfg(feature = "notarize")]
 const ENCODE_APP_STORE_CONNECT_API_KEY_ABOUT: &str = "\
 Encode an App Store Connect API Key to JSON.
 
@@ -1096,6 +1098,7 @@ want. Security conscious individuals should audit the permissions of the
 file and adjust accordingly.
 ";
 
+#[cfg(feature = "notarize")]
 fn command_encode_app_store_connect_api_key(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let issuer_id = args
         .get_one::<String>("issuer_id")
@@ -1107,7 +1110,8 @@ fn command_encode_app_store_connect_api_key(args: &ArgMatches) -> Result<(), App
         .get_one::<PathBuf>("private_key_path")
         .expect("arg should have been required");
 
-    let unified = UnifiedApiKey::from_ecdsa_pem_path(issuer_id, key_id, private_key_path)?;
+    let unified =
+        app_store_connect::UnifiedApiKey::from_ecdsa_pem_path(issuer_id, key_id, private_key_path)?;
 
     if let Some(output_path) = args.get_one::<PathBuf>("output_path") {
         eprintln!("writing unified key JSON to {}", output_path.display());
@@ -1893,6 +1897,7 @@ specify `--staple`. This implies `--wait`.
 ";
 
 /// Obtain a notarization client from arguments.
+#[cfg(feature = "notarize")]
 fn notarizer_from_args(args: &ArgMatches) -> Result<Notarizer, AppleCodesignError> {
     let api_key_path = args.get_one::<PathBuf>("api_key_path");
     let api_issuer = args.get_one::<String>("api_issuer");
@@ -1907,6 +1912,7 @@ fn notarizer_from_args(args: &ArgMatches) -> Result<Notarizer, AppleCodesignErro
     }
 }
 
+#[cfg(feature = "notarize")]
 fn notarizer_wait_duration(args: &ArgMatches) -> Result<std::time::Duration, AppleCodesignError> {
     let max_wait_seconds = args
         .get_one::<String>("max_wait_seconds")
@@ -1917,6 +1923,7 @@ fn notarizer_wait_duration(args: &ArgMatches) -> Result<std::time::Duration, App
     Ok(std::time::Duration::from_secs(max_wait_seconds))
 }
 
+#[cfg(feature = "notarize")]
 fn command_notary_log(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let notarizer = notarizer_from_args(args)?;
     let submission_id = args
@@ -1932,6 +1939,7 @@ fn command_notary_log(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[cfg(feature = "notarize")]
 fn command_notary_submit(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = PathBuf::from(
         args.get_one::<String>("path")
@@ -1966,6 +1974,7 @@ fn command_notary_submit(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[cfg(feature = "notarize")]
 fn command_notary_wait(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let wait_duration = notarizer_wait_duration(args)?;
     let notarizer = notarizer_from_args(args)?;
@@ -2544,6 +2553,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             ),
     );
 
+    #[cfg(feature = "notarize")]
     let app = app.subcommand(
         Command::new("encode-app-store-connect-api-key")
             .about("Encode App Store Connect API Key metadata to a single file")
@@ -3070,6 +3080,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Some(("analyze-certificate", args)) => command_analyze_certificate(args),
         Some(("compute-code-hashes", args)) => command_compute_code_hashes(args),
         Some(("diff-signatures", args)) => command_diff_signatures(args),
+        #[cfg(feature = "notarize")]
         Some(("encode-app-store-connect-api-key", args)) => {
             command_encode_app_store_connect_api_key(args)
         }
@@ -3084,8 +3095,11 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             command_keychain_export_certificate_chain(args)
         }
         Some(("keychain-print-certificates", args)) => command_keychain_print_certificates(args),
+        #[cfg(feature = "notarize")]
         Some(("notary-log", args)) => command_notary_log(args),
+        #[cfg(feature = "notarize")]
         Some(("notary-submit", args)) => command_notary_submit(args),
+        #[cfg(feature = "notarize")]
         Some(("notary-wait", args)) => command_notary_wait(args),
         Some(("parse-code-signing-requirement", args)) => {
             command_parse_code_signing_requirement(args)

@@ -142,7 +142,9 @@ mod macho_signing;
 pub use macho_signing::*;
 mod macho_universal;
 pub use macho_universal::UniversalBinaryBuilder;
+#[cfg(feature = "notarize")]
 pub mod notarization;
+#[cfg(feature = "notarize")]
 pub use notarization::*;
 mod policy;
 pub use policy::*;
