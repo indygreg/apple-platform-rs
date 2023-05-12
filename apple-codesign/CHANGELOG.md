@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* Notarization features are now optional and can be controlled via the
+  enabled-by-default `notarize` crate feature. (#78)
 * Minimum supported Rust version changed from 1.62.1 to 1.65.0.
 * cryptographic-message-syntax 0.19 -> 0.23.
 * once_cell 1.16 -> 1.17.
