@@ -396,6 +396,8 @@ impl<'data> MachOSigner<'data> {
                 settings.time_stamp_url(),
                 settings.certificate_chain().iter().cloned(),
             )?;
+        } else {
+            builder.create_empty_cms_signature()?;
         }
 
         builder.create_superblob()
