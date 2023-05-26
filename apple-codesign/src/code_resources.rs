@@ -713,6 +713,7 @@ impl CodeResources {
         let data = String::from_utf8(data).expect("XML should be valid UTF-8");
         let data = data.replace("<dict />", "<dict/>");
         let data = data.replace("<true />", "<true/>");
+        let data = data.replace("&quot;", "\"");
 
         writer.write_all(data.as_bytes())?;
         writer.write_all(b"\n")?;
@@ -1314,8 +1315,12 @@ impl CodeResourcesBuilder {
 
         let (relative_path, optional) =
             match Self::evaluate_rules(&self.rules2, relative_path, None)? {
-                RulesEvaluation::SealRegularFile(relative_path, optional) => {
-                    (relative_path, optional)
+                RulesEvaluation::SealRegularFile(relative_path, _) => {
+                    info!(
+                        "excluding signing nested bundle {} because of matched resources rule",
+                        relative_path
+                    );
+                    return Ok(());
                 }
                 RulesEvaluation::SealNested(relative_path, optional) => (relative_path, optional),
                 RulesEvaluation::Exclude => {

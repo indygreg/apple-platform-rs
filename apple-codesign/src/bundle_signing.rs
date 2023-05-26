@@ -563,14 +563,15 @@ impl SingleBundleSigner {
         // don't appear to include digests of any nested app bundles. So we add that
         // exclusion. iOS bundles don't seem to include digests for nested bundles either.
         // We should figure out what the actual rules here...
-        if !self.bundle.shallow() {
-            let dest_bundle = DirectoryBundle::new_from_path(&dest_dir)
-                .map_err(AppleCodesignError::DirectoryBundle)?;
+        let dest_bundle = DirectoryBundle::new_from_path(&dest_dir)
+            .map_err(AppleCodesignError::DirectoryBundle)?;
 
-            for (rel_path, nested_bundle) in dest_bundle
-                .nested_bundles(false)
-                .map_err(AppleCodesignError::DirectoryBundle)?
-            {
+        for (rel_path, nested_bundle) in dest_bundle
+            .nested_bundles(false)
+            .map_err(AppleCodesignError::DirectoryBundle)?
+        {
+            // Apple's codesign seems to only sign nested bundles if they have a "." in the name.
+            if nested_bundle.name().contains('.') {
                 resources_builder.process_nested_bundle(&rel_path, &nested_bundle)?;
             }
         }
