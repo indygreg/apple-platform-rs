@@ -22,35 +22,40 @@ creating ad-hoc signature
 removing linker signed flag from code signature (we're not a linker)
 using hardened runtime version 11.0.0 derived from SDK version
 code directory version: 132352
-total signature size: 364 bytes
+total signature size: 380 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
-  file_size: 18434
-  file_sha256: 65f173cd81af1d9149816fcb8c6dbb461bb150971bf155e3d1fb20dc75a03a82
+  file_size: 22530
+  file_sha256: cb541e8915b158ce6f234aa27f8a05d189559c5b974e5f33a94eab56ba001ac1
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 18434
+      linkedit_segment_file_end_offset: 22530
       signature_file_start_offset: 16386
-      signature_file_end_offset: 18434
+      signature_file_end_offset: 22530
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 2050
+      signature_linkedit_end_offset: 6146
       signature:
-        superblob_length: 364
-        blob_count: 2
+        superblob_length: 380
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 324
-          sha1: 9fbae43e3df08df35b65744d3b9f944c3df5c108
-          sha256: 8adfab240ae5083a2da67f2bd2562d2d645870dc4b14c43c383c021ab8b86f74
+          sha1: 80425d431632ca9aee7a5d5c1f5c0226b1e4c2ad
+          sha256: 447b3f90afa5dca05b385829a94b7665fb981824ce2dab3375a5f2153eef1784
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
           sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
           sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20500'
           flags: CodeSignatureFlags(HOST | ADHOC | FORCE_HARD | FORCE_KILL | FORCE_EXPIRATION | RUNTIME)
@@ -83,35 +88,40 @@ adding code signature flags from signing settings: CodeSignatureFlags(HOST)
 creating ad-hoc signature
 using hardened runtime version 11.0.0 from signing settings
 code directory version: 132352
-total signature size: 364 bytes
+total signature size: 380 bytes
 writing Mach-O to exe.signed.2
 
 $ rcodesign print-signature-info exe.signed.2
 - path: exe.signed.2
-  file_size: 18434
-  file_sha256: 1f1a7928fde1f8e184cb0b8660a1eca93af4bf75aeed4d090c098a0da5e095f4
+  file_size: 22530
+  file_sha256: 0385756b55b37423c8b7a3a8b5611d776f473c499d07fe1b3f1b8d62f9e1bdde
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 18434
+      linkedit_segment_file_end_offset: 22530
       signature_file_start_offset: 16386
-      signature_file_end_offset: 18434
+      signature_file_end_offset: 22530
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 2050
+      signature_linkedit_end_offset: 6146
       signature:
-        superblob_length: 364
-        blob_count: 2
+        superblob_length: 380
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 324
-          sha1: c1b32ac442a9b66f92d2c8f7b4675f6ce03ad8b8
-          sha256: 1f89d77b40fc0e45e69074b66abca1fee0e1dbc2a12d1c5b648667d113658feb
+          sha1: e09bec8e621174913a7c48d651b50c4d6bed232b
+          sha256: 2f5d70de4d0c07224a647250c0d11600b3d9093eac20e8664f85ff34f42e852e
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
           sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
           sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20500'
           flags: CodeSignatureFlags(HOST | ADHOC)

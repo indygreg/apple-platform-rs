@@ -399,9 +399,7 @@ impl<'a> MachOBinary<'a> {
         }
 
         // Assume the CMS data will take a fixed size.
-        if settings.signing_key().is_some() {
-            size += 4096;
-        }
+        size += 4096;
 
         // Long certificate chains could blow up the size. Account for those.
         for cert in settings.certificate_chain() {

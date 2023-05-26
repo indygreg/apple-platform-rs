@@ -31,7 +31,7 @@ signing Mach-O binary at index 0
 binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
-total signature size: 405 bytes
+total signature size: 421 bytes
 writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
 $ rcodesign print-signature-info MyApp.app.signed
@@ -40,30 +40,35 @@ $ rcodesign print-signature-info MyApp.app.signed
   file_sha256: 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5
   entity: other
 - path: Contents/MacOS/MyApp
-  file_size: 18434
-  file_sha256: a744e0b7edc4d3d0bba38f9c5e2a2a83ff2cb865cbcfbb099de7089a64fd02c6
+  file_size: 22530
+  file_sha256: e6647c8682f987dc3aa21b6245d4a7a7eb517daca12826539550728d450261fe
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 18434
+      linkedit_segment_file_end_offset: 22530
       signature_file_start_offset: 16386
-      signature_file_end_offset: 18434
+      signature_file_end_offset: 22530
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 2050
+      signature_linkedit_end_offset: 6146
       signature:
-        superblob_length: 405
-        blob_count: 2
+        superblob_length: 421
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 365
-          sha1: e09851ef92bd49b28a7a08cb2bfd347aec68e98f
-          sha256: 6378f6b64ab51c466567fcdffa534d4956bed29c591648917dea63abb7bc892c
+          sha1: 959bd52e144a512b68339cc2dc214d4975d1841c
+          sha256: 27b97b9a00a18c9cd4991e4378c5d35c3c6fdfb5db24c3efb69555c5c4073d7d
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
           sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
           sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)
@@ -232,7 +237,7 @@ creating ad-hoc signature
 code directory version: 132096
 adding alternative code directory using digest Sha256
 creating ad-hoc signature
-total signature size: 682 bytes
+total signature size: 698 bytes
 writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
 $ rcodesign print-signature-info MyApp.app.signed
@@ -241,25 +246,25 @@ $ rcodesign print-signature-info MyApp.app.signed
   file_sha256: 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5
   entity: other
 - path: Contents/MacOS/MyApp
-  file_size: 19458
-  file_sha256: 2373f3f2f106e6d0f628f701518a0a0111951c18c4d857e8f740a0002955b1b2
+  file_size: 23554
+  file_sha256: 613c411b776124e06f747e68befd008ae17fc2a26f5fac4f2aa37096ed29773c
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 19458
+      linkedit_segment_file_end_offset: 23554
       signature_file_start_offset: 16386
-      signature_file_end_offset: 19458
+      signature_file_end_offset: 23554
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 3074
+      signature_linkedit_end_offset: 7170
       signature:
-        superblob_length: 682
-        blob_count: 3
+        superblob_length: 698
+        blob_count: 4
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 269
-          sha1: fd209a1fbb8d8f23c371276e18477fc0e9a452d1
-          sha256: 7e8463a4aac51285b6b411f617c3c61ddf2494c43a313eae188b1c5af3fcf86e
+          sha1: 2ac6448d7140e803f8bcc5821fc5549bf72a8a69
+          sha256: 01f17d92df682b72e11c6ceec3bb2f1ea221411f26ffd180bcb7adc6c3845f2c
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -268,8 +273,13 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: 'CodeDirectory Alternate #0 (4096)'
           magic: fade0c02
           length: 365
-          sha1: 03eeb5b4f5841284fbde6c6a5c1fb8ee34e97531
-          sha256: 7578857013e76338c3cfd0dff0d1c55c583e26d2ccb4ab1e9956a1cb2b4eac6f
+          sha1: defcd15d14b0968833950de143347bf90c0ec5a2
+          sha256: e5d9cd9baf150ef3b9e91b45438ef6fc6724c87191f3bf7aa4d95c33ff3ca7f8
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)

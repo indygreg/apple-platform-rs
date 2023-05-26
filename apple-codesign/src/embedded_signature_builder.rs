@@ -303,6 +303,17 @@ impl<'a> EmbeddedSignatureBuilder<'a> {
         Ok(())
     }
 
+    pub fn create_empty_cms_signature(
+        &mut self,
+    ) -> Result<(), AppleCodesignError> {
+        self.blobs.insert(
+            CodeSigningSlot::Signature,
+            BlobData::BlobWrapper(Box::new(BlobWrapperBlob::from_data_owned(Vec::new()))),
+        );
+        self.state = BlobsState::SignatureAdded;
+        Ok(())
+    }
+
     /// Add notarization ticket data.
     ///
     /// This will register a new ticket slot holding the notarization ticket data.

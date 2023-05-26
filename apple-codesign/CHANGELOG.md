@@ -38,6 +38,9 @@ Released on ReleaseDate.
   Before, we would only automatically activate SHA-1 digests when there was
   a Mach-O load command targeting a too-old platform version which didn't
   support SHA-256 digests.
+* An empty CMS blob is now automatically added when signing in ad-hoc mode.
+  Before, no CMS blob would be present. The new behavior matches that of
+  Apple's tooling.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

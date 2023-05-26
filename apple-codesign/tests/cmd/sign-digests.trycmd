@@ -15,35 +15,40 @@ signing Mach-O binary at index 0
 binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
-total signature size: 272 bytes
+total signature size: 288 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
-  file_size: 18434
-  file_sha256: 3b16ae104a78943166abfb5e3376f5710c7a6f56bb03b4ade80a4cd2af333dd2
+  file_size: 22530
+  file_sha256: c8e9dd0b1ef927e35ecf14dd02ad45ad6c1079fb46127109ddf05a50090e9570
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 18434
+      linkedit_segment_file_end_offset: 22530
       signature_file_start_offset: 16386
-      signature_file_end_offset: 18434
+      signature_file_end_offset: 22530
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 2050
+      signature_linkedit_end_offset: 6146
       signature:
-        superblob_length: 272
-        blob_count: 2
+        superblob_length: 288
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 232
-          sha1: 5ffc877d935dd5060b3c91f9bf38c27232859e18
-          sha256: 2db2c537eaaa67ae9dd5d706da49a362eaa48545f9f6c91675526b7f985fe29e
+          sha1: cffe46f2192da3e53a6008ae475add423af6ed69
+          sha256: 522060048378c495b43dadb498ee77fdb71ee97751247021df9f85cafc9cbe44
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
           sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
           sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)
@@ -79,30 +84,30 @@ code directory version: 132096
 adding alternative code directory using digest Sha256
 binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
-total signature size: 596 bytes
+total signature size: 612 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
-  file_size: 19458
-  file_sha256: 5a74aa527987be28c4fd0db3b3a64e0b0792f7acc4e9f8cf516b12ee24c9ab70
+  file_size: 23554
+  file_sha256: 0739c3de4e409ee32394619a88f654510c25f44b5448a1cffcb5e7c74a1c0c51
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 19458
+      linkedit_segment_file_end_offset: 23554
       signature_file_start_offset: 16386
-      signature_file_end_offset: 19458
+      signature_file_end_offset: 23554
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 3074
+      signature_linkedit_end_offset: 7170
       signature:
-        superblob_length: 596
-        blob_count: 3
+        superblob_length: 612
+        blob_count: 4
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 232
-          sha1: fb4c7ce93f0184f843970a1cc26e7d45301d259f
-          sha256: 3957de2d564a26889dc459a696f69a8ff0a3e82123cd68164d2ac1931f09d107
+          sha1: 07667ed73d516f37f76b746e24297952d16c7c57
+          sha256: 841655055d25087f238c2bd1dba607303e5f3be60a53240444af14c2ea650679
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -111,8 +116,13 @@ $ rcodesign print-signature-info exe.signed
         - slot: 'CodeDirectory Alternate #0 (4096)'
           magic: fade0c02
           length: 316
-          sha1: 76f73672b9b5819785be84a79e2f8a2c21f68f78
-          sha256: 8ea48064fef8e94f03ea4b53f21d1fe2aaa5854d751975ae9f10ab5ef980a94f
+          sha1: 987b58126b8d4f4c860998dbcbe7374d31585ace
+          sha256: 1ac9896a06f399a390cd0eddb26d19762efa952ca1e87a6467eba81e6f041aef
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)
@@ -163,30 +173,30 @@ code directory version: 132096
 adding alternative code directory using digest Sha256
 binary targets macOS >= 10.11.3 with SDK 10.11.3
 creating ad-hoc signature
-total signature size: 596 bytes
+total signature size: 612 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
-  file_size: 19458
-  file_sha256: 6fe9b1f9a598a2a991a5cb4364d16d9838001331237dae65a12e83323731e343
+  file_size: 23554
+  file_sha256: 2cd0a6b20ab9737aecfeeca97fb233da1e9e9a42d4ed0ca8affa4327ca3fe611
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 19458
+      linkedit_segment_file_end_offset: 23554
       signature_file_start_offset: 16386
-      signature_file_end_offset: 19458
+      signature_file_end_offset: 23554
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 3074
+      signature_linkedit_end_offset: 7170
       signature:
-        superblob_length: 596
-        blob_count: 3
+        superblob_length: 612
+        blob_count: 4
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 232
-          sha1: 303f8dc10e404c5b7d58cf5179e22640140a83bc
-          sha256: ee5a865de0c7e3314f214cb33c8d034a289d96dcf5ed8af467504d868ca35ee9
+          sha1: 8845581bfcacfffe1167c3442e5b8ad0e7b2f190
+          sha256: da5b0476ae68210dfff52b71956a7e9afee0997ba92bb5c07f599daeed839301
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -195,8 +205,13 @@ $ rcodesign print-signature-info exe.signed
         - slot: 'CodeDirectory Alternate #0 (4096)'
           magic: fade0c02
           length: 316
-          sha1: 331770849dcb2a77d1ad37b8c708e014abdb08fd
-          sha256: a7945527635f1fb6db30c2bf447c81c6f86d332ad2c10bd9830b195eaa94d074
+          sha1: 222311dd217bae69ce4c4ec9a566a384df5d766e
+          sha256: a4ab76ba3703d5a0039bee7db5726d9064bdb07da60ab85d871ea2263325dc92
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)
@@ -245,30 +260,30 @@ creating ad-hoc signature
 code directory version: 132096
 adding alternative code directory using digest Sha256
 creating ad-hoc signature
-total signature size: 596 bytes
+total signature size: 612 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
-  file_size: 19458
-  file_sha256: 885001369f15fe991297d56cf2c1913c85bea528fd888cca0da1e360accce8b4
+  file_size: 23554
+  file_sha256: 1d2d4cd3e79b9d5a50741521062cb7232094ea8a754de1f4fa26fa5fe85974c5
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 19458
+      linkedit_segment_file_end_offset: 23554
       signature_file_start_offset: 16386
-      signature_file_end_offset: 19458
+      signature_file_end_offset: 23554
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 3074
+      signature_linkedit_end_offset: 7170
       signature:
-        superblob_length: 596
-        blob_count: 3
+        superblob_length: 612
+        blob_count: 4
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 232
-          sha1: 364195b081ddc251d8082d56d09fc42a6df85ed7
-          sha256: b0b5c9a5c075e25a5469960d21ecb5306011de1685b27a02d78ff636e3fbe591
+          sha1: 5b1a8a0f511dee4c5a598e07cafe11c8da2f3d20
+          sha256: dfeb49a8f1e1fd3a5cb3f8c718b1586e4c730e82b465fc99c00711d255f82377
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -277,8 +292,13 @@ $ rcodesign print-signature-info exe.signed
         - slot: 'CodeDirectory Alternate #0 (4096)'
           magic: fade0c02
           length: 316
-          sha1: cb0cda8411be1cbf78250507e40acd29e403f12a
-          sha256: dc58b7ebdec82c9b6d3139621e6bcd41e273fd4a40fdb0093f154e2ad19c0d38
+          sha1: 10bd9dd6ccdc9c40b9f6c06f98aeeac075de7412
+          sha256: e22052a8ab21ac2250d11d0227eef77692251339d5d15b293fc01600624f86bc
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)

@@ -28,7 +28,7 @@ signing Mach-O binary at index 0
 binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
-total signature size: 364 bytes
+total signature size: 380 bytes
 writing Mach-O to MyFramework.framework.signed/Versions/A/MyFramework
 Resources/Info.plist is the Info.plist file; handling specially
 sealing regular file Resources/Info.plist
@@ -48,30 +48,35 @@ $ rcodesign print-signature-info MyFramework.framework.signed
   symlink_target: Versions/Current/Resources
   entity: other
 - path: Versions/A/MyFramework
-  file_size: 18434
-  file_sha256: 9d54523d9364767cd5ce03b639d8d32fc65b7462c28009ad8ac38a868b4e476c
+  file_size: 22530
+  file_sha256: bb6ff934f4382f20663f579ed9bf371c2685ce67a7ab02f18e25f385ea69ef32
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 18434
+      linkedit_segment_file_end_offset: 22530
       signature_file_start_offset: 16386
-      signature_file_end_offset: 18434
+      signature_file_end_offset: 22530
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 2050
+      signature_linkedit_end_offset: 6146
       signature:
-        superblob_length: 364
-        blob_count: 2
+        superblob_length: 380
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 324
-          sha1: c067589cc234d6c096af47cbed8e30419d3adf02
-          sha256: d0b0241fe2968bb8ce514ddb0d7af7a394e0f7267e56fa95e05b7ba4c46e813f
+          sha1: 3b689c124b7015516849d695f74cc0754082843c
+          sha256: b406dd7c59c596225c87d9ec1df61b87f1dd80bcc9546cea823bd83812eb6995
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
           sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
           sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)
@@ -96,7 +101,7 @@ $ rcodesign print-signature-info MyFramework.framework.signed
   entity: other
 - path: Versions/A/_CodeSignature/CodeResources
   file_size: 2889
-  file_sha256: c1dceba96b710954b49d1aa7835a1d0a14fb32e1bed35d6ec0bff791a51fe072
+  file_sha256: 7fe89c1b69306b84c043d155417cff4e0ff58a76babb6f34c65b2c7c8239c5c6
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -120,10 +125,10 @@ $ rcodesign print-signature-info MyFramework.framework.signed
     - '    <dict>'
     - '      <key>cdhash</key>'
     - '      <data>'
-    - '      0LAkH+KWi7jOUU3bDXr3o5Tg9yY='
+    - '      tAbdfFnFliJch9nsHfYbh/HdgLw='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H"d0b0241fe2968bb8ce514ddb0d7af7a394e0f726"</string>'
+    - '      <string>cdhash H"b406dd7c59c596225c87d9ec1df61b87f1dd80bc"</string>'
     - '    </dict>'
     - '    <key>Resources/Info.plist</key>'
     - '    <dict>'

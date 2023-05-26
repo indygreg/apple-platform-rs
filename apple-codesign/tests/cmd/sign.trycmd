@@ -341,35 +341,40 @@ signing Mach-O binary at index 0
 binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
-total signature size: 356 bytes
+total signature size: 372 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
-  file_size: 18434
-  file_sha256: 8aeda70df39fd276ac166c428b734c4a86e3b045b5457570bd3b2e658d13e231
+  file_size: 22530
+  file_sha256: 0e71dcd9c2861cf9a983c9060a6ba15fd58a92ec12b8a37bda4635760375571d
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 18434
+      linkedit_segment_file_end_offset: 22530
       signature_file_start_offset: 16386
-      signature_file_end_offset: 18434
+      signature_file_end_offset: 22530
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 2050
+      signature_linkedit_end_offset: 6146
       signature:
-        superblob_length: 356
-        blob_count: 2
+        superblob_length: 372
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 316
-          sha1: 80133b2e964498d9f473e98c07421d9f68cee920
-          sha256: b10f122d731e45f7ebf54bbcdbc142845a17f118f5df733a94f98d41b5dc94d1
+          sha1: 279e29278fbe50d9d9858dca6aff70186a542280
+          sha256: d6d2ff2393ab567b0756a3b8d7181bb327000356ddd2af5d824d4abf6c80d4c7
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
           sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
           sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)
@@ -398,36 +403,41 @@ binary targets macOS >= 11.0.0 with SDK 11.0.0
 adding code signature flags from signing settings: CodeSignatureFlags(ADHOC)
 creating ad-hoc signature
 code directory version: 132096
-total signature size: 356 bytes
+total signature size: 372 bytes
 writing Mach-O to exe.signed.2
 
 $ rcodesign diff-signatures exe.signed exe.signed.2
 -- path: exe.signed
 +- path: exe.signed.2
-   file_size: 18434
-   file_sha256: 8aeda70df39fd276ac166c428b734c4a86e3b045b5457570bd3b2e658d13e231
+   file_size: 22530
+   file_sha256: 0e71dcd9c2861cf9a983c9060a6ba15fd58a92ec12b8a37bda4635760375571d
    entity:
      mach_o:
        linkedit_segment_file_start_offset: 16384
-       linkedit_segment_file_end_offset: 18434
+       linkedit_segment_file_end_offset: 22530
        signature_file_start_offset: 16386
-       signature_file_end_offset: 18434
+       signature_file_end_offset: 22530
        signature_linkedit_start_offset: 2
-       signature_linkedit_end_offset: 2050
+       signature_linkedit_end_offset: 6146
        signature:
-         superblob_length: 356
-         blob_count: 2
+         superblob_length: 372
+         blob_count: 3
          blobs:
          - slot: CodeDirectory (0)
            magic: fade0c02
            length: 316
-           sha1: 80133b2e964498d9f473e98c07421d9f68cee920
-           sha256: b10f122d731e45f7ebf54bbcdbc142845a17f118f5df733a94f98d41b5dc94d1
+           sha1: 279e29278fbe50d9d9858dca6aff70186a542280
+           sha256: d6d2ff2393ab567b0756a3b8d7181bb327000356ddd2af5d824d4abf6c80d4c7
          - slot: RequirementSet (2)
            magic: fade0c01
            length: 12
            sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
            sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+         - slot: CMS Signature (65536)
+           magic: fade0b01
+           length: 8
+           sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+           sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
          code_directory:
            version: '0x20400'
            flags: CodeSignatureFlags(ADHOC)

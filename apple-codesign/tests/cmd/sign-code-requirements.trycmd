@@ -19,35 +19,40 @@ code requirements: 0: ((anchor apple generic) and (certificate 1[field.1.2.840.1
 binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
-total signature size: 476 bytes
+total signature size: 492 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
-  file_size: 18434
-  file_sha256: 8107d1616776173a9fc5bc48db31385d292b33aceebcc0da8d30433e01ece9e1
+  file_size: 22530
+  file_sha256: da3baee1027238f623cb5a1e68ebb50cfe4fc4004dfb2a6be96509be659e4ad2
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 18434
+      linkedit_segment_file_end_offset: 22530
       signature_file_start_offset: 16386
-      signature_file_end_offset: 18434
+      signature_file_end_offset: 22530
       signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 2050
+      signature_linkedit_end_offset: 6146
       signature:
-        superblob_length: 476
-        blob_count: 2
+        superblob_length: 492
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 316
-          sha1: 72cc4f1698ca3d789e8dcf2b7bf3b3c1a48318e1
-          sha256: 7160e08e2ff947c22eb5d4935e55b076185ddd3c8d2c7967cd669bac755bc5ba
+          sha1: 35f1e540c91bd2e74f81c93cd88127f8b856db19
+          sha256: d48b54c2114374f69cf806813fa9cba48e7e0913a7f365a4252d941aa9a1ed2f
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 132
           sha1: 2ac6f23e29171f6d5b6a87822e8f5411753e0ec7
           sha256: 362f0cbb74f1847e4b2c7e3159a9d55e63d112fd1bf085e379d1bdfaf2813472
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)
