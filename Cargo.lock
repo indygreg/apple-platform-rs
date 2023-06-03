@@ -156,7 +156,7 @@ dependencies = [
  "p12",
  "p256 0.13.0",
  "pem",
- "pkcs1 0.7.1",
+ "pkcs1 0.7.5",
  "pkcs8 0.10.1",
  "plist",
  "rand",
@@ -2483,14 +2483,13 @@ dependencies = [
 
 [[package]]
 name = "pkcs1"
-version = "0.7.1"
+version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "178ba28ece1961eafdff1991bd1744c29564cbab5d803f3ccb4a4895a6c550a7"
+checksum = "c8ffb9f10fa047879315e6625af03c164b16962a5368d724ed16323b68ace47f"
 dependencies = [
  "der 0.7.1",
  "pkcs8 0.10.1",
  "spki 0.7.0",
- "zeroize",
 ]
 
 [[package]]
