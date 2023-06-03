@@ -8,6 +8,7 @@ Released on ReleaseDate.
 
 * Minimum supported Rust version changed from 1.62 to 1.64.
 * CLI code moved from `main.rs` to a `cli` module.
+* pem 1.1 -> 2.0.
 * rsa 0.7 -> 0.8.
 * x509-certificate 0.16 -> 0.19.
 * dirs 4.0.0 -> 5.0.0.

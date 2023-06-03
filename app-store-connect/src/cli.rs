@@ -187,10 +187,10 @@ impl CertificateCommand {
             }
             Self::Get { id } => {
                 let resp = client.get_certificate(&id)?;
-                let cer = pem::encode(&pem::Pem {
-                    tag: "CERTIFICATE".into(),
-                    contents: STANDARD_ENGINE.decode(resp.data.attributes.certificate_content)?,
-                });
+                let cer = pem::encode(&pem::Pem::new(
+                    "CERTIFICATE",
+                    STANDARD_ENGINE.decode(resp.data.attributes.certificate_content)?,
+                ));
                 println!("{cer}");
             }
             Self::Revoke { id } => {

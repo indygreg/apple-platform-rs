@@ -17,6 +17,7 @@ Released on ReleaseDate.
 * dirs 4.0 -> 5.0.
 * bitflags 1.3 -> 2.0.
 * elliptic-curve 0.12 -> 0.13.
+* pem 1.1 -> 2.0.
 * pkcs1 0.4 -> 0.7.
 * pkcs8 0.9 -> 0.10.
 * spki 0.6 -> 0.7.

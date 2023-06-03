@@ -31,10 +31,7 @@ pub fn generate_signing_certificate(api_key: &Path, ty: CertificateType, pem: &P
         .data
         .attributes
         .certificate_content;
-    let cer = pem::encode(&pem::Pem {
-        tag: "CERTIFICATE".into(),
-        contents: STANDARD_ENGINE.decode(cer)?,
-    });
+    let cer = pem::encode(&pem::Pem::new("CERTIFICATE", STANDARD_ENGINE.decode(cer)?));
     let mut f = File::create(pem)?;
     f.write_all(secret.to_pkcs8_pem(LineEnding::CRLF)?.as_bytes())?;
     f.write_all(cer.as_bytes())?;

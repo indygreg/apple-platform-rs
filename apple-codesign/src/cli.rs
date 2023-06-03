@@ -524,10 +524,10 @@ fn get_remote_signing_initiator(
         let pem_data = std::fs::read(path)?;
         let doc = pem::parse(pem_data)?;
 
-        let spki_der = match doc.tag.as_str() {
-            "PUBLIC KEY" => doc.contents,
+        let spki_der = match doc.tag() {
+            "PUBLIC KEY" => doc.contents().to_vec(),
             "CERTIFICATE" => {
-                let cert = CapturedX509Certificate::from_der(doc.contents)?;
+                let cert = CapturedX509Certificate::from_der(doc.contents())?;
                 cert.to_public_key_der()?.as_ref().to_vec()
             }
             tag => {
@@ -600,15 +600,19 @@ fn collect_certificates_from_args(
             let pem_data = std::fs::read(pem_source)?;
 
             for pem in pem::parse_many(pem_data).map_err(AppleCodesignError::CertificatePem)? {
-                match pem.tag.as_str() {
+                match pem.tag() {
                     "CERTIFICATE" => {
-                        certs.push(CapturedX509Certificate::from_der(pem.contents)?);
+                        certs.push(CapturedX509Certificate::from_der(pem.contents())?);
                     }
                     "PRIVATE KEY" => {
-                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs8_der(&pem.contents)?));
+                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs8_der(
+                            pem.contents(),
+                        )?));
                     }
                     "RSA PRIVATE KEY" => {
-                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs1_der(&pem.contents)?));
+                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs1_der(
+                            pem.contents(),
+                        )?));
                     }
                     tag => warn!("(unhandled PEM tag {}; ignoring)", tag),
                 }
@@ -1331,13 +1335,7 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
             if let Some(cms) = embedded.signature_data()? {
-                print!(
-                    "{}",
-                    pem::encode(&pem::Pem {
-                        tag: "PKCS7".to_string(),
-                        contents: cms.to_vec(),
-                    })
-                );
+                print!("{}", pem::encode(&pem::Pem::new("PKCS7", cms.to_vec())));
             } else {
                 eprintln!("no CMS data");
             }
@@ -1738,10 +1736,7 @@ fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), App
     )?;
 
     let cert_pem = cert.encode_pem();
-    let key_pem = pem::encode(&pem::Pem {
-        tag: "PRIVATE KEY".to_string(),
-        contents: raw.as_ref().to_vec(),
-    });
+    let key_pem = pem::encode(&pem::Pem::new("PRIVATE KEY", raw.as_ref().to_vec()));
 
     let mut wrote_file = false;
 

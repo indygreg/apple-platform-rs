@@ -18,7 +18,7 @@ dirs = "5.0.1"
 env_logger = "0.10.0"
 jsonwebtoken = "8.3.0"
 log = "0.4.18"
-pem = "1.1.1"
+pem = "2.0.1"
 rand = "0.8.5"
 reqwest = { version = "0.11.18", default-features = false, features = ["blocking", "json", "rustls-tls"] }
 rsa = "0.8.2"

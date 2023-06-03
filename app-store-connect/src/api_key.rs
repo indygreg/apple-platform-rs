@@ -61,11 +61,11 @@ impl UnifiedApiKey {
 
         let parsed = pem::parse(pem_data).map_err(|_| InvalidPemPrivateKey)?;
 
-        if parsed.tag != "PRIVATE KEY" {
+        if parsed.tag() != "PRIVATE KEY" {
             return Err(InvalidPemPrivateKey.into());
         }
 
-        let private_key = STANDARD_ENGINE.encode(parsed.contents);
+        let private_key = STANDARD_ENGINE.encode(parsed.contents());
 
         Ok(Self {
             issuer_id: issuer_id.to_string(),

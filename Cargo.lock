@@ -98,7 +98,7 @@ dependencies = [
  "env_logger",
  "jsonwebtoken",
  "log",
- "pem",
+ "pem 2.0.1",
  "rand",
  "reqwest",
  "rsa 0.8.2",
@@ -170,7 +170,7 @@ dependencies = [
  "once_cell",
  "p12",
  "p256 0.13.2",
- "pem",
+ "pem 2.0.1",
  "pkcs1 0.7.5",
  "pkcs8 0.10.2",
  "plist",
@@ -1115,7 +1115,7 @@ dependencies = [
  "bytes",
  "chrono",
  "hex",
- "pem",
+ "pem 1.1.1",
  "reqwest",
  "ring",
  "signature 2.1.0",
@@ -1924,7 +1924,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6971da4d9c3aa03c3d8f3ff0f4155b534aad021292003895a469716b2a230378"
 dependencies = [
  "base64 0.21.2",
- "pem",
+ "pem 1.1.1",
  "ring",
  "serde",
  "serde_json",
@@ -2295,6 +2295,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8835c273a76a90455d7344889b0964598e3316e2a79ede8e36f16bdcf2228b8"
 dependencies = [
  "base64 0.13.1",
+]
+
+[[package]]
+name = "pem"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b13fe415cdf3c8e44518e18a7c95a13431d9bdf6d15367d82b23c377fdd441a"
+dependencies = [
+ "base64 0.21.2",
+ "serde",
 ]
 
 [[package]]
@@ -4043,7 +4053,7 @@ dependencies = [
  "chrono",
  "der 0.7.6",
  "hex",
- "pem",
+ "pem 1.1.1",
  "ring",
  "signature 2.1.0",
  "spki 0.7.2",

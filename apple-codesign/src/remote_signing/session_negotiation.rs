@@ -347,10 +347,10 @@ pub trait SessionInitiatePeer {
 
     /// Obtain the PEM encoded session join string.
     fn session_join_string_pem(&self) -> Result<String> {
-        Ok(pem::encode(&pem::Pem {
-            tag: "SESSION JOIN STRING".to_string(),
-            contents: self.session_join_string_bytes()?,
-        }))
+        Ok(pem::encode(&pem::Pem::new(
+            "SESSION JOIN STRING",
+            self.session_join_string_bytes()?,
+        )))
     }
 
     /// Finalize a peer joined session using optional context provided by the peer.
@@ -847,8 +847,8 @@ pub fn create_session_joiner(
 
         let doc = pem::parse(no_comments.as_bytes())?;
 
-        if doc.tag == "SESSION JOIN STRING" {
-            doc.contents
+        if doc.tag() == "SESSION JOIN STRING" {
+            doc.contents().to_vec()
         } else {
             return Err(RemoteSignError::SessionJoinString(
                 "PEM does not define a SESSION JOIN STRING".into(),
