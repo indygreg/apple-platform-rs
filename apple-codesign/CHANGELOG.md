@@ -7,12 +7,12 @@
 Released on ReleaseDate.
 
 * Minimum supported Rust version changed from 1.62.1 to 1.65.0.
-* cryptographic-message-syntax 0.19 -> 0.22.
+* cryptographic-message-syntax 0.19 -> 0.23.
 * once_cell 1.16 -> 1.17.
 * p256 0.11 -> 0.13.
 * rsa 0.7 -> 0.8.
 * signature 1.6 -> 2.0.
-* x509-certificate 0.16 -> 0.19.
+* x509-certificate 0.16 -> 0.20.
 * aws crates 0.53 -> 0.55.
 * dirs 4.0 -> 5.0.
 * bitflags 1.3 -> 2.0.

@@ -6,9 +6,9 @@
 
 Released on ReleaseDate.
 
-* cryptographic-message-syntax 0.20 -> 0.22.
+* cryptographic-message-syntax 0.20 -> 0.23.
 * signature 1.6 -> 2.0.
-* x509-certificate 0.17 -> 0.19.
+* x509-certificate 0.17 -> 0.20.
 * Minimum supported Rust version is now 1.65.
 
 ## 0.13.0

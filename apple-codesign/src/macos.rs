@@ -101,6 +101,9 @@ impl Signer<Signature> for KeychainCertificate {
             SignatureAlgorithm::EcdsaSha256 => KeychainAlgorithm::ECDSASignatureMessageX962SHA256,
             SignatureAlgorithm::EcdsaSha384 => KeychainAlgorithm::ECDSASignatureMessageX962SHA384,
             SignatureAlgorithm::Ed25519 => KeychainAlgorithm::ECDSASignatureMessageX962SHA512,
+            SignatureAlgorithm::NoSignature(_) => {
+                return Err(signature::Error::from_source("digest only signature"));
+            }
         };
 
         warn!(

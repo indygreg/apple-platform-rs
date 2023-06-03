@@ -110,9 +110,7 @@ impl std::fmt::Display for VerificationProblem {
             }
             VerificationProblemType::NoCodeDirectory => "no code directory".to_string(),
             VerificationProblemType::CodeDirectoryOldDigestAlgorithm(hash_type) => {
-                format!(
-                    "insecure digest algorithm used in code directory: {hash_type:?}"
-                )
+                format!("insecure digest algorithm used in code directory: {hash_type:?}")
             }
             VerificationProblemType::CodeDigestError(e) => {
                 format!("error computing code digests: {e:?}")
@@ -372,7 +370,8 @@ fn verify_cms_signature(data: &[u8], context: VerificationContext) -> Vec<Verifi
             | SignatureAlgorithm::RsaSha512
             | SignatureAlgorithm::EcdsaSha256
             | SignatureAlgorithm::EcdsaSha384
-            | SignatureAlgorithm::Ed25519 => {}
+            | SignatureAlgorithm::Ed25519
+            | SignatureAlgorithm::NoSignature(_) => {}
             SignatureAlgorithm::RsaSha1 => {
                 problems.push(VerificationProblem {
                     context: context.clone(),

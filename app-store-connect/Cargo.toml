@@ -25,4 +25,4 @@ rsa = "0.8.2"
 serde = { version = "1.0.163", features = ["derive"] }
 serde_json = "1.0.96"
 thiserror = "1.0.40"
-x509-certificate = "0.19.0"
+x509-certificate = "0.20.0"
