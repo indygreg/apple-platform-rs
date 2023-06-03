@@ -22,6 +22,7 @@ Released on ReleaseDate.
 * pkcs8 0.9 -> 0.10.
 * rasn 0.6 -> 0.7.
 * spki 0.6 -> 0.7.
+* tungstenite 0.18 -> 0.19.
 
 ## 0.22.0
 
