@@ -13,11 +13,12 @@ This module implements functionality for uploading content to Apple
 and waiting on the availability of a notarization ticket.
 */
 
+pub use app_store_connect::notary_api;
 use {
     crate::{reader::PathType, AppleCodesignError},
     app_store_connect::{AppStoreConnectClient, ConnectTokenEncoder, UnifiedApiKey},
     apple_bundles::DirectoryBundle,
-    aws_sdk_s3::{Credentials, Region},
+    aws_sdk_s3::config::{Credentials, Region},
     aws_smithy_http::byte_stream::ByteStream,
     log::{info, warn},
     sha2::Digest,
@@ -28,7 +29,6 @@ use {
         time::Duration,
     },
 };
-pub use app_store_connect::notary_api;
 
 fn digest<H: Digest, R: Read>(reader: &mut R) -> Result<(u64, Vec<u8>), AppleCodesignError> {
     let mut hasher = H::new();
