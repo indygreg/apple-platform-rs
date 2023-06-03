@@ -1,0 +1,17 @@
+```
+$ rcodesign help notary-log
+Fetch the notarization log for a previous submission
+
+Usage: rcodesign[EXE] notary-log [OPTIONS] <submission_id>
+
+Arguments:
+  <submission_id>  The ID of the previous submission to wait on
+
+Options:
+      --api-key-path <api_key_path>  Path to a JSON file containing the API Key
+  -v, --verbose...                   Increase logging verbosity. Can be specified multiple times.
+      --api-issuer <api_issuer>      App Store Connect Issuer ID (likely a UUID)
+      --api-key <api_key>            App Store Connect API Key ID
+  -h, --help                         Print help
+
+```

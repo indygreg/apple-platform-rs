@@ -9,6 +9,7 @@ fn cli_tests() {
 
     // Help output breaks without notarize feature.
     if cfg!(not(feature = "notarize")) {
+        cases.skip("tests/cmd/encode-app-store-connect-api-key.trycmd");
         cases.skip("tests/cmd/help.trycmd");
     }
 }

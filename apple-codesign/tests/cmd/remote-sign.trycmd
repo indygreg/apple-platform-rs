@@ -1,0 +1,48 @@
+```
+$ rcodesign help remote-sign
+Create signatures initiated from a remote signing operation
+
+Usage: rcodesign[EXE] remote-sign [OPTIONS] <--editor|--sjs-path <session_join_string_path>|session_join_string>
+
+Arguments:
+  [session_join_string]  Session join string (provided by the signing initiator)
+
+Options:
+      --editor
+          Open an editor to input the session join string
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times.
+      --sjs-path <session_join_string_path>
+          Path to file containing session join string
+      --smartcard-slot <smartcard_slot>
+          Smartcard slot number of signing certificate to use (9c is common)
+      --keychain-domain <keychain_domain>
+          (macOS only) Keychain domain to operate on [possible values: user, system, common, dynamic]
+      --keychain-fingerprint <keychain_fingerprint>
+          (macOS only) SHA-256 fingerprint of certificate in Keychain to use
+      --pem-source <pem_source>
+          Path to file containing PEM encoded certificate/key data
+      --der-source <der_source>
+          Path to file containing DER encoded certificate data
+      --p12-file <p12_path>
+          Path to a .p12/PFX file containing a certificate key pair
+      --p12-password <p12_password>
+          The password to use to open the --p12-file file
+      --p12-password-file <p12_password_file>
+          Path to file containing password for opening --p12-file file
+      --remote-signer
+          Send signing requests to a remote server
+      --remote-public-key <remote_public_key>
+          Base64 encoded public key data describing the signer
+      --remote-public-key-pem-file <remote_public_key_pem_file>
+          PEM encoded public key data describing the signer
+      --remote-shared-secret <remote_shared_secret>
+          Shared secret used for remote signing
+      --remote-shared-secret-env <remote_shared_secret_env>
+          Environment variable holding the shared secret used for remote signing
+      --remote-signing-url <remote_signing_url>
+          URL of a remote code signing server [default: wss://ws.codesign.gregoryszorc.com/]
+  -h, --help
+          Print help
+
+```

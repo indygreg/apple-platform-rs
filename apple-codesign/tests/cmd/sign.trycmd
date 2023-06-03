@@ -1,0 +1,320 @@
+```
+$ rcodesign help sign
+Adds code signatures to a signable entity.
+
+This command can sign the following entities:
+
+* A single Mach-O binary (specified by its file path)
+* A bundle (specified by its directory path)
+* A DMG disk image (specified by its path)
+* A XAR archive (commonly a .pkg installer file)
+
+If the input is Mach-O binary, it can be a single or multiple/fat/universal
+Mach-O binary. If a fat binary is given, each Mach-O within that binary will
+be signed.
+
+If the input is a bundle, the bundle will be recursively signed. If the
+bundle contains nested bundles or Mach-O binaries, those will be signed
+automatically.
+
+# Settings Scope
+
+The following signing settings are global and apply to all signed entities:
+
+* --digest
+* --pem-source
+* --team-name
+* --timestamp-url
+
+The following signing settings can be scoped so they only apply to certain
+entities:
+
+* --binary-identifier
+* --code-requirements-path
+* --code-resources-path
+* --code-signature-flags
+* --entitlements-xml-path
+* --info-plist-path
+
+Scoped settings take the form <value> or <scope>:<value>. If the 2nd form
+is used, the string before the first colon is parsed as a "scoping string".
+It can have the following values:
+
+* `main` - Applies to the main entity being signed and all nested entities.
+* `@<integer>` - e.g. `@0`. Applies to a Mach-O within a fat binary at the
+  specified index. 0 means the first Mach-O in a fat binary.
+* `@[cpu_type=<int>` - e.g. `@[cpu_type=7]`. Applies to a Mach-O within a fat
+  binary targeting a numbered CPU architecture (using numeric constants
+  as defined by Mach-O).
+* `@[cpu_type=<string>` - e.g. `@[cpu_type=x86_64]`. Applies to a Mach-O within
+  a fat binary targeting a CPU architecture identified by a string. See below
+  for the list of recognized values.
+* `<string>` - e.g. `path/to/file`. Applies to content at a given path. This
+  should be the bundle-relative path to a Mach-O binary, a nested bundle, or
+  a Mach-O binary within a nested bundle. If a nested bundle is referenced,
+  settings apply to everything within that bundle.
+* `<string>@<int>` - e.g. `path/to/file@0`. Applies to a Mach-O within a
+  fat binary at the given path. If the path is to a bundle, the setting applies
+  to all Mach-O binaries in that bundle.
+* `<string>@[cpu_type=<int|string>]` e.g. `Contents/MacOS/binary@[cpu_type=7]`
+  or `Contents/MacOS/binary@[cpu_type=arm64]`. Applies to a Mach-O within a
+  fat binary targeting a CPU architecture identified by its integer constant
+  or string name. If the path is to a bundle, the setting applies to all
+  Mach-O binaries in that bundle.
+
+The following named CPU architectures are recognized:
+
+* arm
+* arm64
+* arm64_32
+* x86_64
+
+Signing will traverse into nested entities:
+
+* A fat Mach-O binary will traverse into the multiple Mach-O binaries within.
+* A bundle will traverse into nested bundles.
+* A bundle will traverse non-code "resource" files and sign their digests.
+* A bundle will traverse non-main Mach-O binaries and sign them, adding their
+  metadata to the signed resources file.
+
+# Bundle Signing Overrides Settings
+
+When signing bundles, some settings specified on the command line will be
+ignored. This is to ensure that the produced signing data is correct. The
+settings ignored include (but may not be limited to):
+
+* --binary-identifier for the main executable. The `CFBundleIdentifier` value
+  from the bundle's `Info.plist` will be used instead.
+* --code-resources-path. The code resources data will be computed automatically
+  as part of signing the bundle.
+* --info-plist-path. The `Info.plist` from the bundle will be used instead.
+* --digest and --extra-digest
+
+# Designated Code Requirements
+
+When using Apple issued code signing certificates, we will attempt to apply
+an appropriate designated requirement automatically during signing which
+matches the behavior of what `codesign` would do. We do not yet support all
+signing certificates and signing targets for this, however. So you may
+need to provide your own requirements.
+
+Designated code requirements can be specified via --code-requirements-path.
+
+This file MUST contain a binary/compiled code requirements expression. We do
+not (yet) support parsing the human-friendly code requirements DSL. A
+binary/compiled file can be produced via Apple's `csreq` tool. e.g.
+`csreq -r '=<expression>' -b /output/path`. If code requirements data is
+specified, it will be parsed and displayed as part of signing to ensure it
+is well-formed.
+
+# Code Signing Key Pair
+
+By default, the embedded code signature will only contain digests of the
+binary and other important entities (such as entitlements and resources).
+This is often referred to as "ad-hoc" signing.
+
+To use a code signing key/certificate to derive a cryptographic signature,
+you must specify a source certificate to use. This can be done in the following
+ways:
+
+* The --p12-file denotes the location to a PFX formatted file. These are
+  often .pfx or .p12 files. A password is required to open these files.
+  Specify one via --p12-password or --p12-password-file or enter a password
+  when prompted.
+* The --pem-source argument defines paths to files containing PEM encoded
+  certificate/key data. (e.g. files with "===== BEGIN CERTIFICATE =====").
+* The --source-source argument defines paths to files containiner DER
+  encoded certificate/key data.
+* The --keychain-domain and --keychain-fingerprint arguments can be used to
+  load code signing certificates from macOS keychains. These arguments are
+  ignored on non-macOS platforms.
+* The --smartcard-slot argument defines the name of a slot in a connected
+  smartcard device to read from. `9c` is common.
+* Arguments beginning with --remote activate *remote signing mode* and can
+  be used to delegate cryptographic signing operations to a separate machine.
+  It is strongly advised to read the user documentation on remote signing
+  mode at https://gregoryszorc.com/docs/apple-codesign/main/.
+
+If you export a code signing certificate from the macOS keychain via the
+`Keychain Access` application as a .p12 file, we should be able to read these
+files via --p12-file.
+
+When using --pem-source, certificates and public keys are parsed from
+`BEGIN CERTIFICATE` and `BEGIN PRIVATE KEY` sections in the files.
+
+The way certificate discovery works is that --p12-file is read followed by
+all values to --pem-source. The seen signing keys and certificates are
+collected. After collection, there must be 0 or 1 signing keys present, or
+an error occurs. The first encountered public certificate is assigned
+to be paired with the signing key. All remaining certificates are assumed
+to constitute the CA issuing chain and will be added to the signature
+data to facilitate validation.
+
+If you are using an Apple-issued code signing certificate, we detect this
+and automatically register the Apple CA certificate chain so it is included
+in the digital signature. This matches the behavior of the `codesign` tool.
+
+For best results, put your private key and its corresponding X.509 certificate
+in a single file, either a PFX or PEM formatted file. Then add any additional
+certificates constituting the signing chain in a separate PEM file.
+
+When using a code signing key/certificate, a Time-Stamp Protocol server URL
+can be specified via --timestamp-url. By default, Apple's server is used. The
+special value "none" can disable using a timestamp server.
+
+# Selecting What to Sign
+
+By default, this command attempts to recursively sign everything in the source
+path. This applies to:
+
+* Bundles. If the specified bundle has nested bundles, those nested bundles
+  will be signed automatically.
+
+It is possible to exclude nested items from signing using --exclude. This
+argument takes a glob expression that matches *relative paths* from the
+source path. Glob expressions can be literal string compares. Or the
+following special syntax is recognized:
+
+* `?` matches any single character.
+* `*` matches any (possibly empty) sequence of characters.
+* `**` matches the current directory and arbitrary subdirectories. This sequence
+  must form a single path component, so both **a and b** are invalid and will
+  result in an error. A sequence of more than two consecutive * characters is
+  also invalid.
+* `[...]` matches any character inside the brackets. Character sequences can also
+  specify ranges of characters, as ordered by Unicode, so e.g. [0-9] specifies any
+  character between 0 and 9 inclusive. An unclosed bracket is invalid.
+* `[!...]` is the negation of `[...]`, i.e. it matches any characters not in the
+  brackets.
+* The metacharacters `?`, `*`, `[`, `]` can be matched by using brackets (e.g.
+  `[?]`). When a `]` occurs immediately following `[` or `[!` then it is
+  interpreted as being part of, rather then ending, the character set, so `]` and
+  `NOT ]` can be matched by `[]]` and `[!]]` respectively. The `-` character can
+  be specified inside a character sequence pattern by placing it at the start or
+  the end, e.g. `[abc-]`.
+
+Currently, --exclude only applies to the relative path of nested bundles within
+the main bundle to sign. e.g. if you sign `MyApp.app` and it has a
+`Contents/Frameworks/MyFramework.framework` that you wish to exclude, you would
+`--exclude Contents/Frameworks/MyFramework.framework` or even
+`--exclude Contents/Frameworks/**` to exclude the entire directory tree.
+
+Exclusions will still be copied and parents that need to reference exclude
+entities will continue to do so. If you wish to make a file or directory
+disappear, create a new directory without the file(s) and sign that.
+
+To exclude all nested bundles from being signed and only sign the main bundle
+(the default behavior of ``codesign`` without ``--deep``), use `--exclude '**'`.
+
+
+Usage: rcodesign[EXE] sign [OPTIONS] <input_path> [output_path]
+
+Arguments:
+  <input_path>
+          Path to Mach-O binary to sign
+
+  [output_path]
+          Path to signed Mach-O binary to write
+
+Options:
+      --binary-identifier <binary_identifier>
+          Identifier string for binary. The value normally used by CFBundleIdentifier
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times.
+
+      --code-requirements-path <code_requirements_path>
+          Path to a file containing binary code requirements data to be used as designated requirements
+
+      --code-resources-path <code_resources>
+          Path to an XML plist file containing code resources
+
+      --code-signature-flags <code_signature_flags_set>
+          Code signature flags to set
+          
+          [possible values: host, hard, kill, expires, library, runtime, linker-signed]
+
+      --digest <digest>
+          Digest algorithm to use
+          
+          [default: sha256]
+          [possible values: none, sha1, sha256, sha256-truncated, sha384, sha512]
+
+      --extra-digest <extra_digest>
+          Extra digests to include in signatures
+          
+          [possible values: none, sha1, sha256, sha256-truncated, sha384, sha512]
+
+  -e, --entitlements-xml-path <entitlements_xml_path>
+          Path to a plist file containing entitlements
+
+      --runtime-version <runtime_version>
+          Hardened runtime version to use (defaults to SDK version used to build binary)
+
+      --info-plist-path <info_plist_path>
+          Path to an Info.plist file whose digest to include in Mach-O signature
+
+      --team-name <team_name>
+          Team name/identifier to include in code signature
+
+      --timestamp-url <timestamp_url>
+          URL of timestamp server to use to obtain a token of the CMS signature
+          
+          [default: http://timestamp.apple.com/ts01]
+
+      --exclude <exclude>
+          Glob expression of paths to exclude from signing
+
+      --smartcard-pin-env <smartcard_pin_env>
+          Environment variable holding the smartcard PIN
+
+      --smartcard-slot <smartcard_slot>
+          Smartcard slot number of signing certificate to use (9c is common)
+
+      --keychain-domain <keychain_domain>
+          (macOS only) Keychain domain to operate on
+          
+          [possible values: user, system, common, dynamic]
+
+      --keychain-fingerprint <keychain_fingerprint>
+          (macOS only) SHA-256 fingerprint of certificate in Keychain to use
+
+      --pem-source <pem_source>
+          Path to file containing PEM encoded certificate/key data
+
+      --der-source <der_source>
+          Path to file containing DER encoded certificate data
+
+      --p12-file <p12_path>
+          Path to a .p12/PFX file containing a certificate key pair
+
+      --p12-password <p12_password>
+          The password to use to open the --p12-file file
+
+      --p12-password-file <p12_password_file>
+          Path to file containing password for opening --p12-file file
+
+      --remote-signer
+          Send signing requests to a remote server
+
+      --remote-public-key <remote_public_key>
+          Base64 encoded public key data describing the signer
+
+      --remote-public-key-pem-file <remote_public_key_pem_file>
+          PEM encoded public key data describing the signer
+
+      --remote-shared-secret <remote_shared_secret>
+          Shared secret used for remote signing
+
+      --remote-shared-secret-env <remote_shared_secret_env>
+          Environment variable holding the shared secret used for remote signing
+
+      --remote-signing-url <remote_signing_url>
+          URL of a remote code signing server
+          
+          [default: wss://ws.codesign.gregoryszorc.com/]
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+```

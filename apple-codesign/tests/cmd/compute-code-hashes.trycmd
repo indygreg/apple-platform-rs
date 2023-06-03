@@ -1,0 +1,22 @@
+```
+$ rcodesign help compute-code-hashes
+Compute code hashes for a binary
+
+Usage: rcodesign[EXE] compute-code-hashes [OPTIONS] <path>
+
+Arguments:
+  <path>  path to Mach-O binary to examine
+
+Options:
+      --hash <hash>
+          Hashing algorithm to use [default: sha256] [possible values: none, sha1, sha256, sha256-truncated, sha384, sha512]
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times.
+      --page-size <page_size>
+          Chunk size to digest over [default: 4096]
+      --universal-index <universal_index>
+          Index of Mach-O binary to operate on within a universal/fat binary [default: 0]
+  -h, --help
+          Print help
+
+```

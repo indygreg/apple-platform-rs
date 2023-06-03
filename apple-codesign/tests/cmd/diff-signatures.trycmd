@@ -1,0 +1,15 @@
+```
+$ rcodesign help diff-signatures
+Print a diff between the signature content of two paths
+
+Usage: rcodesign[EXE] diff-signatures [OPTIONS] <path0> <path1>
+
+Arguments:
+  <path0>  The first path to compare
+  <path1>  The second path to compare
+
+Options:
+  -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
+  -h, --help        Print help
+
+```

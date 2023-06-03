@@ -1,0 +1,49 @@
+```
+$ rcodesign help smartcard-import
+Import a code signing certificate and key into a smartcard
+
+Usage: rcodesign[EXE] smartcard-import [OPTIONS]
+
+Options:
+      --existing-key
+          Re-use the existing private key in the smartcard slot
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times.
+      --dry-run
+          Don't actually perform the import
+      --smartcard-slot <smartcard_slot>
+          Smartcard slot number of signing certificate to use (9c is common)
+      --keychain-domain <keychain_domain>
+          (macOS only) Keychain domain to operate on [possible values: user, system, common, dynamic]
+      --keychain-fingerprint <keychain_fingerprint>
+          (macOS only) SHA-256 fingerprint of certificate in Keychain to use
+      --pem-source <pem_source>
+          Path to file containing PEM encoded certificate/key data
+      --der-source <der_source>
+          Path to file containing DER encoded certificate data
+      --p12-file <p12_path>
+          Path to a .p12/PFX file containing a certificate key pair
+      --p12-password <p12_password>
+          The password to use to open the --p12-file file
+      --p12-password-file <p12_password_file>
+          Path to file containing password for opening --p12-file file
+      --remote-signer
+          Send signing requests to a remote server
+      --remote-public-key <remote_public_key>
+          Base64 encoded public key data describing the signer
+      --remote-public-key-pem-file <remote_public_key_pem_file>
+          PEM encoded public key data describing the signer
+      --remote-shared-secret <remote_shared_secret>
+          Shared secret used for remote signing
+      --remote-shared-secret-env <remote_shared_secret_env>
+          Environment variable holding the shared secret used for remote signing
+      --remote-signing-url <remote_signing_url>
+          URL of a remote code signing server [default: wss://ws.codesign.gregoryszorc.com/]
+      --touch-policy <touch_policy>
+          Smartcard touch policy to protect key access [default: default] [possible values: default, always, never, cached]
+      --pin-policy <pin_policy>
+          Smartcard pin prompt policy to protect key access [default: default] [possible values: default, never, once, always]
+  -h, --help
+          Print help
+
+```
