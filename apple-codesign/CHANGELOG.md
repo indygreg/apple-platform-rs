@@ -20,6 +20,7 @@ Released on ReleaseDate.
 * pem 1.1 -> 2.0.
 * pkcs1 0.4 -> 0.7.
 * pkcs8 0.9 -> 0.10.
+* rasn 0.6 -> 0.7.
 * spki 0.6 -> 0.7.
 
 ## 0.22.0
