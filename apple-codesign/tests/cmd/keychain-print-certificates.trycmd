@@ -1,7 +1,12 @@
 ```
 $ rcodesign help keychain-print-certificates
-? 101
-thread 'main' panicked at 'Argument domain: long "--domain" must not start with a `-`, that will be handled by the parser', /home/gps/.cargo/registry/src/index.crates.io-6f17d22bba15001f/clap_builder-4.3.1/src/builder/debug_asserts.rs:79:13
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Print information about certificates in the macOS keychain
+
+Usage: rcodesign[EXE] keychain-print-certificates [OPTIONS]
+
+Options:
+      --domain <domain>  Keychain domain to operate on [default: user] [possible values: user, system, common, dynamic]
+  -v, --verbose...       Increase logging verbosity. Can be specified multiple times.
+  -h, --help             Print help
 
 ```

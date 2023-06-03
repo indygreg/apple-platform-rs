@@ -2712,26 +2712,26 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             )
             .arg(
                 Arg::new("password")
-                    .long("--password")
+                    .long("password")
                     .action(ArgAction::Set)
                     .help("Password to unlock the Keychain")
             )
             .arg(
                 Arg::new("password_file")
-                    .long("--password-file")
+                    .long("password-file")
                     .action(ArgAction::Set)
                     .conflicts_with("password")
                     .help("File containing password to use to unlock the Keychain")
             )
            .arg(
                 Arg::new("no_print_self")
-                    .long("--no-print-self")
+                    .long("no-print-self")
                     .action(ArgAction::SetTrue)
                     .help("Print only the issuing certificate chain, not the subject certificate")
            )
            .arg(
                Arg::new("user_id")
-                    .long("--user-id")
+                    .long("user-id")
                     .action(ArgAction::Set)
                     .required(true)
                     .help("User ID value of code signing certificate to find and whose CA chain to export")
@@ -2743,7 +2743,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .about("Print information about certificates in the macOS keychain")
             .arg(
                 Arg::new("domain")
-                    .long("--domain")
+                    .long("domain")
                     .action(ArgAction::Set)
                     .value_parser(["user", "system", "common", "dynamic"])
                     .default_value("user")
@@ -2820,7 +2820,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             .long_about(PARSE_CODE_SIGNING_REQUIREMENT_ABOUT)
             .arg(
                 Arg::new("format")
-                    .long("--format")
+                    .long("format")
                     .action(ArgAction::Set)
                     .required(true)
                     .value_parser(["csrl", "expression-tree"])
