@@ -67,3 +67,47 @@ Options:
           Print help (see a summary with '-h')
 
 ```
+
+```
+$ rcodesign analyze-certificate --keychain-domain user --keychain-fingerprint fingerprint
+? 2
+error: the argument '--keychain-domain <keychain_domain>' cannot be used with '--keychain-fingerprint <keychain_fingerprint>'
+
+Usage: rcodesign analyze-certificate --keychain-domain <keychain_domain>
+
+For more information, try '--help'.
+
+```
+
+```
+$ rcodesign analyze-certificate --p12-password foo --p12-password-file path
+? 2
+error: the argument '--p12-password <p12_password>' cannot be used with '--p12-password-file <p12_password_file>'
+
+Usage: rcodesign analyze-certificate --p12-password <p12_password>
+
+For more information, try '--help'.
+
+```
+
+```
+$ rcodesign analyze-certificate --remote-public-key foo --remote-public-key-pem-file path
+? 2
+error: the argument '--remote-public-key <remote_public_key>' cannot be used with '--remote-public-key-pem-file <remote_public_key_pem_file>'
+
+Usage: rcodesign analyze-certificate --remote-public-key <remote_public_key>
+
+For more information, try '--help'.
+
+```
+
+```
+$ rcodesign analyze-certificate --remote-shared-secret secret --remote-shared-secret-env env
+? 2
+error: the argument '--remote-shared-secret <remote_shared_secret>' cannot be used with '--remote-shared-secret-env <remote_shared_secret_env>'
+
+Usage: rcodesign analyze-certificate --remote-shared-secret <remote_shared_secret>
+
+For more information, try '--help'.
+
+```
