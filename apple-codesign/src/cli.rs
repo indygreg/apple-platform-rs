@@ -2260,6 +2260,12 @@ fn command_parse_code_signing_requirement(args: &ArgMatches) -> Result<(), Apple
     Ok(())
 }
 
+#[derive(Parser)]
+struct PrintSignatureInfo {
+    /// Filesystem path to entity whose info to print
+    path: String,
+}
+
 fn command_print_signature_info(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
         .get_one::<String>("path")
@@ -2781,6 +2787,9 @@ enum Subcommands {
     /// Parse binary Code Signing Requirement data into a human readable string
     #[command(long_about = PARSE_CODE_SIGNING_REQUIREMENT_ABOUT)]
     ParseCodeSigningRequirement(ParseCodeSigningRequirement),
+
+    /// Print signature information for a filesystem path
+    PrintSignatureInfo(PrintSignatureInfo),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2799,17 +2808,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("print-signature-info")
-            .about("Print signature information for a filesystem path")
-            .arg(
-                Arg::new("path")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("Filesystem path to entity whose info to print"),
-            ),
-    );
 
     let app = app.subcommand(
         Command::new("smartcard-scan")

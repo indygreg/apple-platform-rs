@@ -2,10 +2,10 @@
 $ rcodesign help print-signature-info
 Print signature information for a filesystem path
 
-Usage: rcodesign[EXE] print-signature-info [OPTIONS] <path>
+Usage: rcodesign[EXE] print-signature-info [OPTIONS] <PATH>
 
 Arguments:
-  <path>  Filesystem path to entity whose info to print
+  <PATH>  Filesystem path to entity whose info to print
 
 Options:
   -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
