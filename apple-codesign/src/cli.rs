@@ -933,31 +933,21 @@ struct ComputeCodeHashes {
 
     /// Chunk size to digest over.
     #[arg(long, default_value = "4096")]
-    page_size: String,
+    page_size: usize,
 
     /// Index of Mach-O binary to operate on within a universal/fat binary
     #[arg(long, default_value = "0")]
     universal_index: usize,
 }
 
-fn command_compute_code_hashes(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let path = args
-        .get_one::<String>("path")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-    let index = args.get_one::<String>("universal_index").unwrap();
-    let index = usize::from_str(index).map_err(|_| AppleCodesignError::CliBadArgument)?;
-    let hash_type = DigestType::try_from(args.get_one::<String>("hash").unwrap().as_str())?;
-    let page_size = usize::from_str(
-        args.get_one::<String>("page_size")
-            .expect("page_size should have default value"),
-    )
-    .map_err(|_| AppleCodesignError::CliBadArgument)?;
+fn command_compute_code_hashes(args: &ComputeCodeHashes) -> Result<(), AppleCodesignError> {
+    let hash_type = DigestType::try_from(args.hash.as_str())?;
 
-    let data = std::fs::read(path)?;
+    let data = std::fs::read(&args.path)?;
     let mach = MachFile::parse(&data)?;
-    let macho = mach.nth_macho(index)?;
+    let macho = mach.nth_macho(args.universal_index)?;
 
-    let hashes = macho.code_digests(hash_type, page_size)?;
+    let hashes = macho.code_digests(hash_type, args.page_size)?;
 
     for hash in hashes {
         println!("{}", hex::encode(hash));
@@ -2880,9 +2870,9 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         .ok_or(AppleCodesignError::CliUnknownCommand)?
         .1;
 
-    match subcommands {
+    match &subcommands {
         Subcommands::AnalyzeCertificate(_) => command_analyze_certificate(args),
-        Subcommands::ComputeCodeHashes(_) => command_compute_code_hashes(args),
+        Subcommands::ComputeCodeHashes(args) => command_compute_code_hashes(args),
         Subcommands::DiffSignatures(_) => command_diff_signatures(args),
         #[cfg(feature = "notarize")]
         Subcommands::EncodeAppStoreConnectApiKey(_) => {
