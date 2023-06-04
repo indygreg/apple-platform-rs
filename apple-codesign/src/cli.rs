@@ -1863,18 +1863,16 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
 struct GenerateCertificateSigningRequest {
     /// Path to file to write PEM encoded CSR to
     #[arg(long)]
-    csr_pem_path: String,
+    csr_pem_path: Option<PathBuf>,
 
     #[command(flatten)]
     certificate: CertificateSource,
 }
 
 fn command_generate_certificate_signing_request(
-    args: &ArgMatches,
+    args: &GenerateCertificateSigningRequest,
 ) -> Result<(), AppleCodesignError> {
-    let csr_pem_path = args.get_one::<String>("csr_pem_path").map(PathBuf::from);
-
-    let (private_keys, _) = collect_certificates_from_args(args, true)?;
+    let private_keys = args.certificate.resolve_certificates(true)?.0;
 
     let private_key = if private_keys.is_empty() {
         error!("no private keys found; a private key is required to sign a certificate signing request");
@@ -1905,7 +1903,7 @@ fn command_generate_certificate_signing_request(
         .create_certificate_signing_request(private_key.as_key_info_signer())?
         .encode_pem()?;
 
-    if let Some(dest_path) = csr_pem_path {
+    if let Some(dest_path) = &args.csr_pem_path {
         if let Some(parent) = dest_path.parent() {
             std::fs::create_dir_all(parent)?;
         }
@@ -3041,7 +3039,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             command_encode_app_store_connect_api_key(args)
         }
         Subcommands::Extract(args) => command_extract(args),
-        Subcommands::GenerateCertificateSigningRequest(_) => {
+        Subcommands::GenerateCertificateSigningRequest(args) => {
             command_generate_certificate_signing_request(args)
         }
         Subcommands::GenerateSelfSignedCertificate(args) => {

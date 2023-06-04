@@ -2,7 +2,7 @@
 $ rcodesign generate-certificate-signing-request --help
 Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
 
-Usage: rcodesign[EXE] generate-certificate-signing-request [OPTIONS] --csr-pem-path <CSR_PEM_PATH>
+Usage: rcodesign[EXE] generate-certificate-signing-request [OPTIONS]
 
 Options:
       --csr-pem-path <CSR_PEM_PATH>
