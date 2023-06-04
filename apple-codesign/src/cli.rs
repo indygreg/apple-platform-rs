@@ -1946,6 +1946,29 @@ fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), App
     Ok(())
 }
 
+#[derive(Parser)]
+struct KeychainExportCertificateChain {
+    /// Keychain domain to operate on
+    #[arg(long, value_parser = KEYCHAIN_DOMAINS, default_value = "user")]
+    domain: String,
+
+    /// Password to unlock the Keychain
+    #[arg(long, group = "unlock-password")]
+    password: Option<String>,
+
+    /// File containing password to use to unlock the Keychain
+    #[arg(long, group = "unlock-password")]
+    password_file: Option<String>,
+
+    /// Print only the issuing certificate chain, not the subject certificate
+    #[arg(long)]
+    no_print_self: bool,
+
+    /// User ID value of code signing certificate to find and whose CA chain to export
+    #[arg(long)]
+    user_id: String,
+}
+
 #[cfg(target_os = "macos")]
 fn command_keychain_export_certificate_chain(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let user_id = args.get_one::<String>("user_id").unwrap();
@@ -2689,6 +2712,9 @@ enum Subcommands {
     /// Generate a self-signed certificate for code signing
     #[command(long_about = GENERATE_SELF_SIGNED_CERTIFICATE_ABOUT)]
     GenerateSelfSignedCertificate(GenerateSelfSignedCertificate),
+
+    /// Export Apple CA certificates from the macOS Keychain
+    KeychainExportCertificateChain(KeychainExportCertificateChain),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2707,45 +2733,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.
-        subcommand(Command::new("keychain-export-certificate-chain")
-            .about("Export Apple CA certificates from the macOS Keychain")
-            .arg(
-                Arg::new("domain")
-                    .long("domain")
-                    .action(ArgAction::Set)
-                    .value_parser(["user", "system", "common", "dynamic"])
-                    .default_value("user")
-                    .help("Keychain domain to operate on")
-            )
-            .arg(
-                Arg::new("password")
-                    .long("password")
-                    .action(ArgAction::Set)
-                    .help("Password to unlock the Keychain")
-            )
-            .arg(
-                Arg::new("password_file")
-                    .long("password-file")
-                    .action(ArgAction::Set)
-                    .conflicts_with("password")
-                    .help("File containing password to use to unlock the Keychain")
-            )
-           .arg(
-                Arg::new("no_print_self")
-                    .long("no-print-self")
-                    .action(ArgAction::SetTrue)
-                    .help("Print only the issuing certificate chain, not the subject certificate")
-           )
-           .arg(
-               Arg::new("user_id")
-                    .long("user-id")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("User ID value of code signing certificate to find and whose CA chain to export")
-           ),
-        );
 
     let app = app.subcommand(
         Command::new("keychain-print-certificates")

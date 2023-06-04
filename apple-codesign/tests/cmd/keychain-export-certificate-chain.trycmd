@@ -2,15 +2,15 @@
 $ rcodesign help keychain-export-certificate-chain
 Export Apple CA certificates from the macOS Keychain
 
-Usage: rcodesign[EXE] keychain-export-certificate-chain [OPTIONS] --user-id <user_id>
+Usage: rcodesign[EXE] keychain-export-certificate-chain [OPTIONS] --user-id <USER_ID>
 
 Options:
-      --domain <domain>                Keychain domain to operate on [default: user] [possible values: user, system, common, dynamic]
+      --domain <DOMAIN>                Keychain domain to operate on [default: user] [possible values: user, system, common, dynamic]
   -v, --verbose...                     Increase logging verbosity. Can be specified multiple times.
-      --password <password>            Password to unlock the Keychain
-      --password-file <password_file>  File containing password to use to unlock the Keychain
+      --password <PASSWORD>            Password to unlock the Keychain
+      --password-file <PASSWORD_FILE>  File containing password to use to unlock the Keychain
       --no-print-self                  Print only the issuing certificate chain, not the subject certificate
-      --user-id <user_id>              User ID value of code signing certificate to find and whose CA chain to export
+      --user-id <USER_ID>              User ID value of code signing certificate to find and whose CA chain to export
   -h, --help                           Print help
 
 ```
