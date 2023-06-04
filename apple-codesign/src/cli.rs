@@ -2475,22 +2475,11 @@ struct SmartcardGenerateKey {
 }
 
 #[cfg(feature = "yubikey")]
-fn command_smartcard_generate_key(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let slot_id = ::yubikey::piv::SlotId::from_str(
-        args.get_one::<String>("smartcard_slot").ok_or_else(|| {
-            error!("--smartcard-slot is required");
-            AppleCodesignError::CliBadArgument
-        })?,
-    )?;
+fn command_smartcard_generate_key(args: &SmartcardGenerateKey) -> Result<(), AppleCodesignError> {
+    let slot_id = ::yubikey::piv::SlotId::from_str(&args.smartcard_slot)?;
 
-    let touch_policy = str_to_touch_policy(
-        args.get_one::<String>("touch_policy")
-            .expect("touch_policy argument is required"),
-    )?;
-    let pin_policy = str_to_pin_policy(
-        args.get_one::<String>("pin_policy")
-            .expect("pin_policy argument is required"),
-    )?;
+    let touch_policy = str_to_touch_policy(args.policy.touch_policy.as_str())?;
+    let pin_policy = str_to_pin_policy(args.policy.pin_policy.as_str())?;
 
     let mut yk = YubiKey::new()?;
     yk.set_pin_callback(prompt_smartcard_pin);
@@ -2501,7 +2490,7 @@ fn command_smartcard_generate_key(args: &ArgMatches) -> Result<(), AppleCodesign
 }
 
 #[cfg(not(feature = "yubikey"))]
-fn command_smartcard_generate_key(_args: &ArgMatches) -> Result<(), AppleCodesignError> {
+fn command_smartcard_generate_key(_args: &SmartcardGenerateKey) -> Result<(), AppleCodesignError> {
     eprintln!("smartcard integration requires the `yubikey` crate feature, which isn't enabled.");
     eprintln!("recompile the crate with `cargo build --features yubikey` to enable support");
     std::process::exit(1);
@@ -2847,7 +2836,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         }
         Subcommands::PrintSignatureInfo(args) => command_print_signature_info(args),
         Subcommands::SmartcardScan => command_smartcard_scan(),
-        Subcommands::SmartcardGenerateKey(_) => command_smartcard_generate_key(args),
+        Subcommands::SmartcardGenerateKey(args) => command_smartcard_generate_key(args),
         Subcommands::SmartcardImport(_) => command_smartcard_import(args),
         Subcommands::RemoteSign(_) => command_remote_sign(args),
         Subcommands::Sign(_) => command_sign(args),
