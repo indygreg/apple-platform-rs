@@ -1040,7 +1040,7 @@ file and adjust accordingly.
 struct EncodeAppStoreConnectApiKey {
     /// Path to a JSON file to create the output to
     #[arg(short = 'o', long)]
-    output_path: PathBuf,
+    output_path: Option<PathBuf>,
 
     /// The issuer of the API Token. Likely a UUID
     issuer_id: String,
@@ -1053,21 +1053,16 @@ struct EncodeAppStoreConnectApiKey {
 }
 
 #[cfg(feature = "notarize")]
-fn command_encode_app_store_connect_api_key(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let issuer_id = args
-        .get_one::<String>("issuer_id")
-        .expect("arg should have been required");
-    let key_id = args
-        .get_one::<String>("key_id")
-        .expect("arg should have been required");
-    let private_key_path = args
-        .get_one::<PathBuf>("private_key_path")
-        .expect("arg should have been required");
+fn command_encode_app_store_connect_api_key(
+    args: &EncodeAppStoreConnectApiKey,
+) -> Result<(), AppleCodesignError> {
+    let unified = app_store_connect::UnifiedApiKey::from_ecdsa_pem_path(
+        &args.issuer_id,
+        &args.key_id,
+        &args.private_key_path,
+    )?;
 
-    let unified =
-        app_store_connect::UnifiedApiKey::from_ecdsa_pem_path(issuer_id, key_id, private_key_path)?;
-
-    if let Some(output_path) = args.get_one::<PathBuf>("output_path") {
+    if let Some(output_path) = &args.output_path {
         eprintln!("writing unified key JSON to {}", output_path.display());
         unified.write_json_file(output_path)?;
         eprintln!(
@@ -2868,7 +2863,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::ComputeCodeHashes(args) => command_compute_code_hashes(args),
         Subcommands::DiffSignatures(args) => command_diff_signatures(args),
         #[cfg(feature = "notarize")]
-        Subcommands::EncodeAppStoreConnectApiKey(_) => {
+        Subcommands::EncodeAppStoreConnectApiKey(args) => {
             command_encode_app_store_connect_api_key(args)
         }
         Subcommands::Extract(_) => command_extract(args),

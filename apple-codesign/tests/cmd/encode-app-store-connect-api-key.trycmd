@@ -32,7 +32,7 @@ want. Security conscious individuals should audit the permissions of the
 file and adjust accordingly.
 
 
-Usage: rcodesign[EXE] encode-app-store-connect-api-key [OPTIONS] --output-path <OUTPUT_PATH> <ISSUER_ID> <KEY_ID> <PRIVATE_KEY_PATH>
+Usage: rcodesign[EXE] encode-app-store-connect-api-key [OPTIONS] <ISSUER_ID> <KEY_ID> <PRIVATE_KEY_PATH>
 
 Arguments:
   <ISSUER_ID>
