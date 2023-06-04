@@ -2222,6 +2222,16 @@ fn command_notary_wait(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[derive(Parser)]
+struct ParseCodeSigningRequirement {
+    /// Output format
+    #[arg(long, value_parser = ["csrl", "expression-tree"], default_value = "csrl")]
+    format: String,
+
+    /// Path to file to parse
+    input_path: String,
+}
+
 fn command_parse_code_signing_requirement(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
         .get_one::<String>("input_path")
@@ -2767,6 +2777,10 @@ enum Subcommands {
 
     /// Wait for completion of a previous submission
     NotaryWait(NotaryWait),
+
+    /// Parse binary Code Signing Requirement data into a human readable string
+    #[command(long_about = PARSE_CODE_SIGNING_REQUIREMENT_ABOUT)]
+    ParseCodeSigningRequirement(ParseCodeSigningRequirement),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2785,27 +2799,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("parse-code-signing-requirement")
-            .about("Parse binary Code Signing Requirement data into a human readable string")
-            .long_about(PARSE_CODE_SIGNING_REQUIREMENT_ABOUT)
-            .arg(
-                Arg::new("format")
-                    .long("format")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .value_parser(["csrl", "expression-tree"])
-                    .default_value("csrl")
-                    .help("Output format"),
-            )
-            .arg(
-                Arg::new("input_path")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("Path to file to parse"),
-            ),
-    );
 
     let app = app.subcommand(
         Command::new("print-signature-info")

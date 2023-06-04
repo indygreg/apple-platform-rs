@@ -19,14 +19,14 @@ quoted. The differences, however, should not matter to the parser or result
 in a different binary serialization.
 
 
-Usage: rcodesign[EXE] parse-code-signing-requirement [OPTIONS] --format <format> <input_path>
+Usage: rcodesign[EXE] parse-code-signing-requirement [OPTIONS] <INPUT_PATH>
 
 Arguments:
-  <input_path>
+  <INPUT_PATH>
           Path to file to parse
 
 Options:
-      --format <format>
+      --format <FORMAT>
           Output format
           
           [default: csrl]
