@@ -2614,15 +2614,11 @@ fn command_staple(args: &Staple) -> Result<(), AppleCodesignError> {
 #[derive(Parser)]
 struct Verify {
     /// Path of Mach-O binary to examine
-    path: String,
+    path: PathBuf,
 }
 
-fn command_verify(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let path = args
-        .get_one::<String>("path")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-
-    let data = std::fs::read(path)?;
+fn command_verify(args: &Verify) -> Result<(), AppleCodesignError> {
+    let data = std::fs::read(&args.path)?;
 
     let problems = crate::verify::verify_macho_data(data);
 
@@ -2837,7 +2833,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::RemoteSign(_) => command_remote_sign(args),
         Subcommands::Sign(_) => command_sign(args),
         Subcommands::Staple(args) => command_staple(args),
-        Subcommands::Verify(_) => command_verify(args),
+        Subcommands::Verify(args) => command_verify(args),
         Subcommands::X509Oids => command_x509_oids(args),
     }
 }
