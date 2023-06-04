@@ -25,7 +25,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
-    clap::{value_parser, Arg, ArgAction, ArgGroup, ArgMatches, Args, Command, Parser, Subcommand},
+    clap::{Arg, ArgAction, ArgGroup, ArgMatches, Args, Command, Parser, Subcommand},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
@@ -736,32 +736,6 @@ struct NotaryApi {
     #[arg(long, requires = "api_issuer")]
     /// App Store Connect API Key ID
     api_key: Option<String>,
-}
-
-/// Add arguments common to commands that interact with the Notary API.
-fn add_notary_api_args(app: Command) -> Command {
-    app.arg(
-        Arg::new("api_key_path")
-            .long("api-key-path")
-            .action(ArgAction::Set)
-            .value_parser(value_parser!(PathBuf))
-            .conflicts_with_all(["api_issuer", "api_key"])
-            .help("Path to a JSON file containing the API Key"),
-    )
-    .arg(
-        Arg::new("api_issuer")
-            .long("api-issuer")
-            .action(ArgAction::Set)
-            .requires("api_key")
-            .help("App Store Connect Issuer ID (likely a UUID)"),
-    )
-    .arg(
-        Arg::new("api_key")
-            .long("api-key")
-            .action(ArgAction::Set)
-            .requires("api_issuer")
-            .help("App Store Connect API Key ID"),
-    )
 }
 
 fn add_yubikey_policy_args(app: Command) -> Command {
@@ -2222,6 +2196,19 @@ fn command_notary_submit(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[derive(Parser)]
+struct NotaryWait {
+    /// Maximum time in seconds to wait for the upload result
+    #[arg(long, default_value = "600")]
+    max_wait_seconds: String,
+
+    /// The ID of the previous submission to wait on
+    submission_id: String,
+
+    #[command(flatten)]
+    api: NotaryApi,
+}
+
 #[cfg(feature = "notarize")]
 fn command_notary_wait(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let wait_duration = notarizer_wait_duration(args)?;
@@ -2777,6 +2764,9 @@ enum Subcommands {
     /// Upload an asset to Apple for notarization and possibly staple it
     #[command(long_about = NOTARIZE_ABOUT, alias = "notarize")]
     NotarySubmit(NotarySubmit),
+
+    /// Wait for completion of a previous submission
+    NotaryWait(NotaryWait),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2795,24 +2785,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(add_notary_api_args(
-        Command::new("notary-wait")
-            .about("Wait for completion of a previous submission")
-            .arg(
-                Arg::new("max_wait_seconds")
-                    .long("max-wait-seconds")
-                    .action(ArgAction::Set)
-                    .default_value("600")
-                    .help("Maximum time in seconds to wait for the upload result"),
-            )
-            .arg(
-                Arg::new("submission_id")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("The ID of the previous submission to wait on"),
-            ),
-    ));
 
     let app = app.subcommand(
         Command::new("parse-code-signing-requirement")
