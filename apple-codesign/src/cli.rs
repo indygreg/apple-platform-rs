@@ -2660,8 +2660,12 @@ enum Subcommands {
     /// Print signature information for a filesystem path
     PrintSignatureInfo(PrintSignatureInfo),
 
-    /// Show information about available smartcard (SC) devices
-    SmartcardScan,
+    /// Create signatures initiated from a remote signing operation
+    RemoteSign(RemoteSign),
+
+    /// Sign a Mach-O binary or bundle
+    #[command(long_about = SIGN_ABOUT)]
+    Sign(Sign),
 
     /// Generate a new private key on a smartcard
     SmartcardGenerateKey(SmartcardGenerateKey),
@@ -2669,12 +2673,8 @@ enum Subcommands {
     /// Import a code signing certificate and key into a smartcard
     SmartcardImport(SmartcardImport),
 
-    /// Create signatures initiated from a remote signing operation
-    RemoteSign(RemoteSign),
-
-    /// Sign a Mach-O binary or bundle
-    #[command(long_about = SIGN_ABOUT)]
-    Sign(Sign),
+    /// Show information about available smartcard (SC) devices
+    SmartcardScan,
 
     /// Staples a notarization ticket to an entity
     Staple(Staple),
@@ -2756,11 +2756,11 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             command_parse_code_signing_requirement(args)
         }
         Subcommands::PrintSignatureInfo(args) => command_print_signature_info(args),
-        Subcommands::SmartcardScan => command_smartcard_scan(),
-        Subcommands::SmartcardGenerateKey(args) => command_smartcard_generate_key(args),
-        Subcommands::SmartcardImport(args) => command_smartcard_import(args),
         Subcommands::RemoteSign(args) => command_remote_sign(args),
         Subcommands::Sign(args) => command_sign(args),
+        Subcommands::SmartcardGenerateKey(args) => command_smartcard_generate_key(args),
+        Subcommands::SmartcardImport(args) => command_smartcard_import(args),
+        Subcommands::SmartcardScan => command_smartcard_scan(),
         Subcommands::Staple(args) => command_staple(args),
         Subcommands::Verify(args) => command_verify(args),
         Subcommands::X509Oids => command_x509_oids(),
