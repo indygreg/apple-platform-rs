@@ -2166,6 +2166,27 @@ fn command_notary_log(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[derive(Parser)]
+struct NotarySubmit {
+    /// Whether to wait for upload processing to complete
+    #[arg(long)]
+    wait: bool,
+
+    /// Maximum time in seconds to wait for the upload result
+    #[arg(long, default_value = "600")]
+    max_wait_seconds: String,
+
+    /// Staple the notarization ticket after successful upload (implies --wait)
+    #[arg(long)]
+    staple: bool,
+
+    /// Path to asset to upload
+    path: String,
+
+    #[command(flatten)]
+    api: NotaryApi,
+}
+
 #[cfg(feature = "notarize")]
 fn command_notary_submit(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = PathBuf::from(
@@ -2752,6 +2773,10 @@ enum Subcommands {
 
     /// Fetch the notarization log for a previous submission
     NotaryLog(NotaryLog),
+
+    /// Upload an asset to Apple for notarization and possibly staple it
+    #[command(long_about = NOTARIZE_ABOUT, alias = "notarize")]
+    NotarySubmit(NotarySubmit),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2770,40 +2795,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(add_notary_api_args(
-        Command::new("notary-submit")
-            .about("Upload an asset to Apple for notarization and possibly staple it")
-            .long_about(NOTARIZE_ABOUT)
-            .alias("notarize")
-            .arg(
-                Arg::new("wait")
-                    .long("wait")
-                    .action(ArgAction::SetTrue)
-                    .help("Whether to wait for upload processing to complete"),
-            )
-            .arg(
-                Arg::new("max_wait_seconds")
-                    .long("max-wait-seconds")
-                    .action(ArgAction::Set)
-                    .default_value("600")
-                    .help("Maximum time in seconds to wait for the upload result"),
-            )
-            .arg(
-                Arg::new("staple")
-                    .long("staple")
-                    .action(ArgAction::SetTrue)
-                    .help(
-                        "Staple the notarization ticket after successful upload (implies --wait)",
-                    ),
-            )
-            .arg(
-                Arg::new("path")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("Path to asset to upload"),
-            ),
-    ));
 
     let app = app.subcommand(add_notary_api_args(
         Command::new("notary-wait")
