@@ -2601,16 +2601,12 @@ fn command_smartcard_import(_args: &ArgMatches) -> Result<(), AppleCodesignError
 #[derive(Parser)]
 struct Staple {
     /// Path to entity to attempt to staple
-    path: String,
+    path: PathBuf,
 }
 
-fn command_staple(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let path = args
-        .get_one::<String>("path")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-
+fn command_staple(args: &Staple) -> Result<(), AppleCodesignError> {
     let stapler = crate::stapling::Stapler::new()?;
-    stapler.staple_path(path)?;
+    stapler.staple_path(&args.path)?;
 
     Ok(())
 }
@@ -2840,7 +2836,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::SmartcardImport(_) => command_smartcard_import(args),
         Subcommands::RemoteSign(_) => command_remote_sign(args),
         Subcommands::Sign(_) => command_sign(args),
-        Subcommands::Staple(_) => command_staple(args),
+        Subcommands::Staple(args) => command_staple(args),
         Subcommands::Verify(_) => command_verify(args),
         Subcommands::X509Oids => command_x509_oids(args),
     }
