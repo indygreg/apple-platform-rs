@@ -25,7 +25,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
-    clap::{ArgAction, Args, Parser},
+    clap::{ArgAction, Args, Parser, Subcommand},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
@@ -2602,7 +2602,7 @@ fn command_x509_oids() -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
-#[derive(Parser)]
+#[derive(Subcommand)]
 enum Subcommands {
     /// Analyze an X.509 certificate for Apple code signing properties.
     ///
