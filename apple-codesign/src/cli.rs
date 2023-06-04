@@ -847,7 +847,8 @@ fn collect_certificates_from_args(
     Ok((keys, certs))
 }
 
-#[derive(Parser)]
+#[cfg(feature = "notarize")]
+#[derive(Args)]
 struct NotaryApi {
     /// Path to a JSON file containing the API Key
     #[arg(long, group = "source")]
@@ -860,6 +861,20 @@ struct NotaryApi {
     #[arg(long, requires = "api_issuer")]
     /// App Store Connect API Key ID
     api_key: Option<String>,
+}
+
+#[cfg(feature = "notarize")]
+impl NotaryApi {
+    /// Resolve a notarizer from arguments.
+    fn notarizer(&self) -> Result<Notarizer, AppleCodesignError> {
+        if let Some(api_key_path) = &self.api_key_path {
+            Notarizer::from_api_key(api_key_path)
+        } else if let (Some(issuer), Some(key)) = (&self.api_issuer, &self.api_key) {
+            Notarizer::from_api_key_id(issuer, key)
+        } else {
+            Err(AppleCodesignError::NotarizeNoAuthCredentials)
+        }
+    }
 }
 
 #[derive(Parser)]
@@ -2177,6 +2192,7 @@ fn notarizer_wait_duration(args: &ArgMatches) -> Result<std::time::Duration, App
     Ok(std::time::Duration::from_secs(max_wait_seconds))
 }
 
+#[cfg(feature = "notarize")]
 #[derive(Parser)]
 struct NotaryLog {
     /// The ID of the previous submission to wait on
@@ -2187,13 +2203,10 @@ struct NotaryLog {
 }
 
 #[cfg(feature = "notarize")]
-fn command_notary_log(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let notarizer = notarizer_from_args(args)?;
-    let submission_id = args
-        .get_one::<String>("submission_id")
-        .expect("submission_id is required");
+fn command_notary_log(args: &NotaryLog) -> Result<(), AppleCodesignError> {
+    let notarizer = args.api.notarizer()?;
 
-    let log = notarizer.fetch_notarization_log(submission_id)?;
+    let log = notarizer.fetch_notarization_log(&args.submission_id)?;
 
     for line in serde_json::to_string_pretty(&log)?.lines() {
         println!("{line}");
@@ -2202,6 +2215,7 @@ fn command_notary_log(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[cfg(feature = "notarize")]
 #[derive(Parser)]
 struct NotarySubmit {
     /// Whether to wait for upload processing to complete
@@ -2258,6 +2272,7 @@ fn command_notary_submit(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[cfg(feature = "notarize")]
 #[derive(Parser)]
 struct NotaryWait {
     /// Maximum time in seconds to wait for the upload result
@@ -3050,7 +3065,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         }
         Subcommands::KeychainPrintCertificates(args) => command_keychain_print_certificates(args),
         #[cfg(feature = "notarize")]
-        Subcommands::NotaryLog(_) => command_notary_log(args),
+        Subcommands::NotaryLog(args) => command_notary_log(args),
         #[cfg(feature = "notarize")]
         Subcommands::NotarySubmit(_) => command_notary_submit(args),
         #[cfg(feature = "notarize")]
