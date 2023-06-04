@@ -2055,24 +2055,18 @@ struct ParseCodeSigningRequirement {
     format: String,
 
     /// Path to file to parse
-    input_path: String,
+    input_path: PathBuf,
 }
 
-fn command_parse_code_signing_requirement(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let path = args
-        .get_one::<String>("input_path")
-        .expect("clap should have validated argument");
-
-    let data = std::fs::read(path)?;
+fn command_parse_code_signing_requirement(
+    args: &ParseCodeSigningRequirement,
+) -> Result<(), AppleCodesignError> {
+    let data = std::fs::read(&args.input_path)?;
 
     let requirements = CodeRequirements::parse_blob(&data)?.0;
 
     for requirement in requirements.iter() {
-        match args
-            .get_one::<String>("format")
-            .expect("clap should have validated argument")
-            .as_str()
-        {
+        match args.format.as_str() {
             "csrl" => {
                 println!("{requirement}");
             }
@@ -2852,7 +2846,9 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::NotarySubmit(_) => command_notary_submit(args),
         #[cfg(feature = "notarize")]
         Subcommands::NotaryWait(_) => command_notary_wait(args),
-        Subcommands::ParseCodeSigningRequirement(_) => command_parse_code_signing_requirement(args),
+        Subcommands::ParseCodeSigningRequirement(args) => {
+            command_parse_code_signing_requirement(args)
+        }
         Subcommands::PrintSignatureInfo(_) => command_print_signature_info(args),
         Subcommands::SmartcardScan => command_smartcard_scan(args),
         Subcommands::SmartcardGenerateKey(_) => command_smartcard_generate_key(args),
