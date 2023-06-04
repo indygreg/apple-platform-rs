@@ -207,109 +207,109 @@ To exclude all nested bundles from being signed and only sign the main bundle
 (the default behavior of ``codesign`` without ``--deep``), use `--exclude '**'`.
 
 
-Usage: rcodesign[EXE] sign [OPTIONS] <input_path> [output_path]
+Usage: rcodesign[EXE] sign [OPTIONS] --team-name <TEAM_NAME> <INPUT_PATH> <OUTPUT_PATH>
 
 Arguments:
-  <input_path>
+  <INPUT_PATH>
           Path to Mach-O binary to sign
 
-  [output_path]
+  <OUTPUT_PATH>
           Path to signed Mach-O binary to write
 
 Options:
-      --binary-identifier <binary_identifier>
+      --binary-identifier <BINARY_IDENTIFIER>
           Identifier string for binary. The value normally used by CFBundleIdentifier
 
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times.
 
-      --code-requirements-path <code_requirements_path>
+      --code-requirements-path <CODE_REQUIREMENTS_PATH>
           Path to a file containing binary code requirements data to be used as designated requirements
 
-      --code-resources-path <code_resources>
+      --code-resources <CODE_RESOURCES>
           Path to an XML plist file containing code resources
 
-      --code-signature-flags <code_signature_flags_set>
+      --code-signature-flags <CODE_SIGNATURE_FLAGS>
           Code signature flags to set
           
           [possible values: host, hard, kill, expires, library, runtime, linker-signed]
 
-      --digest <digest>
+      --digest <DIGEST>
           Digest algorithm to use
           
           [default: sha256]
           [possible values: none, sha1, sha256, sha256-truncated, sha384, sha512]
 
-      --extra-digest <extra_digest>
+      --extra-digest <EXTRA_DIGEST>
           Extra digests to include in signatures
           
           [possible values: none, sha1, sha256, sha256-truncated, sha384, sha512]
 
-  -e, --entitlements-xml-path <entitlements_xml_path>
+  -e, --entitlements-xml-path <ENTITLEMENTS_XML_PATH>
           Path to a plist file containing entitlements
 
-      --runtime-version <runtime_version>
+      --runtime-version <RUNTIME_VERSION>
           Hardened runtime version to use (defaults to SDK version used to build binary)
 
-      --info-plist-path <info_plist_path>
+      --info-plist-path <INFO_PLIST_PATH>
           Path to an Info.plist file whose digest to include in Mach-O signature
 
-      --team-name <team_name>
+      --team-name <TEAM_NAME>
           Team name/identifier to include in code signature
 
-      --timestamp-url <timestamp_url>
+      --timestamp-url <TIMESTAMP_URL>
           URL of timestamp server to use to obtain a token of the CMS signature
           
           [default: http://timestamp.apple.com/ts01]
 
-      --exclude <exclude>
+      --exclude <EXCLUDE>
           Glob expression of paths to exclude from signing
 
-      --smartcard-pin-env <smartcard_pin_env>
+      --smartcard-pin-env <SMARTCARD_PIN_ENV>
           Environment variable holding the smartcard PIN
 
-      --smartcard-slot <smartcard_slot>
+      --smartcard-slot <SMARTCARD_SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
 
-      --keychain-domain <keychain_domain>
+      --keychain-domain <KEYCHAIN_DOMAIN>
           (macOS only) Keychain domain to operate on
           
           [possible values: user, system, common, dynamic]
 
-      --keychain-fingerprint <keychain_fingerprint>
+      --keychain-fingerprint <KEYCHAIN_FINGERPRINT>
           (macOS only) SHA-256 fingerprint of certificate in Keychain to use
 
-      --pem-source <pem_source>
+      --pem-source <PEM_SOURCE>
           Path to file containing PEM encoded certificate/key data
 
-      --der-source <der_source>
+      --der-source <DER_SOURCE>
           Path to file containing DER encoded certificate data
 
-      --p12-file <p12_path>
+      --p12-file <P12_PATH>
           Path to a .p12/PFX file containing a certificate key pair
 
-      --p12-password <p12_password>
+      --p12-password <P12_PASSWORD>
           The password to use to open the --p12-file file
 
-      --p12-password-file <p12_password_file>
+      --p12-password-file <P12_PASSWORD_FILE>
           Path to file containing password for opening --p12-file file
 
       --remote-signer
-          Send signing requests to a remote server
+          Send signing requests to a remote signer
 
-      --remote-public-key <remote_public_key>
+      --remote-public-key <REMOTE_PUBLIC_KEY>
           Base64 encoded public key data describing the signer
 
-      --remote-public-key-pem-file <remote_public_key_pem_file>
+      --remote-public-key-pem-file <REMOTE_PUBLIC_KEY_PEM_FILE>
           PEM encoded public key data describing the signer
 
-      --remote-shared-secret <remote_shared_secret>
+      --remote-shared-secret <REMOTE_SHARED_SECRET>
           Shared secret used for remote signing
 
-      --remote-shared-secret-env <remote_shared_secret_env>
+      --remote-shared-secret-env <REMOTE_SHARED_SECRET_ENV>
           Environment variable holding the shared secret used for remote signing
 
-      --remote-signing-url <remote_signing_url>
+      --remote-signing-url <REMOTE_SIGNING_URL>
           URL of a remote code signing server
           
           [default: wss://ws.codesign.gregoryszorc.com/]

@@ -25,7 +25,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
-    clap::{Arg, ArgAction, ArgGroup, ArgMatches, Args, Command, Parser, Subcommand},
+    clap::{Arg, ArgAction, ArgMatches, Args, Command, Parser, Subcommand},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
@@ -383,18 +383,6 @@ fn parse_scoped_value(s: &str) -> Result<(SettingsScope, &str), AppleCodesignErr
     }
 }
 
-fn remote_initialization_args(own: Option<&str>) -> Vec<&'static str> {
-    [
-        "remote_public_key",
-        "remote_public_key_pem_file",
-        "remote_shared_secret",
-        "remote_shared_secret_env",
-    ]
-    .into_iter()
-    .filter(|x| own != Some(*x))
-    .collect::<Vec<_>>()
-}
-
 #[derive(Args, Clone)]
 struct CertificateSource {
     /// Smartcard slot number of signing certificate to use (9c is common)
@@ -453,108 +441,6 @@ struct CertificateSource {
     /// URL of a remote code signing server
     #[arg(long, default_value = crate::remote_signing::DEFAULT_SERVER_URL)]
     remote_signing_url: String,
-}
-
-fn add_certificate_source_args(app: Command) -> Command {
-    app.arg(
-        Arg::new("smartcard_slot")
-            .long("smartcard-slot")
-            .action(ArgAction::Set)
-            .help("Smartcard slot number of signing certificate to use (9c is common)"),
-    )
-    .arg(
-        Arg::new("keychain_domain")
-            .long("keychain-domain")
-            .action(ArgAction::Append)
-            .value_parser(["user", "system", "common", "dynamic"])
-            .help("(macOS only) Keychain domain to operate on"),
-    )
-    .arg(
-        Arg::new("keychain_fingerprint")
-            .long("keychain-fingerprint")
-            .action(ArgAction::Set)
-            .help("(macOS only) SHA-256 fingerprint of certificate in Keychain to use"),
-    )
-    .arg(
-        Arg::new("pem_source")
-            .long("pem-source")
-            .action(ArgAction::Append)
-            .help("Path to file containing PEM encoded certificate/key data"),
-    )
-    .arg(
-        Arg::new("der_source")
-            .long("der-source")
-            .action(ArgAction::Append)
-            .help("Path to file containing DER encoded certificate data"),
-    )
-    .arg(
-        Arg::new("p12_path")
-            .long("p12-file")
-            .alias("pfx-file")
-            .action(ArgAction::Set)
-            .help("Path to a .p12/PFX file containing a certificate key pair"),
-    )
-    .arg(
-        Arg::new("p12_password")
-            .long("p12-password")
-            .alias("pfx-password")
-            .action(ArgAction::Set)
-            .help("The password to use to open the --p12-file file"),
-    )
-    .arg(
-        Arg::new("p12_password_file")
-            .long("p12-password-file")
-            .alias("pfx-password-file")
-            .conflicts_with("p12_password")
-            .action(ArgAction::Set)
-            .help("Path to file containing password for opening --p12-file file"),
-    )
-    .arg(
-        Arg::new("remote_signer")
-            .long("remote-signer")
-            .action(ArgAction::SetTrue)
-            .requires("remote_initialization")
-            .help("Send signing requests to a remote server"),
-    )
-    .arg(
-        Arg::new("remote_public_key")
-            .long("remote-public-key")
-            .action(ArgAction::Set)
-            .conflicts_with_all(remote_initialization_args(Some("remote_public_key")))
-            .help("Base64 encoded public key data describing the signer"),
-    )
-    .arg(
-        Arg::new("remote_public_key_pem_file")
-            .long("remote-public-key-pem-file")
-            .action(ArgAction::Set)
-            .conflicts_with_all(remote_initialization_args(Some(
-                "remote_public_key_pem_file",
-            )))
-            .help("PEM encoded public key data describing the signer"),
-    )
-    .arg(
-        Arg::new("remote_shared_secret")
-            .long("remote-shared-secret")
-            .conflicts_with_all(remote_initialization_args(Some("remote_shared_secret")))
-            .action(ArgAction::Set)
-            .help("Shared secret used for remote signing"),
-    )
-    .arg(
-        Arg::new("remote_shared_secret_env")
-            .long("remote-shared-secret-env")
-            .conflicts_with_all(remote_initialization_args(Some("remote_shared_secret_env")))
-            .action(ArgAction::Set)
-            .help("Environment variable holding the shared secret used for remote signing"),
-    )
-    .arg(
-        Arg::new("remote_signing_url")
-            .long("remote-signing-url")
-            .action(ArgAction::Set)
-            .default_value(crate::remote_signing::DEFAULT_SERVER_URL)
-            .help("URL of a remote code signing server"),
-    )
-    .group(ArgGroup::new("keychain").args(["keychain_domain", "keychain_fingerprint"]))
-    .group(ArgGroup::new("remote_initialization").args(remote_initialization_args(None)))
 }
 
 fn get_remote_signing_initiator(
@@ -2367,6 +2253,70 @@ fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[derive(Parser)]
+struct Sign {
+    /// Identifier string for binary. The value normally used by CFBundleIdentifier
+    #[arg(long)]
+    binary_identifier: Vec<String>,
+
+    /// Path to a file containing binary code requirements data to be used as designated requirements
+    #[arg(long)]
+    code_requirements_path: Vec<String>,
+
+    /// Path to an XML plist file containing code resources
+    #[arg(long)]
+    code_resources: Vec<String>,
+
+    /// Code signature flags to set
+    #[arg(long, value_parser = CodeSignatureFlags::all_user_configurable())]
+    code_signature_flags: Vec<String>,
+
+    /// Digest algorithm to use
+    #[arg(long, value_parser = SUPPORTED_HASHES, default_value = "sha256")]
+    digest: String,
+
+    /// Extra digests to include in signatures
+    #[arg(long, value_parser = SUPPORTED_HASHES)]
+    extra_digest: Vec<String>,
+
+    /// Path to a plist file containing entitlements
+    #[arg(short = 'e', long)]
+    entitlements_xml_path: Vec<String>,
+
+    /// Hardened runtime version to use (defaults to SDK version used to build binary)
+    #[arg(long)]
+    runtime_version: Vec<String>,
+
+    /// Path to an Info.plist file whose digest to include in Mach-O signature
+    #[arg(long)]
+    info_plist_path: Vec<String>,
+
+    /// Team name/identifier to include in code signature
+    #[arg(long)]
+    team_name: String,
+
+    /// URL of timestamp server to use to obtain a token of the CMS signature
+    #[arg(long, default_value = APPLE_TIMESTAMP_URL)]
+    timestamp_url: Option<String>,
+
+    /// Glob expression of paths to exclude from signing
+    #[arg(long)]
+    exclude: Vec<String>,
+
+    /// Environment variable holding the smartcard PIN
+    #[arg(long, group = "remote-initialization")]
+    smartcard_pin_env: Option<String>,
+
+    /// Path to Mach-O binary to sign
+    input_path: String,
+
+    /// Path to signed Mach-O binary to write
+    output_path: String,
+
+    #[command(flatten)]
+    certificate: CertificateSource,
+}
+
 fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let mut settings = SigningSettings::default();
 
@@ -2845,6 +2795,10 @@ enum Subcommands {
 
     /// Create signatures initiated from a remote signing operation
     RemoteSign(RemoteSign),
+
+    /// Sign a Mach-O binary or bundle
+    #[command(long_about = SIGN_ABOUT)]
+    Sign(Sign),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2863,113 +2817,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app
-        .subcommand(
-            add_certificate_source_args(Command::new("sign")
-                .about("Sign a Mach-O binary or bundle")
-                .long_about(SIGN_ABOUT)
-                .arg(
-                    Arg::new("binary_identifier")
-                        .long("binary-identifier")
-                        .action(ArgAction::Append)
-                        .help("Identifier string for binary. The value normally used by CFBundleIdentifier")
-                )
-                .arg(
-                    Arg::new("code_requirements_path")
-                        .long("code-requirements-path")
-                        .action(ArgAction::Append)
-                        .help("Path to a file containing binary code requirements data to be used as designated requirements")
-                )
-                .arg(
-                    Arg::new("code_resources")
-                        .long("code-resources-path")
-                        .action(ArgAction::Append)
-                        .help("Path to an XML plist file containing code resources"),
-                )
-                .arg(
-                    Arg::new("code_signature_flags_set")
-                        .long("code-signature-flags")
-                        .action(ArgAction::Append)
-                        .value_parser(CodeSignatureFlags::all_user_configurable())
-                        .help("Code signature flags to set")
-                )
-                .arg(
-                    Arg::new("digest")
-                        .long("digest")
-                        .action(ArgAction::Set)
-                        .value_parser(SUPPORTED_HASHES)
-                        .default_value("sha256")
-                        .help("Digest algorithm to use")
-                )
-                .arg(Arg::new("extra_digest")
-                    .long("extra-digest")
-                    .action(ArgAction::Append)
-                    .value_parser(SUPPORTED_HASHES)
-                    .help("Extra digests to include in signatures")
-                )
-                .arg(
-                    Arg::new("entitlements_xml_path")
-                        .long("entitlements-xml-path")
-                        .short('e')
-                        .action(ArgAction::Append)
-                        .help("Path to a plist file containing entitlements"),
-                )
-                .arg(
-                    Arg::new("runtime_version")
-                        .long("runtime-version")
-                        .action(ArgAction::Append)
-                        .help("Hardened runtime version to use (defaults to SDK version used to build binary)"))
-                .arg(
-                    Arg::new("info_plist_path")
-                        .long("info-plist-path")
-                        .action(ArgAction::Append)
-                        .help("Path to an Info.plist file whose digest to include in Mach-O signature")
-                )
-                .arg(
-                    Arg::new(
-                        "team_name")
-                        .long("team-name")
-                        .action(ArgAction::Set)
-                        .help("Team name/identifier to include in code signature"
-                    )
-                )
-                .arg(
-                    Arg::new("timestamp_url")
-                        .long("timestamp-url")
-                        .action(ArgAction::Set)
-                        .default_value(APPLE_TIMESTAMP_URL)
-                        .help(
-                            "URL of timestamp server to use to obtain a token of the CMS signature",
-                        ),
-                )
-                .arg(
-                    Arg::new("exclude")
-                        .long("exclude")
-                        .action(ArgAction::Append)
-                        .help("Glob expression of paths to exclude from signing")
-                )
-                .arg(
-                    Arg::new("smartcard_pin_env")
-                        .long("smartcard-pin-env")
-                        .conflicts_with_all(remote_initialization_args(Some(
-                            "smartcard_pin_env",
-                        )))
-                        .action(ArgAction::Set)
-                        .help("Environment variable holding the smartcard PIN"),
-                )
-                .arg(
-                    Arg::new("input_path")
-                        .action(ArgAction::Set)
-                        .required(true)
-                        .help("Path to Mach-O binary to sign"),
-                )
-                .arg(
-                    Arg::new("output_path")
-                        .action(ArgAction::Set)
-                        .help("Path to signed Mach-O binary to write"),
-                ),
-        ));
 
     let app = app.subcommand(
         Command::new("staple")
