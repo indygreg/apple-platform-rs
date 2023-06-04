@@ -2224,38 +2224,33 @@ struct NotarySubmit {
 
     /// Maximum time in seconds to wait for the upload result
     #[arg(long, default_value = "600")]
-    max_wait_seconds: String,
+    max_wait_seconds: u64,
 
     /// Staple the notarization ticket after successful upload (implies --wait)
     #[arg(long)]
     staple: bool,
 
     /// Path to asset to upload
-    path: String,
+    path: PathBuf,
 
     #[command(flatten)]
     api: NotaryApi,
 }
 
 #[cfg(feature = "notarize")]
-fn command_notary_submit(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let path = PathBuf::from(
-        args.get_one::<String>("path")
-            .expect("clap should have validated arguments"),
-    );
-    let staple = args.get_flag("staple");
-    let wait = args.get_flag("wait") || staple;
+fn command_notary_submit(args: &NotarySubmit) -> Result<(), AppleCodesignError> {
+    let wait = args.wait || args.staple;
 
     let wait_limit = if wait {
-        Some(notarizer_wait_duration(args)?)
+        Some(std::time::Duration::from_secs(args.max_wait_seconds))
     } else {
         None
     };
-    let notarizer = notarizer_from_args(args)?;
+    let notarizer = args.api.notarizer()?;
 
-    let upload = notarizer.notarize_path(&path, wait_limit)?;
+    let upload = notarizer.notarize_path(&args.path, wait_limit)?;
 
-    if staple {
+    if args.staple {
         match upload {
             crate::notarization::NotarizationUpload::UploadId(_) => {
                 panic!(
@@ -2264,7 +2259,7 @@ fn command_notary_submit(args: &ArgMatches) -> Result<(), AppleCodesignError> {
             }
             crate::notarization::NotarizationUpload::NotaryResponse(_) => {
                 let stapler = crate::stapling::Stapler::new()?;
-                stapler.staple_path(&path)?;
+                stapler.staple_path(&args.path)?;
             }
         }
     }
@@ -3067,7 +3062,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         #[cfg(feature = "notarize")]
         Subcommands::NotaryLog(args) => command_notary_log(args),
         #[cfg(feature = "notarize")]
-        Subcommands::NotarySubmit(_) => command_notary_submit(args),
+        Subcommands::NotarySubmit(args) => command_notary_submit(args),
         #[cfg(feature = "notarize")]
         Subcommands::NotaryWait(_) => command_notary_wait(args),
         Subcommands::ParseCodeSigningRequirement(args) => {
