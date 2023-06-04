@@ -49,7 +49,7 @@ Options:
           Path to a JSON file to create the output to
 
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
 
   -h, --help
           Print help (see a summary with '-h')

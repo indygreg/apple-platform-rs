@@ -8,7 +8,7 @@ Arguments:
   <PATH>  Path of Mach-O binary to examine
 
 Options:
-  -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
+  -v, --verbose...  Increase logging verbosity. Can be specified multiple times
   -h, --help        Print help
 
 ```

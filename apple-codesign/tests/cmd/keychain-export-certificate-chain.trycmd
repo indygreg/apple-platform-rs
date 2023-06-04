@@ -6,7 +6,7 @@ Usage: rcodesign[EXE] keychain-export-certificate-chain [OPTIONS] --user-id <USE
 
 Options:
       --domain <DOMAIN>                Keychain domain to operate on [default: user] [possible values: user, system, common, dynamic]
-  -v, --verbose...                     Increase logging verbosity. Can be specified multiple times.
+  -v, --verbose...                     Increase logging verbosity. Can be specified multiple times
       --password <PASSWORD>            Password to unlock the Keychain
       --password-file <PASSWORD_FILE>  File containing password to use to unlock the Keychain
       --no-print-self                  Print only the issuing certificate chain, not the subject certificate

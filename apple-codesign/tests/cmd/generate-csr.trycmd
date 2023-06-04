@@ -8,7 +8,7 @@ Options:
       --csr-pem-path <CSR_PEM_PATH>
           Path to file to write PEM encoded CSR to
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
       --smartcard-slot <SMARTCARD_SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
       --smartcard-pin-env <SMARTCARD_PIN_ENV>

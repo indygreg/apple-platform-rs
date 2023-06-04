@@ -221,7 +221,7 @@ Options:
           Identifier string for binary. The value normally used by CFBundleIdentifier
 
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
 
       --code-requirements-path <CODE_REQUIREMENTS_PATH>
           Path to a file containing binary code requirements data to be used as designated requirements

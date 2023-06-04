@@ -11,7 +11,7 @@ Options:
       --editor
           Open an editor to input the session join string
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
       --sjs-path <SESSION_JOIN_STRING_PATH>
           Path to file containing session join string
       --smartcard-slot <SMARTCARD_SLOT>

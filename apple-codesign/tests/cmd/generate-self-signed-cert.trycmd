@@ -33,7 +33,7 @@ Options:
           [possible values: ecdsa, ed25519]
 
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
 
       --profile <PROFILE>
           [default: apple-development]

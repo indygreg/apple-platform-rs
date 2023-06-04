@@ -73,7 +73,7 @@ Options:
           [possible values: blobs, cms-info, cms-pem, cms-raw, cms, code-directory-raw, code-directory-serialized-raw, code-directory-serialized, code-directory, linkedit-info, linkedit-segment-raw, macho-load-commands, macho-segments, macho-target, requirements-raw, requirements-rust, requirements-serialized-raw, requirements-serialized, requirements, signature-raw, superblob]
 
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
 
       --universal-index <UNIVERSAL_INDEX>
           Index of Mach-O binary to operate on within a universal/fat binary

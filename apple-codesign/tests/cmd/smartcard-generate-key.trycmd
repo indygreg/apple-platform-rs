@@ -8,7 +8,7 @@ Options:
       --smartcard-slot <SMARTCARD_SLOT>
           Smartcard slot number to store key in (9c is common)
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
       --touch-policy <TOUCH_POLICY>
           Smartcard touch policy to protect key access [default: default] [possible values: default, always, never, cached]
       --pin-policy <PIN_POLICY>

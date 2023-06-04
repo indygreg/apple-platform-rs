@@ -56,7 +56,7 @@ Arguments:
 
 Options:
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
 
       --wait
           Whether to wait for upload processing to complete

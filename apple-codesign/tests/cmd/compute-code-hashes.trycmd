@@ -11,7 +11,7 @@ Options:
       --hash <HASH>
           Hashing algorithm to use [default: sha256] [possible values: none, sha1, sha256, sha256-truncated, sha384, sha512]
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
       --page-size <PAGE_SIZE>
           Chunk size to digest over [default: 4096]
       --universal-index <UNIVERSAL_INDEX>

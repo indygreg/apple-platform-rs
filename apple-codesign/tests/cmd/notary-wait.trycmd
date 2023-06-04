@@ -11,7 +11,7 @@ Options:
       --max-wait-seconds <MAX_WAIT_SECONDS>
           Maximum time in seconds to wait for the upload result [default: 600]
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
       --api-key-path <API_KEY_PATH>
           Path to a JSON file containing the API Key
       --api-issuer <API_ISSUER>

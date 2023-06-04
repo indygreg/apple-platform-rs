@@ -9,7 +9,7 @@ Arguments:
   <PATH1>  The second path to compare
 
 Options:
-  -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
+  -v, --verbose...  Increase logging verbosity. Can be specified multiple times
   -h, --help        Print help
 
 ```

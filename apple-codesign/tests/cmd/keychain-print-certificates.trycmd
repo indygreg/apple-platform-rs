@@ -6,7 +6,7 @@ Usage: rcodesign[EXE] keychain-print-certificates [OPTIONS]
 
 Options:
       --domain <DOMAIN>  Keychain domain to operate on [default: user] [possible values: user, system, common, dynamic]
-  -v, --verbose...       Increase logging verbosity. Can be specified multiple times.
+  -v, --verbose...       Increase logging verbosity. Can be specified multiple times
   -h, --help             Print help
 
 ```

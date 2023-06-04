@@ -5,7 +5,7 @@ Show information about available smartcard (SC) devices
 Usage: rcodesign[EXE] smartcard-scan [OPTIONS]
 
 Options:
-  -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
+  -v, --verbose...  Increase logging verbosity. Can be specified multiple times
   -h, --help        Print help
 
 ```

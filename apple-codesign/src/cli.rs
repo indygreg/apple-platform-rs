@@ -25,7 +25,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
-    clap::{Arg, ArgAction, Args, Command, FromArgMatches, Parser, Subcommand},
+    clap::{ArgAction, Args, Parser},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
@@ -2689,27 +2689,23 @@ enum Subcommands {
     X509Oids,
 }
 
+/// Sign and notarize Apple programs. See https://gregoryszorc.com/docs/apple-codesign/main/ for more docs
+#[derive(Parser)]
+#[command(author, version, arg_required_else_help = true)]
+struct Cli {
+    /// Increase logging verbosity. Can be specified multiple times
+    #[arg(short = 'v', long, global = true, action = ArgAction::Count)]
+    verbose: u8,
+
+    #[command(subcommand)]
+    command: Subcommands,
+}
+
 pub fn main_impl() -> Result<(), AppleCodesignError> {
-    let app = Command::new("Cross platform Apple code signing in pure Rust")
-        .version(env!("CARGO_PKG_VERSION"))
-        .author("Gregory Szorc <gregory.szorc@gmail.com>")
-        .about("Sign and notarize Apple programs. See https://gregoryszorc.com/docs/apple-codesign/main/ for more docs.")
-        .arg_required_else_help(true)
-        .arg(
-            Arg::new("verbose")
-                .long("verbose")
-                .short('v')
-                .global(true)
-                .action(ArgAction::Count)
-                .help("Increase logging verbosity. Can be specified multiple times."),
-        );
-
-    let app = Subcommands::augment_subcommands(app);
-
-    let matches = app.get_matches();
+    let cli = Cli::parse();
 
     // TODO make default log level warn once we audit logging sites.
-    let log_level = match matches.get_count("verbose") {
+    let log_level = match cli.verbose {
         0 => LevelFilter::Info,
         1 => LevelFilter::Debug,
         _ => LevelFilter::Trace,
@@ -2734,11 +2730,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
 
     builder.init();
 
-    let subcommands = Subcommands::from_arg_matches(&matches).map_err(|e| {
-        AppleCodesignError::CliGeneralError(format!("error parsing arguments: {}", e))
-    })?;
-
-    match &subcommands {
+    match &cli.command {
         Subcommands::AnalyzeCertificate(args) => command_analyze_certificate(args),
         Subcommands::ComputeCodeHashes(args) => command_compute_code_hashes(args),
         Subcommands::DiffSignatures(args) => command_diff_signatures(args),

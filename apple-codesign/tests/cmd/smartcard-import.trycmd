@@ -8,7 +8,7 @@ Options:
       --existing-key
           Re-use the existing private key in the smartcard slot
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
       --dry-run
           Don't actually perform the import
       --smartcard-slot <SMARTCARD_SLOT>

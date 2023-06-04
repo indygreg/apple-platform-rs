@@ -33,7 +33,7 @@ Options:
           [possible values: csrl, expression-tree]
 
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
 
   -h, --help
           Print help (see a summary with '-h')

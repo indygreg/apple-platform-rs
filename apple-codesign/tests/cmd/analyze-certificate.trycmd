@@ -13,7 +13,7 @@ Options:
           Smartcard slot number of signing certificate to use (9c is common)
 
   -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times.
+          Increase logging verbosity. Can be specified multiple times
 
       --smartcard-pin-env <SMARTCARD_PIN_ENV>
           Environment variable holding the smartcard PIN

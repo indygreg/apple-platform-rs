@@ -9,7 +9,7 @@ Arguments:
 
 Options:
       --api-key-path <API_KEY_PATH>  Path to a JSON file containing the API Key
-  -v, --verbose...                   Increase logging verbosity. Can be specified multiple times.
+  -v, --verbose...                   Increase logging verbosity. Can be specified multiple times
       --api-issuer <API_ISSUER>      App Store Connect Issuer ID (likely a UUID)
       --api-key <API_KEY>            App Store Connect API Key ID
   -h, --help                         Print help
