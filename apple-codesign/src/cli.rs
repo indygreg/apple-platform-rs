@@ -1785,6 +1785,16 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[derive(Parser)]
+struct GenerateCertificateSigningRequest {
+    /// Path to file to write PEM encoded CSR to
+    #[arg(long)]
+    csr_pem_path: String,
+
+    #[command(flatten)]
+    certificate: CertificateSource,
+}
+
 fn command_generate_certificate_signing_request(
     args: &ArgMatches,
 ) -> Result<(), AppleCodesignError> {
@@ -2642,6 +2652,9 @@ enum Subcommands {
     /// Extracts code signature data from a Mach-O binary
     #[command(long_about = EXTRACT_ABOUT)]
     Extract(Extract),
+
+    /// Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
+    GenerateCertificateSigningRequest(GenerateCertificateSigningRequest),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2660,17 +2673,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        add_certificate_source_args(Command::new("generate-certificate-signing-request")
-            .about("Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate")
-            .arg(
-                Arg::new("csr_pem_path")
-                    .long("csr-pem-path")
-                    .action(ArgAction::Set)
-                    .help("Path to file to write PEM encoded CSR to")
-            )
-    ));
 
     let app = app.subcommand(
         Command::new("generate-self-signed-certificate")
