@@ -2,45 +2,45 @@
 $ rcodesign help remote-sign
 Create signatures initiated from a remote signing operation
 
-Usage: rcodesign[EXE] remote-sign [OPTIONS] <--editor|--sjs-path <session_join_string_path>|session_join_string>
+Usage: rcodesign[EXE] remote-sign [OPTIONS] <--editor|--sjs-path <SESSION_JOIN_STRING_PATH>|SESSION_JOIN_STRING>
 
 Arguments:
-  [session_join_string]  Session join string (provided by the signing initiator)
+  <SESSION_JOIN_STRING>  Session join string (provided by the signing initiator)
 
 Options:
       --editor
           Open an editor to input the session join string
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times.
-      --sjs-path <session_join_string_path>
+      --sjs-path <SESSION_JOIN_STRING_PATH>
           Path to file containing session join string
-      --smartcard-slot <smartcard_slot>
+      --smartcard-slot <SMARTCARD_SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
-      --keychain-domain <keychain_domain>
+      --keychain-domain <KEYCHAIN_DOMAIN>
           (macOS only) Keychain domain to operate on [possible values: user, system, common, dynamic]
-      --keychain-fingerprint <keychain_fingerprint>
+      --keychain-fingerprint <KEYCHAIN_FINGERPRINT>
           (macOS only) SHA-256 fingerprint of certificate in Keychain to use
-      --pem-source <pem_source>
+      --pem-source <PEM_SOURCE>
           Path to file containing PEM encoded certificate/key data
-      --der-source <der_source>
+      --der-source <DER_SOURCE>
           Path to file containing DER encoded certificate data
-      --p12-file <p12_path>
+      --p12-file <P12_PATH>
           Path to a .p12/PFX file containing a certificate key pair
-      --p12-password <p12_password>
+      --p12-password <P12_PASSWORD>
           The password to use to open the --p12-file file
-      --p12-password-file <p12_password_file>
+      --p12-password-file <P12_PASSWORD_FILE>
           Path to file containing password for opening --p12-file file
       --remote-signer
-          Send signing requests to a remote server
-      --remote-public-key <remote_public_key>
+          Send signing requests to a remote signer
+      --remote-public-key <REMOTE_PUBLIC_KEY>
           Base64 encoded public key data describing the signer
-      --remote-public-key-pem-file <remote_public_key_pem_file>
+      --remote-public-key-pem-file <REMOTE_PUBLIC_KEY_PEM_FILE>
           PEM encoded public key data describing the signer
-      --remote-shared-secret <remote_shared_secret>
+      --remote-shared-secret <REMOTE_SHARED_SECRET>
           Shared secret used for remote signing
-      --remote-shared-secret-env <remote_shared_secret_env>
+      --remote-shared-secret-env <REMOTE_SHARED_SECRET_ENV>
           Environment variable holding the shared secret used for remote signing
-      --remote-signing-url <remote_signing_url>
+      --remote-signing-url <REMOTE_SIGNING_URL>
           URL of a remote code signing server [default: wss://ws.codesign.gregoryszorc.com/]
   -h, --help
           Print help

@@ -2271,6 +2271,30 @@ fn command_print_signature_info(args: &ArgMatches) -> Result<(), AppleCodesignEr
     Ok(())
 }
 
+#[derive(Args)]
+#[group(required = true, multiple = false)]
+struct SessionJoinString {
+    /// Open an editor to input the session join string
+    #[arg(long = "editor")]
+    session_join_string_editor: bool,
+
+    /// Path to file containing session join string
+    #[arg(long = "sjs-path")]
+    session_join_string_path: Option<String>,
+
+    /// Session join string (provided by the signing initiator)
+    session_join_string: String,
+}
+
+#[derive(Parser)]
+struct RemoteSign {
+    #[command(flatten)]
+    session_join_string: SessionJoinString,
+
+    #[command(flatten)]
+    certificate: CertificateSource,
+}
+
 fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let remote_url = args
         .get_one::<String>("remote_signing_url")
@@ -2818,6 +2842,9 @@ enum Subcommands {
 
     /// Import a code signing certificate and key into a smartcard
     SmartcardImport(SmartcardImport),
+
+    /// Create signatures initiated from a remote signing operation
+    RemoteSign(RemoteSign),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2836,35 +2863,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(add_certificate_source_args(
-        Command::new("remote-sign")
-            .about("Create signatures initiated from a remote signing operation")
-            .arg(
-                Arg::new("session_join_string_editor")
-                    .long("editor")
-                    .action(ArgAction::SetTrue)
-                    .help("Open an editor to input the session join string"),
-            )
-            .arg(
-                Arg::new("session_join_string_path")
-                    .long("sjs-path")
-                    .action(ArgAction::Set)
-                    .help("Path to file containing session join string"),
-            )
-            .arg(
-                Arg::new("session_join_string")
-                    .action(ArgAction::Set)
-                    .help("Session join string (provided by the signing initiator)"),
-            )
-            .group(
-                ArgGroup::new("session_join_string_source")
-                    .arg("session_join_string_editor")
-                    .arg("session_join_string_path")
-                    .arg("session_join_string")
-                    .required(true),
-            ),
-    ));
 
     let app = app
         .subcommand(
