@@ -1845,6 +1845,36 @@ fn command_generate_certificate_signing_request(
     Ok(())
 }
 
+#[derive(Parser)]
+struct GenerateSelfSignedCertificate {
+    /// Which key type to use
+    #[arg(long, value_parser = ["ecdsa", "ed25519"], default_value = "ecdsa")]
+    algorithm: String,
+
+    #[arg(long, value_parser = CertificateProfile::str_names(), default_value = "apple-development")]
+    profile: String,
+
+    /// Team ID (this is a short string attached to your Apple Developer account)
+    #[arg(long, default_value = "unset")]
+    team_id: String,
+
+    /// The name of the person this certificate is for
+    #[arg(long)]
+    person_name: String,
+
+    /// Country Name (C) value for certificate identifier
+    #[arg(long, default_value = "XX")]
+    country_name: String,
+
+    /// How many days the certificate should be valid for
+    #[arg(long, default_value = "365")]
+    validity_days: String,
+
+    /// Base name of files to write PEM encoded certificate to
+    #[arg(long)]
+    pem_filename: Option<String>,
+}
+
 fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let algorithm = match args
         .get_one::<String>("algorithm")
@@ -2655,6 +2685,10 @@ enum Subcommands {
 
     /// Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
     GenerateCertificateSigningRequest(GenerateCertificateSigningRequest),
+
+    /// Generate a self-signed certificate for code signing
+    #[command(long_about = GENERATE_SELF_SIGNED_CERTIFICATE_ABOUT)]
+    GenerateSelfSignedCertificate(GenerateSelfSignedCertificate),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2673,63 +2707,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("generate-self-signed-certificate")
-            .about("Generate a self-signed certificate for code signing")
-            .long_about(GENERATE_SELF_SIGNED_CERTIFICATE_ABOUT)
-            .arg(
-                Arg::new("algorithm")
-                    .long("algorithm")
-                    .action(ArgAction::Set)
-                    .value_parser(["ecdsa", "ed25519"])
-                    .default_value("ecdsa")
-                    .help("Which key type to use"),
-            )
-            .arg(
-                Arg::new("profile")
-                    .long("profile")
-                    .action(ArgAction::Set)
-                    .value_parser(CertificateProfile::str_names())
-                    .default_value("apple-development"),
-            )
-            .arg(
-                Arg::new("team_id")
-                    .long("team-id")
-                    .action(ArgAction::Set)
-                    .default_value("unset")
-                    .help(
-                        "Team ID (this is a short string attached to your Apple Developer account)",
-                    ),
-            )
-            .arg(
-                Arg::new("person_name")
-                    .long("person-name")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("The name of the person this certificate is for"),
-            )
-            .arg(
-                Arg::new("country_name")
-                    .long("country-name")
-                    .action(ArgAction::Set)
-                    .default_value("XX")
-                    .help("Country Name (C) value for certificate identifier"),
-            )
-            .arg(
-                Arg::new("validity_days")
-                    .long("validity-days")
-                    .action(ArgAction::Set)
-                    .default_value("365")
-                    .help("How many days the certificate should be valid for"),
-            )
-            .arg(
-                Arg::new("pem_filename")
-                    .long("pem-filename")
-                    .action(ArgAction::Set)
-                    .help("Base name of files to write PEM encoded certificate to"),
-            ),
-    );
 
     let app = app.
         subcommand(Command::new("keychain-export-certificate-chain")

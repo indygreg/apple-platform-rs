@@ -23,10 +23,10 @@ certificate pair to a pair of files. The destination files will have
 When the certificate is written to a file, it isn't printed to stdout.
 
 
-Usage: rcodesign[EXE] generate-self-signed-certificate [OPTIONS] --person-name <person_name>
+Usage: rcodesign[EXE] generate-self-signed-certificate [OPTIONS] --person-name <PERSON_NAME>
 
 Options:
-      --algorithm <algorithm>
+      --algorithm <ALGORITHM>
           Which key type to use
           
           [default: ecdsa]
@@ -35,29 +35,29 @@ Options:
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times.
 
-      --profile <profile>
+      --profile <PROFILE>
           [default: apple-development]
           [possible values: mac-installer-distribution, apple-distribution, apple-development, developer-id-application, developer-id-installer]
 
-      --team-id <team_id>
+      --team-id <TEAM_ID>
           Team ID (this is a short string attached to your Apple Developer account)
           
           [default: unset]
 
-      --person-name <person_name>
+      --person-name <PERSON_NAME>
           The name of the person this certificate is for
 
-      --country-name <country_name>
+      --country-name <COUNTRY_NAME>
           Country Name (C) value for certificate identifier
           
           [default: XX]
 
-      --validity-days <validity_days>
+      --validity-days <VALIDITY_DAYS>
           How many days the certificate should be valid for
           
           [default: 365]
 
-      --pem-filename <pem_filename>
+      --pem-filename <PEM_FILENAME>
           Base name of files to write PEM encoded certificate to
 
   -h, --help
