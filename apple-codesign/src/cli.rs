@@ -2323,7 +2323,7 @@ struct SessionJoinString {
     session_join_string_path: Option<String>,
 
     /// Session join string (provided by the signing initiator)
-    session_join_string: String,
+    session_join_string: Option<String>,
 }
 
 #[derive(Parser)]
@@ -2335,12 +2335,8 @@ struct RemoteSign {
     certificate: CertificateSource,
 }
 
-fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let remote_url = args
-        .get_one::<String>("remote_signing_url")
-        .expect("remote signing URL should always be present");
-
-    let session_join_string = if args.get_flag("session_join_string_editor") {
+fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
+    let session_join_string = if args.session_join_string.session_join_string_editor {
         let mut value = None;
 
         for _ in 0..3 {
@@ -2356,9 +2352,9 @@ fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         value.ok_or_else(|| {
             AppleCodesignError::CliGeneralError("session join string not entered in editor".into())
         })?
-    } else if let Some(path) = args.get_one::<String>("session_join_string_path") {
+    } else if let Some(path) = &args.session_join_string.session_join_string_path {
         std::fs::read_to_string(path)?
-    } else if let Some(value) = args.get_one::<String>("session_join_string") {
+    } else if let Some(value) = &args.session_join_string.session_join_string {
         value.to_string()
     } else {
         return Err(AppleCodesignError::CliGeneralError(
@@ -2368,14 +2364,14 @@ fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
 
     let mut joiner = create_session_joiner(session_join_string)?;
 
-    if let Some(env) = args.get_one::<String>("remote_shared_secret_env") {
+    if let Some(env) = &args.certificate.remote_shared_secret_env {
         let secret = std::env::var(env).map_err(|_| AppleCodesignError::CliBadArgument)?;
         joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
-    } else if let Some(secret) = args.get_one::<String>("remote_shared_secret") {
+    } else if let Some(secret) = &args.certificate.remote_shared_secret {
         joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
     }
 
-    let (private_keys, mut public_certificates) = collect_certificates_from_args(args, true)?;
+    let (private_keys, mut public_certificates) = args.certificate.resolve_certificates(true)?;
 
     let private = private_keys
         .into_iter()
@@ -2400,7 +2396,7 @@ fn command_remote_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         private.as_key_info_signer(),
         cert,
         certificates,
-        remote_url.to_string(),
+        args.certificate.remote_signing_url.clone(),
     )?;
     client.run()?;
 
@@ -3035,7 +3031,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::SmartcardScan => command_smartcard_scan(),
         Subcommands::SmartcardGenerateKey(args) => command_smartcard_generate_key(args),
         Subcommands::SmartcardImport(args) => command_smartcard_import(args),
-        Subcommands::RemoteSign(_) => command_remote_sign(args),
+        Subcommands::RemoteSign(args) => command_remote_sign(args),
         Subcommands::Sign(_) => command_sign(args),
         Subcommands::Staple(args) => command_staple(args),
         Subcommands::Verify(args) => command_verify(args),

@@ -5,7 +5,7 @@ Create signatures initiated from a remote signing operation
 Usage: rcodesign[EXE] remote-sign [OPTIONS] <--editor|--sjs-path <SESSION_JOIN_STRING_PATH>|SESSION_JOIN_STRING>
 
 Arguments:
-  <SESSION_JOIN_STRING>  Session join string (provided by the signing initiator)
+  [SESSION_JOIN_STRING]  Session join string (provided by the signing initiator)
 
 Options:
       --editor
