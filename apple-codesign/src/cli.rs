@@ -1774,7 +1774,7 @@ struct KeychainExportCertificateChain {
 
     /// File containing password to use to unlock the Keychain
     #[arg(long, group = "unlock-password")]
-    password_file: Option<String>,
+    password_file: Option<PathBuf>,
 
     /// Print only the issuing certificate chain, not the subject certificate
     #[arg(long)]
@@ -1786,17 +1786,13 @@ struct KeychainExportCertificateChain {
 }
 
 #[cfg(target_os = "macos")]
-fn command_keychain_export_certificate_chain(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let user_id = args.get_one::<String>("user_id").unwrap();
-
-    let domain = args
-        .get_one::<String>("domain")
-        .expect("clap should have added default value");
-
-    let domain = KeychainDomain::try_from(domain.as_str())
+fn command_keychain_export_certificate_chain(
+    args: &KeychainExportCertificateChain,
+) -> Result<(), AppleCodesignError> {
+    let domain = KeychainDomain::try_from(args.domain.as_str())
         .expect("clap should have validated domain values");
 
-    let password = if let Some(path) = args.get_one::<String>("password_file") {
+    let password = if let Some(path) = &args.password_file {
         let data = std::fs::read_to_string(path)?;
 
         Some(
@@ -1805,16 +1801,16 @@ fn command_keychain_export_certificate_chain(args: &ArgMatches) -> Result<(), Ap
                 .expect("should get a single line")
                 .to_string(),
         )
-    } else if let Some(password) = args.get_one::<String>("password") {
+    } else if let Some(password) = &args.password {
         Some(password.to_string())
     } else {
         None
     };
 
-    let certs = macos_keychain_find_certificate_chain(domain, password.as_deref(), user_id)?;
+    let certs = macos_keychain_find_certificate_chain(domain, password.as_deref(), &args.user_id)?;
 
     for (i, cert) in certs.iter().enumerate() {
-        if args.get_flag("no_print_self") && i == 0 {
+        if args.no_print_self && i == 0 {
             continue;
         }
 
@@ -1825,7 +1821,9 @@ fn command_keychain_export_certificate_chain(args: &ArgMatches) -> Result<(), Ap
 }
 
 #[cfg(not(target_os = "macos"))]
-fn command_keychain_export_certificate_chain(_args: &ArgMatches) -> Result<(), AppleCodesignError> {
+fn command_keychain_export_certificate_chain(
+    _args: &KeychainExportCertificateChain,
+) -> Result<(), AppleCodesignError> {
     Err(AppleCodesignError::CliGeneralError(
         "macOS Keychain export only supported on macOS".to_string(),
     ))
@@ -2844,7 +2842,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::GenerateSelfSignedCertificate(args) => {
             command_generate_self_signed_certificate(args)
         }
-        Subcommands::KeychainExportCertificateChain(_) => {
+        Subcommands::KeychainExportCertificateChain(args) => {
             command_keychain_export_certificate_chain(args)
         }
         Subcommands::KeychainPrintCertificates(_) => command_keychain_print_certificates(args),
