@@ -2817,6 +2817,9 @@ enum Subcommands {
 
     /// Verifies code signature data
     Verify(Verify),
+
+    /// Print information about X.509 OIDs related to Apple code signing
+    X509Oids,
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2835,11 +2838,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("x509-oids")
-            .about("Print information about X.509 OIDs related to Apple code signing"),
-    );
 
     let matches = app.get_matches();
 
