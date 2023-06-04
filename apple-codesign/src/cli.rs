@@ -1704,52 +1704,32 @@ struct GenerateSelfSignedCertificate {
 
     /// How many days the certificate should be valid for
     #[arg(long, default_value = "365")]
-    validity_days: String,
+    validity_days: i64,
 
     /// Base name of files to write PEM encoded certificate to
     #[arg(long)]
     pem_filename: Option<String>,
 }
 
-fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let algorithm = match args
-        .get_one::<String>("algorithm")
-        .ok_or(AppleCodesignError::CliBadArgument)?
-        .as_str()
-    {
+fn command_generate_self_signed_certificate(
+    args: &GenerateSelfSignedCertificate,
+) -> Result<(), AppleCodesignError> {
+    let algorithm = match args.algorithm.as_str() {
         "ecdsa" => KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1),
         "ed25519" => KeyAlgorithm::Ed25519,
         value => panic!("algorithm values should have been validated by arg parser: {value}"),
     };
 
-    let profile = args
-        .get_one::<String>("profile")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-    let profile = CertificateProfile::from_str(profile)?;
-    let team_id = args
-        .get_one::<String>("team_id")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-    let person_name = args
-        .get_one::<String>("person_name")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-    let country_name = args
-        .get_one::<String>("country_name")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
+    let profile = CertificateProfile::from_str(args.profile.as_str())?;
 
-    let validity_days = args.get_one::<String>("validity_days").unwrap();
-    let validity_days =
-        i64::from_str(validity_days).map_err(|_| AppleCodesignError::CliBadArgument)?;
-
-    let pem_filename = args.get_one::<String>("pem_filename");
-
-    let validity_duration = chrono::Duration::days(validity_days);
+    let validity_duration = chrono::Duration::days(args.validity_days);
 
     let (cert, _, raw) = create_self_signed_code_signing_certificate(
         algorithm,
         profile,
-        team_id,
-        person_name,
-        country_name,
+        &args.team_id,
+        &args.person_name,
+        &args.country_name,
         validity_duration,
     )?;
 
@@ -1758,7 +1738,7 @@ fn command_generate_self_signed_certificate(args: &ArgMatches) -> Result<(), App
 
     let mut wrote_file = false;
 
-    if let Some(pem_filename) = pem_filename {
+    if let Some(pem_filename) = &args.pem_filename {
         let cert_path = PathBuf::from(format!("{pem_filename}.crt"));
         let key_path = PathBuf::from(format!("{pem_filename}.key"));
 
@@ -2861,7 +2841,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::GenerateCertificateSigningRequest(_) => {
             command_generate_certificate_signing_request(args)
         }
-        Subcommands::GenerateSelfSignedCertificate(_) => {
+        Subcommands::GenerateSelfSignedCertificate(args) => {
             command_generate_self_signed_certificate(args)
         }
         Subcommands::KeychainExportCertificateChain(_) => {
