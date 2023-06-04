@@ -1186,6 +1186,23 @@ file and adjust accordingly.
 ";
 
 #[cfg(feature = "notarize")]
+#[derive(Parser)]
+struct EncodeAppStoreConnectApiKey {
+    /// Path to a JSON file to create the output to
+    #[arg(short = 'o', long)]
+    output_path: PathBuf,
+
+    /// The issuer of the API Token. Likely a UUID
+    issuer_id: String,
+
+    /// The Key ID. A short alphanumeric string like DEADBEEF42
+    key_id: String,
+
+    /// Path to a file containing the private key downloaded from Apple
+    private_key_path: PathBuf,
+}
+
+#[cfg(feature = "notarize")]
 fn command_encode_app_store_connect_api_key(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let issuer_id = args
         .get_one::<String>("issuer_id")
@@ -2578,6 +2595,11 @@ enum Subcommands {
 
     /// Print a diff between the signature content of two paths
     DiffSignatures(DiffSignatures),
+
+    /// Encode App Store Connect API Key metadata to a single file
+    #[cfg(feature = "notarize")]
+    #[command(long_about = ENCODE_APP_STORE_CONNECT_API_KEY_ABOUT)]
+    EncodeAppStoreConnectApiKey(EncodeAppStoreConnectApiKey),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2596,40 +2618,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    #[cfg(feature = "notarize")]
-    let app = app.subcommand(
-        Command::new("encode-app-store-connect-api-key")
-            .about("Encode App Store Connect API Key metadata to a single file")
-            .long_about(ENCODE_APP_STORE_CONNECT_API_KEY_ABOUT)
-            .arg(
-                Arg::new("output_path")
-                    .short('o')
-                    .long("output-path")
-                    .action(ArgAction::Set)
-                    .value_parser(value_parser!(PathBuf))
-                    .help("Path to a JSON file to create the output to"),
-            )
-            .arg(
-                Arg::new("issuer_id")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("The issuer of the API Token. Likely a UUID"),
-            )
-            .arg(
-                Arg::new("key_id")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("The Key ID. A short alphanumeric string like DEADBEEF42"),
-            )
-            .arg(
-                Arg::new("private_key_path")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .value_parser(value_parser!(PathBuf))
-                    .help("Path to a file containing the private key downloaded from Apple"),
-            ),
-    );
 
     let app = app.subcommand(
         Command::new("extract")

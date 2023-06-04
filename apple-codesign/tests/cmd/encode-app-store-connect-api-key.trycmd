@@ -32,20 +32,20 @@ want. Security conscious individuals should audit the permissions of the
 file and adjust accordingly.
 
 
-Usage: rcodesign[EXE] encode-app-store-connect-api-key [OPTIONS] <issuer_id> <key_id> <private_key_path>
+Usage: rcodesign[EXE] encode-app-store-connect-api-key [OPTIONS] --output-path <OUTPUT_PATH> <ISSUER_ID> <KEY_ID> <PRIVATE_KEY_PATH>
 
 Arguments:
-  <issuer_id>
+  <ISSUER_ID>
           The issuer of the API Token. Likely a UUID
 
-  <key_id>
+  <KEY_ID>
           The Key ID. A short alphanumeric string like DEADBEEF42
 
-  <private_key_path>
+  <PRIVATE_KEY_PATH>
           Path to a file containing the private key downloaded from Apple
 
 Options:
-  -o, --output-path <output_path>
+  -o, --output-path <OUTPUT_PATH>
           Path to a JSON file to create the output to
 
   -v, --verbose...
