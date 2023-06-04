@@ -11,6 +11,8 @@ Options:
           Increase logging verbosity. Can be specified multiple times.
       --smartcard-slot <SMARTCARD_SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
+      --smartcard-pin-env <SMARTCARD_PIN_ENV>
+          Environment variable holding the smartcard PIN
       --keychain-domain <KEYCHAIN_DOMAIN>
           (macOS only) Keychain domain to operate on [possible values: user, system, common, dynamic]
       --keychain-fingerprint <KEYCHAIN_FINGERPRINT>

@@ -265,11 +265,11 @@ Options:
       --exclude <EXCLUDE>
           Glob expression of paths to exclude from signing
 
-      --smartcard-pin-env <SMARTCARD_PIN_ENV>
-          Environment variable holding the smartcard PIN
-
       --smartcard-slot <SMARTCARD_SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
+
+      --smartcard-pin-env <SMARTCARD_PIN_ENV>
+          Environment variable holding the smartcard PIN
 
       --keychain-domain <KEYCHAIN_DOMAIN>
           (macOS only) Keychain domain to operate on

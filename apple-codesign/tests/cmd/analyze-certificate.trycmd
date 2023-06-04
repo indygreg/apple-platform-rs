@@ -15,6 +15,9 @@ Options:
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times.
 
+      --smartcard-pin-env <SMARTCARD_PIN_ENV>
+          Environment variable holding the smartcard PIN
+
       --keychain-domain <KEYCHAIN_DOMAIN>
           (macOS only) Keychain domain to operate on
           
