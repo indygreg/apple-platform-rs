@@ -1261,7 +1261,7 @@ const EXTRACT_DATA: [&str; 21] = [
 #[derive(Parser)]
 struct Extract {
     /// Path to Mach-O binary to examine
-    path: String,
+    path: PathBuf,
 
     /// Which data to extract and how to format it
     #[arg(long, value_parser = EXTRACT_DATA, default_value = "linkedit-info")]
@@ -1269,24 +1269,15 @@ struct Extract {
 
     /// Index of Mach-O binary to operate on within a universal/fat binary
     #[arg(long, default_value = "0")]
-    universal_index: String,
+    universal_index: usize,
 }
 
-fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let path = args
-        .get_one::<String>("path")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-    let format = args
-        .get_one::<String>("data")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-    let index = args.get_one::<String>("universal_index").unwrap();
-    let index = usize::from_str(index).map_err(|_| AppleCodesignError::CliBadArgument)?;
-
-    let data = std::fs::read(path)?;
+fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
+    let data = std::fs::read(&args.path)?;
     let mach = MachFile::parse(&data)?;
-    let macho = mach.nth_macho(index)?;
+    let macho = mach.nth_macho(args.universal_index)?;
 
-    match format.as_str() {
+    match args.data.as_str() {
         "blobs" => {
             let embedded = macho
                 .code_signature()?
@@ -1624,7 +1615,7 @@ fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
                 );
             }
         }
-        _ => panic!("unhandled format: {format}"),
+        x => panic!("unhandled format: {x}"),
     }
 
     Ok(())
@@ -2866,7 +2857,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::EncodeAppStoreConnectApiKey(args) => {
             command_encode_app_store_connect_api_key(args)
         }
-        Subcommands::Extract(_) => command_extract(args),
+        Subcommands::Extract(args) => command_extract(args),
         Subcommands::GenerateCertificateSigningRequest(_) => {
             command_generate_certificate_signing_request(args)
         }
