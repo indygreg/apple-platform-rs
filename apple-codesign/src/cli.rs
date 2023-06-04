@@ -711,7 +711,7 @@ impl NotaryApi {
     }
 }
 
-#[derive(Parser)]
+#[derive(Args)]
 struct YubikeyPolicy {
     /// Smartcard touch policy to protect key access
     #[arg(long, value_parser = ["default", "always", "never", "cached"], default_value = "default")]
