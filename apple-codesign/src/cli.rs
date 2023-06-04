@@ -25,7 +25,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
-    clap::{Arg, ArgAction, ArgMatches, Args, Command, Parser, Subcommand},
+    clap::{Arg, ArgAction, ArgMatches, Args, Command, FromArgMatches, Parser, Subcommand},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
@@ -1917,6 +1917,7 @@ fn command_keychain_print_certificates(_args: &ArgMatches) -> Result<(), AppleCo
     ))
 }
 
+#[cfg(feature = "notarize")]
 const NOTARIZE_ABOUT: &str = "\
 Submit a notarization request to Apple.
 
@@ -2779,14 +2780,17 @@ enum Subcommands {
     /// Print information about certificates in the macOS keychain
     KeychainPrintCertificates(KeychainPrintCertificates),
 
+    #[cfg(feature = "notarize")]
     /// Fetch the notarization log for a previous submission
     NotaryLog(NotaryLog),
 
     /// Upload an asset to Apple for notarization and possibly staple it
+    #[cfg(feature = "notarize")]
     #[command(long_about = NOTARIZE_ABOUT, alias = "notarize")]
     NotarySubmit(NotarySubmit),
 
     /// Wait for completion of a previous submission
+    #[cfg(feature = "notarize")]
     NotaryWait(NotaryWait),
 
     /// Parse binary Code Signing Requirement data into a human readable string
@@ -2867,43 +2871,49 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
 
     builder.init();
 
-    match matches.subcommand() {
-        Some(("analyze-certificate", args)) => command_analyze_certificate(args),
-        Some(("compute-code-hashes", args)) => command_compute_code_hashes(args),
-        Some(("diff-signatures", args)) => command_diff_signatures(args),
+    let subcommands = Subcommands::from_arg_matches(&matches).map_err(|e| {
+        AppleCodesignError::CliGeneralError(format!("error parsing arguments: {}", e))
+    })?;
+
+    let args = matches
+        .subcommand()
+        .ok_or(AppleCodesignError::CliUnknownCommand)?
+        .1;
+
+    match subcommands {
+        Subcommands::AnalyzeCertificate(_) => command_analyze_certificate(args),
+        Subcommands::ComputeCodeHashes(_) => command_compute_code_hashes(args),
+        Subcommands::DiffSignatures(_) => command_diff_signatures(args),
         #[cfg(feature = "notarize")]
-        Some(("encode-app-store-connect-api-key", args)) => {
+        Subcommands::EncodeAppStoreConnectApiKey(_) => {
             command_encode_app_store_connect_api_key(args)
         }
-        Some(("extract", args)) => command_extract(args),
-        Some(("generate-certificate-signing-request", args)) => {
+        Subcommands::Extract(_) => command_extract(args),
+        Subcommands::GenerateCertificateSigningRequest(_) => {
             command_generate_certificate_signing_request(args)
         }
-        Some(("generate-self-signed-certificate", args)) => {
+        Subcommands::GenerateSelfSignedCertificate(_) => {
             command_generate_self_signed_certificate(args)
         }
-        Some(("keychain-export-certificate-chain", args)) => {
+        Subcommands::KeychainExportCertificateChain(_) => {
             command_keychain_export_certificate_chain(args)
         }
-        Some(("keychain-print-certificates", args)) => command_keychain_print_certificates(args),
+        Subcommands::KeychainPrintCertificates(_) => command_keychain_print_certificates(args),
         #[cfg(feature = "notarize")]
-        Some(("notary-log", args)) => command_notary_log(args),
+        Subcommands::NotaryLog(_) => command_notary_log(args),
         #[cfg(feature = "notarize")]
-        Some(("notary-submit", args)) => command_notary_submit(args),
+        Subcommands::NotarySubmit(_) => command_notary_submit(args),
         #[cfg(feature = "notarize")]
-        Some(("notary-wait", args)) => command_notary_wait(args),
-        Some(("parse-code-signing-requirement", args)) => {
-            command_parse_code_signing_requirement(args)
-        }
-        Some(("print-signature-info", args)) => command_print_signature_info(args),
-        Some(("remote-sign", args)) => command_remote_sign(args),
-        Some(("sign", args)) => command_sign(args),
-        Some(("smartcard-generate-key", args)) => command_smartcard_generate_key(args),
-        Some(("smartcard-import", args)) => command_smartcard_import(args),
-        Some(("smartcard-scan", args)) => command_smartcard_scan(args),
-        Some(("staple", args)) => command_staple(args),
-        Some(("verify", args)) => command_verify(args),
-        Some(("x509-oids", args)) => command_x509_oids(args),
-        _ => Err(AppleCodesignError::CliUnknownCommand),
+        Subcommands::NotaryWait(_) => command_notary_wait(args),
+        Subcommands::ParseCodeSigningRequirement(_) => command_parse_code_signing_requirement(args),
+        Subcommands::PrintSignatureInfo(_) => command_print_signature_info(args),
+        Subcommands::SmartcardScan => command_smartcard_scan(args),
+        Subcommands::SmartcardGenerateKey(_) => command_smartcard_generate_key(args),
+        Subcommands::SmartcardImport(_) => command_smartcard_import(args),
+        Subcommands::RemoteSign(_) => command_remote_sign(args),
+        Subcommands::Sign(_) => command_sign(args),
+        Subcommands::Staple(_) => command_staple(args),
+        Subcommands::Verify(_) => command_verify(args),
+        Subcommands::X509Oids => command_x509_oids(args),
     }
 }
