@@ -25,7 +25,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
-    clap::{Arg, ArgAction, ArgMatches, Args, Command, FromArgMatches, Parser, Subcommand},
+    clap::{Arg, ArgAction, Args, Command, FromArgMatches, Parser, Subcommand},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
@@ -681,172 +681,6 @@ impl CertificateSource {
     }
 }
 
-fn get_remote_signing_initiator(
-    args: &ArgMatches,
-) -> Result<Box<dyn SessionInitiatePeer>, RemoteSignError> {
-    let server_url = args
-        .get_one::<String>("remote_signing_url")
-        .map(|x| x.to_string());
-
-    if let Some(public_key_data) = args.get_one::<String>("remote_public_key") {
-        let public_key_data = STANDARD_ENGINE.decode(public_key_data)?;
-
-        Ok(Box::new(PublicKeyInitiator::new(
-            public_key_data,
-            server_url,
-        )?))
-    } else if let Some(path) = args.get_one::<String>("remote_public_key_pem_file") {
-        let pem_data = std::fs::read(path)?;
-        let doc = pem::parse(pem_data)?;
-
-        let spki_der = match doc.tag() {
-            "PUBLIC KEY" => doc.contents().to_vec(),
-            "CERTIFICATE" => {
-                let cert = CapturedX509Certificate::from_der(doc.contents())?;
-                cert.to_public_key_der()?.as_ref().to_vec()
-            }
-            tag => {
-                error!(
-                    "unknown PEM format: {}; only `PUBLIC KEY` and `CERTIFICATE` are parsed",
-                    tag
-                );
-                return Err(RemoteSignError::Crypto("invalid public key data".into()));
-            }
-        };
-
-        Ok(Box::new(PublicKeyInitiator::new(spki_der, server_url)?))
-    } else if let Some(env) = args.get_one::<String>("remote_shared_secret_env") {
-        let secret = std::env::var(env).map_err(|_| {
-            RemoteSignError::ClientState("failed reading from shared secret environment variable")
-        })?;
-
-        Ok(Box::new(SharedSecretInitiator::new(
-            secret.as_bytes().to_vec(),
-        )?))
-    } else if let Some(value) = args.get_one::<String>("remote_shared_secret") {
-        Ok(Box::new(SharedSecretInitiator::new(
-            value.as_bytes().to_vec(),
-        )?))
-    } else {
-        error!("no arguments provided to establish session with remote signer");
-        error!(
-            "specify --remote-public-key, --remote-shared-secret-env, or --remote-shared-secret"
-        );
-        Err(RemoteSignError::ClientState(
-            "unable to initiate remote signing",
-        ))
-    }
-}
-
-#[allow(clippy::type_complexity)]
-fn collect_certificates_from_args(
-    args: &ArgMatches,
-    scan_smartcard: bool,
-) -> Result<(Vec<Box<dyn PrivateKey>>, Vec<CapturedX509Certificate>), AppleCodesignError> {
-    let mut keys: Vec<Box<dyn PrivateKey>> = vec![];
-    let mut certs = vec![];
-
-    if let Some(p12_path) = args.get_one::<String>("p12_path") {
-        let p12_data = std::fs::read(p12_path)?;
-
-        let p12_password = if let Some(password) = args.get_one::<String>("p12_password") {
-            password.to_string()
-        } else if let Some(path) = args.get_one::<String>("p12_password_file") {
-            std::fs::read_to_string(path)?
-                .lines()
-                .next()
-                .expect("should get a single line")
-                .to_string()
-        } else {
-            dialoguer::Password::new()
-                .with_prompt("Please enter password for p12 file")
-                .interact()?
-        };
-
-        let (cert, key) = parse_pfx_data(&p12_data, &p12_password)?;
-
-        keys.push(Box::new(key));
-        certs.push(cert);
-    }
-
-    if let Some(values) = args.get_many::<String>("pem_source") {
-        for pem_source in values {
-            warn!("reading PEM data from {}", pem_source);
-            let pem_data = std::fs::read(pem_source)?;
-
-            for pem in pem::parse_many(pem_data).map_err(AppleCodesignError::CertificatePem)? {
-                match pem.tag() {
-                    "CERTIFICATE" => {
-                        certs.push(CapturedX509Certificate::from_der(pem.contents())?);
-                    }
-                    "PRIVATE KEY" => {
-                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs8_der(
-                            pem.contents(),
-                        )?));
-                    }
-                    "RSA PRIVATE KEY" => {
-                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs1_der(
-                            pem.contents(),
-                        )?));
-                    }
-                    tag => warn!("(unhandled PEM tag {}; ignoring)", tag),
-                }
-            }
-        }
-    }
-
-    if let Some(values) = args.get_many::<String>("der_source") {
-        for der_source in values {
-            warn!("reading DER file {}", der_source);
-            let der_data = std::fs::read(der_source)?;
-
-            certs.push(CapturedX509Certificate::from_der(der_data)?);
-        }
-    }
-
-    find_certificates_in_keychain(args, &mut keys, &mut certs)?;
-
-    if scan_smartcard {
-        if let Some(slot) = args.get_one::<String>("smartcard_slot") {
-            let pin_env_var = args.get_one::<String>("smartcard_pin_env");
-            handle_smartcard_sign_slot(slot, pin_env_var.map(|x| &**x), &mut keys, &mut certs)?;
-        }
-    }
-
-    let remote_signing_url = if args.get_flag("remote_signer") {
-        args.get_one::<String>("remote_signing_url")
-    } else {
-        None
-    };
-
-    if let Some(remote_signing_url) = remote_signing_url {
-        let initiator = get_remote_signing_initiator(args)?;
-
-        let client = UnjoinedSigningClient::new_initiator(
-            remote_signing_url,
-            initiator,
-            Some(print_session_join),
-        )?;
-
-        // As part of the handshake we obtained the public certificates from the signer.
-        // So make them the canonical set.
-        if !certs.is_empty() {
-            warn!(
-                "ignoring {} local certificates and using remote signer's certificate(s)",
-                certs.len()
-            );
-        }
-
-        certs = vec![client.signing_certificate().clone()];
-        certs.extend(client.certificate_chain().iter().cloned());
-
-        // The client implements Sign, so we just use it as the private key.
-        keys = vec![Box::new(client)];
-    }
-
-    Ok((keys, certs))
-}
-
 #[cfg(feature = "notarize")]
 #[derive(Args)]
 struct NotaryApi {
@@ -1084,74 +918,6 @@ fn handle_smartcard_sign_slot(
     _public_certificates: &mut [CapturedX509Certificate],
 ) -> Result<(), AppleCodesignError> {
     error!("smartcard support not available; ignoring --smartcard-slot");
-
-    Ok(())
-}
-
-#[cfg(target_os = "macos")]
-fn find_certificates_in_keychain(
-    args: &ArgMatches,
-    private_keys: &mut Vec<Box<dyn PrivateKey>>,
-    public_certificates: &mut Vec<CapturedX509Certificate>,
-) -> Result<(), AppleCodesignError> {
-    // No arguments pertinent to keychains. Don't even speak to the
-    // keychain API since this could only error.
-    if !args.contains_id("keychain") {
-        return Ok(());
-    }
-
-    // Collect all the keychain domains to search.
-    let domains = if let Some(domains) = args.get_many::<String>("keychain_domain") {
-        domains
-            .into_iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<_>>()
-    } else {
-        vec!["user".to_string()]
-    };
-
-    let domains = domains
-        .into_iter()
-        .map(|domain| {
-            KeychainDomain::try_from(domain.as_str())
-                .expect("clap should have validated domain values")
-        })
-        .collect::<Vec<_>>();
-
-    // Now iterate all the keychains and try to find requested certificates.
-
-    for domain in domains {
-        for cert in keychain_find_code_signing_certificates(domain, None)? {
-            let matches =
-                if let Some(wanted_fingerprint) = args.get_one::<String>("keychain_fingerprint") {
-                    let got_fingerprint = hex::encode(cert.sha256_fingerprint()?.as_ref());
-
-                    wanted_fingerprint.to_ascii_lowercase() == got_fingerprint.to_ascii_lowercase()
-                } else {
-                    false
-                };
-
-            if matches {
-                public_certificates.push(cert.as_captured_x509_certificate());
-                private_keys.push(Box::new(cert));
-            }
-        }
-    }
-
-    Ok(())
-}
-
-#[cfg(not(target_os = "macos"))]
-fn find_certificates_in_keychain(
-    args: &ArgMatches,
-    _private_keys: &mut [Box<dyn PrivateKey>],
-    _public_certificates: &mut [CapturedX509Certificate],
-) -> Result<(), AppleCodesignError> {
-    if args.contains_id("keychain") {
-        error!(
-            "--keychain* arguments only supported on macOS and will be ignored on this platform"
-        );
-    }
 
     Ok(())
 }
@@ -2422,8 +2188,8 @@ struct Sign {
     code_signature_flags: Vec<String>,
 
     /// Digest algorithm to use
-    #[arg(long, value_parser = SUPPORTED_HASHES, default_value = "sha256")]
-    digest: String,
+    #[arg(long, value_parser = SUPPORTED_HASHES)]
+    digest: Option<String>,
 
     /// Extra digests to include in signatures
     #[arg(long, value_parser = SUPPORTED_HASHES)]
@@ -2443,30 +2209,30 @@ struct Sign {
 
     /// Team name/identifier to include in code signature
     #[arg(long)]
-    team_name: String,
+    team_name: Option<String>,
 
     /// URL of timestamp server to use to obtain a token of the CMS signature
     #[arg(long, default_value = APPLE_TIMESTAMP_URL)]
-    timestamp_url: Option<String>,
+    timestamp_url: String,
 
     /// Glob expression of paths to exclude from signing
     #[arg(long)]
     exclude: Vec<String>,
 
     /// Path to Mach-O binary to sign
-    input_path: String,
+    input_path: PathBuf,
 
     /// Path to signed Mach-O binary to write
-    output_path: String,
+    output_path: Option<PathBuf>,
 
     #[command(flatten)]
     certificate: CertificateSource,
 }
 
-fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
+fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
     let mut settings = SigningSettings::default();
 
-    let (private_keys, mut public_certificates) = collect_certificates_from_args(args, true)?;
+    let (private_keys, mut public_certificates) = args.certificate.resolve_certificates(true)?;
 
     if private_keys.len() > 1 {
         error!("at most 1 PRIVATE KEY can be present; aborting");
@@ -2499,11 +2265,9 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
             }
         }
 
-        if let Some(timestamp_url) = args.get_one::<String>("timestamp_url") {
-            if timestamp_url != "none" {
-                warn!("using time-stamp protocol server {}", timestamp_url);
-                settings.set_time_stamp_url(timestamp_url)?;
-            }
+        if args.timestamp_url != "none" {
+            warn!("using time-stamp protocol server {}", args.timestamp_url);
+            settings.set_time_stamp_url(&args.timestamp_url)?;
         }
     }
 
@@ -2519,116 +2283,96 @@ fn command_sign(args: &ArgMatches) -> Result<(), AppleCodesignError> {
         settings.chain_certificate(cert);
     }
 
-    if let Some(team_name) = args.get_one::<String>("team_name") {
+    if let Some(team_name) = &args.team_name {
         settings.set_team_id(team_name);
     }
 
-    if let Some(value) = args.get_one::<String>("digest") {
+    if let Some(value) = &args.digest {
         let digest_type = DigestType::try_from(value.as_str())?;
         settings.set_digest_type(digest_type);
     }
 
-    if let Some(values) = args.get_many::<String>("extra_digest") {
-        for value in values {
-            let (scope, digest_type) = parse_scoped_value(value)?;
-            let digest_type = DigestType::try_from(digest_type)?;
-            settings.add_extra_digest(scope, digest_type);
-        }
+    for value in &args.extra_digest {
+        let (scope, digest_type) = parse_scoped_value(value)?;
+        let digest_type = DigestType::try_from(digest_type)?;
+        settings.add_extra_digest(scope, digest_type);
     }
 
-    if let Some(values) = args.get_many::<String>("exclude") {
-        for pattern in values {
-            settings.add_path_exclusion(pattern)?;
-        }
+    for pattern in &args.exclude {
+        settings.add_path_exclusion(pattern)?;
     }
 
-    if let Some(values) = args.get_many::<String>("binary_identifier") {
-        for value in values {
-            let (scope, identifier) = parse_scoped_value(value)?;
-            settings.set_binary_identifier(scope, identifier);
-        }
+    for value in &args.binary_identifier {
+        let (scope, identifier) = parse_scoped_value(value)?;
+        settings.set_binary_identifier(scope, identifier);
     }
 
-    if let Some(values) = args.get_many::<String>("code_requirements_path") {
-        for value in values {
-            let (scope, path) = parse_scoped_value(value)?;
+    for value in &args.code_requirements_path {
+        let (scope, path) = parse_scoped_value(value)?;
 
-            let code_requirements_data = std::fs::read(path)?;
-            let reqs = CodeRequirements::parse_blob(&code_requirements_data)?.0;
-            for expr in reqs.iter() {
-                warn!(
-                    "setting designated code requirements for {}: {}",
-                    scope, expr
-                );
-                settings.set_designated_requirement_expression(scope.clone(), expr)?;
-            }
-        }
-    }
-
-    if let Some(values) = args.get_many::<String>("code_resources") {
-        for value in values {
-            let (scope, path) = parse_scoped_value(value)?;
-
+        let code_requirements_data = std::fs::read(path)?;
+        let reqs = CodeRequirements::parse_blob(&code_requirements_data)?.0;
+        for expr in reqs.iter() {
             warn!(
-                "setting code resources data for {} from path {}",
-                scope, path
+                "setting designated code requirements for {}: {}",
+                scope, expr
             );
-            let code_resources_data = std::fs::read(path)?;
-            settings.set_code_resources_data(scope, code_resources_data);
+            settings.set_designated_requirement_expression(scope.clone(), expr)?;
         }
     }
 
-    if let Some(values) = args.get_many::<String>("code_signature_flags_set") {
-        for value in values {
-            let (scope, value) = parse_scoped_value(value)?;
+    for value in &args.code_resources {
+        let (scope, path) = parse_scoped_value(value)?;
 
-            let flags = CodeSignatureFlags::from_str(value)?;
-            settings.set_code_signature_flags(scope, flags);
-        }
+        warn!(
+            "setting code resources data for {} from path {}",
+            scope, path
+        );
+        let code_resources_data = std::fs::read(path)?;
+        settings.set_code_resources_data(scope, code_resources_data);
     }
 
-    if let Some(values) = args.get_many::<String>("entitlements_xml_path") {
-        for value in values {
-            let (scope, path) = parse_scoped_value(value)?;
+    for value in &args.code_signature_flags {
+        let (scope, value) = parse_scoped_value(value)?;
 
-            warn!("setting entitlments XML for {} from path {}", scope, path);
-            let entitlements_data = std::fs::read_to_string(path)?;
-            settings.set_entitlements_xml(scope, entitlements_data)?;
-        }
+        let flags = CodeSignatureFlags::from_str(value)?;
+        settings.set_code_signature_flags(scope, flags);
     }
 
-    if let Some(values) = args.get_many::<String>("runtime_version") {
-        for value in values {
-            let (scope, value) = parse_scoped_value(value)?;
+    for value in &args.entitlements_xml_path {
+        let (scope, path) = parse_scoped_value(value)?;
 
-            let version = semver::Version::parse(value)?;
-            settings.set_runtime_version(scope, version);
-        }
+        warn!("setting entitlments XML for {} from path {}", scope, path);
+        let entitlements_data = std::fs::read_to_string(path)?;
+        settings.set_entitlements_xml(scope, entitlements_data)?;
     }
 
-    if let Some(values) = args.get_many::<String>("info_plist_path") {
-        for value in values {
-            let (scope, value) = parse_scoped_value(value)?;
+    for value in &args.runtime_version {
+        let (scope, value) = parse_scoped_value(value)?;
 
-            let content = std::fs::read(value)?;
-            settings.set_info_plist_data(scope, content);
-        }
+        let version = semver::Version::parse(value)?;
+        settings.set_runtime_version(scope, version);
     }
 
-    let input_path = PathBuf::from(
-        args.get_one::<String>("input_path")
-            .expect("input_path presence should have been validated by clap"),
-    );
-    let output_path = args.get_one::<String>("output_path");
+    for value in &args.info_plist_path {
+        let (scope, value) = parse_scoped_value(value)?;
+
+        let content = std::fs::read(value)?;
+        settings.set_info_plist_data(scope, content);
+    }
 
     let signer = UnifiedSigner::new(settings);
 
-    if let Some(output_path) = output_path {
-        warn!("signing {} to {}", input_path.display(), output_path);
-        signer.sign_path(input_path, output_path)?;
+    if let Some(output_path) = &args.output_path {
+        warn!(
+            "signing {} to {}",
+            args.input_path.display(),
+            output_path.display()
+        );
+        signer.sign_path(&args.input_path, output_path)?;
     } else {
-        warn!("signing {} in place", input_path.display());
-        signer.sign_path_in_place(input_path)?;
+        warn!("signing {} in place", args.input_path.display());
+        signer.sign_path_in_place(&args.input_path)?;
     }
 
     if let Some(private) = &private {
@@ -2994,11 +2738,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         AppleCodesignError::CliGeneralError(format!("error parsing arguments: {}", e))
     })?;
 
-    let args = matches
-        .subcommand()
-        .ok_or(AppleCodesignError::CliUnknownCommand)?
-        .1;
-
     match &subcommands {
         Subcommands::AnalyzeCertificate(args) => command_analyze_certificate(args),
         Subcommands::ComputeCodeHashes(args) => command_compute_code_hashes(args),
@@ -3032,7 +2771,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::SmartcardGenerateKey(args) => command_smartcard_generate_key(args),
         Subcommands::SmartcardImport(args) => command_smartcard_import(args),
         Subcommands::RemoteSign(args) => command_remote_sign(args),
-        Subcommands::Sign(_) => command_sign(args),
+        Subcommands::Sign(args) => command_sign(args),
         Subcommands::Staple(args) => command_staple(args),
         Subcommands::Verify(args) => command_verify(args),
         Subcommands::X509Oids => command_x509_oids(),

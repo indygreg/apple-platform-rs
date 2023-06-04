@@ -207,13 +207,13 @@ To exclude all nested bundles from being signed and only sign the main bundle
 (the default behavior of ``codesign`` without ``--deep``), use `--exclude '**'`.
 
 
-Usage: rcodesign[EXE] sign [OPTIONS] --team-name <TEAM_NAME> <INPUT_PATH> <OUTPUT_PATH>
+Usage: rcodesign[EXE] sign [OPTIONS] <INPUT_PATH> [OUTPUT_PATH]
 
 Arguments:
   <INPUT_PATH>
           Path to Mach-O binary to sign
 
-  <OUTPUT_PATH>
+  [OUTPUT_PATH]
           Path to signed Mach-O binary to write
 
 Options:
@@ -237,7 +237,6 @@ Options:
       --digest <DIGEST>
           Digest algorithm to use
           
-          [default: sha256]
           [possible values: none, sha1, sha256, sha256-truncated, sha384, sha512]
 
       --extra-digest <EXTRA_DIGEST>
