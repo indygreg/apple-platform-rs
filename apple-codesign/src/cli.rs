@@ -1099,6 +1099,15 @@ fn command_compute_code_hashes(args: &ArgMatches) -> Result<(), AppleCodesignErr
     Ok(())
 }
 
+#[derive(Parser)]
+struct DiffSignatures {
+    /// The first path to compare
+    path0: String,
+
+    /// The second path to compare
+    path1: String,
+}
+
 fn command_diff_signatures(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path0 = args
         .get_one::<String>("path0")
@@ -2566,6 +2575,9 @@ enum Subcommands {
 
     /// Compute code hashes for a binary
     ComputeCodeHashes(ComputeCodeHashes),
+
+    /// Print a diff between the signature content of two paths
+    DiffSignatures(DiffSignatures),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2584,23 +2596,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("diff-signatures")
-            .about("Print a diff between the signature content of two paths")
-            .arg(
-                Arg::new("path0")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("The first path to compare"),
-            )
-            .arg(
-                Arg::new("path1")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("The second path to compare"),
-            ),
-    );
 
     #[cfg(feature = "notarize")]
     let app = app.subcommand(
