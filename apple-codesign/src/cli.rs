@@ -1837,12 +1837,10 @@ struct KeychainPrintCertificates {
 }
 
 #[cfg(target_os = "macos")]
-fn command_keychain_print_certificates(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let domain = args
-        .get_one::<String>("domain")
-        .expect("clap should have added default value");
-
-    let domain = KeychainDomain::try_from(domain.as_str())
+fn command_keychain_print_certificates(
+    args: &KeychainPrintCertificates,
+) -> Result<(), AppleCodesignError> {
+    let domain = KeychainDomain::try_from(args.domain.as_str())
         .expect("clap should have validated domain values");
 
     let certs = keychain_find_code_signing_certificates(domain, None)?;
@@ -1858,7 +1856,9 @@ fn command_keychain_print_certificates(args: &ArgMatches) -> Result<(), AppleCod
 }
 
 #[cfg(not(target_os = "macos"))]
-fn command_keychain_print_certificates(_args: &ArgMatches) -> Result<(), AppleCodesignError> {
+fn command_keychain_print_certificates(
+    _args: &KeychainPrintCertificates,
+) -> Result<(), AppleCodesignError> {
     Err(AppleCodesignError::CliGeneralError(
         "macOS Keychain integration supported on macOS".to_string(),
     ))
@@ -2845,7 +2845,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::KeychainExportCertificateChain(args) => {
             command_keychain_export_certificate_chain(args)
         }
-        Subcommands::KeychainPrintCertificates(_) => command_keychain_print_certificates(args),
+        Subcommands::KeychainPrintCertificates(args) => command_keychain_print_certificates(args),
         #[cfg(feature = "notarize")]
         Subcommands::NotaryLog(_) => command_notary_log(args),
         #[cfg(feature = "notarize")]
