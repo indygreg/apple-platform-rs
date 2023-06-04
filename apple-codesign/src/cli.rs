@@ -2726,24 +2726,17 @@ struct SmartcardImport {
 }
 
 #[cfg(feature = "yubikey")]
-fn command_smartcard_import(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let (keys, certs) = collect_certificates_from_args(args, false)?;
+fn command_smartcard_import(args: &SmartcardImport) -> Result<(), AppleCodesignError> {
+    let (keys, certs) = args.certificate.resolve_certificates(false)?;
 
     let slot_id = ::yubikey::piv::SlotId::from_str(
-        args.get_one::<String>("smartcard_slot").ok_or_else(|| {
+        args.certificate.smartcard_slot.as_ref().ok_or_else(|| {
             error!("--smartcard-slot is required");
             AppleCodesignError::CliBadArgument
         })?,
     )?;
-    let touch_policy = str_to_touch_policy(
-        args.get_one::<String>("touch_policy")
-            .expect("touch_policy argument is required"),
-    )?;
-    let pin_policy = str_to_pin_policy(
-        args.get_one::<String>("pin_policy")
-            .expect("pin_policy argument is required"),
-    )?;
-    let use_existing_key = args.get_flag("existing_key");
+    let touch_policy = str_to_touch_policy(args.policy.touch_policy.as_str())?;
+    let pin_policy = str_to_pin_policy(args.policy.pin_policy.as_str())?;
 
     println!(
         "found {} private keys and {} public certificates",
@@ -2751,7 +2744,7 @@ fn command_smartcard_import(args: &ArgMatches) -> Result<(), AppleCodesignError>
         certs.len()
     );
 
-    let key = if use_existing_key {
+    let key = if args.existing_key {
         println!("using existing private key in smartcard");
 
         if !keys.is_empty() {
@@ -2783,7 +2776,7 @@ fn command_smartcard_import(args: &ArgMatches) -> Result<(), AppleCodesignError>
     let mut yk = YubiKey::new()?;
     yk.set_pin_callback(prompt_smartcard_pin);
 
-    if args.get_flag("dry_run") {
+    if args.dry_run {
         println!("dry run mode enabled; stopping");
         return Ok(());
     }
@@ -2804,7 +2797,7 @@ fn command_smartcard_import(args: &ArgMatches) -> Result<(), AppleCodesignError>
 }
 
 #[cfg(not(feature = "yubikey"))]
-fn command_smartcard_import(_args: &ArgMatches) -> Result<(), AppleCodesignError> {
+fn command_smartcard_import(_args: &SmartcardImport) -> Result<(), AppleCodesignError> {
     eprintln!("smartcard import requires `yubikey` crate feature, which isn't enabled.");
     eprintln!("recompile the crate with `cargo build --features yubikey` to enable support");
     std::process::exit(1);
@@ -3041,7 +3034,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::PrintSignatureInfo(args) => command_print_signature_info(args),
         Subcommands::SmartcardScan => command_smartcard_scan(),
         Subcommands::SmartcardGenerateKey(args) => command_smartcard_generate_key(args),
-        Subcommands::SmartcardImport(_) => command_smartcard_import(args),
+        Subcommands::SmartcardImport(args) => command_smartcard_import(args),
         Subcommands::RemoteSign(_) => command_remote_sign(args),
         Subcommands::Sign(_) => command_sign(args),
         Subcommands::Staple(args) => command_staple(args),
