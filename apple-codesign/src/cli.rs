@@ -2790,6 +2790,9 @@ enum Subcommands {
 
     /// Print signature information for a filesystem path
     PrintSignatureInfo(PrintSignatureInfo),
+
+    /// Show information about available smartcard (SC) devices
+    SmartcardScan,
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2808,11 +2811,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("smartcard-scan")
-            .about("Show information about available smartcard (SC) devices"),
-    );
 
     let app = app.subcommand(add_yubikey_policy_args(
         Command::new("smartcard-generate-key")
