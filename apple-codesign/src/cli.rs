@@ -2769,3 +2769,14 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::X509Oids => command_x509_oids(),
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use clap::CommandFactory;
+
+    #[test]
+    fn verify_cli() {
+        Cli::command().debug_assert();
+    }
+}
