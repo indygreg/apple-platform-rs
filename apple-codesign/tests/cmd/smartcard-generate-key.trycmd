@@ -2,16 +2,16 @@
 $ rcodesign help smartcard-generate-key
 Generate a new private key on a smartcard
 
-Usage: rcodesign[EXE] smartcard-generate-key [OPTIONS] --smartcard-slot <smartcard_slot>
+Usage: rcodesign[EXE] smartcard-generate-key [OPTIONS] --smartcard-slot <SMARTCARD_SLOT>
 
 Options:
-      --smartcard-slot <smartcard_slot>
+      --smartcard-slot <SMARTCARD_SLOT>
           Smartcard slot number to store key in (9c is common)
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times.
-      --touch-policy <touch_policy>
+      --touch-policy <TOUCH_POLICY>
           Smartcard touch policy to protect key access [default: default] [possible values: default, always, never, cached]
-      --pin-policy <pin_policy>
+      --pin-policy <PIN_POLICY>
           Smartcard pin prompt policy to protect key access [default: default] [possible values: default, never, once, always]
   -h, --help
           Print help

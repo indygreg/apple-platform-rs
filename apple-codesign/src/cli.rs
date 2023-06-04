@@ -738,6 +738,17 @@ struct NotaryApi {
     api_key: Option<String>,
 }
 
+#[derive(Parser)]
+struct YubikeyPolicy {
+    /// Smartcard touch policy to protect key access
+    #[arg(long, value_parser = ["default", "always", "never", "cached"], default_value = "default")]
+    touch_policy: String,
+
+    /// Smartcard pin prompt policy to protect key access
+    #[arg(long, value_parser = ["default", "never", "once", "always"], default_value = "default")]
+    pin_policy: String,
+}
+
 fn add_yubikey_policy_args(app: Command) -> Command {
     app.arg(
         Arg::new("touch_policy")
@@ -2560,6 +2571,16 @@ fn command_smartcard_scan(_args: &ArgMatches) -> Result<(), AppleCodesignError> 
     std::process::exit(1);
 }
 
+#[derive(Parser)]
+struct SmartcardGenerateKey {
+    /// Smartcard slot number to store key in (9c is common)
+    #[arg(long)]
+    smartcard_slot: String,
+
+    #[command(flatten)]
+    policy: YubikeyPolicy,
+}
+
 #[cfg(feature = "yubikey")]
 fn command_smartcard_generate_key(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let slot_id = ::yubikey::piv::SlotId::from_str(
@@ -2793,6 +2814,9 @@ enum Subcommands {
 
     /// Show information about available smartcard (SC) devices
     SmartcardScan,
+
+    /// Generate a new private key on a smartcard
+    SmartcardGenerateKey(SmartcardGenerateKey),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2811,18 +2835,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(add_yubikey_policy_args(
-        Command::new("smartcard-generate-key")
-            .about("Generate a new private key on a smartcard")
-            .arg(
-                Arg::new("smartcard_slot")
-                    .long("smartcard-slot")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("Smartcard slot number to store key in (9c is common)"),
-            ),
-    ));
 
     let app = app.subcommand(add_yubikey_policy_args(add_certificate_source_args(
         Command::new("smartcard-import")
