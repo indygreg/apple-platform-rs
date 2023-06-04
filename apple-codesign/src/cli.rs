@@ -947,8 +947,8 @@ struct ComputeCodeHashes {
     path: PathBuf,
 
     /// Hashing algorithm to use.
-    #[arg(long, value_parser = SUPPORTED_HASHES, default_value = "sha256")]
-    hash: String,
+    #[arg(long, default_value_t = DigestType::Sha256)]
+    hash: DigestType,
 
     /// Chunk size to digest over.
     #[arg(long, default_value = "4096")]
@@ -960,13 +960,11 @@ struct ComputeCodeHashes {
 }
 
 fn command_compute_code_hashes(args: &ComputeCodeHashes) -> Result<(), AppleCodesignError> {
-    let hash_type = DigestType::try_from(args.hash.as_str())?;
-
     let data = std::fs::read(&args.path)?;
     let mach = MachFile::parse(&data)?;
     let macho = mach.nth_macho(args.universal_index)?;
 
-    let hashes = macho.code_digests(hash_type, args.page_size)?;
+    let hashes = macho.code_digests(args.hash, args.page_size)?;
 
     for hash in hashes {
         println!("{}", hex::encode(hash));
@@ -2188,8 +2186,8 @@ struct Sign {
     code_signature_flags: Vec<String>,
 
     /// Digest algorithm to use
-    #[arg(long, value_parser = SUPPORTED_HASHES)]
-    digest: Option<String>,
+    #[arg(long)]
+    digest: Option<DigestType>,
 
     /// Extra digests to include in signatures
     #[arg(long, value_parser = SUPPORTED_HASHES)]
@@ -2288,8 +2286,7 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
     }
 
     if let Some(value) = &args.digest {
-        let digest_type = DigestType::try_from(value.as_str())?;
-        settings.set_digest_type(digest_type);
+        settings.set_digest_type(*value);
     }
 
     for value in &args.extra_digest {

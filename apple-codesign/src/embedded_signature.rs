@@ -46,6 +46,7 @@ use {
         AppleCodesignError,
     },
     apple_xar::table_of_contents::ChecksumType as XarChecksumType,
+    clap::ValueEnum,
     cryptographic_message_syntax::SignedData,
     scroll::{IOwrite, Pread},
     std::{
@@ -307,7 +308,7 @@ impl std::fmt::Debug for BlobIndex {
 }
 
 /// Represents a digest type encountered in code signature data structures.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
 pub enum DigestType {
     None,
     Sha1,
@@ -315,6 +316,7 @@ pub enum DigestType {
     Sha256Truncated,
     Sha384,
     Sha512,
+    #[value(skip)]
     Unknown(u8),
 }
 
