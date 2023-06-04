@@ -3154,8 +3154,7 @@ dependencies = [
 [[package]]
 name = "snapbox"
 version = "0.4.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6bccd62078347f89a914e3004d94582e13824d4e3d8a816317862884c423835"
+source = "git+https://github.com/indygreg/trycmd?rev=32e9de6feb47b35d5b8e338feb555a9981778f24#32e9de6feb47b35d5b8e338feb555a9981778f24"
 dependencies = [
  "anstream",
  "anstyle",
@@ -3170,14 +3169,13 @@ dependencies = [
  "tempfile",
  "wait-timeout",
  "walkdir",
- "windows-sys 0.45.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
 name = "snapbox-macros"
 version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eaaf09df9f0eeae82be96290918520214530e738a7fe5a351b0f24cf77c0ca31"
+source = "git+https://github.com/indygreg/trycmd?rev=32e9de6feb47b35d5b8e338feb555a9981778f24#32e9de6feb47b35d5b8e338feb555a9981778f24"
 dependencies = [
  "anstream",
 ]
@@ -3531,8 +3529,7 @@ checksum = "3528ecfd12c466c6f163363caf2d02a71161dd5e1cc6ae7b34207ea2d42d81ed"
 [[package]]
 name = "trycmd"
 version = "0.14.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2925e71868a12b173c1eb166018c2d2f9dfaedfcaec747bdb6ea2246785d258e"
+source = "git+https://github.com/indygreg/trycmd?rev=32e9de6feb47b35d5b8e338feb555a9981778f24#32e9de6feb47b35d5b8e338feb555a9981778f24"
 dependencies = [
  "glob",
  "humantime",

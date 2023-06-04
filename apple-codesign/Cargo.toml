@@ -104,7 +104,11 @@ security-framework-sys = { version = "2.9.0", features = ["OSX_10_12"] }
 
 [dev-dependencies]
 indoc = "2.0.1"
-trycmd = "0.14.16"
+
+[dev-dependencies.trycmd]
+git = "https://github.com/indygreg/trycmd"
+rev = "32e9de6feb47b35d5b8e338feb555a9981778f24"
+version = "0.14.16"
 
 [features]
 default = ["notarize"]
