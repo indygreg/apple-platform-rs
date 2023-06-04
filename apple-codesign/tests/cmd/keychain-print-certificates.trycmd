@@ -5,7 +5,7 @@ Print information about certificates in the macOS keychain
 Usage: rcodesign[EXE] keychain-print-certificates [OPTIONS]
 
 Options:
-      --domain <domain>  Keychain domain to operate on [default: user] [possible values: user, system, common, dynamic]
+      --domain <DOMAIN>  Keychain domain to operate on [default: user] [possible values: user, system, common, dynamic]
   -v, --verbose...       Increase logging verbosity. Can be specified multiple times.
   -h, --help             Print help
 

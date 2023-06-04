@@ -2015,6 +2015,13 @@ fn command_keychain_export_certificate_chain(_args: &ArgMatches) -> Result<(), A
     ))
 }
 
+#[derive(Parser)]
+struct KeychainPrintCertificates {
+    /// Keychain domain to operate on
+    #[arg(long, value_parser = KEYCHAIN_DOMAINS, default_value = "user")]
+    domain: String,
+}
+
 #[cfg(target_os = "macos")]
 fn command_keychain_print_certificates(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let domain = args
@@ -2715,6 +2722,9 @@ enum Subcommands {
 
     /// Export Apple CA certificates from the macOS Keychain
     KeychainExportCertificateChain(KeychainExportCertificateChain),
+
+    /// Print information about certificates in the macOS keychain
+    KeychainPrintCertificates(KeychainPrintCertificates),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2733,19 +2743,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("keychain-print-certificates")
-            .about("Print information about certificates in the macOS keychain")
-            .arg(
-                Arg::new("domain")
-                    .long("domain")
-                    .action(ArgAction::Set)
-                    .value_parser(["user", "system", "common", "dynamic"])
-                    .default_value("user")
-                    .help("Keychain domain to operate on"),
-            ),
-    );
 
     let app = app.subcommand(add_notary_api_args(
         Command::new("notary-log")
