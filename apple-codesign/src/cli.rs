@@ -2165,33 +2165,6 @@ To automatically staple an asset after server-side processing has finished,
 specify `--staple`. This implies `--wait`.
 ";
 
-/// Obtain a notarization client from arguments.
-#[cfg(feature = "notarize")]
-fn notarizer_from_args(args: &ArgMatches) -> Result<Notarizer, AppleCodesignError> {
-    let api_key_path = args.get_one::<PathBuf>("api_key_path");
-    let api_issuer = args.get_one::<String>("api_issuer");
-    let api_key = args.get_one::<String>("api_key");
-
-    if let Some(api_key_path) = api_key_path {
-        Notarizer::from_api_key(api_key_path)
-    } else if let (Some(issuer), Some(key)) = (api_issuer, api_key) {
-        Notarizer::from_api_key_id(issuer, key)
-    } else {
-        Err(AppleCodesignError::NotarizeNoAuthCredentials)
-    }
-}
-
-#[cfg(feature = "notarize")]
-fn notarizer_wait_duration(args: &ArgMatches) -> Result<std::time::Duration, AppleCodesignError> {
-    let max_wait_seconds = args
-        .get_one::<String>("max_wait_seconds")
-        .expect("argument should have default value");
-    let max_wait_seconds =
-        u64::from_str(max_wait_seconds).map_err(|_| AppleCodesignError::CliBadArgument)?;
-
-    Ok(std::time::Duration::from_secs(max_wait_seconds))
-}
-
 #[cfg(feature = "notarize")]
 #[derive(Parser)]
 struct NotaryLog {
@@ -2272,7 +2245,7 @@ fn command_notary_submit(args: &NotarySubmit) -> Result<(), AppleCodesignError> 
 struct NotaryWait {
     /// Maximum time in seconds to wait for the upload result
     #[arg(long, default_value = "600")]
-    max_wait_seconds: String,
+    max_wait_seconds: u64,
 
     /// The ID of the previous submission to wait on
     submission_id: String,
@@ -2282,14 +2255,11 @@ struct NotaryWait {
 }
 
 #[cfg(feature = "notarize")]
-fn command_notary_wait(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let wait_duration = notarizer_wait_duration(args)?;
-    let notarizer = notarizer_from_args(args)?;
-    let submission_id = args
-        .get_one::<String>("submission_id")
-        .expect("submission_id is required");
+fn command_notary_wait(args: &NotaryWait) -> Result<(), AppleCodesignError> {
+    let wait_duration = std::time::Duration::from_secs(args.max_wait_seconds);
+    let notarizer = args.api.notarizer()?;
 
-    notarizer.wait_on_notarization_and_fetch_log(submission_id, wait_duration)?;
+    notarizer.wait_on_notarization_and_fetch_log(&args.submission_id, wait_duration)?;
 
     Ok(())
 }
@@ -3064,7 +3034,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         #[cfg(feature = "notarize")]
         Subcommands::NotarySubmit(args) => command_notary_submit(args),
         #[cfg(feature = "notarize")]
-        Subcommands::NotaryWait(_) => command_notary_wait(args),
+        Subcommands::NotaryWait(args) => command_notary_wait(args),
         Subcommands::ParseCodeSigningRequirement(args) => {
             command_parse_code_signing_requirement(args)
         }
