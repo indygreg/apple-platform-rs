@@ -263,3 +263,63 @@ HPCYuazSBKos0g3gNLgzGdQyZLDvyfyqJ3SvIAvGBYC1SxoGUB8RBeZuYLRQOylA
 
 
 ```
+
+```
+$ rcodesign analyze-certificate --p12-file src/apple-codesign-testuser.p12 --p12-password incorrect
+? 1
+Error: incorrect password given when decrypting PFX data
+
+$ rcodesign analyze-certificate --p12-file src/apple-codesign-testuser.p12 --p12-password password123
+# Certificate 0
+
+Subject CN:                  Test User
+Issuer CN:                   Test User
+Subject is Issuer?:          true
+Team ID:                     <missing>
+SHA-1 fingerprint:           b1c7f1807bb9eb61ab3d13b0ffc12a363311dbd2
+SHA-256 fingerprint:         f2e635017332bcb96b44f8cc65c07f5141f5932599e706f66023314adf8b9d07
+Key Algorithm:               RSA
+Signature Algorithm:         SHA-256 with RSA encryption
+Public Key Data:             MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApp0SntOtH7dgkQ1jIKrzgjW58VxqbRXpz/5sQp6AIulGS87IWMjLd/9k0+3X9+fKypMPADnbMb6CX3KgbKCJSNc2SI/g4tVg1HTo2wuVNpe1o/LaKMRZY+u/KvZBsN6gAtspayZAxYCSBxEQ7JndHq57Z+ZK4o/yT5LftOJ+LpJQk7pBMPbW6uHmYZWOMH119i7VBEtBNZhwwloAX7DlFGWBG3NtJ4HBTxwSvNkCNG04a+HK9OFuSO1vfYy5/6OqmQ5sKjgkEBWrud9TPp5hWCzrx0cGGYWprMDQ6ix2pCVp9dToecYiZOpNhgSAxioHU317M4Pf060tDUmsBBnykQIDAQAB
+Signed by Apple?:            false
+Guessed Certificate Profile: none
+Is Apple Root CA?:           false
+Is Apple Intermediate CA?:   false
+Apple CA Extension:          none
+Apple Extended Key Usage Purpose Extensions:
+  - 1.3.6.1.5.5.7.3.3 (CodeSigning)
+Apple Code Signing Extensions:
+
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApp0SntOtH7dgkQ1jIKrz
+gjW58VxqbRXpz/5sQp6AIulGS87IWMjLd/9k0+3X9+fKypMPADnbMb6CX3KgbKCJ
+SNc2SI/g4tVg1HTo2wuVNpe1o/LaKMRZY+u/KvZBsN6gAtspayZAxYCSBxEQ7Jnd
+Hq57Z+ZK4o/yT5LftOJ+LpJQk7pBMPbW6uHmYZWOMH119i7VBEtBNZhwwloAX7Dl
+FGWBG3NtJ4HBTxwSvNkCNG04a+HK9OFuSO1vfYy5/6OqmQ5sKjgkEBWrud9TPp5h
+WCzrx0cGGYWprMDQ6ix2pCVp9dToecYiZOpNhgSAxioHU317M4Pf060tDUmsBBny
+kQIDAQAB
+-----END PUBLIC KEY-----
+
+-----BEGIN CERTIFICATE-----
+MIIDWTCCAkGgAwIBAgIBATANBgkqhkiG9w0BAQsFADBaMRIwEAYDVQQDDAlUZXN0
+IFVzZXIxEzARBgNVBAoMClB5T3hpZGl6ZXIxCzAJBgNVBAYTAlVTMSIwIAYJKoZI
+hvcNAQkBFhNzb21lb25lQGV4YW1wbGUuY29tMB4XDTIxMDQyMjIxNTEyOFoXDTIy
+MDQyMjIxNTEyOFowWjESMBAGA1UEAwwJVGVzdCBVc2VyMRMwEQYDVQQKDApQeU94
+aWRpemVyMQswCQYDVQQGEwJVUzEiMCAGCSqGSIb3DQEJARYTc29tZW9uZUBleGFt
+cGxlLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKadEp7TrR+3
+YJENYyCq84I1ufFcam0V6c/+bEKegCLpRkvOyFjIy3f/ZNPt1/fnysqTDwA52zG+
+gl9yoGygiUjXNkiP4OLVYNR06NsLlTaXtaPy2ijEWWPrvyr2QbDeoALbKWsmQMWA
+kgcREOyZ3R6ue2fmSuKP8k+S37Tifi6SUJO6QTD21urh5mGVjjB9dfYu1QRLQTWY
+cMJaAF+w5RRlgRtzbSeBwU8cErzZAjRtOGvhyvThbkjtb32Muf+jqpkObCo4JBAV
+q7nfUz6eYVgs68dHBhmFqazA0OosdqQlafXU6HnGImTqTYYEgMYqB1N9ezOD39Ot
+LQ1JrAQZ8pECAwEAAaMqMCgwDgYDVR0PAQH/BAQDAgeAMBYGA1UdJQEB/wQMMAoG
+CCsGAQUFBwMDMA0GCSqGSIb3DQEBCwUAA4IBAQASENQJdugbU/zcaCU/JjBMQF+L
+IYlNqVRcV5c/CUo0sxMyEIbCQ+tRjsr6wS4Z/BqP4znveP8MChRQqTk+ldP9VtIF
+SXtB/HtT9V9XNdJ/R0aoGi//WCQXzS2gzsn9JQKOAQAOkYJg71puHWj1M3CPxxzv
+4beXq2t9J1hgtLOiM5AsbHRI8kTgM/J8GKGe0Dw/xgJgwaWPTZPmGtJhoEsFZUyY
+ywiSsc83dsllkjFA4MiADfAHdnW48/KSeK6qGetUm4VQImFbcgA0cZTzYdggnaHO
+YKYJwXPX2vI/4b+WyqrpQ3ToXGb66oowlD7e16zMfHFQ1Tp415bC3vjtKE/u
+-----END CERTIFICATE-----
+
+
+```
