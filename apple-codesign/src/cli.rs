@@ -723,6 +723,21 @@ fn collect_certificates_from_args(
     Ok((keys, certs))
 }
 
+#[derive(Parser)]
+struct NotaryApi {
+    /// Path to a JSON file containing the API Key
+    #[arg(long, group = "source")]
+    api_key_path: Option<PathBuf>,
+
+    /// App Store Connect Issuer ID (likely a UUID)
+    #[arg(long, requires = "api_key")]
+    api_issuer: Option<String>,
+
+    #[arg(long, requires = "api_issuer")]
+    /// App Store Connect API Key ID
+    api_key: Option<String>,
+}
+
 /// Add arguments common to commands that interact with the Notary API.
 fn add_notary_api_args(app: Command) -> Command {
     app.arg(
@@ -2126,6 +2141,15 @@ fn notarizer_wait_duration(args: &ArgMatches) -> Result<std::time::Duration, App
     Ok(std::time::Duration::from_secs(max_wait_seconds))
 }
 
+#[derive(Parser)]
+struct NotaryLog {
+    /// The ID of the previous submission to wait on
+    submission_id: String,
+
+    #[command(flatten)]
+    api: NotaryApi,
+}
+
 #[cfg(feature = "notarize")]
 fn command_notary_log(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let notarizer = notarizer_from_args(args)?;
@@ -2725,6 +2749,9 @@ enum Subcommands {
 
     /// Print information about certificates in the macOS keychain
     KeychainPrintCertificates(KeychainPrintCertificates),
+
+    /// Fetch the notarization log for a previous submission
+    NotaryLog(NotaryLog),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2743,17 +2770,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(add_notary_api_args(
-        Command::new("notary-log")
-            .about("Fetch the notarization log for a previous submission")
-            .arg(
-                Arg::new("submission_id")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("The ID of the previous submission to wait on"),
-            ),
-    ));
 
     let app = app.subcommand(add_notary_api_args(
         Command::new("notary-submit")
