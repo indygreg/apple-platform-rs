@@ -59,14 +59,14 @@ superblob
    records, including digests of every Blob.
 
 
-Usage: rcodesign[EXE] extract [OPTIONS] <path>
+Usage: rcodesign[EXE] extract [OPTIONS] <PATH>
 
 Arguments:
-  <path>
+  <PATH>
           Path to Mach-O binary to examine
 
 Options:
-      --data <data>
+      --data <DATA>
           Which data to extract and how to format it
           
           [default: linkedit-info]
@@ -75,7 +75,7 @@ Options:
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times.
 
-      --universal-index <universal_index>
+      --universal-index <UNIVERSAL_INDEX>
           Index of Mach-O binary to operate on within a universal/fat binary
           
           [default: 0]

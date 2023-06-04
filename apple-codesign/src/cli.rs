@@ -1389,6 +1389,44 @@ fn print_signed_data(
     Ok(())
 }
 
+const EXTRACT_DATA: [&str; 21] = [
+    "blobs",
+    "cms-info",
+    "cms-pem",
+    "cms-raw",
+    "cms",
+    "code-directory-raw",
+    "code-directory-serialized-raw",
+    "code-directory-serialized",
+    "code-directory",
+    "linkedit-info",
+    "linkedit-segment-raw",
+    "macho-load-commands",
+    "macho-segments",
+    "macho-target",
+    "requirements-raw",
+    "requirements-rust",
+    "requirements-serialized-raw",
+    "requirements-serialized",
+    "requirements",
+    "signature-raw",
+    "superblob",
+];
+
+#[derive(Parser)]
+struct Extract {
+    /// Path to Mach-O binary to examine
+    path: String,
+
+    /// Which data to extract and how to format it
+    #[arg(long, value_parser = EXTRACT_DATA, default_value = "linkedit-info")]
+    data: String,
+
+    /// Index of Mach-O binary to operate on within a universal/fat binary
+    #[arg(long, default_value = "0")]
+    universal_index: String,
+}
+
 fn command_extract(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
         .get_one::<String>("path")
@@ -2600,6 +2638,10 @@ enum Subcommands {
     #[cfg(feature = "notarize")]
     #[command(long_about = ENCODE_APP_STORE_CONNECT_API_KEY_ABOUT)]
     EncodeAppStoreConnectApiKey(EncodeAppStoreConnectApiKey),
+
+    /// Extracts code signature data from a Mach-O binary
+    #[command(long_about = EXTRACT_ABOUT)]
+    Extract(Extract),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2618,55 +2660,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("extract")
-            .about("Extracts code signature data from a Mach-O binary")
-            .long_about(EXTRACT_ABOUT)
-            .arg(
-                Arg::new("path")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("Path to Mach-O binary to examine"),
-            )
-            .arg(
-                Arg::new("data")
-                    .long("data")
-                    .action(ArgAction::Set)
-                    .value_parser([
-                        "blobs",
-                        "cms-info",
-                        "cms-pem",
-                        "cms-raw",
-                        "cms",
-                        "code-directory-raw",
-                        "code-directory-serialized-raw",
-                        "code-directory-serialized",
-                        "code-directory",
-                        "linkedit-info",
-                        "linkedit-segment-raw",
-                        "macho-load-commands",
-                        "macho-segments",
-                        "macho-target",
-                        "requirements-raw",
-                        "requirements-rust",
-                        "requirements-serialized-raw",
-                        "requirements-serialized",
-                        "requirements",
-                        "signature-raw",
-                        "superblob",
-                    ])
-                    .default_value("linkedit-info")
-                    .help("Which data to extract and how to format it"),
-            )
-            .arg(
-                Arg::new("universal_index")
-                    .long("universal-index")
-                    .action(ArgAction::Set)
-                    .default_value("0")
-                    .help("Index of Mach-O binary to operate on within a universal/fat binary"),
-            ),
-    );
 
     let app = app.subcommand(
         add_certificate_source_args(Command::new("generate-certificate-signing-request")
