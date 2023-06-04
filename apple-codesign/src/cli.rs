@@ -2083,15 +2083,11 @@ fn command_parse_code_signing_requirement(
 #[derive(Parser)]
 struct PrintSignatureInfo {
     /// Filesystem path to entity whose info to print
-    path: String,
+    path: PathBuf,
 }
 
-fn command_print_signature_info(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let path = args
-        .get_one::<String>("path")
-        .expect("clap should have validated argument");
-
-    let reader = SignatureReader::from_path(path)?;
+fn command_print_signature_info(args: &PrintSignatureInfo) -> Result<(), AppleCodesignError> {
+    let reader = SignatureReader::from_path(&args.path)?;
 
     let entities = reader.entities()?;
     serde_yaml::to_writer(std::io::stdout(), &entities)?;
@@ -2849,7 +2845,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::ParseCodeSigningRequirement(args) => {
             command_parse_code_signing_requirement(args)
         }
-        Subcommands::PrintSignatureInfo(_) => command_print_signature_info(args),
+        Subcommands::PrintSignatureInfo(args) => command_print_signature_info(args),
         Subcommands::SmartcardScan => command_smartcard_scan(args),
         Subcommands::SmartcardGenerateKey(_) => command_smartcard_generate_key(args),
         Subcommands::SmartcardImport(_) => command_smartcard_import(args),
