@@ -2635,7 +2635,7 @@ fn command_verify(args: &Verify) -> Result<(), AppleCodesignError> {
     }
 }
 
-fn command_x509_oids(_args: &ArgMatches) -> Result<(), AppleCodesignError> {
+fn command_x509_oids() -> Result<(), AppleCodesignError> {
     println!("# Extended Key Usage (EKU) Extension OIDs");
     println!();
     for ekup in crate::certificate::ExtendedKeyUsagePurpose::all() {
@@ -2834,6 +2834,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::Sign(_) => command_sign(args),
         Subcommands::Staple(args) => command_staple(args),
         Subcommands::Verify(args) => command_verify(args),
-        Subcommands::X509Oids => command_x509_oids(args),
+        Subcommands::X509Oids => command_x509_oids(),
     }
 }
