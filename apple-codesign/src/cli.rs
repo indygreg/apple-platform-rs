@@ -2688,6 +2688,12 @@ fn command_staple(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[derive(Parser)]
+struct Verify {
+    /// Path of Mach-O binary to examine
+    path: String,
+}
+
 fn command_verify(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
         .get_one::<String>("path")
@@ -2808,6 +2814,9 @@ enum Subcommands {
 
     /// Staples a notarization ticket to an entity
     Staple(Staple),
+
+    /// Verifies code signature data
+    Verify(Verify),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2826,17 +2835,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("verify")
-            .about("Verifies code signature data")
-            .arg(
-                Arg::new("path")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("Path of Mach-O binary to examine"),
-            ),
-    );
 
     let app = app.subcommand(
         Command::new("x509-oids")
