@@ -2671,6 +2671,12 @@ fn command_smartcard_import(_args: &ArgMatches) -> Result<(), AppleCodesignError
     std::process::exit(1);
 }
 
+#[derive(Parser)]
+struct Staple {
+    /// Path to entity to attempt to staple
+    path: String,
+}
+
 fn command_staple(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let path = args
         .get_one::<String>("path")
@@ -2799,6 +2805,9 @@ enum Subcommands {
     /// Sign a Mach-O binary or bundle
     #[command(long_about = SIGN_ABOUT)]
     Sign(Sign),
+
+    /// Staples a notarization ticket to an entity
+    Staple(Staple),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2817,17 +2826,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(
-        Command::new("staple")
-            .about("Staples a notarization ticket to an entity")
-            .arg(
-                Arg::new("path")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("Path to entity to attempt to staple"),
-            ),
-    );
 
     let app = app.subcommand(
         Command::new("verify")

@@ -2,10 +2,10 @@
 $ rcodesign help staple
 Staples a notarization ticket to an entity
 
-Usage: rcodesign[EXE] staple [OPTIONS] <path>
+Usage: rcodesign[EXE] staple [OPTIONS] <PATH>
 
 Arguments:
-  <path>  Path to entity to attempt to staple
+  <PATH>  Path to entity to attempt to staple
 
 Options:
   -v, --verbose...  Increase logging verbosity. Can be specified multiple times.
