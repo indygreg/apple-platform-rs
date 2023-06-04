@@ -749,25 +749,6 @@ struct YubikeyPolicy {
     pin_policy: String,
 }
 
-fn add_yubikey_policy_args(app: Command) -> Command {
-    app.arg(
-        Arg::new("touch_policy")
-            .long("touch-policy")
-            .action(ArgAction::Set)
-            .value_parser(["default", "always", "never", "cached"])
-            .default_value("default")
-            .help("Smartcard touch policy to protect key access"),
-    )
-    .arg(
-        Arg::new("pin_policy")
-            .long("pin-policy")
-            .action(ArgAction::Set)
-            .value_parser(["default", "never", "once", "always"])
-            .default_value("default")
-            .help("Smartcard pin prompt policy to protect key access"),
-    )
-}
-
 #[cfg(feature = "yubikey")]
 fn str_to_touch_policy(s: &str) -> Result<TouchPolicy, AppleCodesignError> {
     match s {
@@ -2614,6 +2595,23 @@ fn command_smartcard_generate_key(_args: &ArgMatches) -> Result<(), AppleCodesig
     std::process::exit(1);
 }
 
+#[derive(Parser)]
+struct SmartcardImport {
+    /// Re-use the existing private key in the smartcard slot
+    #[arg(long)]
+    existing_key: bool,
+
+    /// Don't actually perform the import
+    #[arg(long)]
+    dry_run: bool,
+
+    #[command(flatten)]
+    certificate: CertificateSource,
+
+    #[command(flatten)]
+    policy: YubikeyPolicy,
+}
+
 #[cfg(feature = "yubikey")]
 fn command_smartcard_import(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let (keys, certs) = collect_certificates_from_args(args, false)?;
@@ -2817,6 +2815,9 @@ enum Subcommands {
 
     /// Generate a new private key on a smartcard
     SmartcardGenerateKey(SmartcardGenerateKey),
+
+    /// Import a code signing certificate and key into a smartcard
+    SmartcardImport(SmartcardImport),
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2835,23 +2836,6 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         );
 
     let app = Subcommands::augment_subcommands(app);
-
-    let app = app.subcommand(add_yubikey_policy_args(add_certificate_source_args(
-        Command::new("smartcard-import")
-            .about("Import a code signing certificate and key into a smartcard")
-            .arg(
-                Arg::new("existing_key")
-                    .long("existing-key")
-                    .action(ArgAction::SetTrue)
-                    .help("Re-use the existing private key in the smartcard slot"),
-            )
-            .arg(
-                Arg::new("dry_run")
-                    .long("dry-run")
-                    .action(ArgAction::SetTrue)
-                    .help("Don't actually perform the import"),
-            ),
-    )));
 
     let app = app.subcommand(add_certificate_source_args(
         Command::new("remote-sign")
