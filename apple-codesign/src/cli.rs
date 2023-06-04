@@ -25,7 +25,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
-    clap::{value_parser, Arg, ArgAction, ArgGroup, ArgMatches, Command},
+    clap::{value_parser, Arg, ArgAction, ArgGroup, ArgMatches, Args, Command, Parser, Subcommand},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
@@ -47,18 +47,6 @@ use {
 use crate::macos::{
     keychain_find_code_signing_certificates, macos_keychain_find_certificate_chain, KeychainDomain,
 };
-
-const ANALYZE_CERTIFICATE_ABOUT: &str = "\
-Analyze an X.509 certificate for Apple code signing properties.
-
-Given the path to a PEM encoded X.509 certificate, this command will read
-the certificate and print information about it relevant to Apple code
-signing.
-
-The output of the command can be useful to learn about X.509 certificate
-extensions used by code signing certificates and to debug low-level
-properties related to certificates.
-";
 
 const EXTRACT_ABOUT: &str = "\
 Extract code signature data from a Mach-O binary.
@@ -383,6 +371,8 @@ const SUPPORTED_HASHES: [&str; 6] = [
     "sha512",
 ];
 
+const KEYCHAIN_DOMAINS: [&str; 4] = ["user", "system", "common", "dynamic"];
+
 fn parse_scoped_value(s: &str) -> Result<(SettingsScope, &str), AppleCodesignError> {
     let parts = s.splitn(2, ':').collect::<Vec<_>>();
 
@@ -403,6 +393,66 @@ fn remote_initialization_args(own: Option<&str>) -> Vec<&'static str> {
     .into_iter()
     .filter(|x| own != Some(*x))
     .collect::<Vec<_>>()
+}
+
+#[derive(Args, Clone)]
+struct CertificateSource {
+    /// Smartcard slot number of signing certificate to use (9c is common)
+    #[arg(long)]
+    smartcard_slot: Option<String>,
+
+    /// (macOS only) Keychain domain to operate on
+    #[arg(long, group = "keychain", value_parser = KEYCHAIN_DOMAINS)]
+    keychain_domain: Option<String>,
+
+    /// (macOS only) SHA-256 fingerprint of certificate in Keychain to use
+    #[arg(long, group = "keychain")]
+    keychain_fingerprint: Option<String>,
+
+    /// Path to file containing PEM encoded certificate/key data
+    #[arg(long)]
+    pem_source: Option<String>,
+
+    /// Path to file containing DER encoded certificate data
+    #[arg(long)]
+    der_source: Option<String>,
+
+    /// Path to a .p12/PFX file containing a certificate key pair
+    #[arg(long = "p12-file", alias = "pfx-file")]
+    p12_path: Option<String>,
+
+    /// The password to use to open the --p12-file file
+    #[arg(long, alias = "pfx-password", group = "p12-password")]
+    p12_password: Option<String>,
+
+    // TODO conflicts with p12_password
+    /// Path to file containing password for opening --p12-file file
+    #[arg(long, alias = "pfx-password-file", group = "p12-password")]
+    p12_password_file: Option<String>,
+
+    /// Send signing requests to a remote signer
+    #[arg(long)]
+    remote_signer: bool,
+
+    /// Base64 encoded public key data describing the signer
+    #[arg(long, group = "remote-initialization")]
+    remote_public_key: Option<String>,
+
+    /// PEM encoded public key data describing the signer
+    #[arg(long, group = "remote-initialization", group = "remote-initialization")]
+    remote_public_key_pem_file: Option<String>,
+
+    /// Shared secret used for remote signing
+    #[arg(long, group = "remote-initialization")]
+    remote_shared_secret: Option<String>,
+
+    /// Environment variable holding the shared secret used for remote signing
+    #[arg(long, group = "remote-initialization")]
+    remote_shared_secret_env: Option<String>,
+
+    /// URL of a remote code signing server
+    #[arg(long, default_value = crate::remote_signing::DEFAULT_SERVER_URL)]
+    remote_signing_url: String,
 }
 
 fn add_certificate_source_args(app: Command) -> Command {
@@ -986,6 +1036,12 @@ fn find_certificates_in_keychain(
     Ok(())
 }
 
+#[derive(Parser)]
+struct AnalyzeCertificate {
+    #[command(flatten)]
+    certificate: CertificateSource,
+}
+
 fn command_analyze_certificate(args: &ArgMatches) -> Result<(), AppleCodesignError> {
     let certs = collect_certificates_from_args(args, true)?.1;
 
@@ -997,6 +1053,24 @@ fn command_analyze_certificate(args: &ArgMatches) -> Result<(), AppleCodesignErr
     }
 
     Ok(())
+}
+
+#[derive(Parser)]
+struct ComputeCodeHashes {
+    /// Path to Mach-O binary to examine.
+    path: PathBuf,
+
+    /// Hashing algorithm to use.
+    #[arg(long, value_parser = SUPPORTED_HASHES, default_value = "sha256")]
+    hash: String,
+
+    /// Chunk size to digest over.
+    #[arg(long, default_value = "4096")]
+    page_size: String,
+
+    /// Index of Mach-O binary to operate on within a universal/fat binary
+    #[arg(long, default_value = "0")]
+    universal_index: usize,
 }
 
 fn command_compute_code_hashes(args: &ArgMatches) -> Result<(), AppleCodesignError> {
@@ -2477,6 +2551,23 @@ fn command_x509_oids(_args: &ArgMatches) -> Result<(), AppleCodesignError> {
     Ok(())
 }
 
+#[derive(Parser)]
+enum Subcommands {
+    /// Analyze an X.509 certificate for Apple code signing properties.
+    ///
+    /// Given the path to a PEM encoded X.509 certificate, this command will read
+    /// the certificate and print information about it relevant to Apple code
+    /// signing.
+    ///
+    /// The output of the command can be useful to learn about X.509 certificate
+    /// extensions used by code signing certificates and to debug low-level
+    /// properties related to certificates.
+    AnalyzeCertificate(AnalyzeCertificate),
+
+    /// Compute code hashes for a binary
+    ComputeCodeHashes(ComputeCodeHashes),
+}
+
 pub fn main_impl() -> Result<(), AppleCodesignError> {
     let app = Command::new("Cross platform Apple code signing in pure Rust")
         .version(env!("CARGO_PKG_VERSION"))
@@ -2492,44 +2583,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
                 .help("Increase logging verbosity. Can be specified multiple times."),
         );
 
-    let app = app.subcommand(add_certificate_source_args(
-        Command::new("analyze-certificate")
-            .about("Analyze an X.509 certificate for Apple code signing properties")
-            .long_about(ANALYZE_CERTIFICATE_ABOUT),
-    ));
-
-    let app = app.subcommand(
-        Command::new("compute-code-hashes")
-            .about("Compute code hashes for a binary")
-            .arg(
-                Arg::new("path")
-                    .action(ArgAction::Set)
-                    .required(true)
-                    .help("path to Mach-O binary to examine"),
-            )
-            .arg(
-                Arg::new("hash")
-                    .long("hash")
-                    .action(ArgAction::Set)
-                    .value_parser(SUPPORTED_HASHES)
-                    .default_value("sha256")
-                    .help("Hashing algorithm to use"),
-            )
-            .arg(
-                Arg::new("page_size")
-                    .long("page-size")
-                    .action(ArgAction::Set)
-                    .default_value("4096")
-                    .help("Chunk size to digest over"),
-            )
-            .arg(
-                Arg::new("universal_index")
-                    .long("universal-index")
-                    .action(ArgAction::Set)
-                    .default_value("0")
-                    .help("Index of Mach-O binary to operate on within a universal/fat binary"),
-            ),
-    );
+    let app = Subcommands::augment_subcommands(app);
 
     let app = app.subcommand(
         Command::new("diff-signatures")

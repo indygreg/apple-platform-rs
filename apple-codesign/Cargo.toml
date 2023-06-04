@@ -24,7 +24,7 @@ base64 = "0.21.2"
 bcder = "0.7.2"
 bitflags = "2.3.1"
 bytes = "1.4.0"
-clap = "4.3.1"
+clap = { version = "4.3.1", features = ["derive"] }
 chrono = "0.4.26"
 cryptographic-message-syntax = "0.23.0"
 der = "0.7.6"
