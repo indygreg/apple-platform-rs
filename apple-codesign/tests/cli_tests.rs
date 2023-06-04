@@ -5,6 +5,7 @@
 #[test]
 fn cli_tests() {
     let cases = trycmd::TestCases::new();
+
     cases.case("tests/cmd/*.trycmd").case("tests/cmd/*.toml");
 
     // Help output breaks without notarize feature.
