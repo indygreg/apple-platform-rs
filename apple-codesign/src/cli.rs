@@ -959,25 +959,18 @@ fn command_compute_code_hashes(args: &ComputeCodeHashes) -> Result<(), AppleCode
 #[derive(Parser)]
 struct DiffSignatures {
     /// The first path to compare
-    path0: String,
+    path0: PathBuf,
 
     /// The second path to compare
-    path1: String,
+    path1: PathBuf,
 }
 
-fn command_diff_signatures(args: &ArgMatches) -> Result<(), AppleCodesignError> {
-    let path0 = args
-        .get_one::<String>("path0")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-    let path1 = args
-        .get_one::<String>("path1")
-        .ok_or(AppleCodesignError::CliBadArgument)?;
-
-    let reader = SignatureReader::from_path(path0)?;
+fn command_diff_signatures(args: &DiffSignatures) -> Result<(), AppleCodesignError> {
+    let reader = SignatureReader::from_path(&args.path0)?;
 
     let a_entities = reader.entities()?;
 
-    let reader = SignatureReader::from_path(path1)?;
+    let reader = SignatureReader::from_path(&args.path1)?;
     let b_entities = reader.entities()?;
 
     let a = serde_yaml::to_string(&a_entities)?;
@@ -2873,7 +2866,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
     match &subcommands {
         Subcommands::AnalyzeCertificate(_) => command_analyze_certificate(args),
         Subcommands::ComputeCodeHashes(args) => command_compute_code_hashes(args),
-        Subcommands::DiffSignatures(_) => command_diff_signatures(args),
+        Subcommands::DiffSignatures(args) => command_diff_signatures(args),
         #[cfg(feature = "notarize")]
         Subcommands::EncodeAppStoreConnectApiKey(_) => {
             command_encode_app_store_connect_api_key(args)
