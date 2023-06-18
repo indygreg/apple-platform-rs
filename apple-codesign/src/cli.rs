@@ -1472,24 +1472,34 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 let sections = segment.sections()?;
 
                 println!(
-                    "segment #{}; {}; offsets=0x{:x}-0x{:x}; vm/file size {}/{}; section count {}",
+                    "segment #{}; {}; offsets=0x{:x}-0x{:x} ({}-{}); addresses=0x{:x}-0x{:x}; vm/file size {}/{}; section count {}",
                     segment_index,
                     segment.name()?,
                     segment.fileoff,
                     segment.fileoff as usize + segment.data.len(),
+                    segment.fileoff,
+                    segment.fileoff as usize + segment.data.len(),
+                    segment.vmaddr,
+                    segment.vmaddr + segment.vmsize,
                     segment.vmsize,
                     segment.filesize,
                     sections.len()
                 );
                 for (section_index, (section, _)) in sections.into_iter().enumerate() {
                     println!(
-                        "segment #{}; section #{}: {}; segment offsets=0x{:x}-0x{:x} size {}",
+                        "segment #{}; section #{}: {}; offsets=0x{:x}-0x{:x} ({}-{}); addresses=0x{:x}-0x{:x}; size {}; align={}; flags={}",
                         segment_index,
                         section_index,
                         section.name()?,
                         section.offset,
                         section.offset as u64 + section.size,
-                        section.size
+                        section.offset,
+                        section.offset as u64 + section.size,
+                        section.addr,
+                        section.addr + section.size,
+                        section.size,
+                        section.align,
+                        section.flags,
                     );
                 }
             }
