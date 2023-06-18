@@ -1251,7 +1251,7 @@ fn print_signed_data(
     Ok(())
 }
 
-const EXTRACT_DATA: [&str; 22] = [
+const EXTRACT_DATA: [&str; 23] = [
     "blobs",
     "cms-info",
     "cms-pem",
@@ -1263,6 +1263,7 @@ const EXTRACT_DATA: [&str; 22] = [
     "code-directory",
     "linkedit-info",
     "linkedit-segment-raw",
+    "macho-header",
     "macho-load-commands",
     "macho-load-commands-raw",
     "macho-segments",
@@ -1441,6 +1442,9 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 .find_signature_data()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
             std::io::stdout().write_all(sig.linkedit_segment_data)?;
+        }
+        "macho-header" => {
+            println!("{:#?}", macho.macho.header);
         }
         "macho-load-commands" => {
             println!("load command count: {}", macho.macho.load_commands.len());
