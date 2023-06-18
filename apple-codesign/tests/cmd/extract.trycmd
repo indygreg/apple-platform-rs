@@ -70,7 +70,7 @@ Options:
           Which data to extract and how to format it
           
           [default: linkedit-info]
-          [possible values: blobs, cms-info, cms-pem, cms-raw, cms, code-directory-raw, code-directory-serialized-raw, code-directory-serialized, code-directory, linkedit-info, linkedit-segment-raw, macho-load-commands, macho-segments, macho-target, requirements-raw, requirements-rust, requirements-serialized-raw, requirements-serialized, requirements, signature-raw, superblob]
+          [possible values: blobs, cms-info, cms-pem, cms-raw, cms, code-directory-raw, code-directory-serialized-raw, code-directory-serialized, code-directory, linkedit-info, linkedit-segment-raw, macho-load-commands, macho-load-commands-raw, macho-segments, macho-target, requirements-raw, requirements-rust, requirements-serialized-raw, requirements-serialized, requirements, signature-raw, superblob]
 
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times

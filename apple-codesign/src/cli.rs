@@ -1251,7 +1251,7 @@ fn print_signed_data(
     Ok(())
 }
 
-const EXTRACT_DATA: [&str; 21] = [
+const EXTRACT_DATA: [&str; 22] = [
     "blobs",
     "cms-info",
     "cms-pem",
@@ -1264,6 +1264,7 @@ const EXTRACT_DATA: [&str; 21] = [
     "linkedit-info",
     "linkedit-segment-raw",
     "macho-load-commands",
+    "macho-load-commands-raw",
     "macho-segments",
     "macho-target",
     "requirements-raw",
@@ -1454,6 +1455,11 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                     command.offset + command.command.cmdsize(),
                     command.command.cmdsize(),
                 );
+            }
+        }
+        "macho-load-commands-raw" => {
+            for command in &macho.macho.load_commands {
+                println!("{:?}", command);
             }
         }
         "macho-segments" => {
