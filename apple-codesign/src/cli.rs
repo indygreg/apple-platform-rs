@@ -2412,7 +2412,10 @@ struct Sign {
     #[arg(long)]
     team_name: Option<String>,
 
-    /// URL of timestamp server to use to obtain a token of the CMS signature
+    /// URL of time-stamp server to use to obtain a token of the CMS signature
+    ///
+    /// Can be set to the special value `none` to disable the generation of time-stamp
+    /// tokens and use of a time-stamp server.
     #[arg(long, default_value = APPLE_TIMESTAMP_URL)]
     timestamp_url: String,
 

@@ -257,7 +257,9 @@ Options:
           Team name/identifier to include in code signature
 
       --timestamp-url <TIMESTAMP_URL>
-          URL of timestamp server to use to obtain a token of the CMS signature
+          URL of time-stamp server to use to obtain a token of the CMS signature
+          
+          Can be set to the special value `none` to disable the generation of time-stamp tokens and use of a time-stamp server.
           
           [default: http://timestamp.apple.com/ts01]
 
