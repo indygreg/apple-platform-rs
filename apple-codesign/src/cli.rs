@@ -30,7 +30,7 @@ use {
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
     spki::EncodePublicKey,
-    std::{io::Write, path::PathBuf, str::FromStr},
+    std::{io::Write, ops::Deref, path::PathBuf, str::FromStr},
     x509_certificate::{CapturedX509Certificate, EcdsaCurve, KeyAlgorithm, X509CertificateBuilder},
 };
 
@@ -931,6 +931,37 @@ impl MachOFileType {
             Self::Executable => object::macho::MH_EXECUTE,
             Self::Dylib => object::macho::MH_DYLIB,
         }
+    }
+}
+
+#[derive(Parser)]
+struct DebugCreateCodeRequirements {
+    /// Code requirement expression to emit.
+    #[arg(long, value_enum)]
+    code_requirement: crate::policy::ExecutionPolicy,
+
+    /// Path to write binary requirements to.
+    path: PathBuf,
+}
+
+impl DebugCreateCodeRequirements {
+    fn run(&self) -> Result<(), AppleCodesignError> {
+        let expression = self.code_requirement.deref();
+
+        let mut reqs = CodeRequirements::default();
+        reqs.push(expression.clone());
+
+        let data = reqs.to_blob_data()?;
+
+        println!("writing code requirements to {}", self.path.display());
+
+        if let Some(parent) = self.path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+
+        std::fs::write(&self.path, &data)?;
+
+        Ok(())
     }
 }
 
@@ -2803,6 +2834,10 @@ enum Subcommands {
     /// Compute code hashes for a binary
     ComputeCodeHashes(ComputeCodeHashes),
 
+    /// Create a binary code requirements file.
+    #[command(hide = true)]
+    DebugCreateCodeRequirements(DebugCreateCodeRequirements),
+
     /// Create an Info.plist file.
     #[command(hide = true)]
     DebugCreateInfoPlist(DebugCreateInfoPlist),
@@ -2934,6 +2969,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::EncodeAppStoreConnectApiKey(args) => {
             command_encode_app_store_connect_api_key(args)
         }
+        Subcommands::DebugCreateCodeRequirements(args) => args.run(),
         Subcommands::DebugCreateInfoPlist(args) => args.run(),
         Subcommands::DebugCreateMacho(args) => args.run(),
         Subcommands::Extract(args) => args.run(),

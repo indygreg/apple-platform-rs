@@ -26,6 +26,8 @@ Released on ReleaseDate.
   The trycmd tests may download a prebuilt Rust coreutils binary from
   github.com when executing on platforms with prebuilt binaries.
 * The `--data` argument of the `extract` command is now a positional argument.
+* Added a hidden `debug-create-code-requirements` command for generating
+  binary code requirements files. The command is intended to facilitate testing.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
