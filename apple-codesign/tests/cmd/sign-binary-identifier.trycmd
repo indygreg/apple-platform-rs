@@ -1,0 +1,111 @@
+```
+$ rcodesign debug-create-macho exe
+writing Mach-O to exe
+
+$ rcodesign sign --binary-identifier my-binary exe exe.signed
+signing exe to exe.signed
+signing exe as a Mach-O binary
+inferring default signing settings from Mach-O binary
+parsing Mach-O
+signing Mach-O binary at index 0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 362 bytes
+writing Mach-O to exe.signed
+
+$ rcodesign print-signature-info exe.signed
+- path: exe.signed
+  file_size: 18434
+  file_sha256: 417bbd3ac60361b73686cfa15ec9e227d6dcb9a712eeb4a0fc7e8b3f8fb7c898
+  entity: !mach_o
+    linkedit_segment_file_start_offset: 16384
+    linkedit_segment_file_end_offset: 18434
+    signature_file_start_offset: 16386
+    signature_file_end_offset: 18434
+    signature_linkedit_start_offset: 2
+    signature_linkedit_end_offset: 2050
+    signature:
+      superblob_length: 362
+      blob_count: 2
+      blobs:
+      - slot: CodeDirectory (0)
+        magic: fade0c02
+        length: 322
+        sha1: 7377d9d5c267ec62cc005bfcc779c9b011d1896e
+        sha256: c468106403eb95cd384b88dbdbb27c31cddb0e3534376bdd1213f83efdbc49cc
+      - slot: RequirementSet (2)
+        magic: fade0c01
+        length: 12
+        sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+        sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+      code_directory:
+        version: '0x20400'
+        flags: CodeSignatureFlags(ADHOC)
+        identifier: my-binary
+        digest_type: sha256
+        platform: 0
+        signed_entity_size: 16386
+        executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+        code_digests_count: 5
+        slot_digests:
+        - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+        - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+      entitlements_plist: null
+      cms: null
+
+$ rcodesign sign exe.signed exe.signed.2
+signing exe.signed to exe.signed.2
+signing exe.signed as a Mach-O binary
+inferring default signing settings from Mach-O binary
+preserving existing binary identifier in Mach-O
+preserving code signature flags in existing Mach-O signature
+setting binary identifier to exe.signed
+parsing Mach-O
+signing Mach-O binary at index 0
+adding code signature flags from signing settings: CodeSignatureFlags(ADHOC)
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 362 bytes
+writing Mach-O to exe.signed.2
+
+$ rcodesign print-signature-info exe.signed.2
+- path: exe.signed.2
+  file_size: 18434
+  file_sha256: 417bbd3ac60361b73686cfa15ec9e227d6dcb9a712eeb4a0fc7e8b3f8fb7c898
+  entity: !mach_o
+    linkedit_segment_file_start_offset: 16384
+    linkedit_segment_file_end_offset: 18434
+    signature_file_start_offset: 16386
+    signature_file_end_offset: 18434
+    signature_linkedit_start_offset: 2
+    signature_linkedit_end_offset: 2050
+    signature:
+      superblob_length: 362
+      blob_count: 2
+      blobs:
+      - slot: CodeDirectory (0)
+        magic: fade0c02
+        length: 322
+        sha1: 7377d9d5c267ec62cc005bfcc779c9b011d1896e
+        sha256: c468106403eb95cd384b88dbdbb27c31cddb0e3534376bdd1213f83efdbc49cc
+      - slot: RequirementSet (2)
+        magic: fade0c01
+        length: 12
+        sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+        sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+      code_directory:
+        version: '0x20400'
+        flags: CodeSignatureFlags(ADHOC)
+        identifier: my-binary
+        digest_type: sha256
+        platform: 0
+        signed_entity_size: 16386
+        executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+        code_digests_count: 5
+        slot_digests:
+        - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+        - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+      entitlements_plist: null
+      cms: null
+
+```
