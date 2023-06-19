@@ -995,6 +995,72 @@ impl MachOFileType {
 }
 
 #[derive(Parser)]
+struct DebugCreateInfoPlist {
+    /// Name of the bundle.
+    #[arg(long)]
+    bundle_name: String,
+
+    /// Bundle package type.
+    #[arg(long, default_value = "APPL")]
+    package_type: String,
+
+    /// CFBundleExecutable value.
+    #[arg(long)]
+    bundle_executable: Option<String>,
+
+    /// Bundle identifier.
+    #[arg(long, default_value = "com.example.mybundle")]
+    bundle_identifier: String,
+
+    /// Bundle version.
+    #[arg(long, default_value = "1.0.0")]
+    bundle_version: String,
+
+    /// Path to write Info.plist to.
+    output_path: PathBuf,
+}
+
+impl DebugCreateInfoPlist {
+    fn run(&self) -> Result<(), AppleCodesignError> {
+        let mut d = plist::Dictionary::default();
+
+        d.insert("CFBundleName".into(), self.bundle_name.clone().into());
+        d.insert(
+            "CFBundlePackageType".into(),
+            self.package_type.clone().into(),
+        );
+        d.insert(
+            "CFBundleDisplayName".into(),
+            self.bundle_name.clone().into(),
+        );
+        if let Some(exe) = &self.bundle_executable {
+            d.insert("CFBundleExecutable".into(), exe.clone().into());
+        }
+        d.insert(
+            "CFBundleIdentifier".into(),
+            self.bundle_identifier.clone().into(),
+        );
+        d.insert("CFBundleVersion".into(), self.bundle_version.clone().into());
+        d.insert("CFBundleSignature".into(), "sig".into());
+        d.insert("CFBundleExecutable".into(), self.bundle_name.clone().into());
+
+        let value = plist::Value::from(d);
+
+        let mut xml = vec![];
+        value.to_writer_xml(&mut xml)?;
+
+        println!("writing {}", self.output_path.display());
+        if let Some(parent) = self.output_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+
+        std::fs::write(&self.output_path, &xml)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Parser)]
 struct DebugCreateMachO {
     /// Architecture of Mach-O binary.
     #[arg(long, value_enum, default_value_t = MachOArch::Aarch64)]
@@ -2735,6 +2801,10 @@ enum Subcommands {
     /// Compute code hashes for a binary
     ComputeCodeHashes(ComputeCodeHashes),
 
+    /// Create an Info.plist file.
+    #[command(hide = true)]
+    DebugCreateInfoPlist(DebugCreateInfoPlist),
+
     /// Create a Mach-O binary from parameters.
     #[command(hide = true)]
     DebugCreateMacho(DebugCreateMachO),
@@ -2859,6 +2929,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::EncodeAppStoreConnectApiKey(args) => {
             command_encode_app_store_connect_api_key(args)
         }
+        Subcommands::DebugCreateInfoPlist(args) => args.run(),
         Subcommands::DebugCreateMacho(args) => args.run(),
         Subcommands::Extract(args) => command_extract(args),
         Subcommands::GenerateCertificateSigningRequest(args) => {

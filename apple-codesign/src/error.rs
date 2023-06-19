@@ -372,4 +372,7 @@ pub enum AppleCodesignError {
 
     #[error("{0}")]
     Anyhow(#[from] anyhow::Error),
+
+    #[error("plist: {0}")]
+    Plist(#[from] plist::Error),
 }

@@ -17,6 +17,8 @@ Released on ReleaseDate.
 * Added a hidden `debug-create-macho` command for generating Mach-O files.
   The command (and new code behind it) is intended to facilitate writing
   tests of Mach-O signing.
+* Added a hidden `debug-create-info-plist` command for generating Info.plist
+  files. The command is intended to be used to facilitate testing.
 * The `--code-signature-flags` argument of the `sign` command now correctly
   applies multiple values. Before, flags were set to the final specified
   value.
