@@ -1403,31 +1403,32 @@ fn print_signed_data(
     Ok(())
 }
 
-const EXTRACT_DATA: [&str; 23] = [
-    "blobs",
-    "cms-info",
-    "cms-pem",
-    "cms-raw",
-    "cms",
-    "code-directory-raw",
-    "code-directory-serialized-raw",
-    "code-directory-serialized",
-    "code-directory",
-    "linkedit-info",
-    "linkedit-segment-raw",
-    "macho-header",
-    "macho-load-commands",
-    "macho-load-commands-raw",
-    "macho-segments",
-    "macho-target",
-    "requirements-raw",
-    "requirements-rust",
-    "requirements-serialized-raw",
-    "requirements-serialized",
-    "requirements",
-    "signature-raw",
-    "superblob",
-];
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum ExtractData {
+    Blobs,
+    CmsInfo,
+    CmsPem,
+    CmsRaw,
+    Cms,
+    CodeDirectoryRaw,
+    CodeDirectorySerializedRaw,
+    CodeDirectorySerialized,
+    CodeDirectory,
+    LinkeditInfo,
+    LinkeditSegmentRaw,
+    MachoHeader,
+    MachoLoadCommands,
+    MachoLoadCommandsRaw,
+    MachoSegments,
+    MachoTarget,
+    RequirementsRaw,
+    RequirementsRust,
+    RequirementsSerializedRaw,
+    RequirementsSerialized,
+    Requirements,
+    SignatureRaw,
+    Superblob,
+}
 
 #[derive(Parser)]
 struct Extract {
@@ -1435,8 +1436,8 @@ struct Extract {
     path: PathBuf,
 
     /// Which data to extract and how to format it
-    #[arg(long, value_parser = EXTRACT_DATA, default_value = "linkedit-info")]
-    data: String,
+    #[arg(long, value_enum, default_value_t = ExtractData::LinkeditInfo)]
+    data: ExtractData,
 
     /// Index of Mach-O binary to operate on within a universal/fat binary
     #[arg(long, default_value = "0")]
@@ -1448,8 +1449,8 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
     let mach = MachFile::parse(&data)?;
     let macho = mach.nth_macho(args.universal_index)?;
 
-    match args.data.as_str() {
-        "blobs" => {
+    match args.data {
+        ExtractData::Blobs => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1459,7 +1460,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 println!("{parsed:#?}");
             }
         }
-        "cms-info" => {
+        ExtractData::CmsInfo => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1478,7 +1479,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no CMS data");
             }
         }
-        "cms-pem" => {
+        ExtractData::CmsPem => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1489,7 +1490,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no CMS data");
             }
         }
-        "cms-raw" => {
+        ExtractData::CmsRaw => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1500,7 +1501,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no CMS data");
             }
         }
-        "cms" => {
+        ExtractData::Cms => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1511,7 +1512,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no CMS data");
             }
         }
-        "code-directory-raw" => {
+        ExtractData::CodeDirectoryRaw => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1522,7 +1523,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no code directory");
             }
         }
-        "code-directory-serialized-raw" => {
+        ExtractData::CodeDirectorySerializedRaw => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1533,7 +1534,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no code directory");
             }
         }
-        "code-directory-serialized" => {
+        ExtractData::CodeDirectorySerialized => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1543,7 +1544,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 println!("{:#?}", CodeDirectoryBlob::from_blob_bytes(&serialized)?);
             }
         }
-        "code-directory" => {
+        ExtractData::CodeDirectory => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1554,7 +1555,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no code directory");
             }
         }
-        "linkedit-info" => {
+        ExtractData::LinkeditInfo => {
             let sig = macho
                 .find_signature_data()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1589,16 +1590,16 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
             );
             println!("__LINKEDIT signature size: {}", sig.signature_data.len());
         }
-        "linkedit-segment-raw" => {
+        ExtractData::LinkeditSegmentRaw => {
             let sig = macho
                 .find_signature_data()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
             std::io::stdout().write_all(sig.linkedit_segment_data)?;
         }
-        "macho-header" => {
+        ExtractData::MachoHeader => {
             println!("{:#?}", macho.macho.header);
         }
-        "macho-load-commands" => {
+        ExtractData::MachoLoadCommands => {
             println!("load command count: {}", macho.macho.load_commands.len());
 
             for command in &macho.macho.load_commands {
@@ -1613,12 +1614,12 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 );
             }
         }
-        "macho-load-commands-raw" => {
+        ExtractData::MachoLoadCommandsRaw => {
             for command in &macho.macho.load_commands {
                 println!("{:?}", command);
             }
         }
-        "macho-segments" => {
+        ExtractData::MachoSegments => {
             println!("segments count: {}", macho.macho.segments.len());
             for (segment_index, segment) in macho.macho.segments.iter().enumerate() {
                 let sections = segment.sections()?;
@@ -1656,7 +1657,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 }
             }
         }
-        "macho-target" => {
+        ExtractData::MachoTarget => {
             if let Some(target) = macho.find_targeting()? {
                 println!("Platform: {}", target.platform);
                 println!("Minimum OS: {}", target.minimum_os_version);
@@ -1665,7 +1666,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 println!("Unable to resolve Mach-O targeting from load commands");
             }
         }
-        "requirements-raw" => {
+        ExtractData::RequirementsRaw => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1676,7 +1677,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no requirements");
             }
         }
-        "requirements-rust" => {
+        ExtractData::RequirementsRust => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1691,7 +1692,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no requirements");
             }
         }
-        "requirements-serialized-raw" => {
+        ExtractData::RequirementsSerializedRaw => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1702,7 +1703,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no requirements");
             }
         }
-        "requirements-serialized" => {
+        ExtractData::RequirementsSerialized => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1714,7 +1715,7 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no requirements");
             }
         }
-        "requirements" => {
+        ExtractData::Requirements => {
             let embedded = macho
                 .code_signature()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1729,13 +1730,13 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 eprintln!("no requirements");
             }
         }
-        "signature-raw" => {
+        ExtractData::SignatureRaw => {
             let sig = macho
                 .find_signature_data()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
             std::io::stdout().write_all(sig.signature_data)?;
         }
-        "superblob" => {
+        ExtractData::Superblob => {
             let sig = macho
                 .find_signature_data()?
                 .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
@@ -1804,7 +1805,6 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                 );
             }
         }
-        x => panic!("unhandled format: {x}"),
     }
 
     Ok(())
