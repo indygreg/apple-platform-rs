@@ -14,6 +14,9 @@ Released on ReleaseDate.
   CLI behavior. However, some minor changes - possibly bugs - may have
   occurred as a result of this refactor.
 * `AppleCodesignError::AwsS3Error` now stores a `Box<T>`.
+* Added a hidden `debug-create-macho` command for generating Mach-O files.
+  The command (and new code behind it) is intended to facilitate writing
+  tests of Mach-O signing.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

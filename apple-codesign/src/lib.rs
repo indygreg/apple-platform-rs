@@ -133,6 +133,7 @@ mod error;
 pub use error::*;
 mod macho;
 pub use macho::*;
+pub mod macho_builder;
 #[cfg(target_os = "macos")]
 #[allow(non_upper_case_globals)]
 mod macos;

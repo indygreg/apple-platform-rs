@@ -25,7 +25,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
-    clap::{ArgAction, Args, Parser, Subcommand},
+    clap::{ArgAction, Args, Parser, Subcommand, ValueEnum},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
@@ -971,6 +971,65 @@ fn command_compute_code_hashes(args: &ComputeCodeHashes) -> Result<(), AppleCode
     }
 
     Ok(())
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum MachOArch {
+    Aarch64,
+    X86_64,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum MachOFileType {
+    Executable,
+    Dylib,
+}
+
+impl MachOFileType {
+    fn to_header_filetype(&self) -> u32 {
+        match self {
+            Self::Executable => object::macho::MH_EXECUTE,
+            Self::Dylib => object::macho::MH_DYLIB,
+        }
+    }
+}
+
+#[derive(Parser)]
+struct DebugCreateMachO {
+    /// Architecture of Mach-O binary.
+    #[arg(long, value_enum, default_value_t = MachOArch::Aarch64)]
+    architecture: MachOArch,
+
+    /// The Mach-O file type.
+    #[arg(long, value_enum, default_value_t = MachOFileType::Executable)]
+    file_type: MachOFileType,
+
+    /// Filename of Mach-O binary to write.
+    output_path: PathBuf,
+}
+
+impl DebugCreateMachO {
+    fn run(&self) -> Result<(), AppleCodesignError> {
+        let builder = match self.architecture {
+            MachOArch::Aarch64 => {
+                crate::macho_builder::MachOBuilder::new_aarch64(self.file_type.to_header_filetype())
+            }
+            MachOArch::X86_64 => {
+                crate::macho_builder::MachOBuilder::new_x86_64(self.file_type.to_header_filetype())
+            }
+        };
+
+        let data = builder.write_macho()?;
+
+        warn!("writing Mach-O to {}", self.output_path.display());
+        if let Some(parent) = self.output_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+
+        std::fs::write(&self.output_path, &data)?;
+
+        Ok(())
+    }
 }
 
 #[derive(Parser)]
@@ -2634,6 +2693,10 @@ enum Subcommands {
     /// Compute code hashes for a binary
     ComputeCodeHashes(ComputeCodeHashes),
 
+    /// Create a Mach-O binary from parameters.
+    #[command(hide = true)]
+    DebugCreateMacho(DebugCreateMachO),
+
     /// Print a diff between the signature content of two paths
     DiffSignatures(DiffSignatures),
 
@@ -2754,6 +2817,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::EncodeAppStoreConnectApiKey(args) => {
             command_encode_app_store_connect_api_key(args)
         }
+        Subcommands::DebugCreateMacho(args) => args.run(),
         Subcommands::Extract(args) => command_extract(args),
         Subcommands::GenerateCertificateSigningRequest(args) => {
             command_generate_certificate_signing_request(args)
