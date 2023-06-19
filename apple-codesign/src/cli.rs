@@ -515,7 +515,7 @@ impl CertificateSource {
             if let Some(slot) = &self.smartcard_slot {
                 handle_smartcard_sign_slot(
                     slot,
-                    self.smartcard_pin_env.as_ref().map(|x| x.as_str()),
+                    self.smartcard_pin_env.as_deref(),
                     &mut keys,
                     &mut certs,
                 )?;
