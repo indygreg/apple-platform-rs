@@ -180,22 +180,6 @@ impl TryFrom<&str> for ExecutionPolicy {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn get_policies() {
-        ExecutionPolicy::DeveloperIdSigned.to_bytes().unwrap();
-        ExecutionPolicy::DeveloperIdNotarizedExecutable
-            .to_bytes()
-            .unwrap();
-        ExecutionPolicy::DeveloperIdNotarizedInstaller
-            .to_bytes()
-            .unwrap();
-    }
-}
-
 /// Derive a designated requirements expression given a code signing certificate.
 ///
 /// This function figures out what the run-time requirements of a signed binary
@@ -299,5 +283,21 @@ pub fn derive_designated_requirements(
                 "(deriving for {profile:?}) we do not know how to handle this policy"
             )))
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn get_policies() {
+        ExecutionPolicy::DeveloperIdSigned.to_bytes().unwrap();
+        ExecutionPolicy::DeveloperIdNotarizedExecutable
+            .to_bytes()
+            .unwrap();
+        ExecutionPolicy::DeveloperIdNotarizedInstaller
+            .to_bytes()
+            .unwrap();
     }
 }
