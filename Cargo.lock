@@ -204,6 +204,7 @@ dependencies = [
  "elliptic-curve 0.13.6",
  "env_logger",
  "filetime",
+ "flate2",
  "glob",
  "goblin",
  "hex",
@@ -240,6 +241,7 @@ dependencies = [
  "spake2",
  "spki 0.7.2",
  "subtle",
+ "tar",
  "tempfile",
  "thiserror",
  "tokio",
@@ -3402,6 +3404,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
+name = "tar"
+version = "0.4.40"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b16afcea1f22891c49a00c751c7b63b2233284064f11a200fc624137c51e2ddb"
+dependencies = [
+ "filetime",
+ "libc",
+ "xattr",
+]
+
+[[package]]
 name = "tempfile"
 version = "3.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4130,6 +4143,15 @@ dependencies = [
  "signature 2.1.0",
  "spki 0.7.2",
  "thiserror",
+]
+
+[[package]]
+name = "xattr"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4686009f71ff3e5c4dbcf1a282d0a44db3f021ba69350cd42086b3e5f1c6985"
+dependencies = [
+ "libc",
 ]
 
 [[package]]

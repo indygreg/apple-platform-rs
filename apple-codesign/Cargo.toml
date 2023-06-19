@@ -105,7 +105,11 @@ security-framework = { version = "2.9.2", features = ["OSX_10_12"] }
 security-framework-sys = { version = "2.9.1", features = ["OSX_10_12"] }
 
 [dev-dependencies]
+flate2 = "1.0.28"
 indoc = "2.0.4"
+simple-file-manifest = "0.11.0"
+tar = "0.4.40"
+zip = { version = "0.6.6", default-features = false }
 
 [dev-dependencies.trycmd]
 git = "https://github.com/indygreg/trycmd"

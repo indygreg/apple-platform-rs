@@ -1,0 +1,35 @@
+Sign a simple application bundle
+
+```
+$ mkdir -p MyApp.app/Contents/MacOS
+$ rcodesign debug-create-macho MyApp.app/Contents/MacOS/MyApp
+writing Mach-O to MyApp.app/Contents/MacOS/MyApp
+
+$ rcodesign sign MyApp.app MyApp.app.signed
+? 1
+signing MyApp.app to MyApp.app.signed
+signing bundle at MyApp.app
+Error: error interfacing with directory-based bundle: Info.plist not found; not a valid bundle
+
+$ rcodesign debug-create-info-plist --bundle-name MyApp MyApp.app/Contents/Info.plist
+writing MyApp.app/Contents/Info.plist
+
+$ rcodesign sign MyApp.app MyApp.app.signed
+signing MyApp.app to MyApp.app.signed
+signing bundle at MyApp.app
+signing 0 nested bundles in the following order:
+signing bundle at MyApp.app into MyApp.app.signed
+collecting code resources files
+Contents/Info.plist is the Info.plist file; handling specially
+copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
+writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
+signing main executable Contents/MacOS/MyApp
+setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
+inferring default signing settings from Mach-O binary
+signing Mach-O binary at index 0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 405 bytes
+writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
+
+```
