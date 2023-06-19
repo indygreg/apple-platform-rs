@@ -538,6 +538,7 @@ pub struct BuildVersionCommand {
 }
 
 /// Represents `PLATFORM_` mach-o constants.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Platform {
     MacOs,
     IOs,
@@ -588,6 +589,24 @@ impl From<u32> for Platform {
     }
 }
 
+impl Into<u32> for Platform {
+    fn into(self) -> u32 {
+        match self {
+            Self::MacOs => 1,
+            Platform::IOs => 2,
+            Platform::TvOs => 3,
+            Platform::WatchOs => 4,
+            Platform::BridgeOs => 5,
+            Platform::MacCatalyst => 6,
+            Platform::IosSimulator => 7,
+            Platform::TvOsSimulator => 8,
+            Platform::WatchOsSimulator => 9,
+            Platform::DriverKit => 10,
+            Platform::Unknown(v) => v,
+        }
+    }
+}
+
 impl Platform {
     /// Resolve SHA-256 digest/signatures support for a given platform type.
     pub fn sha256_digest_support(&self) -> Result<semver::VersionReq, AppleCodesignError> {
@@ -616,6 +635,28 @@ pub struct MachoTarget {
     pub minimum_os_version: semver::Version,
     /// SDK version targeting.
     pub sdk_version: semver::Version,
+}
+
+impl MachoTarget {
+    /// Convert the instance to a LC_BUILD_VERSION load command.
+    pub fn to_build_version_command_vec(&self, endian: object::Endianness) -> Vec<u8> {
+        let command = object::macho::BuildVersionCommand {
+            cmd: object::U32::new(endian, object::macho::LC_BUILD_VERSION),
+            cmdsize: object::U32::new(
+                endian,
+                std::mem::size_of::<object::macho::BuildVersionCommand<object::Endianness>>() as _,
+            ),
+            platform: object::U32::new(endian, self.platform.into()),
+            minos: object::U32::new(
+                endian,
+                semver_to_macho_target_version(&self.minimum_os_version),
+            ),
+            sdk: object::U32::new(endian, semver_to_macho_target_version(&self.sdk_version)),
+            ntools: object::U32::new(endian, 0),
+        };
+
+        object::bytes_of(&command).to_vec()
+    }
 }
 
 /// Parses and integer with nibbles xxxx.yy.zz into a [semver::Version].

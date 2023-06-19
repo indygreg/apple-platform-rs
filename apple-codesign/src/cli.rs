@@ -1004,13 +1004,21 @@ struct DebugCreateMachO {
     #[arg(long, value_enum, default_value_t = MachOFileType::Executable)]
     file_type: MachOFileType,
 
+    /// The minimum operating system version the binary will run on.
+    #[arg(long)]
+    minimum_os_version: Option<semver::Version>,
+
+    /// The platform SDK version used to build the binary.
+    #[arg(long)]
+    sdk_version: Option<semver::Version>,
+
     /// Filename of Mach-O binary to write.
     output_path: PathBuf,
 }
 
 impl DebugCreateMachO {
     fn run(&self) -> Result<(), AppleCodesignError> {
-        let builder = match self.architecture {
+        let mut builder = match self.architecture {
             MachOArch::Aarch64 => {
                 crate::macho_builder::MachOBuilder::new_aarch64(self.file_type.to_header_filetype())
             }
@@ -1018,6 +1026,25 @@ impl DebugCreateMachO {
                 crate::macho_builder::MachOBuilder::new_x86_64(self.file_type.to_header_filetype())
             }
         };
+
+        if self.minimum_os_version.is_some() || self.sdk_version.is_some() {
+            let minimum_os_version = self
+                .minimum_os_version
+                .clone()
+                .unwrap_or_else(|| self.sdk_version.clone().unwrap());
+            let sdk_version = self
+                .sdk_version
+                .clone()
+                .unwrap_or_else(|| self.minimum_os_version.clone().unwrap());
+
+            let target = crate::macho::MachoTarget {
+                platform: crate::Platform::MacOs,
+                minimum_os_version,
+                sdk_version,
+            };
+
+            builder = builder.macho_target(target);
+        }
 
         let data = builder.write_macho()?;
 

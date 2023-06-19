@@ -7,7 +7,7 @@
 //! Initially authored to facilitate testing.
 
 use {
-    crate::AppleCodesignError,
+    crate::{macho::MachoTarget, AppleCodesignError},
     object::{
         endian::{BigEndian, U32, U64},
         macho::*,
@@ -223,6 +223,12 @@ pub struct MachOBuilder {
     ///
     /// Sections are grouped by segment and each group is ordered by segment file order.
     sections: Vec<Section>,
+
+    // Optional load commands.
+    /// Mach-O targeting.
+    ///
+    /// Turned into an LC_BUILD_VERSION load command.
+    macho_target: Option<MachoTarget>,
 }
 
 impl MachOBuilder {
@@ -299,6 +305,7 @@ impl MachOBuilder {
             macho_flags: 0,
             segments,
             sections,
+            macho_target: None,
         }
     }
 
@@ -310,6 +317,14 @@ impl MachOBuilder {
     /// Create a new instance for aarch64.
     pub fn new_aarch64(file_type: u32) -> Self {
         Self::new(Architecture::Aarch64, Endianness::Little, file_type)
+    }
+
+    /// Set the Mach-O targeting info for the binary.
+    ///
+    /// Will result in a LC_BUILD_VERSION load command being emitted.
+    pub fn macho_target(mut self, target: MachoTarget) -> Self {
+        self.macho_target = Some(target);
+        self
     }
 
     fn mach_header(
@@ -430,6 +445,12 @@ impl MachOBuilder {
         // Symbol table.
         number_commands += 1;
         current_file_offset += std::mem::size_of::<SymtabCommand<Endianness>>();
+
+        // Now extra load commands.
+        if let Some(target) = &self.macho_target {
+            number_commands += 1;
+            current_file_offset += target.to_build_version_command_vec(endian).len();
+        }
 
         // TODO support additional load commands. Build version, source version, minimum
         // version, Uuid. Main, CodeSignature, etc.
@@ -623,6 +644,10 @@ impl MachOBuilder {
             strsize: U32::new(endian, string_table_data.len() as _),
         };
         buffer.extend_from_slice(bytes_of(&symtab_command));
+
+        if let Some(target) = &self.macho_target {
+            buffer.extend_from_slice(&target.to_build_version_command_vec(endian));
+        }
 
         // Done with load commands. Start writing section data.
 
