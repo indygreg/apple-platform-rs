@@ -27,7 +27,7 @@ Options:
 $ rcodesign debug-create-macho exe
 writing Mach-O to exe
 
-$ rcodesign extract --data macho-header exe
+$ rcodesign extract macho-header exe
 Header {
     magic: 0xfeedfacf,
     cputype: 16777228,
@@ -39,7 +39,7 @@ Header {
     reserved: 0x0,
 }
 
-$ rcodesign extract --data macho-load-commands exe
+$ rcodesign extract macho-load-commands exe
 load command count: 6
 LC_SEGMENT_64; offsets=0x20-0x68 (32-104); size=72
 LC_SEGMENT_64; offsets=0x68-0x150 (104-336); size=232
@@ -48,7 +48,7 @@ LC_SEGMENT_64; offsets=0x1e8-0x280 (488-640); size=152
 LC_SEGMENT_64; offsets=0x280-0x2c8 (640-712); size=72
 LC_SYMTAB; offsets=0x2c8-0x2e0 (712-736); size=24
 
-$ rcodesign extract --data macho-load-commands-raw exe
+$ rcodesign extract macho-load-commands-raw exe
 LoadCommand { offset: 32, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 72, segname: [95, 95, 80, 65, 71, 69, 90, 69, 82, 79, 0, 0, 0, 0, 0, 0], vmaddr: 0, vmsize: 4294967296, fileoff: 0, filesize: 0, maxprot: 0, initprot: 0, nsects: 0, flags: 0 }) }
 LoadCommand { offset: 104, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 232, segname: [95, 95, 84, 69, 88, 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 0, fileoff: 0, filesize: 16384, maxprot: 0, initprot: 0, nsects: 2, flags: 0 }) }
 LoadCommand { offset: 336, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 152, segname: [95, 95, 68, 65, 84, 65, 95, 67, 79, 78, 83, 84, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 0, fileoff: 16384, filesize: 0, maxprot: 0, initprot: 0, nsects: 1, flags: 0 }) }
@@ -56,7 +56,7 @@ LoadCommand { offset: 488, command: Segment64(SegmentCommand64 { cmd: 25, cmdsiz
 LoadCommand { offset: 640, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 72, segname: [95, 95, 76, 73, 78, 75, 69, 68, 73, 84, 0, 0, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 2, fileoff: 16384, filesize: 2, maxprot: 0, initprot: 0, nsects: 0, flags: 0 }) }
 LoadCommand { offset: 712, command: Symtab(SymtabCommand { cmd: 2, cmdsize: 24, symoff: 16384, nsyms: 0, stroff: 16385, strsize: 1 }) }
 
-$ rcodesign extract --data macho-segments exe
+$ rcodesign extract macho-segments exe
 segments count: 5
 segment #0; __PAGEZERO; offsets=0x0-0x0 (0-0); addresses=0x0-0x100000000; vm/file size 4294967296/0; section count 0
 segment #1; __TEXT; offsets=0x0-0x4000 (0-16384); addresses=0x100000000-0x100000000; vm/file size 0/16384; section count 2
@@ -76,7 +76,7 @@ Defining custom targeting settings works
 $ rcodesign debug-create-macho --minimum-os-version 11.2.0 exe
 writing Mach-O to exe
 
-$ rcodesign extract --data macho-load-commands-raw exe
+$ rcodesign extract macho-load-commands-raw exe
 LoadCommand { offset: 32, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 72, segname: [95, 95, 80, 65, 71, 69, 90, 69, 82, 79, 0, 0, 0, 0, 0, 0], vmaddr: 0, vmsize: 4294967296, fileoff: 0, filesize: 0, maxprot: 0, initprot: 0, nsects: 0, flags: 0 }) }
 LoadCommand { offset: 104, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 232, segname: [95, 95, 84, 69, 88, 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 0, fileoff: 0, filesize: 16384, maxprot: 0, initprot: 0, nsects: 2, flags: 0 }) }
 LoadCommand { offset: 336, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 152, segname: [95, 95, 68, 65, 84, 65, 95, 67, 79, 78, 83, 84, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 0, fileoff: 16384, filesize: 0, maxprot: 0, initprot: 0, nsects: 1, flags: 0 }) }
@@ -88,7 +88,7 @@ LoadCommand { offset: 736, command: BuildVersion(BuildVersionCommand { cmd: 50, 
 $ rcodesign debug-create-macho --sdk-version 10.9.0 exe
 writing Mach-O to exe
 
-$ rcodesign extract --data macho-load-commands-raw exe
+$ rcodesign extract macho-load-commands-raw exe
 LoadCommand { offset: 32, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 72, segname: [95, 95, 80, 65, 71, 69, 90, 69, 82, 79, 0, 0, 0, 0, 0, 0], vmaddr: 0, vmsize: 4294967296, fileoff: 0, filesize: 0, maxprot: 0, initprot: 0, nsects: 0, flags: 0 }) }
 LoadCommand { offset: 104, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 232, segname: [95, 95, 84, 69, 88, 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 0, fileoff: 0, filesize: 16384, maxprot: 0, initprot: 0, nsects: 2, flags: 0 }) }
 LoadCommand { offset: 336, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 152, segname: [95, 95, 68, 65, 84, 65, 95, 67, 79, 78, 83, 84, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 0, fileoff: 16384, filesize: 0, maxprot: 0, initprot: 0, nsects: 1, flags: 0 }) }
@@ -100,7 +100,7 @@ LoadCommand { offset: 736, command: BuildVersion(BuildVersionCommand { cmd: 50, 
 $ rcodesign debug-create-macho --minimum-os-version 10.9.0 --sdk-version 12.0.0 exe
 writing Mach-O to exe
 
-$ rcodesign extract --data macho-load-commands-raw exe
+$ rcodesign extract macho-load-commands-raw exe
 LoadCommand { offset: 32, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 72, segname: [95, 95, 80, 65, 71, 69, 90, 69, 82, 79, 0, 0, 0, 0, 0, 0], vmaddr: 0, vmsize: 4294967296, fileoff: 0, filesize: 0, maxprot: 0, initprot: 0, nsects: 0, flags: 0 }) }
 LoadCommand { offset: 104, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 232, segname: [95, 95, 84, 69, 88, 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 0, fileoff: 0, filesize: 16384, maxprot: 0, initprot: 0, nsects: 2, flags: 0 }) }
 LoadCommand { offset: 336, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 152, segname: [95, 95, 68, 65, 84, 65, 95, 67, 79, 78, 83, 84, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 0, fileoff: 16384, filesize: 0, maxprot: 0, initprot: 0, nsects: 1, flags: 0 }) }

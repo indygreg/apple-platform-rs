@@ -1,11 +1,11 @@
 ```
 $ rcodesign help extract
-Extract code signature data from a Mach-O binary.
+Print/extract various information from a Mach-O binary.
 
 Given the path to a Mach-O binary (including fat/universal) binaries, this
 command will parse and print requested data to stdout.
 
-The --data argument controls which data to extract and how to print it.
+The DATA argument controls which data to extract and how to print it.
 Possible values are:
 
 blobs
@@ -59,26 +59,25 @@ superblob
    records, including digests of every Blob.
 
 
-Usage: rcodesign[EXE] extract [OPTIONS] <PATH>
+Usage: rcodesign[EXE] extract [OPTIONS] <DATA> <PATH>
 
 Arguments:
+  <DATA>
+          Which data to extract and how to format it
+          
+          [possible values: blobs, cms-info, cms-pem, cms-raw, cms, code-directory-raw, code-directory-serialized-raw, code-directory-serialized, code-directory, linkedit-info, linkedit-segment-raw, macho-header, macho-load-commands, macho-load-commands-raw, macho-segments, macho-target, requirements-raw, requirements-rust, requirements-serialized-raw, requirements-serialized, requirements, signature-raw, superblob]
+
   <PATH>
           Path to Mach-O binary to examine
 
 Options:
-      --data <DATA>
-          Which data to extract and how to format it
-          
-          [default: linkedit-info]
-          [possible values: blobs, cms-info, cms-pem, cms-raw, cms, code-directory-raw, code-directory-serialized-raw, code-directory-serialized, code-directory, linkedit-info, linkedit-segment-raw, macho-header, macho-load-commands, macho-load-commands-raw, macho-segments, macho-target, requirements-raw, requirements-rust, requirements-serialized-raw, requirements-serialized, requirements, signature-raw, superblob]
-
-  -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times
-
       --universal-index <UNIVERSAL_INDEX>
           Index of Mach-O binary to operate on within a universal/fat binary
           
           [default: 0]
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
 
   -h, --help
           Print help (see a summary with '-h')
@@ -102,7 +101,7 @@ code directory version: 132096
 total signature size: 356 bytes
 writing Mach-O to exe
 
-$ rcodesign extract --data blobs exe
+$ rcodesign extract blobs exe
 ParsedBlob {
     blob_entry: BlobEntry {
         index: 0,
@@ -179,7 +178,7 @@ ParsedBlob {
     ),
 }
 
-$ rcodesign extract --data code-directory exe
+$ rcodesign extract code-directory exe
 CodeDirectoryBlob {
     version: 132096,
     flags: CodeSignatureFlags(
@@ -231,7 +230,7 @@ CodeDirectoryBlob {
     },
 }
 
-$ rcodesign extract --data code-directory-serialized exe
+$ rcodesign extract code-directory-serialized exe
 CodeDirectoryBlob {
     version: 132096,
     flags: CodeSignatureFlags(
@@ -283,7 +282,7 @@ CodeDirectoryBlob {
     },
 }
 
-$ rcodesign extract --data linkedit-info exe
+$ rcodesign extract linkedit-info exe
 __LINKEDIT segment index: 4
 __LINKEDIT segment start offset: 16384
 __LINKEDIT segment end offset: 18434
@@ -294,7 +293,7 @@ __LINKEDIT signature local segment start offset: 2
 __LINKEDIT signature local segment end offset: 2050
 __LINKEDIT signature size: 2048
 
-$ rcodesign extract --data macho-load-commands exe
+$ rcodesign extract macho-load-commands exe
 load command count: 8
 LC_SEGMENT_64; offsets=0x20-0x68 (32-104); size=72
 LC_SEGMENT_64; offsets=0x68-0x150 (104-336); size=232
@@ -305,7 +304,7 @@ LC_SYMTAB; offsets=0x2c8-0x2e0 (712-736); size=24
 LC_BUILD_VERSION; offsets=0x2e0-0x2f8 (736-760); size=24
 LC_CODE_SIGNATURE; offsets=0x2f8-0x308 (760-776); size=16
 
-$ rcodesign extract --data macho-segments exe
+$ rcodesign extract macho-segments exe
 segments count: 5
 segment #0; __PAGEZERO; offsets=0x0-0x0 (0-0); addresses=0x0-0x100000000; vm/file size 4294967296/0; section count 0
 segment #1; __TEXT; offsets=0x0-0x4000 (0-16384); addresses=0x100000000-0x100000000; vm/file size 0/16384; section count 2
@@ -317,21 +316,21 @@ segment #3; __DATA; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0
 segment #3; section #0: __data; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; size 0; align=16384; flags=0
 segment #4; __LINKEDIT; offsets=0x4000-0x4802 (16384-18434); addresses=0x100000000-0x100004000; vm/file size 16384/2050; section count 0
 
-$ rcodesign extract --data macho-target exe
+$ rcodesign extract macho-target exe
 Platform: macOS
 Minimum OS: 11.2.0
 SDK: 11.2.0
 
-$ rcodesign extract --data requirements exe
+$ rcodesign extract requirements exe
 
-$ rcodesign extract --data requirements-rust exe
+$ rcodesign extract requirements-rust exe
 
-$ rcodesign extract --data requirements-serialized exe
+$ rcodesign extract requirements-serialized exe
 RequirementSetBlob {
     requirements: {},
 }
 
-$ rcodesign extract --data superblob exe
+$ rcodesign extract superblob exe
 file start offset: 16386
 file end offset: 18434
 __LINKEDIT start offset: 2

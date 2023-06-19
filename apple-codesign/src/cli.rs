@@ -49,12 +49,12 @@ use crate::macos::{
 };
 
 const EXTRACT_ABOUT: &str = "\
-Extract code signature data from a Mach-O binary.
+Print/extract various information from a Mach-O binary.
 
 Given the path to a Mach-O binary (including fat/universal) binaries, this
 command will parse and print requested data to stdout.
 
-The --data argument controls which data to extract and how to print it.
+The DATA argument controls which data to extract and how to print it.
 Possible values are:
 
 blobs
@@ -1432,16 +1432,16 @@ enum ExtractData {
 
 #[derive(Parser)]
 struct Extract {
-    /// Path to Mach-O binary to examine
-    path: PathBuf,
-
-    /// Which data to extract and how to format it
-    #[arg(long, value_enum, default_value_t = ExtractData::LinkeditInfo)]
-    data: ExtractData,
-
     /// Index of Mach-O binary to operate on within a universal/fat binary
     #[arg(long, default_value = "0")]
     universal_index: usize,
+
+    /// Which data to extract and how to format it
+    #[arg(value_enum)]
+    data: ExtractData,
+
+    /// Path to Mach-O binary to examine
+    path: PathBuf,
 }
 
 fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
