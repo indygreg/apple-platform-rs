@@ -2620,6 +2620,7 @@ fn command_x509_oids() -> Result<(), AppleCodesignError> {
 }
 
 #[derive(Subcommand)]
+#[allow(clippy::large_enum_variant)]
 enum Subcommands {
     /// Analyze an X.509 certificate for Apple code signing properties.
     ///
