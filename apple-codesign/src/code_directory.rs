@@ -15,7 +15,7 @@ use {
     },
     scroll::{IOwrite, Pread},
     semver::Version,
-    std::{borrow::Cow, collections::HashMap, io::Write, str::FromStr},
+    std::{borrow::Cow, collections::BTreeMap, io::Write, str::FromStr},
 };
 
 bitflags::bitflags! {
@@ -230,7 +230,7 @@ pub struct CodeDirectoryBlob<'a> {
     pub ident: Cow<'a, str>,
     pub team_name: Option<Cow<'a, str>>,
     pub code_digests: Vec<Digest<'a>>,
-    pub special_digests: HashMap<CodeSigningSlot, Digest<'a>>,
+    pub special_digests: BTreeMap<CodeSigningSlot, Digest<'a>>,
 }
 
 impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
@@ -576,7 +576,7 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
 
 impl<'a> CodeDirectoryBlob<'a> {
     /// Obtain the mapping of slots to digests.
-    pub fn slot_digests(&self) -> &HashMap<CodeSigningSlot, Digest<'a>> {
+    pub fn slot_digests(&self) -> &BTreeMap<CodeSigningSlot, Digest<'a>> {
         &self.special_digests
     }
 
@@ -755,7 +755,7 @@ impl<'a> CodeDirectoryBlob<'a> {
                 .special_digests
                 .iter()
                 .map(|(k, v)| (k.to_owned(), v.to_owned()))
-                .collect::<HashMap<_, _>>(),
+                .collect::<BTreeMap<_, _>>(),
         }
     }
 }
