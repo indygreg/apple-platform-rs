@@ -359,7 +359,7 @@ pub enum AppleCodesignError {
 
     #[cfg(feature = "notarize")]
     #[error("s3 upload error: {0}")]
-    AwsS3Error(#[from] aws_sdk_s3::Error),
+    AwsS3Error(Box<aws_sdk_s3::Error>),
 
     #[error("bad time value")]
     BadTime,

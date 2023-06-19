@@ -13,6 +13,7 @@ Released on ReleaseDate.
   instead of the builder mode. The intent was to mostly preserve existing
   CLI behavior. However, some minor changes - possibly bugs - may have
   occurred as a result of this refactor.
+* `AppleCodesignError::AwsS3Error` now stores a `Box<T>`.
 * cryptographic-message-syntax 0.19 -> 0.23.
 * once_cell 1.16 -> 1.17.
 * p256 0.11 -> 0.13.
