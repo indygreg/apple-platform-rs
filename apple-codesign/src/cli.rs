@@ -1708,7 +1708,7 @@ fn command_generate_certificate_signing_request(
         }
 
         warn!("writing PEM encoded CSR to {}", dest_path.display());
-        std::fs::write(&dest_path, pem.as_bytes())?;
+        std::fs::write(dest_path, pem.as_bytes())?;
     }
 
     print!("{pem}");
