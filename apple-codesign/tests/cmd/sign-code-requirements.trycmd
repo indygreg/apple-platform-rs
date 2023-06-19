@@ -1,0 +1,65 @@
+```
+$ rcodesign debug-create-macho exe
+writing Mach-O to exe
+
+$ rcodesign debug-create-code-requirements --code-requirement developer-id-signed reqs
+writing code requirements to reqs
+
+$ rcodesign sign --code-requirements-path reqs exe exe.signed
+setting designated code requirements for main signing target: ((anchor apple generic) and (certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */)) and ((certificate leaf[field.1.2.840.113635.100.6.1.14] /* exists */) or (certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */))
+signing exe to exe.signed
+signing exe as a Mach-O binary
+inferring default signing settings from Mach-O binary
+setting binary identifier to exe
+parsing Mach-O
+signing Mach-O binary at index 0
+using provided code requirements
+code requirements: 0: ((anchor apple generic) and (certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */)) and ((certificate leaf[field.1.2.840.113635.100.6.1.14] /* exists */) or (certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */));
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 476 bytes
+writing Mach-O to exe.signed
+
+$ rcodesign print-signature-info exe.signed
+- path: exe.signed
+  file_size: 18434
+  file_sha256: 2893c79582d7dad79b7d0ed786e3cd7472e1626846320baa2bd1713a5f41576d
+  entity: !mach_o
+    linkedit_segment_file_start_offset: 16384
+    linkedit_segment_file_end_offset: 18434
+    signature_file_start_offset: 16386
+    signature_file_end_offset: 18434
+    signature_linkedit_start_offset: 2
+    signature_linkedit_end_offset: 2050
+    signature:
+      superblob_length: 476
+      blob_count: 2
+      blobs:
+      - slot: CodeDirectory (0)
+        magic: fade0c02
+        length: 316
+        sha1: 443bf949d776274103f0058736d60ff1177f267c
+        sha256: 2fb27c284d7babe8824becdc8cae7a430740fd29526a646f44a0b91e85fcac63
+      - slot: RequirementSet (2)
+        magic: fade0c01
+        length: 132
+        sha1: 2ac6f23e29171f6d5b6a87822e8f5411753e0ec7
+        sha256: 362f0cbb74f1847e4b2c7e3159a9d55e63d112fd1bf085e379d1bdfaf2813472
+      code_directory:
+        version: '0x20400'
+        flags: CodeSignatureFlags(ADHOC)
+        identifier: exe
+        digest_type: sha256
+        platform: 0
+        signed_entity_size: 16386
+        executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+        code_digests_count: 5
+        slot_digests:
+        - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+        - 'RequirementSet (2): 362f0cbb74f1847e4b2c7e3159a9d55e63d112fd1bf085e379d1bdfaf2813472'
+      entitlements_plist: null
+      code_requirements:
+      - 'designated(3): 0: ((anchor apple generic) and (certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */)) and ((certificate leaf[field.1.2.840.113635.100.6.1.14] /* exists */) or (certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */));'
+      cms: null
+
+```
