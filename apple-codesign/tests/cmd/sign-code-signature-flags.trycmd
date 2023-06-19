@@ -1,0 +1,122 @@
+```
+$ rcodesign debug-create-macho exe
+writing Mach-O to exe
+
+$ rcodesign sign --code-signature-flags host --code-signature-flags hard --code-signature-flags kill --code-signature-flags expires --code-signature-flags runtime --code-signature-flags linker-signed exe exe.signed
+adding code signature flag CodeSignatureFlags(HOST) to main signing target
+adding code signature flag CodeSignatureFlags(FORCE_HARD) to main signing target
+adding code signature flag CodeSignatureFlags(FORCE_KILL) to main signing target
+adding code signature flag CodeSignatureFlags(FORCE_EXPIRATION) to main signing target
+adding code signature flag CodeSignatureFlags(RUNTIME) to main signing target
+adding code signature flag CodeSignatureFlags(LINKER_SIGNED) to main signing target
+signing exe to exe.signed
+signing exe as a Mach-O binary
+inferring default signing settings from Mach-O binary
+setting binary identifier to exe
+parsing Mach-O
+signing Mach-O binary at index 0
+adding code signature flags from signing settings: CodeSignatureFlags(HOST | FORCE_HARD | FORCE_KILL | FORCE_EXPIRATION | RUNTIME | LINKER_SIGNED)
+creating ad-hoc signature
+removing linker signed flag from code signature (we're not a linker)
+hardened runtime version required but unable to derive suitable version; signature will likely fail Apple checks
+code directory version: 132096
+total signature size: 356 bytes
+writing Mach-O to exe.signed
+
+$ rcodesign print-signature-info exe.signed
+- path: exe.signed
+  file_size: 18434
+  file_sha256: 2d612be9bd896ffb610838d10ae29abac38326c0a9621a681c5483df38fe07f4
+  entity: !mach_o
+    linkedit_segment_file_start_offset: 16384
+    linkedit_segment_file_end_offset: 18434
+    signature_file_start_offset: 16386
+    signature_file_end_offset: 18434
+    signature_linkedit_start_offset: 2
+    signature_linkedit_end_offset: 2050
+    signature:
+      superblob_length: 356
+      blob_count: 2
+      blobs:
+      - slot: CodeDirectory (0)
+        magic: fade0c02
+        length: 316
+        sha1: 2c59b481c82db29b0ad71c36732e9d2209c81632
+        sha256: e5a5a178295896e9bca56287940cef708ffd12ac0c58dddfa0708155bb173488
+      - slot: RequirementSet (2)
+        magic: fade0c01
+        length: 12
+        sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+        sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+      code_directory:
+        version: '0x20400'
+        flags: CodeSignatureFlags(HOST | ADHOC | FORCE_HARD | FORCE_KILL | FORCE_EXPIRATION | RUNTIME)
+        identifier: exe
+        digest_type: sha256
+        platform: 0
+        signed_entity_size: 16386
+        executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+        code_digests_count: 5
+        slot_digests:
+        - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+        - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+      entitlements_plist: null
+      cms: null
+
+$ rcodesign sign --code-signature-flags host exe.signed exe.signed.2
+adding code signature flag CodeSignatureFlags(HOST) to main signing target
+signing exe.signed to exe.signed.2
+signing exe.signed as a Mach-O binary
+inferring default signing settings from Mach-O binary
+preserving existing binary identifier in Mach-O
+using code signature flags from settings
+setting binary identifier to exe.signed
+parsing Mach-O
+signing Mach-O binary at index 0
+adding code signature flags from signing settings: CodeSignatureFlags(HOST)
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 356 bytes
+writing Mach-O to exe.signed.2
+
+$ rcodesign print-signature-info exe.signed.2
+- path: exe.signed.2
+  file_size: 18434
+  file_sha256: 523fa503e7a3c09a4b14088e4cac0afb2fa9a9daffc6e9f8935ad8431400defa
+  entity: !mach_o
+    linkedit_segment_file_start_offset: 16384
+    linkedit_segment_file_end_offset: 18434
+    signature_file_start_offset: 16386
+    signature_file_end_offset: 18434
+    signature_linkedit_start_offset: 2
+    signature_linkedit_end_offset: 2050
+    signature:
+      superblob_length: 356
+      blob_count: 2
+      blobs:
+      - slot: CodeDirectory (0)
+        magic: fade0c02
+        length: 316
+        sha1: 97867a9470311bf15beaffe9bb20e75a1c31b216
+        sha256: f19219947579deb2f4db7c12d9af8e9c8bdb3535a0947fea853c89907d21753b
+      - slot: RequirementSet (2)
+        magic: fade0c01
+        length: 12
+        sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+        sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+      code_directory:
+        version: '0x20400'
+        flags: CodeSignatureFlags(HOST | ADHOC)
+        identifier: exe
+        digest_type: sha256
+        platform: 0
+        signed_entity_size: 16386
+        executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+        code_digests_count: 5
+        slot_digests:
+        - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+        - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+      entitlements_plist: null
+      cms: null
+
+```

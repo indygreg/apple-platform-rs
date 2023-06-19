@@ -2406,11 +2406,26 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         settings.set_code_resources_data(scope, code_resources_data);
     }
 
+    // If code signature flags are specified, they overwrite defaults. Do
+    // a pass over scopes to reset all flags then re-add the flags.
+    for value in &args.code_signature_flags {
+        let scope = parse_scoped_value(value)?.0;
+        if let Some(existing) = settings.code_signature_flags(&scope) {
+            if existing != CodeSignatureFlags::empty() {
+                warn!(
+                    "removing code signature flags {:?} from {}",
+                    existing, scope
+                );
+            }
+        }
+        settings.set_code_signature_flags(scope, CodeSignatureFlags::empty());
+    }
+
     for value in &args.code_signature_flags {
         let (scope, value) = parse_scoped_value(value)?;
-
         let flags = CodeSignatureFlags::from_str(value)?;
-        settings.set_code_signature_flags(scope, flags);
+        warn!("adding code signature flag {:?} to {}", flags, scope);
+        settings.add_code_signature_flags(scope, flags);
     }
 
     for value in &args.entitlements_xml_path {
