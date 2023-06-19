@@ -84,3 +84,290 @@ Options:
           Print help (see a summary with '-h')
 
 ```
+
+```
+$ rcodesign debug-create-macho --minimum-os-version 11.2.0 exe
+writing Mach-O to exe
+
+$ rcodesign sign exe
+signing exe in place
+signing exe as a Mach-O binary
+inferring default signing settings from Mach-O binary
+setting binary identifier to exe
+parsing Mach-O
+signing Mach-O binary at index 0
+binary targets macOS >= 11.2.0 with SDK 11.2.0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 356 bytes
+writing Mach-O to exe
+
+$ rcodesign extract --data blobs exe
+ParsedBlob {
+    blob_entry: BlobEntry {
+        index: 0,
+        slot: CodeDirectory (0),
+        offset: 28,
+        length: 316,
+        magic: CodeDirectory,
+    },
+    blob: CodeDirectory(
+        CodeDirectoryBlob {
+            version: 132096,
+            flags: CodeSignatureFlags(
+                ADHOC,
+            ),
+            code_limit: 16386,
+            digest_size: 32,
+            digest_type: Sha256,
+            platform: 0,
+            page_size: 4096,
+            spare2: 0,
+            scatter_offset: None,
+            spare3: Some(
+                0,
+            ),
+            code_limit_64: Some(
+                0,
+            ),
+            exec_seg_base: Some(
+                0,
+            ),
+            exec_seg_limit: Some(
+                16384,
+            ),
+            exec_seg_flags: Some(
+                ExecutableSegmentFlags(
+                    MAIN_BINARY,
+                ),
+            ),
+            runtime: None,
+            pre_encrypt_offset: None,
+            linkage_hash_type: None,
+            linkage_truncated: None,
+            spare4: None,
+            linkage_offset: None,
+            linkage_size: None,
+            ident: "exe",
+            team_name: None,
+            code_digests: [
+                c5bd808b69ca1ec8a75fc58cf11d7f738009d5aa33ca8da73d0e638c09e0fe15,
+                ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
+                ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
+                ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
+                96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7,
+            ],
+            special_digests: {
+                Info (1): 0000000000000000000000000000000000000000000000000000000000000000,
+                RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986,
+            },
+        },
+    ),
+}
+ParsedBlob {
+    blob_entry: BlobEntry {
+        index: 1,
+        slot: RequirementSet (2),
+        offset: 344,
+        length: 12,
+        magic: RequirementSet,
+    },
+    blob: RequirementSet(
+        RequirementSetBlob {
+            requirements: {},
+        },
+    ),
+}
+
+$ rcodesign extract --data code-directory exe
+CodeDirectoryBlob {
+    version: 132096,
+    flags: CodeSignatureFlags(
+        ADHOC,
+    ),
+    code_limit: 16386,
+    digest_size: 32,
+    digest_type: Sha256,
+    platform: 0,
+    page_size: 4096,
+    spare2: 0,
+    scatter_offset: None,
+    spare3: Some(
+        0,
+    ),
+    code_limit_64: Some(
+        0,
+    ),
+    exec_seg_base: Some(
+        0,
+    ),
+    exec_seg_limit: Some(
+        16384,
+    ),
+    exec_seg_flags: Some(
+        ExecutableSegmentFlags(
+            MAIN_BINARY,
+        ),
+    ),
+    runtime: None,
+    pre_encrypt_offset: None,
+    linkage_hash_type: None,
+    linkage_truncated: None,
+    spare4: None,
+    linkage_offset: None,
+    linkage_size: None,
+    ident: "exe",
+    team_name: None,
+    code_digests: [
+        c5bd808b69ca1ec8a75fc58cf11d7f738009d5aa33ca8da73d0e638c09e0fe15,
+        ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
+        ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
+        ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
+        96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7,
+    ],
+    special_digests: {
+        Info (1): 0000000000000000000000000000000000000000000000000000000000000000,
+        RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986,
+    },
+}
+
+$ rcodesign extract --data code-directory-serialized exe
+CodeDirectoryBlob {
+    version: 132096,
+    flags: CodeSignatureFlags(
+        ADHOC,
+    ),
+    code_limit: 16386,
+    digest_size: 32,
+    digest_type: Sha256,
+    platform: 0,
+    page_size: 4096,
+    spare2: 0,
+    scatter_offset: None,
+    spare3: Some(
+        0,
+    ),
+    code_limit_64: Some(
+        0,
+    ),
+    exec_seg_base: Some(
+        0,
+    ),
+    exec_seg_limit: Some(
+        16384,
+    ),
+    exec_seg_flags: Some(
+        ExecutableSegmentFlags(
+            MAIN_BINARY,
+        ),
+    ),
+    runtime: None,
+    pre_encrypt_offset: None,
+    linkage_hash_type: None,
+    linkage_truncated: None,
+    spare4: None,
+    linkage_offset: None,
+    linkage_size: None,
+    ident: "exe",
+    team_name: None,
+    code_digests: [
+        c5bd808b69ca1ec8a75fc58cf11d7f738009d5aa33ca8da73d0e638c09e0fe15,
+        ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
+        ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
+        ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
+        96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7,
+    ],
+    special_digests: {
+        Info (1): 0000000000000000000000000000000000000000000000000000000000000000,
+        RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986,
+    },
+}
+
+$ rcodesign extract --data linkedit-info exe
+__LINKEDIT segment index: 4
+__LINKEDIT segment start offset: 16384
+__LINKEDIT segment end offset: 18434
+__LINKEDIT segment size: 2050
+__LINKEDIT signature global start offset: 16386
+__LINKEDIT signature global end offset: 18434
+__LINKEDIT signature local segment start offset: 2
+__LINKEDIT signature local segment end offset: 2050
+__LINKEDIT signature size: 2048
+
+$ rcodesign extract --data macho-load-commands exe
+load command count: 8
+LC_SEGMENT_64; offsets=0x20-0x68 (32-104); size=72
+LC_SEGMENT_64; offsets=0x68-0x150 (104-336); size=232
+LC_SEGMENT_64; offsets=0x150-0x1e8 (336-488); size=152
+LC_SEGMENT_64; offsets=0x1e8-0x280 (488-640); size=152
+LC_SEGMENT_64; offsets=0x280-0x2c8 (640-712); size=72
+LC_SYMTAB; offsets=0x2c8-0x2e0 (712-736); size=24
+LC_BUILD_VERSION; offsets=0x2e0-0x2f8 (736-760); size=24
+LC_CODE_SIGNATURE; offsets=0x2f8-0x308 (760-776); size=16
+
+$ rcodesign extract --data macho-segments exe
+segments count: 5
+segment #0; __PAGEZERO; offsets=0x0-0x0 (0-0); addresses=0x0-0x100000000; vm/file size 4294967296/0; section count 0
+segment #1; __TEXT; offsets=0x0-0x4000 (0-16384); addresses=0x100000000-0x100000000; vm/file size 0/16384; section count 2
+segment #1; section #0: __text; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; size 0; align=16384; flags=0
+segment #1; section #1: __const; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; size 0; align=16384; flags=0
+segment #2; __DATA_CONST; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; vm/file size 0/0; section count 1
+segment #2; section #0: __const; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; size 0; align=16384; flags=0
+segment #3; __DATA; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; vm/file size 0/0; section count 1
+segment #3; section #0: __data; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; size 0; align=16384; flags=0
+segment #4; __LINKEDIT; offsets=0x4000-0x4802 (16384-18434); addresses=0x100000000-0x100004000; vm/file size 16384/2050; section count 0
+
+$ rcodesign extract --data macho-target exe
+Platform: macOS
+Minimum OS: 11.2.0
+SDK: 11.2.0
+
+$ rcodesign extract --data requirements exe
+
+$ rcodesign extract --data requirements-rust exe
+
+$ rcodesign extract --data requirements-serialized exe
+RequirementSetBlob {
+    requirements: {},
+}
+
+$ rcodesign extract --data superblob exe
+file start offset: 16386
+file end offset: 18434
+__LINKEDIT start offset: 2
+__LINKEDIT end offset: 2050
+length: 356
+blob count: 2
+blobs:
+- index: 0
+  offsets: 0x1c-0x157 (28-343)
+  length: 316
+  slot: CodeDirectory (0)
+  magic: CodeDirectory (0xfade0c02)
+  sha1: c3da81bfa0d985a46a8488c278a76f4a14aaf166
+  sha256: 46d8e5e7d3fde99e2b5f5d8d761f77ce90e5d3c988ca8591c95d10a962504202
+  sha256-truncated: 46d8e5e7d3fde99e2b5f5d8d761f77ce90e5d3c9
+  sha384: 107f51d24982a587c56c83c41d4a46439dbe4a2c3d75ea31393bb37c895e84c9072dd5d9d88b0f28e5e586dd9769650b
+  sha512: fbd959e2fe5ee0e08831951e64a83de7a2c88b1ab47f61c198d0b887806de3ae6a75b9aecd401d8e49007b3a08a70f7c861e764f2e791924f7932429587ac26c
+  sha1-base64: w9qBv6DZhaRqhIjCeKdvShSq8WY=
+  sha256-base64: Rtjl59P96Z4rX12Ndh93zpDl08mIyoWRyV0QqWJQQgI=
+  sha256-truncated-base64: Rtjl59P96Z4rX12Ndh93zpDl08k=
+  sha384-base64: EH9R0kmCpYfFbIPEHUpGQ52+Siw9deoxOTuzfIlehMkHLdXZ2IsPKOXlht2XaWUL
+  sha512-base64: +9lZ4v5e4OCIMZUeZKg956LIixq0f2HBmNC4h4Bt465qdbmuzUAdjkkAezoIpw98hh52Ty55GST3kyQpWHrCbA==
+- index: 1
+  offsets: 0x158-0x163 (344-355)
+  length: 12
+  slot: RequirementSet (2)
+  magic: RequirementSet (0xfade0c01)
+  sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+  sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+  sha256-truncated: 987920904eab650e75788c054aa0b0524e6a80bf
+  sha384: df9b77e787dcf0f66952973f309be7ac0718558792e9e10984a26231048034d31cdd208d65fd38143a8d96aecd32084d
+  sha512: a2038f9fd1ebade88b0f261db83eaef30ecf7c9ebe7c9212c62a30ba534dbf59e6423e922edfbdba969848663377ac4f9130ee8f4510144b4fa411398e3ae97c
+  sha1-base64: OnX22wWFKRSOFN1+obRynMCeyXM=
+  sha256-base64: mHkgkE6rZQ51eIwFSqCwUk5qgL/HGqMt+NI3phdD+YY=
+  sha256-truncated-base64: mHkgkE6rZQ51eIwFSqCwUk5qgL8=
+  sha384-base64: 35t354fc8PZpUpc/MJvnrAcYVYeS6eEJhKJiMQSANNMc3SCNZf04FDqNlq7NMghN
+  sha512-base64: ogOPn9HrreiLDyYduD6u8w7PfJ6+fJISxiowulNNv1nmQj6SLt+9upaYSGYzd6xPkTDuj0UQFEtPpBE5jjrpfA==
+
+```
