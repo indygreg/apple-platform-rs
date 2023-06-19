@@ -10,7 +10,7 @@ Commands:
   compute-code-hashes                   Compute code hashes for a binary
   diff-signatures                       Print a diff between the signature content of two paths
   encode-app-store-connect-api-key      Encode App Store Connect API Key metadata to a single file
-  extract                               Extracts code signature data from a Mach-O binary
+  extract                               Print/extract various information from a Mach-O binary
   generate-certificate-signing-request  Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
   generate-self-signed-certificate      Generate a self-signed certificate for code signing
   keychain-export-certificate-chain     Export Apple CA certificates from the macOS Keychain
@@ -48,7 +48,7 @@ Commands:
   compute-code-hashes                   Compute code hashes for a binary
   diff-signatures                       Print a diff between the signature content of two paths
   encode-app-store-connect-api-key      Encode App Store Connect API Key metadata to a single file
-  extract                               Extracts code signature data from a Mach-O binary
+  extract                               Print/extract various information from a Mach-O binary
   generate-certificate-signing-request  Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
   generate-self-signed-certificate      Generate a self-signed certificate for code signing
   keychain-export-certificate-chain     Export Apple CA certificates from the macOS Keychain

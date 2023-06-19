@@ -48,66 +48,6 @@ use crate::macos::{
     keychain_find_code_signing_certificates, macos_keychain_find_certificate_chain, KeychainDomain,
 };
 
-const EXTRACT_ABOUT: &str = "\
-Print/extract various information from a Mach-O binary.
-
-Given the path to a Mach-O binary (including fat/universal) binaries, this
-command will parse and print requested data to stdout.
-
-The DATA argument controls which data to extract and how to print it.
-Possible values are:
-
-blobs
-   Low-level information on the records in the embedded code signature.
-cms-info
-   Print important information about the CMS data structure.
-cms-pem
-   Like cms-raw except it prints PEM encoded data, which is ASCII and
-   safe to print to terminals.
-cms-raw
-   Print the payload of the CMS blob. This should be well-formed BER
-   encoded ASN.1 data. (This will print binary to stdout.)
-cms
-   Print the ASN.1 decoded CMS data.
-code-directory-raw
-   Raw binary data composing the code directory data structure.
-code-directory
-   Information on the main code directory data structure.
-code-directory-serialized
-   Reserialize the parsed code directory, parse it again, and then print
-   it like `code-directory` would.
-code-directory-serialized-raw
-   Reserialize the parsed code directory and emit its binary. Useful
-   for comparing round-tripping of code directory data.
-linkedit-info
-   Information about the __LINKEDIT Mach-O segment in the binary.
-linkedit-segment-raw
-   Complete content of the __LINKEDIT Mach-O segment as binary.
-macho-load-commands
-   Print information about mach-o load commands in the binary.
-macho-segments
-   Print information about mach-o segments in the binary.
-macho-target
-   Print mach-o targeting info (platform and OS/SDK versions).
-requirements-raw
-   Raw binary data composing the requirements blob/slot.
-requirements
-   Parsed code requirement statement/expression.
-requirements-rust
-   Dump the internal Rust data structures representing the requirements
-   expressions.
-requirements-serialized
-   Reserialize the code requirements blob, parse it again, and then
-   print it like `requirements` would.
-requirements-serialized-raw
-   Reserialize the code requirements blob and emit its binary.
-signature-raw
-   Raw binary data composing the signature data embedded in the binary.
-superblob
-   The SuperBlob record and high-level details of embedded Blob
-   records, including digests of every Blob.
-";
-
 const GENERATE_SELF_SIGNED_CERTIFICATE_ABOUT: &str = "\
 Generate a self-signed certificate that can be used for code signing.
 
@@ -1403,228 +1343,289 @@ fn print_signed_data(
     Ok(())
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+#[derive(Clone, Parser)]
+struct ExtractCommon {
+    /// Path to Mach-O binary to examine
+    path: PathBuf,
+}
+
+#[derive(Clone, Subcommand)]
 enum ExtractData {
-    Blobs,
-    CmsInfo,
-    CmsPem,
-    CmsRaw,
-    Cms,
-    CodeDirectoryRaw,
-    CodeDirectorySerializedRaw,
-    CodeDirectorySerialized,
-    CodeDirectory,
-    LinkeditInfo,
-    LinkeditSegmentRaw,
-    MachoHeader,
-    MachoLoadCommands,
-    MachoLoadCommandsRaw,
-    MachoSegments,
-    MachoTarget,
-    RequirementsRaw,
-    RequirementsRust,
-    RequirementsSerializedRaw,
-    RequirementsSerialized,
-    Requirements,
-    SignatureRaw,
-    Superblob,
+    /// Code directory blobs.
+    Blobs(ExtractCommon),
+    /// Information about cryptographic message syntax signature.
+    CmsInfo(ExtractCommon),
+    /// PEM encoded cryptographic message syntax signature.
+    CmsPem(ExtractCommon),
+    /// Binary cryptographic message syntax signature. Should be BER encoded ASN.1 data.
+    CmsRaw(ExtractCommon),
+    /// ASN.1 decoded cryptographic message syntax data.
+    Cms(ExtractCommon),
+    /// Information from the main code directory data structure.
+    CodeDirectory(ExtractCommon),
+    /// Raw binary data composing the code directory data structure.
+    CodeDirectoryRaw(ExtractCommon),
+    /// Reserialize the parsed code directory, parse it again, and then print it like `code-directory` would.
+    CodeDirectorySerialized(ExtractCommon),
+    /// Reserialize the parsed code directory and emit its binary.
+    ///
+    /// Useful for comparing round-tripping of code directory data.
+    CodeDirectorySerializedRaw(ExtractCommon),
+    /// Information about the __LINKEDIT Mach-O segment.
+    LinkeditInfo(ExtractCommon),
+    /// Complete content of the __LINKEDIT Mach-O segment.
+    LinkeditSegmentRaw(ExtractCommon),
+    /// Mach-O file header data.
+    MachoHeader(ExtractCommon),
+    /// High-level information about Mach-O load commands.
+    MachoLoadCommands(ExtractCommon),
+    /// Debug formatted Mach-O load command data structures.
+    MachoLoadCommandsRaw(ExtractCommon),
+    /// Information about Mach-O segments.
+    MachoSegments(ExtractCommon),
+    /// Mach-O targeting info.
+    MachoTarget(ExtractCommon),
+    /// Parsed code requirement statement/expression.
+    Requirements(ExtractCommon),
+    /// Raw binary data composing the requirements blob/slot.
+    RequirementsRaw(ExtractCommon),
+    /// Dump the internal Rust data structures representing the requirements expressions.
+    RequirementsRust(ExtractCommon),
+    /// Reserialize the code requirements blob, parse it again, and then print it like `requirements` would.
+    RequirementsSerialized(ExtractCommon),
+    /// Like `requirements-serialized` except emit the binary data representation.
+    RequirementsSerializedRaw(ExtractCommon),
+    /// Raw binary data constituting the signature data embedded in the binary.
+    SignatureRaw(ExtractCommon),
+    /// Show information about the SuperBlob record and high-level details of embedded Blob records.
+    Superblob(ExtractCommon),
+}
+
+impl ExtractData {
+    fn common_args(&self) -> &ExtractCommon {
+        match self {
+            ExtractData::Blobs(x) => x,
+            ExtractData::CmsInfo(x) => x,
+            ExtractData::CmsPem(x) => x,
+            ExtractData::CmsRaw(x) => x,
+            ExtractData::Cms(x) => x,
+            ExtractData::CodeDirectoryRaw(x) => x,
+            ExtractData::CodeDirectorySerializedRaw(x) => x,
+            ExtractData::CodeDirectorySerialized(x) => x,
+            ExtractData::CodeDirectory(x) => x,
+            ExtractData::LinkeditInfo(x) => x,
+            ExtractData::LinkeditSegmentRaw(x) => x,
+            ExtractData::MachoHeader(x) => x,
+            ExtractData::MachoLoadCommands(x) => x,
+            ExtractData::MachoLoadCommandsRaw(x) => x,
+            ExtractData::MachoSegments(x) => x,
+            ExtractData::MachoTarget(x) => x,
+            ExtractData::RequirementsRaw(x) => x,
+            ExtractData::RequirementsRust(x) => x,
+            ExtractData::RequirementsSerializedRaw(x) => x,
+            ExtractData::RequirementsSerialized(x) => x,
+            ExtractData::Requirements(x) => x,
+            ExtractData::SignatureRaw(x) => x,
+            ExtractData::Superblob(x) => x,
+        }
+    }
 }
 
 #[derive(Parser)]
 struct Extract {
     /// Index of Mach-O binary to operate on within a universal/fat binary
-    #[arg(long, default_value = "0")]
+    #[arg(long, global = true, default_value = "0")]
     universal_index: usize,
 
     /// Which data to extract and how to format it
-    #[arg(value_enum)]
+    #[command(subcommand)]
     data: ExtractData,
-
-    /// Path to Mach-O binary to examine
-    path: PathBuf,
 }
 
-fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
-    let data = std::fs::read(&args.path)?;
-    let mach = MachFile::parse(&data)?;
-    let macho = mach.nth_macho(args.universal_index)?;
+impl Extract {
+    fn run(&self) -> Result<(), AppleCodesignError> {
+        let common = self.data.common_args();
 
-    match args.data {
-        ExtractData::Blobs => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+        let data = std::fs::read(&common.path)?;
+        let mach = MachFile::parse(&data)?;
+        let macho = mach.nth_macho(self.universal_index)?;
 
-            for blob in embedded.blobs {
-                let parsed = blob.into_parsed_blob()?;
-                println!("{parsed:#?}");
+        match self.data {
+            ExtractData::Blobs(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+
+                for blob in embedded.blobs {
+                    let parsed = blob.into_parsed_blob()?;
+                    println!("{parsed:#?}");
+                }
             }
-        }
-        ExtractData::CmsInfo => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+            ExtractData::CmsInfo(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-            if let Some(cms) = embedded.signature_data()? {
-                let signed_data = SignedData::parse_ber(cms)?;
+                if let Some(cms) = embedded.signature_data()? {
+                    let signed_data = SignedData::parse_ber(cms)?;
 
-                let cd_data = if let Ok(Some(blob)) = embedded.code_directory() {
-                    Some(blob.to_blob_bytes()?)
+                    let cd_data = if let Ok(Some(blob)) = embedded.code_directory() {
+                        Some(blob.to_blob_bytes()?)
+                    } else {
+                        None
+                    };
+
+                    print_signed_data("", &signed_data, cd_data)?;
                 } else {
-                    None
-                };
-
-                print_signed_data("", &signed_data, cd_data)?;
-            } else {
-                eprintln!("no CMS data");
+                    eprintln!("no CMS data");
+                }
             }
-        }
-        ExtractData::CmsPem => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+            ExtractData::CmsPem(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-            if let Some(cms) = embedded.signature_data()? {
-                print!("{}", pem::encode(&pem::Pem::new("PKCS7", cms.to_vec())));
-            } else {
-                eprintln!("no CMS data");
+                if let Some(cms) = embedded.signature_data()? {
+                    print!("{}", pem::encode(&pem::Pem::new("PKCS7", cms.to_vec())));
+                } else {
+                    eprintln!("no CMS data");
+                }
             }
-        }
-        ExtractData::CmsRaw => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+            ExtractData::CmsRaw(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-            if let Some(cms) = embedded.signature_data()? {
-                std::io::stdout().write_all(cms)?;
-            } else {
-                eprintln!("no CMS data");
+                if let Some(cms) = embedded.signature_data()? {
+                    std::io::stdout().write_all(cms)?;
+                } else {
+                    eprintln!("no CMS data");
+                }
             }
-        }
-        ExtractData::Cms => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+            ExtractData::Cms(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-            if let Some(signed_data) = embedded.signed_data()? {
-                println!("{signed_data:#?}");
-            } else {
-                eprintln!("no CMS data");
+                if let Some(signed_data) = embedded.signed_data()? {
+                    println!("{signed_data:#?}");
+                } else {
+                    eprintln!("no CMS data");
+                }
             }
-        }
-        ExtractData::CodeDirectoryRaw => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+            ExtractData::CodeDirectoryRaw(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-            if let Some(blob) = embedded.find_slot(CodeSigningSlot::CodeDirectory) {
-                std::io::stdout().write_all(blob.data)?;
-            } else {
-                eprintln!("no code directory");
+                if let Some(blob) = embedded.find_slot(CodeSigningSlot::CodeDirectory) {
+                    std::io::stdout().write_all(blob.data)?;
+                } else {
+                    eprintln!("no code directory");
+                }
             }
-        }
-        ExtractData::CodeDirectorySerializedRaw => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+            ExtractData::CodeDirectorySerializedRaw(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-            if let Ok(Some(cd)) = embedded.code_directory() {
-                std::io::stdout().write_all(&cd.to_blob_bytes()?)?;
-            } else {
-                eprintln!("no code directory");
+                if let Ok(Some(cd)) = embedded.code_directory() {
+                    std::io::stdout().write_all(&cd.to_blob_bytes()?)?;
+                } else {
+                    eprintln!("no code directory");
+                }
             }
-        }
-        ExtractData::CodeDirectorySerialized => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+            ExtractData::CodeDirectorySerialized(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-            if let Ok(Some(cd)) = embedded.code_directory() {
-                let serialized = cd.to_blob_bytes()?;
-                println!("{:#?}", CodeDirectoryBlob::from_blob_bytes(&serialized)?);
+                if let Ok(Some(cd)) = embedded.code_directory() {
+                    let serialized = cd.to_blob_bytes()?;
+                    println!("{:#?}", CodeDirectoryBlob::from_blob_bytes(&serialized)?);
+                }
             }
-        }
-        ExtractData::CodeDirectory => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+            ExtractData::CodeDirectory(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-            if let Some(cd) = embedded.code_directory()? {
-                println!("{cd:#?}");
-            } else {
-                eprintln!("no code directory");
+                if let Some(cd) = embedded.code_directory()? {
+                    println!("{cd:#?}");
+                } else {
+                    eprintln!("no code directory");
+                }
             }
-        }
-        ExtractData::LinkeditInfo => {
-            let sig = macho
-                .find_signature_data()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-            println!("__LINKEDIT segment index: {}", sig.linkedit_segment_index);
-            println!(
-                "__LINKEDIT segment start offset: {}",
-                sig.linkedit_segment_start_offset
-            );
-            println!(
-                "__LINKEDIT segment end offset: {}",
-                sig.linkedit_segment_end_offset
-            );
-            println!(
-                "__LINKEDIT segment size: {}",
-                sig.linkedit_segment_data.len()
-            );
-            println!(
-                "__LINKEDIT signature global start offset: {}",
-                sig.linkedit_signature_start_offset
-            );
-            println!(
-                "__LINKEDIT signature global end offset: {}",
-                sig.linkedit_signature_end_offset
-            );
-            println!(
-                "__LINKEDIT signature local segment start offset: {}",
-                sig.signature_start_offset
-            );
-            println!(
-                "__LINKEDIT signature local segment end offset: {}",
-                sig.signature_end_offset
-            );
-            println!("__LINKEDIT signature size: {}", sig.signature_data.len());
-        }
-        ExtractData::LinkeditSegmentRaw => {
-            let sig = macho
-                .find_signature_data()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-            std::io::stdout().write_all(sig.linkedit_segment_data)?;
-        }
-        ExtractData::MachoHeader => {
-            println!("{:#?}", macho.macho.header);
-        }
-        ExtractData::MachoLoadCommands => {
-            println!("load command count: {}", macho.macho.load_commands.len());
-
-            for command in &macho.macho.load_commands {
+            ExtractData::LinkeditInfo(_) => {
+                let sig = macho
+                    .find_signature_data()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+                println!("__LINKEDIT segment index: {}", sig.linkedit_segment_index);
                 println!(
-                    "{}; offsets=0x{:x}-0x{:x} ({}-{}); size={}",
-                    goblin::mach::load_command::cmd_to_str(command.command.cmd()),
-                    command.offset,
-                    command.offset + command.command.cmdsize(),
-                    command.offset,
-                    command.offset + command.command.cmdsize(),
-                    command.command.cmdsize(),
+                    "__LINKEDIT segment start offset: {}",
+                    sig.linkedit_segment_start_offset
                 );
-            }
-        }
-        ExtractData::MachoLoadCommandsRaw => {
-            for command in &macho.macho.load_commands {
-                println!("{:?}", command);
-            }
-        }
-        ExtractData::MachoSegments => {
-            println!("segments count: {}", macho.macho.segments.len());
-            for (segment_index, segment) in macho.macho.segments.iter().enumerate() {
-                let sections = segment.sections()?;
-
                 println!(
+                    "__LINKEDIT segment end offset: {}",
+                    sig.linkedit_segment_end_offset
+                );
+                println!(
+                    "__LINKEDIT segment size: {}",
+                    sig.linkedit_segment_data.len()
+                );
+                println!(
+                    "__LINKEDIT signature global start offset: {}",
+                    sig.linkedit_signature_start_offset
+                );
+                println!(
+                    "__LINKEDIT signature global end offset: {}",
+                    sig.linkedit_signature_end_offset
+                );
+                println!(
+                    "__LINKEDIT signature local segment start offset: {}",
+                    sig.signature_start_offset
+                );
+                println!(
+                    "__LINKEDIT signature local segment end offset: {}",
+                    sig.signature_end_offset
+                );
+                println!("__LINKEDIT signature size: {}", sig.signature_data.len());
+            }
+            ExtractData::LinkeditSegmentRaw(_) => {
+                let sig = macho
+                    .find_signature_data()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+                std::io::stdout().write_all(sig.linkedit_segment_data)?;
+            }
+            ExtractData::MachoHeader(_) => {
+                println!("{:#?}", macho.macho.header);
+            }
+            ExtractData::MachoLoadCommands(_) => {
+                println!("load command count: {}", macho.macho.load_commands.len());
+
+                for command in &macho.macho.load_commands {
+                    println!(
+                        "{}; offsets=0x{:x}-0x{:x} ({}-{}); size={}",
+                        goblin::mach::load_command::cmd_to_str(command.command.cmd()),
+                        command.offset,
+                        command.offset + command.command.cmdsize(),
+                        command.offset,
+                        command.offset + command.command.cmdsize(),
+                        command.command.cmdsize(),
+                    );
+                }
+            }
+            ExtractData::MachoLoadCommandsRaw(_) => {
+                for command in &macho.macho.load_commands {
+                    println!("{:?}", command);
+                }
+            }
+            ExtractData::MachoSegments(_) => {
+                println!("segments count: {}", macho.macho.segments.len());
+                for (segment_index, segment) in macho.macho.segments.iter().enumerate() {
+                    let sections = segment.sections()?;
+
+                    println!(
                     "segment #{}; {}; offsets=0x{:x}-0x{:x} ({}-{}); addresses=0x{:x}-0x{:x}; vm/file size {}/{}; section count {}",
                     segment_index,
                     segment.name()?,
@@ -1638,8 +1639,8 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                     segment.filesize,
                     sections.len()
                 );
-                for (section_index, (section, _)) in sections.into_iter().enumerate() {
-                    println!(
+                    for (section_index, (section, _)) in sections.into_iter().enumerate() {
+                        println!(
                         "segment #{}; section #{}: {}; offsets=0x{:x}-0x{:x} ({}-{}); addresses=0x{:x}-0x{:x}; size {}; align={}; flags={}",
                         segment_index,
                         section_index,
@@ -1654,160 +1655,161 @@ fn command_extract(args: &Extract) -> Result<(), AppleCodesignError> {
                         section.align,
                         section.flags,
                     );
-                }
-            }
-        }
-        ExtractData::MachoTarget => {
-            if let Some(target) = macho.find_targeting()? {
-                println!("Platform: {}", target.platform);
-                println!("Minimum OS: {}", target.minimum_os_version);
-                println!("SDK: {}", target.sdk_version);
-            } else {
-                println!("Unable to resolve Mach-O targeting from load commands");
-            }
-        }
-        ExtractData::RequirementsRaw => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-
-            if let Some(blob) = embedded.find_slot(CodeSigningSlot::RequirementSet) {
-                std::io::stdout().write_all(blob.data)?;
-            } else {
-                eprintln!("no requirements");
-            }
-        }
-        ExtractData::RequirementsRust => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-
-            if let Some(reqs) = embedded.code_requirements()? {
-                for (typ, req) in &reqs.requirements {
-                    for expr in req.parse_expressions()?.iter() {
-                        println!("{typ} => {expr:#?}");
                     }
                 }
-            } else {
-                eprintln!("no requirements");
             }
-        }
-        ExtractData::RequirementsSerializedRaw => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-
-            if let Some(reqs) = embedded.code_requirements()? {
-                std::io::stdout().write_all(&reqs.to_blob_bytes()?)?;
-            } else {
-                eprintln!("no requirements");
-            }
-        }
-        ExtractData::RequirementsSerialized => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-
-            if let Some(reqs) = embedded.code_requirements()? {
-                let serialized = reqs.to_blob_bytes()?;
-                println!("{:#?}", RequirementSetBlob::from_blob_bytes(&serialized)?);
-            } else {
-                eprintln!("no requirements");
-            }
-        }
-        ExtractData::Requirements => {
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-
-            if let Some(reqs) = embedded.code_requirements()? {
-                for (typ, req) in &reqs.requirements {
-                    for expr in req.parse_expressions()?.iter() {
-                        println!("{typ} => {expr}");
-                    }
+            ExtractData::MachoTarget(_) => {
+                if let Some(target) = macho.find_targeting()? {
+                    println!("Platform: {}", target.platform);
+                    println!("Minimum OS: {}", target.minimum_os_version);
+                    println!("SDK: {}", target.sdk_version);
+                } else {
+                    println!("Unable to resolve Mach-O targeting from load commands");
                 }
-            } else {
-                eprintln!("no requirements");
             }
-        }
-        ExtractData::SignatureRaw => {
-            let sig = macho
-                .find_signature_data()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-            std::io::stdout().write_all(sig.signature_data)?;
-        }
-        ExtractData::Superblob => {
-            let sig = macho
-                .find_signature_data()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
-            let embedded = macho
-                .code_signature()?
-                .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+            ExtractData::RequirementsRaw(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-            println!("file start offset: {}", sig.linkedit_signature_start_offset);
-            println!("file end offset: {}", sig.linkedit_signature_end_offset);
-            println!("__LINKEDIT start offset: {}", sig.signature_start_offset);
-            println!("__LINKEDIT end offset: {}", sig.signature_end_offset);
-            println!("length: {}", embedded.length);
-            println!("blob count: {}", embedded.count);
-            println!("blobs:");
-            for blob in embedded.blobs {
-                println!("- index: {}", blob.index);
-                println!(
-                    "  offsets: 0x{:x}-0x{:x} ({}-{})",
-                    blob.offset,
-                    blob.offset + blob.length - 1,
-                    blob.offset,
-                    blob.offset + blob.length - 1
-                );
-                println!("  length: {}", blob.length);
-                println!("  slot: {:?}", blob.slot);
-                println!("  magic: {:?} (0x{:x})", blob.magic, u32::from(blob.magic));
-                println!(
-                    "  sha1: {}",
-                    hex::encode(blob.digest_with(DigestType::Sha1)?)
-                );
-                println!(
-                    "  sha256: {}",
-                    hex::encode(blob.digest_with(DigestType::Sha256)?)
-                );
-                println!(
-                    "  sha256-truncated: {}",
-                    hex::encode(blob.digest_with(DigestType::Sha256Truncated)?)
-                );
-                println!(
-                    "  sha384: {}",
-                    hex::encode(blob.digest_with(DigestType::Sha384)?),
-                );
-                println!(
-                    "  sha512: {}",
-                    hex::encode(blob.digest_with(DigestType::Sha512)?),
-                );
-                println!(
-                    "  sha1-base64: {}",
-                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha1)?)
-                );
-                println!(
-                    "  sha256-base64: {}",
-                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha256)?)
-                );
-                println!(
-                    "  sha256-truncated-base64: {}",
-                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha256Truncated)?)
-                );
-                println!(
-                    "  sha384-base64: {}",
-                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha384)?)
-                );
-                println!(
-                    "  sha512-base64: {}",
-                    STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha512)?)
-                );
+                if let Some(blob) = embedded.find_slot(CodeSigningSlot::RequirementSet) {
+                    std::io::stdout().write_all(blob.data)?;
+                } else {
+                    eprintln!("no requirements");
+                }
+            }
+            ExtractData::RequirementsRust(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+
+                if let Some(reqs) = embedded.code_requirements()? {
+                    for (typ, req) in &reqs.requirements {
+                        for expr in req.parse_expressions()?.iter() {
+                            println!("{typ} => {expr:#?}");
+                        }
+                    }
+                } else {
+                    eprintln!("no requirements");
+                }
+            }
+            ExtractData::RequirementsSerializedRaw(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+
+                if let Some(reqs) = embedded.code_requirements()? {
+                    std::io::stdout().write_all(&reqs.to_blob_bytes()?)?;
+                } else {
+                    eprintln!("no requirements");
+                }
+            }
+            ExtractData::RequirementsSerialized(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+
+                if let Some(reqs) = embedded.code_requirements()? {
+                    let serialized = reqs.to_blob_bytes()?;
+                    println!("{:#?}", RequirementSetBlob::from_blob_bytes(&serialized)?);
+                } else {
+                    eprintln!("no requirements");
+                }
+            }
+            ExtractData::Requirements(_) => {
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+
+                if let Some(reqs) = embedded.code_requirements()? {
+                    for (typ, req) in &reqs.requirements {
+                        for expr in req.parse_expressions()?.iter() {
+                            println!("{typ} => {expr}");
+                        }
+                    }
+                } else {
+                    eprintln!("no requirements");
+                }
+            }
+            ExtractData::SignatureRaw(_) => {
+                let sig = macho
+                    .find_signature_data()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+                std::io::stdout().write_all(sig.signature_data)?;
+            }
+            ExtractData::Superblob(_) => {
+                let sig = macho
+                    .find_signature_data()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+                let embedded = macho
+                    .code_signature()?
+                    .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
+
+                println!("file start offset: {}", sig.linkedit_signature_start_offset);
+                println!("file end offset: {}", sig.linkedit_signature_end_offset);
+                println!("__LINKEDIT start offset: {}", sig.signature_start_offset);
+                println!("__LINKEDIT end offset: {}", sig.signature_end_offset);
+                println!("length: {}", embedded.length);
+                println!("blob count: {}", embedded.count);
+                println!("blobs:");
+                for blob in embedded.blobs {
+                    println!("- index: {}", blob.index);
+                    println!(
+                        "  offsets: 0x{:x}-0x{:x} ({}-{})",
+                        blob.offset,
+                        blob.offset + blob.length - 1,
+                        blob.offset,
+                        blob.offset + blob.length - 1
+                    );
+                    println!("  length: {}", blob.length);
+                    println!("  slot: {:?}", blob.slot);
+                    println!("  magic: {:?} (0x{:x})", blob.magic, u32::from(blob.magic));
+                    println!(
+                        "  sha1: {}",
+                        hex::encode(blob.digest_with(DigestType::Sha1)?)
+                    );
+                    println!(
+                        "  sha256: {}",
+                        hex::encode(blob.digest_with(DigestType::Sha256)?)
+                    );
+                    println!(
+                        "  sha256-truncated: {}",
+                        hex::encode(blob.digest_with(DigestType::Sha256Truncated)?)
+                    );
+                    println!(
+                        "  sha384: {}",
+                        hex::encode(blob.digest_with(DigestType::Sha384)?),
+                    );
+                    println!(
+                        "  sha512: {}",
+                        hex::encode(blob.digest_with(DigestType::Sha512)?),
+                    );
+                    println!(
+                        "  sha1-base64: {}",
+                        STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha1)?)
+                    );
+                    println!(
+                        "  sha256-base64: {}",
+                        STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha256)?)
+                    );
+                    println!(
+                        "  sha256-truncated-base64: {}",
+                        STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha256Truncated)?)
+                    );
+                    println!(
+                        "  sha384-base64: {}",
+                        STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha384)?)
+                    );
+                    println!(
+                        "  sha512-base64: {}",
+                        STANDARD_ENGINE.encode(blob.digest_with(DigestType::Sha512)?)
+                    );
+                }
             }
         }
+
+        Ok(())
     }
-
-    Ok(())
 }
 
 #[derive(Parser)]
@@ -2817,8 +2819,11 @@ enum Subcommands {
     #[command(long_about = ENCODE_APP_STORE_CONNECT_API_KEY_ABOUT)]
     EncodeAppStoreConnectApiKey(EncodeAppStoreConnectApiKey),
 
-    /// Extracts code signature data from a Mach-O binary
-    #[command(long_about = EXTRACT_ABOUT)]
+    /// Print/extract various information from a Mach-O binary.
+    ///
+    /// Given the path to a Mach-O binary (including fat/universal binaries), this
+    /// command will attempt to locate and format the requested data.
+    #[command(override_usage = "rcodesign extract [OPTIONS] <COMMAND> <INPUT_PATH>")]
     Extract(Extract),
 
     /// Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
@@ -2931,7 +2936,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         }
         Subcommands::DebugCreateInfoPlist(args) => args.run(),
         Subcommands::DebugCreateMacho(args) => args.run(),
-        Subcommands::Extract(args) => command_extract(args),
+        Subcommands::Extract(args) => args.run(),
         Subcommands::GenerateCertificateSigningRequest(args) => {
             command_generate_certificate_signing_request(args)
         }

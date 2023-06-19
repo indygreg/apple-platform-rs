@@ -2,73 +2,35 @@
 $ rcodesign help extract
 Print/extract various information from a Mach-O binary.
 
-Given the path to a Mach-O binary (including fat/universal) binaries, this
-command will parse and print requested data to stdout.
+Given the path to a Mach-O binary (including fat/universal binaries), this command will attempt to locate and format the requested data.
 
-The DATA argument controls which data to extract and how to print it.
-Possible values are:
+Usage: rcodesign extract [OPTIONS] <COMMAND> <INPUT_PATH>
 
-blobs
-   Low-level information on the records in the embedded code signature.
-cms-info
-   Print important information about the CMS data structure.
-cms-pem
-   Like cms-raw except it prints PEM encoded data, which is ASCII and
-   safe to print to terminals.
-cms-raw
-   Print the payload of the CMS blob. This should be well-formed BER
-   encoded ASN.1 data. (This will print binary to stdout.)
-cms
-   Print the ASN.1 decoded CMS data.
-code-directory-raw
-   Raw binary data composing the code directory data structure.
-code-directory
-   Information on the main code directory data structure.
-code-directory-serialized
-   Reserialize the parsed code directory, parse it again, and then print
-   it like `code-directory` would.
-code-directory-serialized-raw
-   Reserialize the parsed code directory and emit its binary. Useful
-   for comparing round-tripping of code directory data.
-linkedit-info
-   Information about the __LINKEDIT Mach-O segment in the binary.
-linkedit-segment-raw
-   Complete content of the __LINKEDIT Mach-O segment as binary.
-macho-load-commands
-   Print information about mach-o load commands in the binary.
-macho-segments
-   Print information about mach-o segments in the binary.
-macho-target
-   Print mach-o targeting info (platform and OS/SDK versions).
-requirements-raw
-   Raw binary data composing the requirements blob/slot.
-requirements
-   Parsed code requirement statement/expression.
-requirements-rust
-   Dump the internal Rust data structures representing the requirements
-   expressions.
-requirements-serialized
-   Reserialize the code requirements blob, parse it again, and then
-   print it like `requirements` would.
-requirements-serialized-raw
-   Reserialize the code requirements blob and emit its binary.
-signature-raw
-   Raw binary data composing the signature data embedded in the binary.
-superblob
-   The SuperBlob record and high-level details of embedded Blob
-   records, including digests of every Blob.
-
-
-Usage: rcodesign[EXE] extract [OPTIONS] <DATA> <PATH>
-
-Arguments:
-  <DATA>
-          Which data to extract and how to format it
-          
-          [possible values: blobs, cms-info, cms-pem, cms-raw, cms, code-directory-raw, code-directory-serialized-raw, code-directory-serialized, code-directory, linkedit-info, linkedit-segment-raw, macho-header, macho-load-commands, macho-load-commands-raw, macho-segments, macho-target, requirements-raw, requirements-rust, requirements-serialized-raw, requirements-serialized, requirements, signature-raw, superblob]
-
-  <PATH>
-          Path to Mach-O binary to examine
+Commands:
+  blobs                          Code directory blobs
+  cms-info                       Information about cryptographic message syntax signature
+  cms-pem                        PEM encoded cryptographic message syntax signature
+  cms-raw                        Binary cryptographic message syntax signature. Should be BER encoded ASN.1 data
+  cms                            ASN.1 decoded cryptographic message syntax data
+  code-directory                 Information from the main code directory data structure
+  code-directory-raw             Raw binary data composing the code directory data structure
+  code-directory-serialized      Reserialize the parsed code directory, parse it again, and then print it like `code-directory` would
+  code-directory-serialized-raw  Reserialize the parsed code directory and emit its binary
+  linkedit-info                  Information about the __LINKEDIT Mach-O segment
+  linkedit-segment-raw           Complete content of the __LINKEDIT Mach-O segment
+  macho-header                   Mach-O file header data
+  macho-load-commands            High-level information about Mach-O load commands
+  macho-load-commands-raw        Debug formatted Mach-O load command data structures
+  macho-segments                 Information about Mach-O segments
+  macho-target                   Mach-O targeting info
+  requirements                   Parsed code requirement statement/expression
+  requirements-raw               Raw binary data composing the requirements blob/slot
+  requirements-rust              Dump the internal Rust data structures representing the requirements expressions
+  requirements-serialized        Reserialize the code requirements blob, parse it again, and then print it like `requirements` would
+  requirements-serialized-raw    Like `requirements-serialized` except emit the binary data representation
+  signature-raw                  Raw binary data constituting the signature data embedded in the binary
+  superblob                      Show information about the SuperBlob record and high-level details of embedded Blob records
+  help                           Print this message or the help of the given subcommand(s)
 
 Options:
       --universal-index <UNIVERSAL_INDEX>
