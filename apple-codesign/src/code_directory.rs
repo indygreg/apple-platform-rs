@@ -306,8 +306,7 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
                 (None, None, None)
             };
 
-        let exec_seg_flags =
-            exec_seg_flags.map(|flags| ExecutableSegmentFlags::from_bits_retain(flags));
+        let exec_seg_flags = exec_seg_flags.map(ExecutableSegmentFlags::from_bits_retain);
 
         let (runtime, pre_encrypt_offset) =
             if version >= CodeDirectoryVersion::SupportsRuntime as u32 {
