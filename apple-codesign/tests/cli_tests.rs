@@ -281,5 +281,6 @@ fn cli_tests() {
     // Tests with `ln -s` may not work on Windows. So just skip them.
     if cfg!(windows) {
         cases.skip("tests/cmd/sign-bundle-framework.trycmd");
+        cases.skip("tests/cmd/sign-bundle-with-nested-framework.trycmd");
     }
 }
