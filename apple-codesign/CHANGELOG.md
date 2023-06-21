@@ -28,6 +28,9 @@ Released on ReleaseDate.
 * The `--data` argument of the `extract` command is now a positional argument.
 * Added a hidden `debug-create-code-requirements` command for generating
   binary code requirements files. The command is intended to facilitate testing.
+* The `print-signature-info` command should now work on bundles. It may have
+  stopped working as part of an upgrade to `serde_yaml`. The YAML output may
+  have changed slightly.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

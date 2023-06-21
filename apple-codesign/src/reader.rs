@@ -316,10 +316,8 @@ impl CmsSigner {
                                     let oid = bcder::Oid::take_from(cons)?;
                                     let value = bcder::OctetString::take_from(cons)?;
 
-                                    cdhash_digests.push((
-                                        format!("{oid}"),
-                                        hex::encode(value.into_bytes()),
-                                    ));
+                                    cdhash_digests
+                                        .push((format!("{oid}"), hex::encode(value.into_bytes())));
 
                                     Ok(())
                                 })?;
@@ -762,6 +760,7 @@ pub struct FileEntity {
     pub symlink_target: Option<PathBuf>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sub_path: Option<String>,
+    #[serde(with = "serde_yaml::with::singleton_map")]
     pub entity: SignatureEntity,
 }
 

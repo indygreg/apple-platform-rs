@@ -21,41 +21,42 @@ $ rcodesign print-signature-info exe.signed
 - path: exe.signed
   file_size: 18434
   file_sha256: d2ab2f9d4b574735da1d28aaed92186fe0885e7d8ff9ce2a969037a08bd99330
-  entity: !mach_o
-    linkedit_segment_file_start_offset: 16384
-    linkedit_segment_file_end_offset: 18434
-    signature_file_start_offset: 16386
-    signature_file_end_offset: 18434
-    signature_linkedit_start_offset: 2
-    signature_linkedit_end_offset: 2050
-    signature:
-      superblob_length: 356
-      blob_count: 2
-      blobs:
-      - slot: CodeDirectory (0)
-        magic: fade0c02
-        length: 316
-        sha1: 9079242958433607d19a1338ea046c95b201df79
-        sha256: bc6f21464b7ed811f524eef2c0bd1335196be2fdc8ec9787e4b23d58c4394d73
-      - slot: RequirementSet (2)
-        magic: fade0c01
-        length: 12
-        sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
-        sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
-      code_directory:
-        version: '0x20400'
-        flags: CodeSignatureFlags(ADHOC)
-        identifier: exe
-        digest_type: sha256
-        platform: 0
-        signed_entity_size: 16386
-        executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
-        code_digests_count: 5
-        slot_digests:
-        - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
-        - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-      entitlements_plist: null
-      cms: null
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 18434
+      signature_file_start_offset: 16386
+      signature_file_end_offset: 18434
+      signature_linkedit_start_offset: 2
+      signature_linkedit_end_offset: 2050
+      signature:
+        superblob_length: 356
+        blob_count: 2
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 316
+          sha1: 9079242958433607d19a1338ea046c95b201df79
+          sha256: bc6f21464b7ed811f524eef2c0bd1335196be2fdc8ec9787e4b23d58c4394d73
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: exe
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16386
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+        entitlements_plist: null
+        cms: null
 
 $ hashsum --sha256 --text Info.plist
 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5  Info.plist

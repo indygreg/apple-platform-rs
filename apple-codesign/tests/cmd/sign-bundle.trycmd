@@ -32,121 +32,171 @@ code directory version: 132096
 total signature size: 405 bytes
 writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
-$ cat MyApp.app.signed/Contents/_CodeSignature/CodeResources
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>files</key>
-	<dict/>
-	<key>files2</key>
-	<dict/>
-	<key>rules</key>
-	<dict>
-		<key>^Resources/</key>
-		<true/>
-		<key>^Resources/.*/.lproj/</key>
-		<dict>
-			<key>optional</key>
-			<true/>
-			<key>weight</key>
-			<real>1000</real>
-		</dict>
-		<key>^Resources/.*/.lproj/locversion.plist$</key>
-		<dict>
-			<key>omit</key>
-			<true/>
-			<key>weight</key>
-			<real>1100</real>
-		</dict>
-		<key>^Resources/Base/.lproj/</key>
-		<dict>
-			<key>weight</key>
-			<real>1010</real>
-		</dict>
-		<key>^version.plist$</key>
-		<true/>
-	</dict>
-	<key>rules2</key>
-	<dict>
-		<key>.*/.dSYM($|/)</key>
-		<dict>
-			<key>weight</key>
-			<real>11</real>
-		</dict>
-		<key>^(.*/)?/.DS_Store$</key>
-		<dict>
-			<key>omit</key>
-			<true/>
-			<key>weight</key>
-			<real>2000</real>
-		</dict>
-		<key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>
-		<dict>
-			<key>nested</key>
-			<true/>
-			<key>weight</key>
-			<real>10</real>
-		</dict>
-		<key>^.*</key>
-		<true/>
-		<key>^Info/.plist$</key>
-		<dict>
-			<key>omit</key>
-			<true/>
-			<key>weight</key>
-			<real>20</real>
-		</dict>
-		<key>^PkgInfo$</key>
-		<dict>
-			<key>omit</key>
-			<true/>
-			<key>weight</key>
-			<real>20</real>
-		</dict>
-		<key>^Resources/</key>
-		<dict>
-			<key>weight</key>
-			<real>20</real>
-		</dict>
-		<key>^Resources/.*/.lproj/</key>
-		<dict>
-			<key>optional</key>
-			<true/>
-			<key>weight</key>
-			<real>1000</real>
-		</dict>
-		<key>^Resources/.*/.lproj/locversion.plist$</key>
-		<dict>
-			<key>omit</key>
-			<true/>
-			<key>weight</key>
-			<real>1100</real>
-		</dict>
-		<key>^Resources/Base/.lproj/</key>
-		<dict>
-			<key>weight</key>
-			<real>1010</real>
-		</dict>
-		<key>^[^/]+$</key>
-		<dict>
-			<key>nested</key>
-			<true/>
-			<key>weight</key>
-			<real>10</real>
-		</dict>
-		<key>^embedded/.provisionprofile$</key>
-		<dict>
-			<key>weight</key>
-			<real>20</real>
-		</dict>
-		<key>^version/.plist$</key>
-		<dict>
-			<key>weight</key>
-			<real>20</real>
-		</dict>
-	</dict>
-</dict>
-</plist>
+$ rcodesign print-signature-info MyApp.app.signed
+- path: Contents/Info.plist
+  file_size: 576
+  file_sha256: 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5
+  entity: other
+- path: Contents/MacOS/MyApp
+  file_size: 18434
+  file_sha256: 180110b2e68f6938ca8015e1149949fc763b098cd774c13d7b04ecbf9a5479d1
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 18434
+      signature_file_start_offset: 16386
+      signature_file_end_offset: 18434
+      signature_linkedit_start_offset: 2
+      signature_linkedit_end_offset: 2050
+      signature:
+        superblob_length: 405
+        blob_count: 2
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 365
+          sha1: 83fa6da57e0a69e62c2e304e58ee84a6e6b8543f
+          sha256: 4467b9f9dd5811976906ef27452ee5dad2a2dc4c6fece18c3b22fac49cfe3875
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: com.example.mybundle
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16386
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+          - 'Resources (3): 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b'
+        entitlements_plist: null
+        cms: null
+- path: Contents/_CodeSignature/CodeResources
+  file_size: 2200
+  file_sha256: 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b
+  entity:
+    bundle_code_signature_file: !ResourcesXml
+    - <?xml version="1.0" encoding="UTF-8"?>
+    - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    - <plist version="1.0">
+    - <dict>
+    - '  <key>files</key>'
+    - '  <dict/>'
+    - '  <key>files2</key>'
+    - '  <dict/>'
+    - '  <key>rules</key>'
+    - '  <dict>'
+    - '    <key>^Resources/</key>'
+    - '    <true/>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^version.plist$</key>'
+    - '    <true/>'
+    - '  </dict>'
+    - '  <key>rules2</key>'
+    - '  <dict>'
+    - '    <key>.*/.dSYM($|/)</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>11</real>'
+    - '    </dict>'
+    - '    <key>^(.*/)?/.DS_Store$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>2000</real>'
+    - '    </dict>'
+    - '    <key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^.*</key>'
+    - '    <true/>'
+    - '    <key>^Info/.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^PkgInfo$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^[^/]+$</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^embedded/.provisionprofile$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^version/.plist$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '  </dict>'
+    - </dict>
+    - </plist>
+    - ''
 
 ```
