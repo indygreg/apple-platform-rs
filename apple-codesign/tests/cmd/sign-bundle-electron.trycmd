@@ -1,0 +1,1148 @@
+Sign Electron.app bundle
+
+```
+$ mkdir -p "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers"
+$ mkdir -p "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries"
+$ mkdir -p "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj"
+
+$ rcodesign debug-create-macho --file-type dylib "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework"
+writing Mach-O to Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
+
+$ rcodesign debug-create-macho "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler"
+writing Mach-O to Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler
+
+$ rcodesign debug-create-macho --file-type dylib "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib"
+writing Mach-O to Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib
+
+$ touch "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/vk_swiftshader_icd.json"
+$ touch "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/chrome_100_percent.pak"
+$ touch "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj/locale.pak"
+$ touch "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/icudtl.dat"
+
+$ rcodesign debug-create-info-plist --bundle-name "Electron Framework" --bundle-executable "Electron Framework" --package-type FMWK --bundle-identifier com.github.Electron.framework "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist"
+writing Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist
+
+$ touch "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/MainMenu.nib"
+$ touch "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/resources.pak"
+$ touch "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/v8_context_snapshot.arm64.bin"
+
+$ ln -s A "Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/Current"
+$ ln -s "Versions/Current/Electron Framework" "Electron.app/Contents/Frameworks/Electron Framework.framework/Electron Framework"
+$ ln -s Versions/Current/Helpers "Electron.app/Contents/Frameworks/Electron Framework.framework/Helpers"
+$ ln -s Versions/Current/Libraries "Electron.app/Contents/Frameworks/Electron Framework.framework/Libraries"
+$ ln -s Versions/Current/Resources "Electron.app/Contents/Frameworks/Electron Framework.framework/Resources"
+
+$ mkdir -p "Electron.app/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS"
+$ rcodesign debug-create-macho "Electron.app/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)"
+writing Mach-O to Electron.app/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)
+
+$ rcodesign debug-create-info-plist --bundle-name "Electron Helper (GPU)" --package-type APPL --bundle-identifier com.github.Electron.helper "Electron.app/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist"
+writing Electron.app/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist
+
+$ mkdir -p Electron.app/Contents/Frameworks/Mantle.framework/Versions/A/Resources
+
+$ rcodesign debug-create-macho --file-type dylib Electron.app/Contents/Frameworks/Mantle.framework/Versions/A/Mantle
+writing Mach-O to Electron.app/Contents/Frameworks/Mantle.framework/Versions/A/Mantle
+
+$ rcodesign debug-create-info-plist --bundle-name Mantle --bundle-executable Mantle --bundle-identifier org.mantle.Mantle --package-type FMWK Electron.app/Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist
+writing Electron.app/Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist
+
+$ ln -s A Electron.app/Contents/Frameworks/Mantle.framework/Versions/Current
+$ ln -s Versions/Current/Mantle Electron.app/Contents/Frameworks/Mantle.framework/Mantle
+$ ln -s Versions/Current/Resources Electron.app/Contents/Frameworks/Mantle.framework/Resources
+
+$ rcodesign debug-create-macho Electron.app/Contents/MacOS/Electron
+writing Mach-O to Electron.app/Contents/MacOS/Electron
+
+$ rcodesign debug-create-info-plist --bundle-name Electron --bundle-identifier com.github.Electron --bundle-executable Electron Electron.app/Contents/Info.plist
+writing Electron.app/Contents/Info.plist
+
+$ mkdir -p Electron.app/Contents/Resources
+$ touch Electron.app/Contents/Resources/default_app.asar
+$ touch Electron.app/Contents/Resources/en.lproj
+$ touch Electron.app/Contents/Resources/electron.icns
+
+$ rcodesign sign Electron.app Electron.app.signed
+signing Electron.app to Electron.app.signed
+signing bundle at Electron.app
+signing 5 nested bundles in the following order:
+Contents/Frameworks/Electron Framework.framework/Versions/A
+Contents/Frameworks/Electron Framework.framework
+Contents/Frameworks/Mantle.framework/Versions/A
+Contents/Frameworks/Electron Helper (GPU).app
+Contents/Frameworks/Mantle.framework
+entering nested bundle Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A
+signing bundle at Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A into Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A
+found an unversioned framework; signing like normal
+collecting code resources files
+sealing Mach-O file Helpers/chrome_crashpad_handler
+signing Mach-O file Helpers/chrome_crashpad_handler
+inferring default signing settings from Mach-O binary
+Mach-O is missing binary identifier; setting to chrome_crashpad_handler based on file name
+signing Mach-O binary at index 0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 376 bytes
+writing Mach-O to Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler
+sealing regular file Libraries/libEGL.dylib
+copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib
+sealing regular file Libraries/vk_swiftshader_icd.json
+copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/vk_swiftshader_icd.json -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/vk_swiftshader_icd.json
+Resources/Info.plist is the Info.plist file; handling specially
+sealing regular file Resources/Info.plist
+copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist
+sealing regular file Resources/MainMenu.nib
+copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/MainMenu.nib -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/MainMenu.nib
+sealing regular file Resources/chrome_100_percent.pak
+copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/chrome_100_percent.pak -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/chrome_100_percent.pak
+sealing regular file Resources/en.lproj/locale.pak
+copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj/locale.pak -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj/locale.pak
+sealing regular file Resources/icudtl.dat
+copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/icudtl.dat -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/icudtl.dat
+sealing regular file Resources/resources.pak
+copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/resources.pak -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/resources.pak
+sealing regular file Resources/v8_context_snapshot.arm64.bin
+copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/v8_context_snapshot.arm64.bin -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/v8_context_snapshot.arm64.bin
+writing sealed resources to Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/_CodeSignature/CodeResources
+signing main executable Electron Framework
+setting main executable binary identifier to com.github.Electron.framework (derived from CFBundleIdentifier in Info.plist)
+inferring default signing settings from Mach-O binary
+signing Mach-O binary at index 0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 414 bytes
+writing signed main executable to Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
+leaving nested bundle Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A
+entering nested bundle Electron.app/Contents/Frameworks/Electron Framework.framework
+signing bundle at Electron.app/Contents/Frameworks/Electron Framework.framework into Electron.app.signed/Contents/Frameworks/Electron Framework.framework
+found a versioned framework; each version will be signed as its own bundle
+replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Electron Framework -> Versions/Current/Electron Framework
+replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Helpers -> Versions/Current/Helpers
+replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Libraries -> Versions/Current/Libraries
+replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Resources -> Versions/Current/Resources
+replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/Current -> A
+leaving nested bundle Electron.app/Contents/Frameworks/Electron Framework.framework
+entering nested bundle Electron.app/Contents/Frameworks/Mantle.framework/Versions/A
+signing bundle at Electron.app/Contents/Frameworks/Mantle.framework/Versions/A into Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A
+found an unversioned framework; signing like normal
+collecting code resources files
+Resources/Info.plist is the Info.plist file; handling specially
+sealing regular file Resources/Info.plist
+copying file Electron.app/Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist -> Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist
+writing sealed resources to Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/_CodeSignature/CodeResources
+signing main executable Mantle
+setting main executable binary identifier to org.mantle.Mantle (derived from CFBundleIdentifier in Info.plist)
+inferring default signing settings from Mach-O binary
+signing Mach-O binary at index 0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 402 bytes
+writing signed main executable to Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/Mantle
+leaving nested bundle Electron.app/Contents/Frameworks/Mantle.framework/Versions/A
+entering nested bundle Electron.app/Contents/Frameworks/Electron Helper (GPU).app
+signing bundle at Electron.app/Contents/Frameworks/Electron Helper (GPU).app into Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app
+collecting code resources files
+Contents/Info.plist is the Info.plist file; handling specially
+copying file Electron.app/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist -> Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist
+writing sealed resources to Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/_CodeSignature/CodeResources
+signing main executable Contents/MacOS/Electron Helper (GPU)
+setting main executable binary identifier to com.github.Electron.helper (derived from CFBundleIdentifier in Info.plist)
+inferring default signing settings from Mach-O binary
+signing Mach-O binary at index 0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 411 bytes
+writing signed main executable to Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)
+leaving nested bundle Electron.app/Contents/Frameworks/Electron Helper (GPU).app
+entering nested bundle Electron.app/Contents/Frameworks/Mantle.framework
+signing bundle at Electron.app/Contents/Frameworks/Mantle.framework into Electron.app.signed/Contents/Frameworks/Mantle.framework
+found a versioned framework; each version will be signed as its own bundle
+replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Mantle -> Versions/Current/Mantle
+replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Resources -> Versions/Current/Resources
+replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/Current -> A
+leaving nested bundle Electron.app/Contents/Frameworks/Mantle.framework
+signing bundle at Electron.app into Electron.app.signed
+collecting code resources files
+Contents/Info.plist is the Info.plist file; handling specially
+copying file Electron.app/Contents/Info.plist -> Electron.app.signed/Contents/Info.plist
+sealing regular file Resources/default_app.asar
+copying file Electron.app/Contents/Resources/default_app.asar -> Electron.app.signed/Contents/Resources/default_app.asar
+sealing regular file Resources/electron.icns
+copying file Electron.app/Contents/Resources/electron.icns -> Electron.app.signed/Contents/Resources/electron.icns
+sealing regular file Resources/en.lproj
+copying file Electron.app/Contents/Resources/en.lproj -> Electron.app.signed/Contents/Resources/en.lproj
+sealing nested bundle at Frameworks/Electron Framework.framework
+sealing nested bundle at Frameworks/Electron Helper (GPU).app
+sealing nested bundle at Frameworks/Mantle.framework
+writing sealed resources to Electron.app.signed/Contents/_CodeSignature/CodeResources
+signing main executable Contents/MacOS/Electron
+setting main executable binary identifier to com.github.Electron (derived from CFBundleIdentifier in Info.plist)
+inferring default signing settings from Mach-O binary
+signing Mach-O binary at index 0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 404 bytes
+writing signed main executable to Electron.app.signed/Contents/MacOS/Electron
+
+$ rcodesign print-signature-info Electron.app.signed
+- path: Contents/Frameworks/Electron Framework.framework/Electron Framework
+  symlink_target: Versions/Current/Electron Framework
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Helpers
+  symlink_target: Versions/Current/Helpers
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Libraries
+  symlink_target: Versions/Current/Libraries
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Resources
+  symlink_target: Versions/Current/Resources
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
+  file_size: 18434
+  file_sha256: e6b5b4fe9c7563871e7ac395e82a75d0502b9ba26a10200c2866a075c69cb903
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 18434
+      signature_file_start_offset: 16386
+      signature_file_end_offset: 18434
+      signature_linkedit_start_offset: 2
+      signature_linkedit_end_offset: 2050
+      signature:
+        superblob_length: 414
+        blob_count: 2
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 374
+          sha1: 75a484c3ce1223332c82d31c765a59948d8d9a3a
+          sha256: 36e4bbacb022d5a54fd8acf8ada3391940b41ba520d4610784530ef7466c1e1b
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: com.github.Electron.framework
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16386
+          executable_segment_flags: ExecutableSegmentFlags(0x0)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): ca20386388c65cc7900433ebe743ff74f302160c0de829874df9a9839f318e4a'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+          - 'Resources (3): 96abbf0031c473114ecf22f55b8f30da801c636b3e36b94c8aa48c9ed50a854f'
+        entitlements_plist: null
+        cms: null
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler
+  file_size: 18434
+  file_sha256: d5dca87929ed93c3506a4bc6432dcbc23289bc2b74b654b97924b26b50806441
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 18434
+      signature_file_start_offset: 16386
+      signature_file_end_offset: 18434
+      signature_linkedit_start_offset: 2
+      signature_linkedit_end_offset: 2050
+      signature:
+        superblob_length: 376
+        blob_count: 2
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 336
+          sha1: 7a82fc6686c49dc39f5e992242c93d04a0ee7c9a
+          sha256: 7ac7c0d54ebda13470f25b229d815a801b0068c88c348065a233bba50af4b93e
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: chrome_crashpad_handler
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16386
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+        entitlements_plist: null
+        cms: null
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib
+  file_size: 16386
+  file_sha256: 37a76379bed673e72f6c601f2b3867a322ec3637aac3ec023bd0b4c6752310cf
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: null
+      linkedit_segment_file_end_offset: null
+      signature_file_start_offset: null
+      signature_file_end_offset: null
+      signature_linkedit_start_offset: null
+      signature_linkedit_end_offset: null
+      signature: null
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/vk_swiftshader_icd.json
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist
+  file_size: 624
+  file_sha256: ca20386388c65cc7900433ebe743ff74f302160c0de829874df9a9839f318e4a
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/MainMenu.nib
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/chrome_100_percent.pak
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj/locale.pak
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/icudtl.dat
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/resources.pak
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/v8_context_snapshot.arm64.bin
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/Frameworks/Electron Framework.framework/Versions/A/_CodeSignature/CodeResources
+  file_size: 4531
+  file_sha256: 96abbf0031c473114ecf22f55b8f30da801c636b3e36b94c8aa48c9ed50a854f
+  entity:
+    bundle_code_signature_file: !ResourcesXml
+    - <?xml version="1.0" encoding="UTF-8"?>
+    - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    - <plist version="1.0">
+    - <dict>
+    - '  <key>files</key>'
+    - '  <dict>'
+    - '    <key>Resources/Info.plist</key>'
+    - '    <data>'
+    - '    oGzbq3iJoIFhpLZNxk9WdYGW72I='
+    - '    </data>'
+    - '    <key>Resources/MainMenu.nib</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '    <key>Resources/chrome_100_percent.pak</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '    <key>Resources/en.lproj/locale.pak</key>'
+    - '    <dict>'
+    - '      <key>hash</key>'
+    - '      <data>'
+    - '      2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '      </data>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '    </dict>'
+    - '    <key>Resources/icudtl.dat</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '    <key>Resources/resources.pak</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '    <key>Resources/v8_context_snapshot.arm64.bin</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '  </dict>'
+    - '  <key>files2</key>'
+    - '  <dict>'
+    - '    <key>Helpers/chrome_crashpad_handler</key>'
+    - '    <dict>'
+    - '      <key>cdhash</key>'
+    - '      <data>'
+    - '      esfA1U69oTRw8lsinYFagBsAaMg='
+    - '      </data>'
+    - '      <key>requirement</key>'
+    - '      <string>cdhash H"7ac7c0d54ebda13470f25b229d815a801b0068c8"</string>'
+    - '    </dict>'
+    - '    <key>Libraries/libEGL.dylib</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      N6djeb7Wc+cvbGAfKzhnoyLsNjeqw+wCO9C0xnUjEM8='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Libraries/vk_swiftshader_icd.json</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/Info.plist</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      yiA4Y4jGXMeQBDPr50P/dPMCFgwN6CmHTfmpg58xjko='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/MainMenu.nib</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/chrome_100_percent.pak</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/en.lproj/locale.pak</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '    </dict>'
+    - '    <key>Resources/icudtl.dat</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/resources.pak</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/v8_context_snapshot.arm64.bin</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '  </dict>'
+    - '  <key>rules</key>'
+    - '  <dict>'
+    - '    <key>^Resources/</key>'
+    - '    <true/>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^version.plist$</key>'
+    - '    <true/>'
+    - '  </dict>'
+    - '  <key>rules2</key>'
+    - '  <dict>'
+    - '    <key>.*/.dSYM($|/)</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>11</real>'
+    - '    </dict>'
+    - '    <key>^(.*/)?/.DS_Store$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>2000</real>'
+    - '    </dict>'
+    - '    <key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^.*</key>'
+    - '    <true/>'
+    - '    <key>^Info/.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^PkgInfo$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^[^/]+$</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^embedded/.provisionprofile$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^version/.plist$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '  </dict>'
+    - </dict>
+    - </plist>
+    - ''
+- path: Contents/Frameworks/Electron Framework.framework/Versions/Current
+  symlink_target: A
+  entity: other
+- path: Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist
+  file_size: 630
+  file_sha256: 7d16bb3cf776fb0a7eb0ee77fd040468fc1e8723546668b11cdb23896bff0c9e
+  entity: other
+- path: Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)
+  file_size: 18434
+  file_sha256: 1fa1cbfdaae401fce3dfee2891ccf937912447095e02b5078a3492a0151f4bba
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 18434
+      signature_file_start_offset: 16386
+      signature_file_end_offset: 18434
+      signature_linkedit_start_offset: 2
+      signature_linkedit_end_offset: 2050
+      signature:
+        superblob_length: 411
+        blob_count: 2
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 371
+          sha1: 76e4806d91ca38d28c5944ac5930ab2e06b7470d
+          sha256: 72096c4cddac6390d57743cb43287b5a7d14b2f6d074895467258f8b39d47a87
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: com.github.Electron.helper
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16386
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 7d16bb3cf776fb0a7eb0ee77fd040468fc1e8723546668b11cdb23896bff0c9e'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+          - 'Resources (3): 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b'
+        entitlements_plist: null
+        cms: null
+- path: Contents/Frameworks/Electron Helper (GPU).app/Contents/_CodeSignature/CodeResources
+  file_size: 2200
+  file_sha256: 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b
+  entity:
+    bundle_code_signature_file: !ResourcesXml
+    - <?xml version="1.0" encoding="UTF-8"?>
+    - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    - <plist version="1.0">
+    - <dict>
+    - '  <key>files</key>'
+    - '  <dict/>'
+    - '  <key>files2</key>'
+    - '  <dict/>'
+    - '  <key>rules</key>'
+    - '  <dict>'
+    - '    <key>^Resources/</key>'
+    - '    <true/>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^version.plist$</key>'
+    - '    <true/>'
+    - '  </dict>'
+    - '  <key>rules2</key>'
+    - '  <dict>'
+    - '    <key>.*/.dSYM($|/)</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>11</real>'
+    - '    </dict>'
+    - '    <key>^(.*/)?/.DS_Store$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>2000</real>'
+    - '    </dict>'
+    - '    <key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^.*</key>'
+    - '    <true/>'
+    - '    <key>^Info/.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^PkgInfo$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^[^/]+$</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^embedded/.provisionprofile$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^version/.plist$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '  </dict>'
+    - </dict>
+    - </plist>
+    - ''
+- path: Contents/Frameworks/Mantle.framework/Mantle
+  symlink_target: Versions/Current/Mantle
+  entity: other
+- path: Contents/Frameworks/Mantle.framework/Resources
+  symlink_target: Versions/Current/Resources
+  entity: other
+- path: Contents/Frameworks/Mantle.framework/Versions/A/Mantle
+  file_size: 18434
+  file_sha256: 1a5af692dbc9f18fddac73a6e1812b00bf1fbf839e3ea00685c26d9407b23efe
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 18434
+      signature_file_start_offset: 16386
+      signature_file_end_offset: 18434
+      signature_linkedit_start_offset: 2
+      signature_linkedit_end_offset: 2050
+      signature:
+        superblob_length: 402
+        blob_count: 2
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 362
+          sha1: 21b88116552b58f6c86620448c235b959924c5dc
+          sha256: 3c3c27ccd1daaac1ddcdf7bc2bace8871539c304a9df02cba0cb3753f56efd14
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: org.mantle.Mantle
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16386
+          executable_segment_flags: ExecutableSegmentFlags(0x0)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 542d886f74e466a0958e74db24ee7bf72f59a6813aacd5309e44b097c6806ea1'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+          - 'Resources (3): 738650a98f84347da27c928a05de06a52d205cc1ba4ea1d8befe4d0656cc0dd4'
+        entitlements_plist: null
+        cms: null
+- path: Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist
+  file_size: 576
+  file_sha256: 542d886f74e466a0958e74db24ee7bf72f59a6813aacd5309e44b097c6806ea1
+  entity: other
+- path: Contents/Frameworks/Mantle.framework/Versions/A/_CodeSignature/CodeResources
+  file_size: 2442
+  file_sha256: 738650a98f84347da27c928a05de06a52d205cc1ba4ea1d8befe4d0656cc0dd4
+  entity:
+    bundle_code_signature_file: !ResourcesXml
+    - <?xml version="1.0" encoding="UTF-8"?>
+    - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    - <plist version="1.0">
+    - <dict>
+    - '  <key>files</key>'
+    - '  <dict>'
+    - '    <key>Resources/Info.plist</key>'
+    - '    <data>'
+    - '    SfsfCgls/vD7J5tPNoHNVLGUdY8='
+    - '    </data>'
+    - '  </dict>'
+    - '  <key>files2</key>'
+    - '  <dict>'
+    - '    <key>Resources/Info.plist</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      VC2Ib3TkZqCVjnTbJO579y9ZpoE6rNUwnkSwl8aAbqE='
+    - '      </data>'
+    - '    </dict>'
+    - '  </dict>'
+    - '  <key>rules</key>'
+    - '  <dict>'
+    - '    <key>^Resources/</key>'
+    - '    <true/>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^version.plist$</key>'
+    - '    <true/>'
+    - '  </dict>'
+    - '  <key>rules2</key>'
+    - '  <dict>'
+    - '    <key>.*/.dSYM($|/)</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>11</real>'
+    - '    </dict>'
+    - '    <key>^(.*/)?/.DS_Store$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>2000</real>'
+    - '    </dict>'
+    - '    <key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^.*</key>'
+    - '    <true/>'
+    - '    <key>^Info/.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^PkgInfo$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^[^/]+$</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^embedded/.provisionprofile$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^version/.plist$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '  </dict>'
+    - </dict>
+    - </plist>
+    - ''
+- path: Contents/Frameworks/Mantle.framework/Versions/Current
+  symlink_target: A
+  entity: other
+- path: Contents/Info.plist
+  file_size: 584
+  file_sha256: 863f967826aa4c32179d88ce7febeef529aed41c05ba2204c79dd1d2ab6b7296
+  entity: other
+- path: Contents/MacOS/Electron
+  file_size: 18434
+  file_sha256: b267a40bb1ba130f98ed850ab48f424fb83a3b5a13aa1c71e62b03ed7c08aab3
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 18434
+      signature_file_start_offset: 16386
+      signature_file_end_offset: 18434
+      signature_linkedit_start_offset: 2
+      signature_linkedit_end_offset: 2050
+      signature:
+        superblob_length: 404
+        blob_count: 2
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 364
+          sha1: e1f8fc0fd7080e39bea59776b24e7f1cd71ed60b
+          sha256: f3ec669c3f4adc8085f6c49c2ee7cc69df49e7e85f85d880852a49d8ab2f4a64
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: com.github.Electron
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16386
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 863f967826aa4c32179d88ce7febeef529aed41c05ba2204c79dd1d2ab6b7296'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+          - 'Resources (3): 18f5f0fd6cd1cb38f68f3d8e6b7cc1076c6747dd83029c4f3ed8610252e33d8b'
+        entitlements_plist: null
+        cms: null
+- path: Contents/Resources/default_app.asar
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/Resources/electron.icns
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/Resources/en.lproj
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Contents/_CodeSignature/CodeResources
+  file_size: 3622
+  file_sha256: 18f5f0fd6cd1cb38f68f3d8e6b7cc1076c6747dd83029c4f3ed8610252e33d8b
+  entity:
+    bundle_code_signature_file: !ResourcesXml
+    - <?xml version="1.0" encoding="UTF-8"?>
+    - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    - <plist version="1.0">
+    - <dict>
+    - '  <key>files</key>'
+    - '  <dict>'
+    - '    <key>Resources/default_app.asar</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '    <key>Resources/electron.icns</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '    <key>Resources/en.lproj</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '  </dict>'
+    - '  <key>files2</key>'
+    - '  <dict>'
+    - '    <key>Frameworks/Electron Framework.framework</key>'
+    - '    <dict>'
+    - '      <key>cdhash</key>'
+    - '      <data>'
+    - '      NuS7rLAi1aVP2Kz4raM5GUC0G6U='
+    - '      </data>'
+    - '      <key>requirement</key>'
+    - '      <string>cdhash H"36e4bbacb022d5a54fd8acf8ada3391940b41ba5"</string>'
+    - '    </dict>'
+    - '    <key>Frameworks/Electron Helper (GPU).app</key>'
+    - '    <dict>'
+    - '      <key>cdhash</key>'
+    - '      <data>'
+    - '      cglsTN2sY5DVd0PLQyh7Wn0UsvY='
+    - '      </data>'
+    - '      <key>requirement</key>'
+    - '      <string>cdhash H"72096c4cddac6390d57743cb43287b5a7d14b2f6"</string>'
+    - '    </dict>'
+    - '    <key>Frameworks/Mantle.framework</key>'
+    - '    <dict>'
+    - '      <key>cdhash</key>'
+    - '      <data>'
+    - '      PDwnzNHaqsHdzfe8K6zohxU5wwQ='
+    - '      </data>'
+    - '      <key>requirement</key>'
+    - '      <string>cdhash H"3c3c27ccd1daaac1ddcdf7bc2bace8871539c304"</string>'
+    - '    </dict>'
+    - '    <key>Resources/default_app.asar</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/electron.icns</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/en.lproj</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '  </dict>'
+    - '  <key>rules</key>'
+    - '  <dict>'
+    - '    <key>^Resources/</key>'
+    - '    <true/>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^version.plist$</key>'
+    - '    <true/>'
+    - '  </dict>'
+    - '  <key>rules2</key>'
+    - '  <dict>'
+    - '    <key>.*/.dSYM($|/)</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>11</real>'
+    - '    </dict>'
+    - '    <key>^(.*/)?/.DS_Store$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>2000</real>'
+    - '    </dict>'
+    - '    <key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^.*</key>'
+    - '    <true/>'
+    - '    <key>^Info/.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^PkgInfo$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^[^/]+$</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^embedded/.provisionprofile$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^version/.plist$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '  </dict>'
+    - </dict>
+    - </plist>
+    - ''
+
+```

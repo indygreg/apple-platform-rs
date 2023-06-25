@@ -282,5 +282,6 @@ fn cli_tests() {
     if cfg!(windows) {
         cases.skip("tests/cmd/sign-bundle-framework.trycmd");
         cases.skip("tests/cmd/sign-bundle-with-nested-framework.trycmd");
+        cases.skip("tests/cmd/sign-bundle-electron.trycmd");
     }
 }
