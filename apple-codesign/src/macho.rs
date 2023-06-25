@@ -101,15 +101,7 @@ impl<'a> MachOBinary<'a> {
     pub fn find_signature_data(
         &self,
     ) -> Result<Option<MachOSignatureData<'a>>, AppleCodesignError> {
-        if let Some(linkedit_data_command) =
-            self.macho.load_commands.iter().find_map(|load_command| {
-                if let CommandVariant::CodeSignature(command) = &load_command.command {
-                    Some(command)
-                } else {
-                    None
-                }
-            })
-        {
+        if let Some(linkedit_data_command) = self.code_signature_load_command() {
             // Now find the slice of data in the __LINKEDIT segment we need to parse.
             let (linkedit_segment_index, linkedit) = self
                 .linkedit_index_and_segment()
