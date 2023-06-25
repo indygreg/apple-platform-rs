@@ -62,6 +62,35 @@ impl<'a> MachOBinary<'a> {
 }
 
 impl<'a> MachOBinary<'a> {
+    /// Find the __LINKEDIT segment and its segment index.
+    pub fn linkedit_index_and_segment(&self) -> Option<(usize, &Segment<'a>)> {
+        self.macho
+            .segments
+            .iter()
+            .enumerate()
+            .find(|(_, segment)| matches!(segment.name(), Ok(SEG_LINKEDIT)))
+    }
+
+    /// Find the __LINKEDIT segment.
+    pub fn linkedit_segment(&self) -> Option<&Segment<'a>> {
+        self.linkedit_index_and_segment().map(|(_, x)| x)
+    }
+
+    /// Find the __LINKEDIT segment, asserting it exists and it is the final segment.
+    pub fn linkedit_segment_assert_last(&self) -> Result<&Segment<'a>, AppleCodesignError> {
+        let last_segment = self
+            .segments_by_file_offset()
+            .last()
+            .copied()
+            .ok_or(AppleCodesignError::MissingLinkedit)?;
+
+        if !matches!(last_segment.name(), Ok(SEG_LINKEDIT)) {
+            Err(AppleCodesignError::LinkeditNotLast)
+        } else {
+            Ok(last_segment)
+        }
+    }
+
     /// Attempt to extract a reference to raw signature data in a Mach-O binary.
     ///
     /// An `LC_CODE_SIGNATURE` load command in the Mach-O file header points to
@@ -83,17 +112,7 @@ impl<'a> MachOBinary<'a> {
         {
             // Now find the slice of data in the __LINKEDIT segment we need to parse.
             let (linkedit_segment_index, linkedit) = self
-                .macho
-                .segments
-                .iter()
-                .enumerate()
-                .find(|(_, segment)| {
-                    if let Ok(name) = segment.name() {
-                        name == SEG_LINKEDIT
-                    } else {
-                        false
-                    }
-                })
+                .linkedit_index_and_segment()
                 .ok_or(AppleCodesignError::MissingLinkedit)?;
 
             let linkedit_segment_start_offset = linkedit.fileoff as usize;
@@ -157,11 +176,7 @@ impl<'a> MachOBinary<'a> {
 
     /// The start offset of the code signature data within the __LINKEDIT segment.
     pub fn code_signature_linkedit_start_offset(&self) -> Option<u32> {
-        let segment = self
-            .macho
-            .segments
-            .iter()
-            .find(|segment| matches!(segment.name(), Ok(SEG_LINKEDIT)));
+        let segment = self.linkedit_segment();
 
         if let (Some(segment), Some(command)) = (segment, self.code_signature_load_command()) {
             Some((command.dataoff as u64 - segment.fileoff) as u32)
@@ -195,15 +210,7 @@ impl<'a> MachOBinary<'a> {
     /// If a signature is present, this is the offset of the start of the
     /// signature. Else it represents the end of the binary.
     pub fn code_limit_binary_offset(&self) -> Result<u64, AppleCodesignError> {
-        let last_segment = self
-            .segments_by_file_offset()
-            .last()
-            .copied()
-            .ok_or(AppleCodesignError::MissingLinkedit)?;
-
-        if !matches!(last_segment.name(), Ok(SEG_LINKEDIT)) {
-            return Err(AppleCodesignError::LinkeditNotLast);
-        }
+        let last_segment = self.linkedit_segment_assert_last()?;
 
         if let Some(offset) = self.code_signature_linkedit_start_offset() {
             Ok(last_segment.fileoff + offset as u64)
@@ -216,11 +223,7 @@ impl<'a> MachOBinary<'a> {
     ///
     /// If there is no signature, returns all the data for the __LINKEDIT segment.
     pub fn linkedit_data_before_signature(&self) -> Option<&[u8]> {
-        let segment = self
-            .macho
-            .segments
-            .iter()
-            .find(|segment| matches!(segment.name(), Ok(SEG_LINKEDIT)));
+        let segment = self.linkedit_segment();
 
         if let Some(segment) = segment {
             if let Some(offset) = self.code_signature_linkedit_start_offset() {
@@ -316,16 +319,7 @@ impl<'a> MachOBinary<'a> {
     /// signature containing just the code directory (without a cryptographically
     /// signed signature), so this limitation hopefully isn't impactful.
     pub fn check_signing_capability(&self) -> Result<(), AppleCodesignError> {
-        let last_segment = self
-            .segments_by_file_offset()
-            .last()
-            .copied()
-            .ok_or(AppleCodesignError::MissingLinkedit)?;
-
-        // Last segment needs to be __LINKEDIT so we don't have to write offsets.
-        if !matches!(last_segment.name(), Ok(SEG_LINKEDIT)) {
-            return Err(AppleCodesignError::LinkeditNotLast);
-        }
+        let last_segment = self.linkedit_segment_assert_last()?;
 
         // Rules:
         //
