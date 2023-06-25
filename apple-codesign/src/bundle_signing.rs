@@ -477,16 +477,22 @@ impl SingleBundleSigner {
             let mach = MachFile::parse(&macho_data)?;
 
             for macho in mach.iter_macho() {
-                if let Some(targeting) = macho.find_targeting()? {
+                let need_sha1_sha256 = if let Some(targeting) = macho.find_targeting()? {
                     let sha256_version = targeting.platform.sha256_digest_support()?;
 
-                    if !sha256_version.matches(&targeting.minimum_os_version)
-                        && resources_digests != vec![DigestType::Sha1, DigestType::Sha256]
-                    {
-                        info!("main executable targets OS requiring SHA-1 signatures; activating SHA-1 + SHA-256 signing");
-                        resources_digests = vec![DigestType::Sha1, DigestType::Sha256];
-                        break;
-                    }
+                    !sha256_version.matches(&targeting.minimum_os_version)
+                } else {
+                    true
+                };
+
+                if need_sha1_sha256
+                    && resources_digests != vec![DigestType::Sha1, DigestType::Sha256]
+                {
+                    info!(
+                        "activating SHA-1 + SHA-256 signing due to requirements of main executable"
+                    );
+                    resources_digests = vec![DigestType::Sha1, DigestType::Sha256];
+                    break;
                 }
             }
         }

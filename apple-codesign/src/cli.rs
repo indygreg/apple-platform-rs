@@ -2411,10 +2411,18 @@ struct Sign {
     code_signature_flags: Vec<String>,
 
     /// Digest algorithm to use
+    ///
+    /// This typically doesn't need to be set as the OS targeting information
+    /// from signed binaries implicitly derives appropriate digests to sign
+    /// with.
     #[arg(long)]
     digest: Option<DigestType>,
 
     /// Extra digests to include in signatures
+    ///
+    /// This typically doesn't need to be set as the OS targeting information
+    /// from signed binaries implicitly derives appropriate digests to sign
+    /// with.
     #[arg(long, value_parser = SUPPORTED_HASHES)]
     extra_digest: Vec<String>,
 

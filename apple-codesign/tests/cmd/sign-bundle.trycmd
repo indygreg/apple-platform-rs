@@ -202,3 +202,223 @@ $ rcodesign print-signature-info MyApp.app.signed
     - ''
 
 ```
+
+Signing a bundle with an executable without targeting activates SHA-1 digests
+
+```
+$ mkdir -p MyApp.app/Contents/MacOS
+$ rcodesign debug-create-macho --no-targeting MyApp.app/Contents/MacOS/MyApp
+writing Mach-O to MyApp.app/Contents/MacOS/MyApp
+
+$ rcodesign debug-create-info-plist --bundle-name MyApp MyApp.app/Contents/Info.plist
+writing MyApp.app/Contents/Info.plist
+
+$ rcodesign sign MyApp.app MyApp.app.signed
+signing MyApp.app to MyApp.app.signed
+signing bundle at MyApp.app
+signing 0 nested bundles in the following order:
+signing bundle at MyApp.app into MyApp.app.signed
+activating SHA-1 + SHA-256 signing due to requirements of main executable
+collecting code resources files
+Contents/Info.plist is the Info.plist file; handling specially
+copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
+writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
+signing main executable Contents/MacOS/MyApp
+setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
+inferring default signing settings from Mach-O binary
+activating SHA-1 digests because no platform targeting in Mach-O
+signing Mach-O binary at index 0
+creating ad-hoc signature
+code directory version: 132096
+adding alternative code directory using digest Sha256
+creating ad-hoc signature
+total signature size: 682 bytes
+writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
+
+$ rcodesign print-signature-info MyApp.app.signed
+- path: Contents/Info.plist
+  file_size: 576
+  file_sha256: 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5
+  entity: other
+- path: Contents/MacOS/MyApp
+  file_size: 19458
+  file_sha256: 2373f3f2f106e6d0f628f701518a0a0111951c18c4d857e8f740a0002955b1b2
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 19458
+      signature_file_start_offset: 16386
+      signature_file_end_offset: 19458
+      signature_linkedit_start_offset: 2
+      signature_linkedit_end_offset: 3074
+      signature:
+        superblob_length: 682
+        blob_count: 3
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 269
+          sha1: fd209a1fbb8d8f23c371276e18477fc0e9a452d1
+          sha256: 7e8463a4aac51285b6b411f617c3c61ddf2494c43a313eae188b1c5af3fcf86e
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: 'CodeDirectory Alternate #0 (4096)'
+          magic: fade0c02
+          length: 365
+          sha1: 03eeb5b4f5841284fbde6c6a5c1fb8ee34e97531
+          sha256: 7578857013e76338c3cfd0dff0d1c55c583e26d2ccb4ab1e9956a1cb2b4eac6f
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: com.example.mybundle
+          digest_type: sha1
+          platform: 0
+          signed_entity_size: 16386
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 65bf1c26bc63ccdfe6688cc787b06f88f3435ef0'
+          - 'RequirementSet (2): 3a75f6db058529148e14dd7ea1b4729cc09ec973'
+          - 'Resources (3): 630a08873072069616cdcc31f55e6d7423086d78'
+        alternative_code_directories:
+        - - 'CodeDirectory Alternate #0 (4096)'
+          - version: '0x20400'
+            flags: CodeSignatureFlags(ADHOC)
+            identifier: com.example.mybundle
+            digest_type: sha256
+            platform: 0
+            signed_entity_size: 16386
+            executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+            code_digests_count: 5
+            slot_digests:
+            - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
+            - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+            - 'Resources (3): 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b'
+        entitlements_plist: null
+        cms: null
+- path: Contents/_CodeSignature/CodeResources
+  file_size: 2200
+  file_sha256: 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b
+  entity:
+    bundle_code_signature_file: !ResourcesXml
+    - <?xml version="1.0" encoding="UTF-8"?>
+    - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    - <plist version="1.0">
+    - <dict>
+    - '  <key>files</key>'
+    - '  <dict/>'
+    - '  <key>files2</key>'
+    - '  <dict/>'
+    - '  <key>rules</key>'
+    - '  <dict>'
+    - '    <key>^Resources/</key>'
+    - '    <true/>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^version.plist$</key>'
+    - '    <true/>'
+    - '  </dict>'
+    - '  <key>rules2</key>'
+    - '  <dict>'
+    - '    <key>.*/.dSYM($|/)</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>11</real>'
+    - '    </dict>'
+    - '    <key>^(.*/)?/.DS_Store$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>2000</real>'
+    - '    </dict>'
+    - '    <key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^.*</key>'
+    - '    <true/>'
+    - '    <key>^Info/.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^PkgInfo$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^[^/]+$</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^embedded/.provisionprofile$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^version/.plist$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '  </dict>'
+    - </dict>
+    - </plist>
+    - ''
+
+```
