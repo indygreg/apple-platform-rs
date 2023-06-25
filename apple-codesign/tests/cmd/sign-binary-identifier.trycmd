@@ -1,5 +1,6 @@
 ```
 $ rcodesign debug-create-macho exe
+assuming default minimum version 11.0.0
 writing Mach-O to exe
 
 $ rcodesign sign --binary-identifier my-binary exe exe.signed
@@ -8,6 +9,7 @@ signing exe as a Mach-O binary
 inferring default signing settings from Mach-O binary
 parsing Mach-O
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 362 bytes
@@ -16,7 +18,7 @@ writing Mach-O to exe.signed
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
   file_size: 18434
-  file_sha256: 417bbd3ac60361b73686cfa15ec9e227d6dcb9a712eeb4a0fc7e8b3f8fb7c898
+  file_sha256: e41413064ad8f656c38a925a1e44bc3eba13e8d0719ae48b720d0d2cc1533656
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -32,8 +34,8 @@ $ rcodesign print-signature-info exe.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 322
-          sha1: 7377d9d5c267ec62cc005bfcc779c9b011d1896e
-          sha256: c468106403eb95cd384b88dbdbb27c31cddb0e3534376bdd1213f83efdbc49cc
+          sha1: adb12aa5fddd6c00cdd682373a5ceab7a81bd48f
+          sha256: 4a236392cdc2c22ecd610616b9ea7102d130f465687d211114f99306d39618d1
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -63,6 +65,7 @@ preserving code signature flags in existing Mach-O signature
 setting binary identifier to exe.signed
 parsing Mach-O
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 adding code signature flags from signing settings: CodeSignatureFlags(ADHOC)
 creating ad-hoc signature
 code directory version: 132096
@@ -72,7 +75,7 @@ writing Mach-O to exe.signed.2
 $ rcodesign print-signature-info exe.signed.2
 - path: exe.signed.2
   file_size: 18434
-  file_sha256: 417bbd3ac60361b73686cfa15ec9e227d6dcb9a712eeb4a0fc7e8b3f8fb7c898
+  file_sha256: e41413064ad8f656c38a925a1e44bc3eba13e8d0719ae48b720d0d2cc1533656
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -88,8 +91,8 @@ $ rcodesign print-signature-info exe.signed.2
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 322
-          sha1: 7377d9d5c267ec62cc005bfcc779c9b011d1896e
-          sha256: c468106403eb95cd384b88dbdbb27c31cddb0e3534376bdd1213f83efdbc49cc
+          sha1: adb12aa5fddd6c00cdd682373a5ceab7a81bd48f
+          sha256: 4a236392cdc2c22ecd610616b9ea7102d130f465687d211114f99306d39618d1
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12

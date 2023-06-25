@@ -3,6 +3,7 @@ $ rcodesign debug-create-info-plist --bundle-name MyFramework.framework --packag
 writing MyFramework.framework/Versions/A/Resources/Info.plist
 
 $ rcodesign debug-create-macho --file-type dylib MyFramework.framework/Versions/A/MyFramework
+assuming default minimum version 11.0.0
 writing Mach-O to MyFramework.framework/Versions/A/MyFramework
 
 $ ln -s A MyFramework.framework/Versions/Current
@@ -24,6 +25,7 @@ signing Mach-O file MyFramework
 inferring default signing settings from Mach-O binary
 Mach-O is missing binary identifier; setting to MyFramework based on file name
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 364 bytes
@@ -47,7 +49,7 @@ $ rcodesign print-signature-info MyFramework.framework.signed
   entity: other
 - path: Versions/A/MyFramework
   file_size: 18434
-  file_sha256: 18340d92c324cb43dfd7680e412b449665b44ca062e3cdc48508f7e36895a97b
+  file_sha256: 9d54523d9364767cd5ce03b639d8d32fc65b7462c28009ad8ac38a868b4e476c
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -63,8 +65,8 @@ $ rcodesign print-signature-info MyFramework.framework.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 324
-          sha1: 13bf0a8581374600116973079372ff0b7774132b
-          sha256: 12ca9847c3e3941f3586268ec454fd827a3f0c5d877414d662f0e2dbee8ff506
+          sha1: c067589cc234d6c096af47cbed8e30419d3adf02
+          sha256: d0b0241fe2968bb8ce514ddb0d7af7a394e0f7267e56fa95e05b7ba4c46e813f
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -94,7 +96,7 @@ $ rcodesign print-signature-info MyFramework.framework.signed
   entity: other
 - path: Versions/A/_CodeSignature/CodeResources
   file_size: 2889
-  file_sha256: a6e748fa301a9b48160f93a6c7b4eacd78b2fe4b11daee1770ba80a06d8b907a
+  file_sha256: c1dceba96b710954b49d1aa7835a1d0a14fb32e1bed35d6ec0bff791a51fe072
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -118,10 +120,10 @@ $ rcodesign print-signature-info MyFramework.framework.signed
     - '    <dict>'
     - '      <key>cdhash</key>'
     - '      <data>'
-    - '      EsqYR8PjlB81hiaOxFT9gno/DF0='
+    - '      0LAkH+KWi7jOUU3bDXr3o5Tg9yY='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H"12ca9847c3e3941f3586268ec454fd827a3f0c5d"</string>'
+    - '      <string>cdhash H"d0b0241fe2968bb8ce514ddb0d7af7a394e0f726"</string>'
     - '    </dict>'
     - '    <key>Resources/Info.plist</key>'
     - '    <dict>'

@@ -14,6 +14,8 @@ Options:
           Increase logging verbosity. Can be specified multiple times
       --file-type <FILE_TYPE>
           The Mach-O file type [default: executable] [possible values: executable, dylib]
+      --no-targeting
+          Do not write platform targeting to Mach-O binary
       --minimum-os-version <MINIMUM_OS_VERSION>
           The minimum operating system version the binary will run on
       --sdk-version <SDK_VERSION>
@@ -25,6 +27,7 @@ Options:
 
 ```
 $ rcodesign debug-create-macho exe
+assuming default minimum version 11.0.0
 writing Mach-O to exe
 
 $ rcodesign extract macho-header exe
@@ -33,20 +36,21 @@ Header {
     cputype: 16777228,
     cpusubtype: 0x0,
     filetype: "EXECUTE",
-    ncmds: 6,
-    sizeofcmds: 704,
+    ncmds: 7,
+    sizeofcmds: 728,
     flags: 0x0,
     reserved: 0x0,
 }
 
 $ rcodesign extract macho-load-commands exe
-load command count: 6
+load command count: 7
 LC_SEGMENT_64; offsets=0x20-0x68 (32-104); size=72
 LC_SEGMENT_64; offsets=0x68-0x150 (104-336); size=232
 LC_SEGMENT_64; offsets=0x150-0x1e8 (336-488); size=152
 LC_SEGMENT_64; offsets=0x1e8-0x280 (488-640); size=152
 LC_SEGMENT_64; offsets=0x280-0x2c8 (640-712); size=72
 LC_SYMTAB; offsets=0x2c8-0x2e0 (712-736); size=24
+LC_BUILD_VERSION; offsets=0x2e0-0x2f8 (736-760); size=24
 
 $ rcodesign extract macho-load-commands-raw exe
 LoadCommand { offset: 32, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 72, segname: [95, 95, 80, 65, 71, 69, 90, 69, 82, 79, 0, 0, 0, 0, 0, 0], vmaddr: 0, vmsize: 4294967296, fileoff: 0, filesize: 0, maxprot: 0, initprot: 0, nsects: 0, flags: 0 }) }
@@ -55,6 +59,7 @@ LoadCommand { offset: 336, command: Segment64(SegmentCommand64 { cmd: 25, cmdsiz
 LoadCommand { offset: 488, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 152, segname: [95, 95, 68, 65, 84, 65, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 0, fileoff: 16384, filesize: 0, maxprot: 0, initprot: 0, nsects: 1, flags: 0 }) }
 LoadCommand { offset: 640, command: Segment64(SegmentCommand64 { cmd: 25, cmdsize: 72, segname: [95, 95, 76, 73, 78, 75, 69, 68, 73, 84, 0, 0, 0, 0, 0, 0], vmaddr: 4294967296, vmsize: 2, fileoff: 16384, filesize: 2, maxprot: 0, initprot: 0, nsects: 0, flags: 0 }) }
 LoadCommand { offset: 712, command: Symtab(SymtabCommand { cmd: 2, cmdsize: 24, symoff: 16384, nsyms: 0, stroff: 16385, strsize: 1 }) }
+LoadCommand { offset: 736, command: BuildVersion(BuildVersionCommand { cmd: 50, cmdsize: 24, platform: 1, minos: 720896, sdk: 720896, ntools: 0 }) }
 
 $ rcodesign extract macho-segments exe
 segments count: 5

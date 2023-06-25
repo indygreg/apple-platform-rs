@@ -1,5 +1,6 @@
 ```
 $ rcodesign debug-create-macho exe
+assuming default minimum version 11.0.0
 writing Mach-O to exe
 
 $ rcodesign debug-create-info-plist --bundle-name MyApp Info.plist
@@ -12,6 +13,7 @@ inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 356 bytes
@@ -20,7 +22,7 @@ writing Mach-O to exe.signed
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
   file_size: 18434
-  file_sha256: d2ab2f9d4b574735da1d28aaed92186fe0885e7d8ff9ce2a969037a08bd99330
+  file_sha256: 6b377bc1f8aee25364533c740714e81c27c1a45270d7f0b0edcc0d0211e9d53f
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -36,8 +38,8 @@ $ rcodesign print-signature-info exe.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 316
-          sha1: 9079242958433607d19a1338ea046c95b201df79
-          sha256: bc6f21464b7ed811f524eef2c0bd1335196be2fdc8ec9787e4b23d58c4394d73
+          sha1: 7b07170f3d144449f1e6c1ba11b1e73512ad5d98
+          sha256: 610e024a2ae25566ddf0305893f2e6d21a2c13275777dc9d7d14993ce75c50d9
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12

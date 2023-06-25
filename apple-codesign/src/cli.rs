@@ -1041,6 +1041,10 @@ struct DebugCreateMachO {
     #[arg(long, value_enum, default_value_t = MachOFileType::Executable)]
     file_type: MachOFileType,
 
+    /// Do not write platform targeting to Mach-O binary.
+    #[arg(long)]
+    no_targeting: bool,
+
     /// The minimum operating system version the binary will run on.
     #[arg(long)]
     minimum_os_version: Option<semver::Version>,
@@ -1064,22 +1068,40 @@ impl DebugCreateMachO {
             }
         };
 
-        if self.minimum_os_version.is_some() || self.sdk_version.is_some() {
-            let minimum_os_version = self
-                .minimum_os_version
-                .clone()
-                .unwrap_or_else(|| self.sdk_version.clone().unwrap());
-            let sdk_version = self
-                .sdk_version
-                .clone()
-                .unwrap_or_else(|| self.minimum_os_version.clone().unwrap());
+        let target = match (
+            self.no_targeting,
+            &self.minimum_os_version,
+            &self.sdk_version,
+        ) {
+            (true, _, _) => None,
+            (false, None, None) => {
+                warn!("assuming default minimum version 11.0.0");
 
-            let target = crate::macho::MachoTarget {
-                platform: crate::Platform::MacOs,
-                minimum_os_version,
-                sdk_version,
-            };
+                Some(crate::macho::MachoTarget {
+                    platform: crate::Platform::MacOs,
+                    minimum_os_version: semver::Version::new(11, 0, 0),
+                    sdk_version: semver::Version::new(11, 0, 0),
+                })
+            }
+            (false, _, _) => {
+                let minimum_os_version = self
+                    .minimum_os_version
+                    .clone()
+                    .unwrap_or_else(|| self.sdk_version.clone().unwrap());
+                let sdk_version = self
+                    .sdk_version
+                    .clone()
+                    .unwrap_or_else(|| self.minimum_os_version.clone().unwrap());
 
+                Some(crate::macho::MachoTarget {
+                    platform: crate::Platform::MacOs,
+                    minimum_os_version,
+                    sdk_version,
+                })
+            }
+        };
+
+        if let Some(target) = target {
             builder = builder.macho_target(target);
         }
 

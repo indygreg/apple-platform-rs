@@ -324,6 +324,7 @@ An ad-hoc signature over a minimal Mach-O works.
 
 ```
 $ rcodesign debug-create-macho exe
+assuming default minimum version 11.0.0
 writing Mach-O to exe
 
 $ rcodesign sign exe exe.signed
@@ -333,6 +334,7 @@ inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 356 bytes
@@ -341,7 +343,7 @@ writing Mach-O to exe.signed
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
   file_size: 18434
-  file_sha256: 003fc94115745112f459fe9974fed170525dcf2f1ad92a09addef37b99b451e8
+  file_sha256: 8aeda70df39fd276ac166c428b734c4a86e3b045b5457570bd3b2e658d13e231
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -357,8 +359,8 @@ $ rcodesign print-signature-info exe.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 316
-          sha1: e920db47825f1587eb4d1cec423506035038f9f8
-          sha256: a8c64116fe8e0aadc68e823adde60643acb7dfc40f42a4b8b0187e12ee1eb636
+          sha1: 80133b2e964498d9f473e98c07421d9f68cee920
+          sha256: b10f122d731e45f7ebf54bbcdbc142845a17f118f5df733a94f98d41b5dc94d1
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -388,6 +390,7 @@ preserving code signature flags in existing Mach-O signature
 setting binary identifier to exe.signed
 parsing Mach-O
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 adding code signature flags from signing settings: CodeSignatureFlags(ADHOC)
 creating ad-hoc signature
 code directory version: 132096
@@ -398,7 +401,7 @@ $ rcodesign diff-signatures exe.signed exe.signed.2
 -- path: exe.signed
 +- path: exe.signed.2
    file_size: 18434
-   file_sha256: 003fc94115745112f459fe9974fed170525dcf2f1ad92a09addef37b99b451e8
+   file_sha256: 8aeda70df39fd276ac166c428b734c4a86e3b045b5457570bd3b2e658d13e231
    entity:
      mach_o:
        linkedit_segment_file_start_offset: 16384
@@ -414,8 +417,8 @@ $ rcodesign diff-signatures exe.signed exe.signed.2
          - slot: CodeDirectory (0)
            magic: fade0c02
            length: 316
-           sha1: e920db47825f1587eb4d1cec423506035038f9f8
-           sha256: a8c64116fe8e0aadc68e823adde60643acb7dfc40f42a4b8b0187e12ee1eb636
+           sha1: 80133b2e964498d9f473e98c07421d9f68cee920
+           sha256: b10f122d731e45f7ebf54bbcdbc142845a17f118f5df733a94f98d41b5dc94d1
          - slot: RequirementSet (2)
            magic: fade0c01
            length: 12

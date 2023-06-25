@@ -2,6 +2,7 @@
 
 ```
 $ rcodesign debug-create-macho exe
+assuming default minimum version 11.0.0
 writing Mach-O to exe
 
 $ rcodesign sign --digest sha1 exe exe.signed
@@ -11,6 +12,7 @@ inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 272 bytes
@@ -19,7 +21,7 @@ writing Mach-O to exe.signed
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
   file_size: 18434
-  file_sha256: f5b2d3f80b4e1e6938b15a6e87dd85fe4e572f7e18a713f8a0203f7abae953af
+  file_sha256: 3b16ae104a78943166abfb5e3376f5710c7a6f56bb03b4ade80a4cd2af333dd2
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -35,8 +37,8 @@ $ rcodesign print-signature-info exe.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 232
-          sha1: 0541b74c740c0ba23bf2a2ab6baadd062b9747b7
-          sha256: 69227afdbab0da4d7ec65ffe343d07a579e2b5f93799571ad26b66a50dad571f
+          sha1: 5ffc877d935dd5060b3c91f9bf38c27232859e18
+          sha256: 2db2c537eaaa67ae9dd5d706da49a362eaa48545f9f6c91675526b7f985fe29e
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -61,6 +63,7 @@ $ rcodesign print-signature-info exe.signed
 
 ```
 $ rcodesign debug-create-macho exe
+assuming default minimum version 11.0.0
 writing Mach-O to exe
 
 $ rcodesign sign --digest sha1 --extra-digest sha256 exe exe.signed
@@ -70,9 +73,11 @@ inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 adding alternative code directory using digest Sha256
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 total signature size: 596 bytes
 writing Mach-O to exe.signed
@@ -80,7 +85,7 @@ writing Mach-O to exe.signed
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
   file_size: 19458
-  file_sha256: 885001369f15fe991297d56cf2c1913c85bea528fd888cca0da1e360accce8b4
+  file_sha256: 5a74aa527987be28c4fd0db3b3a64e0b0792f7acc4e9f8cf516b12ee24c9ab70
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -96,8 +101,8 @@ $ rcodesign print-signature-info exe.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 232
-          sha1: 364195b081ddc251d8082d56d09fc42a6df85ed7
-          sha256: b0b5c9a5c075e25a5469960d21ecb5306011de1685b27a02d78ff636e3fbe591
+          sha1: fb4c7ce93f0184f843970a1cc26e7d45301d259f
+          sha256: 3957de2d564a26889dc459a696f69a8ff0a3e82123cd68164d2ac1931f09d107
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -106,8 +111,8 @@ $ rcodesign print-signature-info exe.signed
         - slot: 'CodeDirectory Alternate #0 (4096)'
           magic: fade0c02
           length: 316
-          sha1: cb0cda8411be1cbf78250507e40acd29e403f12a
-          sha256: dc58b7ebdec82c9b6d3139621e6bcd41e273fd4a40fdb0093f154e2ad19c0d38
+          sha1: 76f73672b9b5819785be84a79e2f8a2c21f68f78
+          sha256: 8ea48064fef8e94f03ea4b53f21d1fe2aaa5854d751975ae9f10ab5ef980a94f
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)

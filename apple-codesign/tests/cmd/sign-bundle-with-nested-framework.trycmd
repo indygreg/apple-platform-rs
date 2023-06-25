@@ -1,5 +1,6 @@
 ```
 $ rcodesign debug-create-macho MyApp.app/Contents/MacOS/MyApp
+assuming default minimum version 11.0.0
 writing Mach-O to MyApp.app/Contents/MacOS/MyApp
 
 $ rcodesign debug-create-info-plist --bundle-name MyApp MyApp.app/Contents/Info.plist
@@ -9,6 +10,7 @@ $ mkdir -p MyApp.app/Contents/Resources
 $ touch MyApp.app/Contents/Resources/AppIcon.icns
 
 $ rcodesign debug-create-macho --file-type dylib MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Sparkle
+assuming default minimum version 11.0.0
 writing Mach-O to MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Sparkle
 
 $ rcodesign debug-create-info-plist --bundle-name Sparkle MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Info.plist
@@ -25,6 +27,7 @@ $ touch MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Dar
 $ touch MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/en.lproj/Sparkle.strings
 
 $ rcodesign debug-create-macho MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS/Autoupdate
+assuming default minimum version 11.0.0
 writing Mach-O to MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS/Autoupdate
 
 $ rcodesign debug-create-info-plist --bundle-name Autoupdate MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist
@@ -59,6 +62,7 @@ signing main executable Contents/MacOS/Autoupdate
 setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
 inferring default signing settings from Mach-O binary
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 405 bytes
@@ -90,6 +94,7 @@ signing main executable Sparkle
 setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
 inferring default signing settings from Mach-O binary
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 405 bytes
@@ -117,6 +122,7 @@ signing main executable Contents/MacOS/MyApp
 setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
 inferring default signing settings from Mach-O binary
 signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 405 bytes

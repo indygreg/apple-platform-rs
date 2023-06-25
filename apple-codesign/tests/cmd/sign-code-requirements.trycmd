@@ -1,5 +1,6 @@
 ```
 $ rcodesign debug-create-macho exe
+assuming default minimum version 11.0.0
 writing Mach-O to exe
 
 $ rcodesign debug-create-code-requirements --code-requirement developer-id-signed reqs
@@ -15,6 +16,7 @@ parsing Mach-O
 signing Mach-O binary at index 0
 using provided code requirements
 code requirements: 0: ((anchor apple generic) and (certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */)) and ((certificate leaf[field.1.2.840.113635.100.6.1.14] /* exists */) or (certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */));
+binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 476 bytes
@@ -23,7 +25,7 @@ writing Mach-O to exe.signed
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
   file_size: 18434
-  file_sha256: 2893c79582d7dad79b7d0ed786e3cd7472e1626846320baa2bd1713a5f41576d
+  file_sha256: 8107d1616776173a9fc5bc48db31385d292b33aceebcc0da8d30433e01ece9e1
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -39,8 +41,8 @@ $ rcodesign print-signature-info exe.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 316
-          sha1: 443bf949d776274103f0058736d60ff1177f267c
-          sha256: 2fb27c284d7babe8824becdc8cae7a430740fd29526a646f44a0b91e85fcac63
+          sha1: 72cc4f1698ca3d789e8dcf2b7bf3b3c1a48318e1
+          sha256: 7160e08e2ff947c22eb5d4935e55b076185ddd3c8d2c7967cd669bac755bc5ba
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 132
