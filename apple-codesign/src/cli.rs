@@ -1628,19 +1628,19 @@ impl Extract {
                 );
                 println!(
                     "__LINKEDIT signature global start offset: {}",
-                    sig.linkedit_signature_start_offset
+                    sig.signature_file_start_offset
                 );
                 println!(
                     "__LINKEDIT signature global end offset: {}",
-                    sig.linkedit_signature_end_offset
+                    sig.signature_file_end_offset
                 );
                 println!(
                     "__LINKEDIT signature local segment start offset: {}",
-                    sig.signature_start_offset
+                    sig.signature_segment_start_offset
                 );
                 println!(
                     "__LINKEDIT signature local segment end offset: {}",
-                    sig.signature_end_offset
+                    sig.signature_segment_end_offset
                 );
                 println!("__LINKEDIT signature size: {}", sig.signature_data.len());
             }
@@ -1798,10 +1798,16 @@ impl Extract {
                     .code_signature()?
                     .ok_or(AppleCodesignError::BinaryNoCodeSignature)?;
 
-                println!("file start offset: {}", sig.linkedit_signature_start_offset);
-                println!("file end offset: {}", sig.linkedit_signature_end_offset);
-                println!("__LINKEDIT start offset: {}", sig.signature_start_offset);
-                println!("__LINKEDIT end offset: {}", sig.signature_end_offset);
+                println!("file start offset: {}", sig.signature_file_start_offset);
+                println!("file end offset: {}", sig.signature_file_end_offset);
+                println!(
+                    "__LINKEDIT start offset: {}",
+                    sig.signature_segment_start_offset
+                );
+                println!(
+                    "__LINKEDIT end offset: {}",
+                    sig.signature_segment_end_offset
+                );
                 println!("length: {}", embedded.length);
                 println!("blob count: {}", embedded.count);
                 println!("blobs:");

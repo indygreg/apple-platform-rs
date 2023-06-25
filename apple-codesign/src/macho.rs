@@ -117,24 +117,25 @@ impl<'a> MachOBinary<'a> {
 
             let linkedit_segment_start_offset = linkedit.fileoff as usize;
             let linkedit_segment_end_offset = linkedit_segment_start_offset + linkedit.data.len();
-            let linkedit_signature_start_offset = linkedit_data_command.dataoff as usize;
-            let linkedit_signature_end_offset =
-                linkedit_signature_start_offset + linkedit_data_command.datasize as usize;
-            let signature_start_offset =
+            let signature_file_start_offset = linkedit_data_command.dataoff as usize;
+            let signature_file_end_offset =
+                signature_file_start_offset + linkedit_data_command.datasize as usize;
+            let signature_segment_start_offset =
                 linkedit_data_command.dataoff as usize - linkedit.fileoff as usize;
-            let signature_end_offset =
-                signature_start_offset + linkedit_data_command.datasize as usize;
+            let signature_segment_end_offset =
+                signature_segment_start_offset + linkedit_data_command.datasize as usize;
 
-            let signature_data = &linkedit.data[signature_start_offset..signature_end_offset];
+            let signature_data =
+                &linkedit.data[signature_segment_start_offset..signature_segment_end_offset];
 
             Ok(Some(MachOSignatureData {
                 linkedit_segment_index,
                 linkedit_segment_start_offset,
                 linkedit_segment_end_offset,
-                linkedit_signature_start_offset,
-                linkedit_signature_end_offset,
-                signature_start_offset,
-                signature_end_offset,
+                signature_file_start_offset,
+                signature_file_end_offset,
+                signature_segment_start_offset,
+                signature_segment_end_offset,
                 linkedit_segment_data: linkedit.data,
                 signature_data,
             }))
@@ -488,16 +489,16 @@ pub struct MachOSignatureData<'a> {
     pub linkedit_segment_end_offset: usize,
 
     /// Start offset of signature data in `__LINKEDIT` within the binary.
-    pub linkedit_signature_start_offset: usize,
+    pub signature_file_start_offset: usize,
 
     /// End offset of signature data in `__LINKEDIT` within the binary.
-    pub linkedit_signature_end_offset: usize,
+    pub signature_file_end_offset: usize,
 
     /// The start offset of the signature data within the `__LINKEDIT` segment.
-    pub signature_start_offset: usize,
+    pub signature_segment_start_offset: usize,
 
     /// The end offset of the signature data within the `__LINKEDIT` segment.
-    pub signature_end_offset: usize,
+    pub signature_segment_end_offset: usize,
 
     /// Raw data in the `__LINKEDIT` segment.
     pub linkedit_segment_data: &'a [u8],

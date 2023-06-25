@@ -890,10 +890,10 @@ impl SignatureReader {
         if let Some(sig) = macho.find_signature_data()? {
             entity.linkedit_segment_file_start_offset = Some(sig.linkedit_segment_start_offset);
             entity.linkedit_segment_file_end_offset = Some(sig.linkedit_segment_end_offset);
-            entity.signature_file_start_offset = Some(sig.linkedit_signature_start_offset);
-            entity.signature_file_end_offset = Some(sig.linkedit_signature_end_offset);
-            entity.signature_linkedit_start_offset = Some(sig.signature_start_offset);
-            entity.signature_linkedit_end_offset = Some(sig.signature_end_offset);
+            entity.signature_file_start_offset = Some(sig.signature_file_start_offset);
+            entity.signature_file_end_offset = Some(sig.signature_file_end_offset);
+            entity.signature_linkedit_start_offset = Some(sig.signature_segment_start_offset);
+            entity.signature_linkedit_end_offset = Some(sig.signature_segment_end_offset);
         }
 
         if let Some(sig) = macho.code_signature()? {

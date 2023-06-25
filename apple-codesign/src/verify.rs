@@ -276,7 +276,7 @@ fn verify_macho_internal(
     }
 
     // Signature data should be the last data in the __LINKEDIT segment.
-    if signature_data.signature_end_offset != signature_data.linkedit_segment_data.len() {
+    if signature_data.signature_segment_end_offset != signature_data.linkedit_segment_data.len() {
         problems.push(VerificationProblem {
             context: context.clone(),
             problem: VerificationProblemType::SignatureNotLastLinkeditData,
