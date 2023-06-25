@@ -93,8 +93,8 @@ $ rcodesign print-signature-info MyFramework.framework.signed
   file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
   entity: other
 - path: Versions/A/_CodeSignature/CodeResources
-  file_size: 2899
-  file_sha256: 3774f1fde245ad7b9d52a8cbcebe9011ae7ff79bb65b282f2c6d5bd651e70e82
+  file_size: 2889
+  file_sha256: a6e748fa301a9b48160f93a6c7b4eacd78b2fe4b11daee1770ba80a06d8b907a
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -121,7 +121,7 @@ $ rcodesign print-signature-info MyFramework.framework.signed
     - '      EsqYR8PjlB81hiaOxFT9gno/DF0='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H&quot;12ca9847c3e3941f3586268ec454fd827a3f0c5d&quot;</string>'
+    - '      <string>cdhash H"12ca9847c3e3941f3586268ec454fd827a3f0c5d"</string>'
     - '    </dict>'
     - '    <key>Resources/Info.plist</key>'
     - '    <dict>'

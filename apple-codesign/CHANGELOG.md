@@ -31,6 +31,8 @@ Released on ReleaseDate.
 * The `print-signature-info` command should now work on bundles. It may have
   stopped working as part of an upgrade to `serde_yaml`. The YAML output may
   have changed slightly.
+* `CodeResources` files now emit `"` instead of `&quot;` for parity with Apple
+  tooling.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

@@ -713,6 +713,7 @@ impl CodeResources {
         let data = String::from_utf8(data).expect("XML should be valid UTF-8");
         let data = data.replace("<dict />", "<dict/>");
         let data = data.replace("<true />", "<true/>");
+        let data = data.replace("&quot;", "\"");
 
         writer.write_all(data.as_bytes())?;
         writer.write_all(b"\n")?;
