@@ -47,11 +47,25 @@ fn create_macho_with_signature(
     // is at the end of the __LINKEDIT segment. So the replacement segment is the
     // existing segment truncated at the signature start followed by the new signature
     // data.
-    let new_linkedit_segment_size = macho
+    //
+    // Code signature data is aligned on 16 byte boundary by Apple convention.
+    //
+    // Typically segment data is aligned on pages, which are multiples of 16 bytes. So
+    // it doesn't matter if we align based on Mach-O file-level or __LINKEDIT
+    // segment-level offsets: the end result is 16 byte alignment in both.
+
+    let linkedit_data_before_signature = macho
         .linkedit_data_before_signature()
-        .ok_or(AppleCodesignError::MissingLinkedit)?
-        .len()
-        + signature_data.len();
+        .ok_or(AppleCodesignError::MissingLinkedit)?;
+
+    let signature_file_offset = macho.code_limit_binary_offset()?;
+    let remainder = (signature_file_offset % 16) as usize;
+    let signature_padding_length = if remainder == 0 { 0 } else { 16 - remainder };
+
+    let signature_file_offset = signature_file_offset + signature_padding_length as u64;
+
+    let new_linkedit_segment_size =
+        linkedit_data_before_signature.len() + signature_padding_length + signature_data.len();
 
     // `codesign` rounds up the segment's vmsize to the nearest 16kb boundary.
     // We emulate that behavior.
@@ -97,6 +111,7 @@ fn create_macho_with_signature(
                 seen_signature_load_command = true;
 
                 let mut command = *command;
+                command.dataoff = signature_file_offset as _;
                 command.datasize = signature_data.len() as _;
 
                 cursor.iowrite_with(command, ctx.le)?;
@@ -152,7 +167,7 @@ fn create_macho_with_signature(
         let command = LinkeditDataCommand {
             cmd: LC_CODE_SIGNATURE,
             cmdsize: SIZEOF_LINKEDIT_DATA_COMMAND as _,
-            dataoff: macho.code_limit_binary_offset()? as _,
+            dataoff: signature_file_offset as _,
             datasize: signature_data.len() as _,
         };
 
@@ -205,6 +220,12 @@ fn create_macho_with_signature(
                         .linkedit_data_before_signature()
                         .expect("__LINKEDIT segment data should resolve"),
                 )?;
+
+                let padding = vec![0u8; signature_padding_length];
+                cursor.write_all(&padding)?;
+
+                assert_eq!(cursor.position(), signature_file_offset);
+                assert_eq!(cursor.position() % 16, 0);
                 cursor.write_all(signature_data)?;
             }
             _ => {

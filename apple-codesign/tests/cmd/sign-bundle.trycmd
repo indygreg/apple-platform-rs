@@ -40,16 +40,16 @@ $ rcodesign print-signature-info MyApp.app.signed
   file_sha256: 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5
   entity: other
 - path: Contents/MacOS/MyApp
-  file_size: 22530
-  file_sha256: e6647c8682f987dc3aa21b6245d4a7a7eb517daca12826539550728d450261fe
+  file_size: 22544
+  file_sha256: 5320635ab22c676386600c2dbf0b4b93fe223687df1614e03a9bcf6a80783640
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22530
-      signature_file_start_offset: 16386
-      signature_file_end_offset: 22530
-      signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 6146
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
       signature:
         superblob_length: 421
         blob_count: 3
@@ -57,8 +57,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 365
-          sha1: 959bd52e144a512b68339cc2dc214d4975d1841c
-          sha256: 27b97b9a00a18c9cd4991e4378c5d35c3c6fdfb5db24c3efb69555c5c4073d7d
+          sha1: 59bc1b2ca8a3c122a9254e32b7b57e3ba380248b
+          sha256: 76ef857f4238cf6c3429d0c1436429a4ed142e696e94864b771c7d68b3deaaae
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -75,7 +75,7 @@ $ rcodesign print-signature-info MyApp.app.signed
           identifier: com.example.mybundle
           digest_type: sha256
           platform: 0
-          signed_entity_size: 16386
+          signed_entity_size: 16400
           executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
           code_digests_count: 5
           slot_digests:
@@ -246,16 +246,16 @@ $ rcodesign print-signature-info MyApp.app.signed
   file_sha256: 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5
   entity: other
 - path: Contents/MacOS/MyApp
-  file_size: 23554
-  file_sha256: 613c411b776124e06f747e68befd008ae17fc2a26f5fac4f2aa37096ed29773c
+  file_size: 23568
+  file_sha256: 6165a0d76093125a9c8a14525fcaa865bbce2cbcdc8cfb66d52b49a95066e814
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 23554
-      signature_file_start_offset: 16386
-      signature_file_end_offset: 23554
-      signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 7170
+      linkedit_segment_file_end_offset: 23568
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 23568
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 7184
       signature:
         superblob_length: 698
         blob_count: 4
@@ -263,8 +263,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 269
-          sha1: 2ac6448d7140e803f8bcc5821fc5549bf72a8a69
-          sha256: 01f17d92df682b72e11c6ceec3bb2f1ea221411f26ffd180bcb7adc6c3845f2c
+          sha1: ff42d26c8112481ed6bbe1a21c099c82ff650457
+          sha256: eeecd27380a05e4397f610bde11848f0eea1faf362efc9af2e8db99a41b65653
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -273,8 +273,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: 'CodeDirectory Alternate #0 (4096)'
           magic: fade0c02
           length: 365
-          sha1: defcd15d14b0968833950de143347bf90c0ec5a2
-          sha256: e5d9cd9baf150ef3b9e91b45438ef6fc6724c87191f3bf7aa4d95c33ff3ca7f8
+          sha1: ee17f5c87d244ab43457bef71a636de950811392
+          sha256: aca48af867ddedb54ff45ccf984416ffa1af3d29d32f185386c28af12842f14d
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 8
@@ -286,7 +286,7 @@ $ rcodesign print-signature-info MyApp.app.signed
           identifier: com.example.mybundle
           digest_type: sha1
           platform: 0
-          signed_entity_size: 16386
+          signed_entity_size: 16400
           executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
           code_digests_count: 5
           slot_digests:
@@ -300,7 +300,7 @@ $ rcodesign print-signature-info MyApp.app.signed
             identifier: com.example.mybundle
             digest_type: sha256
             platform: 0
-            signed_entity_size: 16386
+            signed_entity_size: 16400
             executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
             code_digests_count: 5
             slot_digests:

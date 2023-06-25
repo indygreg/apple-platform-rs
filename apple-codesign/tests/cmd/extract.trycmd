@@ -78,7 +78,7 @@ ParsedBlob {
             flags: CodeSignatureFlags(
                 ADHOC,
             ),
-            code_limit: 16386,
+            code_limit: 16400,
             digest_size: 32,
             digest_type: Sha256,
             platform: 0,
@@ -112,11 +112,11 @@ ParsedBlob {
             ident: "exe",
             team_name: None,
             code_digests: [
-                b67556896e16dc7ce7fef7f069efdbabb95967c4e4998fbf43eb8145dfd30879,
+                4f3c762ac97e47d0e37922d5b276e7c751b66e37f4b410a0421e6d5aacf44415,
                 ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
                 ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
                 ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
-                96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7,
+                374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb,
             ],
             special_digests: {
                 Info (1): 0000000000000000000000000000000000000000000000000000000000000000,
@@ -158,7 +158,7 @@ CodeDirectoryBlob {
     flags: CodeSignatureFlags(
         ADHOC,
     ),
-    code_limit: 16386,
+    code_limit: 16400,
     digest_size: 32,
     digest_type: Sha256,
     platform: 0,
@@ -192,11 +192,11 @@ CodeDirectoryBlob {
     ident: "exe",
     team_name: None,
     code_digests: [
-        b67556896e16dc7ce7fef7f069efdbabb95967c4e4998fbf43eb8145dfd30879,
+        4f3c762ac97e47d0e37922d5b276e7c751b66e37f4b410a0421e6d5aacf44415,
         ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
         ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
         ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
-        96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7,
+        374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb,
     ],
     special_digests: {
         Info (1): 0000000000000000000000000000000000000000000000000000000000000000,
@@ -210,7 +210,7 @@ CodeDirectoryBlob {
     flags: CodeSignatureFlags(
         ADHOC,
     ),
-    code_limit: 16386,
+    code_limit: 16400,
     digest_size: 32,
     digest_type: Sha256,
     platform: 0,
@@ -244,11 +244,11 @@ CodeDirectoryBlob {
     ident: "exe",
     team_name: None,
     code_digests: [
-        b67556896e16dc7ce7fef7f069efdbabb95967c4e4998fbf43eb8145dfd30879,
+        4f3c762ac97e47d0e37922d5b276e7c751b66e37f4b410a0421e6d5aacf44415,
         ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
         ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
         ad7facb2586fc6e966c004d7d1d16b024f5805ff7cb47c7a85dabd8b48892ca7,
-        96a296d224f285c67bee93c30f8a309157f0daa35dc5b87e410b78630a09cfc7,
+        374708fff7719dd5979ec875d56cd2286f6d3cf7ec317a3b25632aab28ec37bb,
     ],
     special_digests: {
         Info (1): 0000000000000000000000000000000000000000000000000000000000000000,
@@ -259,12 +259,12 @@ CodeDirectoryBlob {
 $ rcodesign extract linkedit-info exe
 __LINKEDIT segment index: 4
 __LINKEDIT segment start offset: 16384
-__LINKEDIT segment end offset: 22530
-__LINKEDIT segment size: 6146
-__LINKEDIT signature global start offset: 16386
-__LINKEDIT signature global end offset: 22530
-__LINKEDIT signature local segment start offset: 2
-__LINKEDIT signature local segment end offset: 6146
+__LINKEDIT segment end offset: 22544
+__LINKEDIT segment size: 6160
+__LINKEDIT signature global start offset: 16400
+__LINKEDIT signature global end offset: 22544
+__LINKEDIT signature local segment start offset: 16
+__LINKEDIT signature local segment end offset: 6160
 __LINKEDIT signature size: 6144
 
 $ rcodesign extract macho-load-commands exe
@@ -288,7 +288,7 @@ segment #2; __DATA_CONST; offsets=0x4000-0x4000 (16384-16384); addresses=0x10000
 segment #2; section #0: __const; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; size 0; align=16384; flags=0
 segment #3; __DATA; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; vm/file size 0/0; section count 1
 segment #3; section #0: __data; offsets=0x4000-0x4000 (16384-16384); addresses=0x100000000-0x100000000; size 0; align=16384; flags=0
-segment #4; __LINKEDIT; offsets=0x4000-0x5802 (16384-22530); addresses=0x100000000-0x100004000; vm/file size 16384/6146; section count 0
+segment #4; __LINKEDIT; offsets=0x4000-0x5810 (16384-22544); addresses=0x100000000-0x100004000; vm/file size 16384/6160; section count 0
 
 $ rcodesign extract macho-target exe
 Platform: macOS
@@ -305,10 +305,10 @@ RequirementSetBlob {
 }
 
 $ rcodesign extract superblob exe
-file start offset: 16386
-file end offset: 22530
-__LINKEDIT start offset: 2
-__LINKEDIT end offset: 6146
+file start offset: 16400
+file end offset: 22544
+__LINKEDIT start offset: 16
+__LINKEDIT end offset: 6160
 length: 372
 blob count: 3
 blobs:
@@ -317,16 +317,16 @@ blobs:
   length: 316
   slot: CodeDirectory (0)
   magic: CodeDirectory (0xfade0c02)
-  sha1: 165ca7b97456b44034a31a5277661a20089e8d0a
-  sha256: 35e7fba15e2695591654a64b692da549636624b6e5389b4d05b667edef22c245
-  sha256-truncated: 35e7fba15e2695591654a64b692da549636624b6
-  sha384: 47f90928a5b85fbb52abff05b86cbc12745437839788c89f3a0a2b1d8af9f51a3df656498c3c5549b6243cf890f16d1b
-  sha512: 3071ea94373a54cf165d1d8f58e758915c56801a50dd84ab99f00d1faae125b5b1da8849303de7a13ce8f420258f4ddc34f1a8a639eb2df0f9305214cdafa427
-  sha1-base64: FlynuXRWtEA0oxpSd2YaIAiejQo=
-  sha256-base64: Nef7oV4mlVkWVKZLaS2lSWNmJLblOJtNBbZn7e8iwkU=
-  sha256-truncated-base64: Nef7oV4mlVkWVKZLaS2lSWNmJLY=
-  sha384-base64: R/kJKKW4X7tSq/8FuGy8EnRUN4OXiMifOgorHYr59Ro99lZJjDxVSbYkPPiQ8W0b
-  sha512-base64: MHHqlDc6VM8WXR2PWOdYkVxWgBpQ3YSrmfANH6rhJbWx2ohJMD3noTzo9CAlj03cNPGopjnrLfD5MFIUza+kJw==
+  sha1: ee23bf4fb629c06fd2a4c052e64e6d82cba191d6
+  sha256: 504dc3f849477fdb537ed810992d02e008f5302d8cde77b0076bd6cbefb10de6
+  sha256-truncated: 504dc3f849477fdb537ed810992d02e008f5302d
+  sha384: 38564345445744b17a61213dda9fd116bd5e0f0943cd7d6994d5f1e0fcf0d1b28e4646245c75aa51d5e43cd9e1e8a8c9
+  sha512: ba96f00e6cc58310a76a99d51b5571e4beb9d73abc6678df02b942116d458f1be7d028eef670088aed2eeb1c1dcb055f6f8a51e587ac59bd7ad2cf0ef475673e
+  sha1-base64: 7iO/T7YpwG/SpMBS5k5tgsuhkdY=
+  sha256-base64: UE3D+ElHf9tTftgQmS0C4Aj1MC2M3newB2vWy++xDeY=
+  sha256-truncated-base64: UE3D+ElHf9tTftgQmS0C4Aj1MC0=
+  sha384-base64: OFZDRURXRLF6YSE92p/RFr1eDwlDzX1plNXx4Pzw0bKORkYkXHWqUdXkPNnh6KjJ
+  sha512-base64: upbwDmzFgxCnapnVG1Vx5L651zq8ZnjfArlCEW1Fjxvn0Cju9nAIiu0u6xwdywVfb4pR5YesWb160s8O9HVnPg==
 - index: 1
   offsets: 0x160-0x16b (352-363)
   length: 12

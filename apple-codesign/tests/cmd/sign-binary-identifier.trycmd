@@ -17,16 +17,16 @@ writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
-  file_size: 22530
-  file_sha256: 9baf31fcf9252f4107325a295b5a24e7945466b931a232eb75590ac05a6d92f6
+  file_size: 22544
+  file_sha256: 8ecbc87f8c751be9a6048b546f52eb817a34d1ac3839cc7763a14445a2068140
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22530
-      signature_file_start_offset: 16386
-      signature_file_end_offset: 22530
-      signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 6146
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
       signature:
         superblob_length: 378
         blob_count: 3
@@ -34,8 +34,8 @@ $ rcodesign print-signature-info exe.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 322
-          sha1: 9b2bca8bf402fe7f42e8e1b29b602e9026297352
-          sha256: 54216b03d755d1fe9d1534f00c5a5edf8ca6d4ea13b63e762cd918f15eb449c5
+          sha1: c1f056da05543dc711b509c2d63e71ced1af1c9d
+          sha256: 8b710dbe31e6e2eecf6d8eaa6451a8f6afdf6a9cb0baa2f88cc0474ee5138889
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -52,7 +52,7 @@ $ rcodesign print-signature-info exe.signed
           identifier: my-binary
           digest_type: sha256
           platform: 0
-          signed_entity_size: 16386
+          signed_entity_size: 16400
           executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
           code_digests_count: 5
           slot_digests:
@@ -79,16 +79,16 @@ writing Mach-O to exe.signed.2
 
 $ rcodesign print-signature-info exe.signed.2
 - path: exe.signed.2
-  file_size: 22530
-  file_sha256: 9baf31fcf9252f4107325a295b5a24e7945466b931a232eb75590ac05a6d92f6
+  file_size: 22544
+  file_sha256: 8ecbc87f8c751be9a6048b546f52eb817a34d1ac3839cc7763a14445a2068140
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22530
-      signature_file_start_offset: 16386
-      signature_file_end_offset: 22530
-      signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 6146
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
       signature:
         superblob_length: 378
         blob_count: 3
@@ -96,8 +96,8 @@ $ rcodesign print-signature-info exe.signed.2
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 322
-          sha1: 9b2bca8bf402fe7f42e8e1b29b602e9026297352
-          sha256: 54216b03d755d1fe9d1534f00c5a5edf8ca6d4ea13b63e762cd918f15eb449c5
+          sha1: c1f056da05543dc711b509c2d63e71ced1af1c9d
+          sha256: 8b710dbe31e6e2eecf6d8eaa6451a8f6afdf6a9cb0baa2f88cc0474ee5138889
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -114,7 +114,7 @@ $ rcodesign print-signature-info exe.signed.2
           identifier: my-binary
           digest_type: sha256
           platform: 0
-          signed_entity_size: 16386
+          signed_entity_size: 16400
           executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
           code_digests_count: 5
           slot_digests:

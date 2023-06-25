@@ -209,16 +209,16 @@ $ rcodesign print-signature-info Electron.app.signed
   symlink_target: Versions/Current/Resources
   entity: other
 - path: Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
-  file_size: 22530
-  file_sha256: 98971c93f1daaaa8b1a7e7b11f4a3fa56411cf2a41d1246cd842863aef1ec997
+  file_size: 22544
+  file_sha256: 00085df7a4c9a45a39ae5ead07aaf8019bd1399f64aff8d8fe68d6955df3f9ca
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22530
-      signature_file_start_offset: 16386
-      signature_file_end_offset: 22530
-      signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 6146
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
       signature:
         superblob_length: 430
         blob_count: 3
@@ -226,8 +226,8 @@ $ rcodesign print-signature-info Electron.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 374
-          sha1: 9f5955060e5f2635f0f90b1842a01cf81e94acee
-          sha256: 26d2522ca264753dba2953dbc59389e44b99bcc2765caf9d664aafce4afb380e
+          sha1: f9ad0bd9f2294afea02395dd88f88e88ded9a3df
+          sha256: 45e9203fd1e43fb30fd4d3642c6fd21c73e5596a002db1c249862f57f71ec497
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -244,26 +244,26 @@ $ rcodesign print-signature-info Electron.app.signed
           identifier: com.github.Electron.framework
           digest_type: sha256
           platform: 0
-          signed_entity_size: 16386
+          signed_entity_size: 16400
           executable_segment_flags: ExecutableSegmentFlags(0x0)
           code_digests_count: 5
           slot_digests:
           - 'Info (1): ca20386388c65cc7900433ebe743ff74f302160c0de829874df9a9839f318e4a'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-          - 'Resources (3): 82b56f217f16215d7945e61e141d65a70c4ed1cf25ba427ee27dae00fe4f5c38'
+          - 'Resources (3): d1dbc59aea24c656af7d3692237408d83fa0f4550dc1c196a4464c9f8b1a0a4e'
         entitlements_plist: null
         cms: null
 - path: Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler
-  file_size: 22530
-  file_sha256: 60b3e0817c970509e8b20df955f3e7720ea58951345ea793e80420dab4196d84
+  file_size: 22544
+  file_sha256: 136b73cf509765caec58c914847548ef1660ba6cf293c4bfa7ef51e8d417b8eb
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22530
-      signature_file_start_offset: 16386
-      signature_file_end_offset: 22530
-      signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 6146
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
       signature:
         superblob_length: 392
         blob_count: 3
@@ -271,8 +271,8 @@ $ rcodesign print-signature-info Electron.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 336
-          sha1: 170f0ce76db0fdfcb4c9cb7248b53ebc064e5794
-          sha256: 3c259581ad03f5a8dd0fcec30412932ea7b4477f35593f4c0b101700803589cf
+          sha1: 6c5f9e19c9aa10787bceb2128bac1531c942e117
+          sha256: 70d3c12507e0ddc998a4843c10780f456fd2d95a56e6f23de7197841fb6d7395
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -289,7 +289,7 @@ $ rcodesign print-signature-info Electron.app.signed
           identifier: chrome_crashpad_handler
           digest_type: sha256
           platform: 0
-          signed_entity_size: 16386
+          signed_entity_size: 16400
           executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
           code_digests_count: 5
           slot_digests:
@@ -343,7 +343,7 @@ $ rcodesign print-signature-info Electron.app.signed
   entity: other
 - path: Contents/Frameworks/Electron Framework.framework/Versions/A/_CodeSignature/CodeResources
   file_size: 4531
-  file_sha256: 82b56f217f16215d7945e61e141d65a70c4ed1cf25ba427ee27dae00fe4f5c38
+  file_sha256: d1dbc59aea24c656af7d3692237408d83fa0f4550dc1c196a4464c9f8b1a0a4e
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -392,10 +392,10 @@ $ rcodesign print-signature-info Electron.app.signed
     - '    <dict>'
     - '      <key>cdhash</key>'
     - '      <data>'
-    - '      PCWVga0D9ajdD87DBBKTLqe0R38='
+    - '      cNPBJQfg3cmYpIQ8EHgPRW/S2Vo='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H"3c259581ad03f5a8dd0fcec30412932ea7b4477f"</string>'
+    - '      <string>cdhash H"70d3c12507e0ddc998a4843c10780f456fd2d95a"</string>'
     - '    </dict>'
     - '    <key>Libraries/libEGL.dylib</key>'
     - '    <dict>'
@@ -579,16 +579,16 @@ $ rcodesign print-signature-info Electron.app.signed
   file_sha256: 7d16bb3cf776fb0a7eb0ee77fd040468fc1e8723546668b11cdb23896bff0c9e
   entity: other
 - path: Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)
-  file_size: 22530
-  file_sha256: 8ed904a7c746133ba63803d15d979c3de277d7b46f4e11a336d0abf37e2d32cf
+  file_size: 22544
+  file_sha256: 35677ddaf12c56b888602e18d84d6f6ed83965f8124487a22b508494f202943d
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22530
-      signature_file_start_offset: 16386
-      signature_file_end_offset: 22530
-      signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 6146
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
       signature:
         superblob_length: 427
         blob_count: 3
@@ -596,8 +596,8 @@ $ rcodesign print-signature-info Electron.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 371
-          sha1: b451cad0bcb8edf7fedc28036f94dfddc8e21bc2
-          sha256: c82f57043458207985dacebdd4be6e341dac797bbcd1521835f76b15725a62d7
+          sha1: efa4ded29dd90f2ab5534e24b57a5b05111110a8
+          sha256: da49ede188bbfd7c14e387d2b33f498576a047e7c77b2874a5381328835ac8ec
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -614,7 +614,7 @@ $ rcodesign print-signature-info Electron.app.signed
           identifier: com.github.Electron.helper
           digest_type: sha256
           platform: 0
-          signed_entity_size: 16386
+          signed_entity_size: 16400
           executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
           code_digests_count: 5
           slot_digests:
@@ -751,16 +751,16 @@ $ rcodesign print-signature-info Electron.app.signed
   symlink_target: Versions/Current/Resources
   entity: other
 - path: Contents/Frameworks/Mantle.framework/Versions/A/Mantle
-  file_size: 22530
-  file_sha256: 1f68aea3be4f3e85475e57c82f83c03f9e452c6d90484942c534430d3d2b4a0e
+  file_size: 22544
+  file_sha256: ce8d29746a1cc2fb403658ca802576f05dd5ddc2a43ec20e966e52b08eef025e
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22530
-      signature_file_start_offset: 16386
-      signature_file_end_offset: 22530
-      signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 6146
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
       signature:
         superblob_length: 418
         blob_count: 3
@@ -768,8 +768,8 @@ $ rcodesign print-signature-info Electron.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 362
-          sha1: 9b76537ad135a045ceb0091607fb39c900a53cf4
-          sha256: 1973e3fc10ee378c4731dfc273fcb8267f7fb46895424a8d849f8521e60176b7
+          sha1: 90daedaf7217c1c2058237690b3e7f3bc16fb5da
+          sha256: b53e751c8bbc19ce5c434090de9171fdbeaa5572b32c782d07c6d0dee50765ea
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -786,7 +786,7 @@ $ rcodesign print-signature-info Electron.app.signed
           identifier: org.mantle.Mantle
           digest_type: sha256
           platform: 0
-          signed_entity_size: 16386
+          signed_entity_size: 16400
           executable_segment_flags: ExecutableSegmentFlags(0x0)
           code_digests_count: 5
           slot_digests:
@@ -941,16 +941,16 @@ $ rcodesign print-signature-info Electron.app.signed
   file_sha256: 863f967826aa4c32179d88ce7febeef529aed41c05ba2204c79dd1d2ab6b7296
   entity: other
 - path: Contents/MacOS/Electron
-  file_size: 22530
-  file_sha256: 8842ed32d2ff467a554e1140bb96f59852205fb7a20b29a1c156942d3565de1d
+  file_size: 22544
+  file_sha256: b15b41f4e5f7c71ede9d66f72d252749c4412274ea76c2d46390efe8995d7f46
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22530
-      signature_file_start_offset: 16386
-      signature_file_end_offset: 22530
-      signature_linkedit_start_offset: 2
-      signature_linkedit_end_offset: 6146
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
       signature:
         superblob_length: 420
         blob_count: 3
@@ -958,8 +958,8 @@ $ rcodesign print-signature-info Electron.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 364
-          sha1: b6cdf8a7896a78f100566f600bdb7a6cfe23b2d2
-          sha256: a6c8a4bd05f54b16a16a25593126c41b36336c43309c5a3aff7c9c8ae4e65b63
+          sha1: 25dbf90ebd3a05348a5e421f093b09e801cd2ca5
+          sha256: 85a18667aade5558f406b43da9de8cecef52ca664382e153b6e393427d524d18
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -976,13 +976,13 @@ $ rcodesign print-signature-info Electron.app.signed
           identifier: com.github.Electron
           digest_type: sha256
           platform: 0
-          signed_entity_size: 16386
+          signed_entity_size: 16400
           executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
           code_digests_count: 5
           slot_digests:
           - 'Info (1): 863f967826aa4c32179d88ce7febeef529aed41c05ba2204c79dd1d2ab6b7296'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-          - 'Resources (3): 17f8504f9c23ec35357ad8d214be0be97e6cdf8ee40f0e6168019d9f4bd23d59'
+          - 'Resources (3): f953fc0c07fbb5fa799d85efb4af372b0ec4243e48e3dc31a88c1ceccd9b06d4'
         entitlements_plist: null
         cms: null
 - path: Contents/Resources/default_app.asar
@@ -999,7 +999,7 @@ $ rcodesign print-signature-info Electron.app.signed
   entity: other
 - path: Contents/_CodeSignature/CodeResources
   file_size: 3622
-  file_sha256: 17f8504f9c23ec35357ad8d214be0be97e6cdf8ee40f0e6168019d9f4bd23d59
+  file_sha256: f953fc0c07fbb5fa799d85efb4af372b0ec4243e48e3dc31a88c1ceccd9b06d4
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -1027,28 +1027,28 @@ $ rcodesign print-signature-info Electron.app.signed
     - '    <dict>'
     - '      <key>cdhash</key>'
     - '      <data>'
-    - '      JtJSLKJkdT26KVPbxZOJ5EuZvMI='
+    - '      RekgP9HkP7MP1NNkLG/SHHPlWWo='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H"26d2522ca264753dba2953dbc59389e44b99bcc2"</string>'
+    - '      <string>cdhash H"45e9203fd1e43fb30fd4d3642c6fd21c73e5596a"</string>'
     - '    </dict>'
     - '    <key>Frameworks/Electron Helper (GPU).app</key>'
     - '    <dict>'
     - '      <key>cdhash</key>'
     - '      <data>'
-    - '      yC9XBDRYIHmF2s691L5uNB2seXs='
+    - '      2knt4Yi7/XwU44fSsz9JhXagR+c='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H"c82f57043458207985dacebdd4be6e341dac797b"</string>'
+    - '      <string>cdhash H"da49ede188bbfd7c14e387d2b33f498576a047e7"</string>'
     - '    </dict>'
     - '    <key>Frameworks/Mantle.framework</key>'
     - '    <dict>'
     - '      <key>cdhash</key>'
     - '      <data>'
-    - '      GXPj/BDuN4xHMd/Cc/y4Jn9/tGg='
+    - '      tT51HIu8Gc5cQ0CQ3pFx/b6qVXI='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H"1973e3fc10ee378c4731dfc273fcb8267f7fb468"</string>'
+    - '      <string>cdhash H"b53e751c8bbc19ce5c434090de9171fdbeaa5572"</string>'
     - '    </dict>'
     - '    <key>Resources/default_app.asar</key>'
     - '    <dict>'
