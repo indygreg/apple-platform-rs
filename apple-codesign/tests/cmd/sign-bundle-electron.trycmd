@@ -181,8 +181,11 @@ sealing regular file Resources/electron.icns
 copying file Electron.app/Contents/Resources/electron.icns -> Electron.app.signed/Contents/Resources/electron.icns
 sealing regular file Resources/en.lproj
 copying file Electron.app/Contents/Resources/en.lproj -> Electron.app.signed/Contents/Resources/en.lproj
+reading code signature from main executable Electron Framework
 sealing nested bundle at Frameworks/Electron Framework.framework
+reading code signature from main executable Contents/MacOS/Electron Helper (GPU)
 sealing nested bundle at Frameworks/Electron Helper (GPU).app
+reading code signature from main executable Mantle
 sealing nested bundle at Frameworks/Mantle.framework
 writing sealed resources to Electron.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/Electron

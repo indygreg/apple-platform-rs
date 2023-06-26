@@ -1335,6 +1335,10 @@ impl CodeResourcesBuilder {
                 }
             };
 
+        info!(
+            "reading code signature from main executable {}",
+            main_exe.relative_path().display()
+        );
         let macho_data = std::fs::read(main_exe.absolute_path())?;
         let macho_info = SignedMachOInfo::parse_data(&macho_data)?;
 
