@@ -408,7 +408,7 @@ dependencies = [
  "aws-smithy-types",
  "aws-types",
  "bytes",
- "fastrand",
+ "fastrand 2.0.0",
  "hex",
  "http 0.2.11",
  "hyper",
