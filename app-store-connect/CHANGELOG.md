@@ -8,6 +8,10 @@ Released on ReleaseDate.
 
 * Minimum supported Rust version changed from 1.62 to 1.64.
 * CLI code moved from `main.rs` to a `cli` module.
+* HTTP requests now use the operating system's trusted X.509 certificates
+  instead of a default set (based off Mozilla's maintained list). This should
+  allow connections to HTTP proxies using custom/private certificate authorities
+  to work, assuming certificates are installed on the local system. (#85)
 * jsonwebtoken 8.3 -> 9.1.
 * pem 1.1 -> 3.0.
 * rsa 0.7 -> 0.8.

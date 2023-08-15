@@ -43,6 +43,10 @@ Released on ReleaseDate.
   Apple's tooling.
 * Code signature data is now aligned to 16 byte boundaries in Mach-O binaries.
   This matches the behavior of Apple tooling.
+* HTTP requests now use the operating system's trusted X.509 certificates
+  instead of a default set (based off Mozilla's maintained list). This should
+  allow connections to HTTP proxies using custom/private certificate authorities
+  to work, assuming certificates are installed on the local system. (#85)
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
