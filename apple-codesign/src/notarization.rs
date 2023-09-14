@@ -19,9 +19,13 @@ use {
     apple_bundles::DirectoryBundle,
     aws_sdk_s3::config::{Credentials, Region},
     aws_smithy_types::byte_stream::ByteStream,
+    headers::Authorization,
+    hyper::Uri,
+    hyper_proxy::{Proxy, Intercept, ProxyConnector},
     log::warn,
     sha2::Digest,
     std::{
+        env
         fs::File,
         io::{Read, Seek, SeekFrom, Write},
         path::{Path, PathBuf},
@@ -310,8 +314,33 @@ impl Notarizer {
                 .load(),
         );
 
-        let s3_client = aws_sdk_s3::Client::new(&config);
+        let proxy = {
+          let http_proxy = env::var_os("http_proxy");
+          let proxy_uri = http_proxy.unwrap().to_str().unwrap().parse::<Uri>().unwrap();
+          let mut proxy = Proxy::new(Intercept::All, proxy_uri);
 
+          let proxy_user = env::var_os("proxy_user");
+          let proxy_password = env::var_os("proxy_password");
+
+          match (proxy_user, proxy_password) {
+            (Some(user), Some(password)) => {
+              proxy.set_authorization(Authorization::basic(user.to_str().unwrap(), password.to_str().unwrap()));
+            }
+            _ => {}
+          }
+
+          let connector = hyper::client::HttpConnector::new();
+          let proxy_connector = ProxyConnector::from_proxy(connector, proxy).unwrap();
+          proxy_connector
+        };        
+
+        let hyper_client = aws_smithy_client::hyper_ext::Adapter::builder()
+          .build(proxy);
+        // let hyper_client = hyper_ext::Adapter::builder().build(proxy);
+        let proxy_config = aws_sdk_s3::config::Builder::from(&config).http_connector(hyper_client).build();
+        let s3_client = aws_sdk_s3::client::Client::from_conf(proxy_config);
+        //let s3_client = aws_sdk_s3::Client::new(&config);
+        
         warn!(
             "uploading asset to s3://{}/{}",
             submission.data.attributes.bucket, submission.data.attributes.object
