@@ -25,7 +25,7 @@ use {
     log::warn,
     sha2::Digest,
     std::{
-        env
+        env,
         fs::File,
         io::{Read, Seek, SeekFrom, Write},
         path::{Path, PathBuf},
