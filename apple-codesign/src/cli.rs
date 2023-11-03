@@ -1836,10 +1836,8 @@ fn command_keychain_export_certificate_chain(
                 .expect("should get a single line")
                 .to_string(),
         )
-    } else if let Some(password) = &args.password {
-        Some(password.to_string())
     } else {
-        None
+        args.password.as_ref().map(|password| password.to_string())
     };
 
     let certs = macos_keychain_find_certificate_chain(domain, password.as_deref(), &args.user_id)?;
