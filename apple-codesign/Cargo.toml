@@ -28,7 +28,7 @@ bytes = "1.5.0"
 clap = { version = "4.4.7", features = ["derive"] }
 chrono = "0.4.31"
 cryptographic-message-syntax = "0.25.0"
-der = "0.7.8"
+der = {  version = "0.7.8", features = ["alloc"] }
 dialoguer = "0.11.0"
 difference = "2.0.0"
 digest = "0.10.7"
@@ -56,7 +56,7 @@ rayon = "1.8.0"
 regex = "1.10.2"
 reqwest = { version = "0.11.22", default-features = false, features = ["blocking", "json", "rustls-tls"] }
 ring = "0.17.5"
-rsa = "0.8.2"
+rsa = "0.9.3"
 scroll = "0.11.0"
 sha2 = "0.10.8"
 semver = "1.0.20"
@@ -77,7 +77,7 @@ x509 = "0.2.0"
 x509-certificate = "0.22.0"
 xml-rs = "0.8.19"
 yasna = "0.5.2"
-yubikey = { version = "0.7.0", optional = true, features = ["untested"] }
+yubikey = { version = "0.8.0", optional = true, features = ["untested"] }
 zeroize = { version = "1.6.0", features = ["zeroize_derive"] }
 zip = { version = "0.6.6", default-features = false, features = ["deflate"] }
 zip_structs = "0.2.1"

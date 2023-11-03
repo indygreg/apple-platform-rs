@@ -23,7 +23,7 @@ use {
         hkdf::{Salt, HKDF_SHA256},
         rand::{SecureRandom, SystemRandom},
     },
-    rsa::{BigUint, Oaep, PublicKey, RsaPublicKey},
+    rsa::{BigUint, Oaep, RsaPublicKey},
     scroll::{Pwrite, LE},
     spake2::{Ed25519Group, Identity, Password, Spake2},
     spki::SubjectPublicKeyInfoRef,

@@ -82,6 +82,9 @@ pub enum AppleCodesignError {
     #[error("bad string value in certificate: {0:?}")]
     CertificateCharset(bcder::string::CharSetError),
 
+    #[error("DER: {0}")]
+    Der(#[from] der::Error),
+
     #[error("error parsing version string: {0}")]
     VersionParse(#[from] semver::Error),
 

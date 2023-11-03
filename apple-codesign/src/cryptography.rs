@@ -11,6 +11,7 @@ use {
     },
     bytes::Bytes,
     der::{asn1, Decode, Document, Encode, SecretDocument},
+    digest::DynDigest,
     elliptic_curve::{
         sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint},
         AffinePoint, Curve, CurveArithmetic, FieldBytesSize, SecretKey as ECSecretKey,
@@ -22,10 +23,7 @@ use {
     pkcs1::RsaPrivateKey,
     pkcs8::{EncodePrivateKey, ObjectIdentifier, PrivateKeyInfo},
     ring::signature::{EcdsaKeyPair, Ed25519KeyPair, KeyPair, RsaKeyPair},
-    rsa::{
-        algorithms::mgf1_xor, pkcs1::DecodeRsaPrivateKey, BigUint, Oaep,
-        RsaPrivateKey as RsaConstructedKey,
-    },
+    rsa::{pkcs1::DecodeRsaPrivateKey, BigUint, Oaep, RsaPrivateKey as RsaConstructedKey},
     signature::Signer,
     spki::AlgorithmIdentifier,
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
@@ -661,6 +659,44 @@ pub(crate) fn rsa_oaep_post_decrypt_decode(
     let (out, index) = res.unwrap();
 
     Ok(out[index as usize..].to_vec())
+}
+
+fn inc_counter(counter: &mut [u8; 4]) {
+    for i in (0..4).rev() {
+        counter[i] = counter[i].wrapping_add(1);
+        if counter[i] != 0 {
+            // No overflow
+            return;
+        }
+    }
+}
+
+fn mgf1_xor(out: &mut [u8], digest: &mut dyn DynDigest, seed: &[u8]) {
+    let mut counter = [0u8; 4];
+    let mut i = 0;
+
+    const MAX_LEN: u64 = core::u32::MAX as u64 + 1;
+    assert!(out.len() as u64 <= MAX_LEN);
+
+    while i < out.len() {
+        let mut digest_input = vec![0u8; seed.len() + 4];
+        digest_input[0..seed.len()].copy_from_slice(seed);
+        digest_input[seed.len()..].copy_from_slice(&counter);
+
+        digest.update(digest_input.as_slice());
+        let digest_output = &*digest.finalize_reset();
+        let mut j = 0;
+        loop {
+            if j >= digest_output.len() || i >= out.len() {
+                break;
+            }
+
+            out[i] ^= digest_output[j];
+            j += 1;
+            i += 1;
+        }
+        inc_counter(&mut counter);
+    }
 }
 
 #[cfg(test)]
