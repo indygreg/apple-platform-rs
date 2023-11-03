@@ -523,6 +523,12 @@ impl Eq for CodeResourcesRule {}
 
 impl PartialOrd for CodeResourcesRule {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for CodeResourcesRule {
+    fn cmp(&self, other: &Self) -> Ordering {
         // Default weight is 1 if not specified.
         let our_weight = self.weight.unwrap_or(1);
         let their_weight = other.weight.unwrap_or(1);
@@ -530,16 +536,10 @@ impl PartialOrd for CodeResourcesRule {
         // Exclusion rules always take priority over inclusion rules.
         // The smaller the weight, the less important it is.
         match self.exclude.cmp(&other.exclude) {
-            Ordering::Equal => their_weight.partial_cmp(&our_weight),
-            Ordering::Greater => Some(Ordering::Less),
-            Ordering::Less => Some(Ordering::Greater),
+            Ordering::Equal => their_weight.cmp(&our_weight),
+            Ordering::Greater => Ordering::Less,
+            Ordering::Less => Ordering::Greater,
         }
-    }
-}
-
-impl Ord for CodeResourcesRule {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
     }
 }
 

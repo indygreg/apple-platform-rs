@@ -99,7 +99,7 @@ impl From<RequirementType> for u32 {
 
 impl PartialOrd for RequirementType {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        u32::from(*self).partial_cmp(&u32::from(*other))
+        Some(self.cmp(other))
     }
 }
 
@@ -685,9 +685,7 @@ impl<'a> Display for CodeRequirementExpression<'a> {
                 f.write_fmt(format_args!("cdhash H\"{}\"", hex::encode(digest)))
             }
             Self::Not(expr) => f.write_fmt(format_args!("!({expr})")),
-            Self::InfoPlistKeyField(key, expr) => {
-                f.write_fmt(format_args!("info [{key}] {expr}"))
-            }
+            Self::InfoPlistKeyField(key, expr) => f.write_fmt(format_args!("info [{key}] {expr}")),
             Self::CertificateField(slot, field, expr) => f.write_fmt(format_args!(
                 "certificate {}[{}] {}",
                 format_certificate_slot(*slot),

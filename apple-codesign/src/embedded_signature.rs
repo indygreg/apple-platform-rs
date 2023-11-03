@@ -256,7 +256,7 @@ impl From<CodeSigningSlot> for u32 {
 
 impl PartialOrd for CodeSigningSlot {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        u32::from(*self).partial_cmp(&u32::from(*other))
+        Some(self.cmp(other))
     }
 }
 
@@ -372,7 +372,7 @@ impl TryFrom<DigestType> for DigestAlgorithm {
 
 impl PartialOrd for DigestType {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        u8::from(*self).partial_cmp(&u8::from(*other))
+        Some(self.cmp(other))
     }
 }
 
