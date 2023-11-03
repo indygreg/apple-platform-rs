@@ -11,9 +11,9 @@ homepage = "https://github.com/indygreg/apple-platform-rs"
 repository = "https://github.com/indygreg/apple-platform-rs.git"
 
 [dependencies]
-serde_json = { version = "1.0.96", optional = true }
-serde = { version = "1.0.163", optional = true, features = ["derive"] }
-plist = { version = "1.4.3", optional = true }
+serde_json = { version = "1.0.108", optional = true }
+serde = { version = "1.0.190", optional = true, features = ["derive"] }
+plist = { version = "1.5.1", optional = true }
 
 [features]
 default = ["parse"]

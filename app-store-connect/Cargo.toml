@@ -2,7 +2,7 @@
 name = "app-store-connect"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.70"
 license = "Apache-2.0 OR MIT"
 description = "Apple App Store Connect API and client"
 keywords = ["apple"]
@@ -11,18 +11,18 @@ repository = "https://github.com/indygreg/apple-platform-rs.git"
 readme = "README.md"
 
 [dependencies]
-anyhow = "1.0.71"
-base64 = "0.21.2"
-clap = { version = "4.3.1", features = ["derive"] }
+anyhow = "1.0.75"
+base64 = "0.21.5"
+clap = { version = "4.4.7", features = ["derive"] }
 dirs = "5.0.1"
 env_logger = "0.10.0"
 jsonwebtoken = "8.3.0"
-log = "0.4.18"
+log = "0.4.20"
 pem = "2.0.1"
 rand = "0.8.5"
-reqwest = { version = "0.11.18", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+reqwest = { version = "0.11.22", default-features = false, features = ["blocking", "json", "rustls-tls"] }
 rsa = "0.8.2"
-serde = { version = "1.0.163", features = ["derive"] }
-serde_json = "1.0.96"
-thiserror = "1.0.40"
+serde = { version = "1.0.190", features = ["derive"] }
+serde_json = "1.0.108"
+thiserror = "1.0.50"
 x509-certificate = "0.20.0"

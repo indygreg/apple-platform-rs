@@ -6,7 +6,7 @@
 
 Released on ReleaseDate.
 
-* Minimum supported Rust version is now 1.65.
+* Minimum supported Rust version is now 1.70.
 
 ## 0.2.0
 

@@ -13,7 +13,7 @@ jobs:
     uses: indygreg/actions/.github/workflows/rust-workspace-build-and-test.yml@05d9375dd6ae793586e9ffb4be3f8808da28bbac
     with:
       actions_ref: "05d9375dd6ae793586e9ffb4be3f8808da28bbac"
-      msrv: "1.65.0"
+      msrv: "1.70.0"
       sccache_s3_bucket: apple-platform-rs-sccache
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

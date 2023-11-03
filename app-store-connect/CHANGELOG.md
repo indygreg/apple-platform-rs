@@ -12,7 +12,7 @@ Released on ReleaseDate.
 * rsa 0.7 -> 0.8.
 * x509-certificate 0.16 -> 0.20.
 * dirs 4.0.0 -> 5.0.0.
-* Minimum supported Rust version is now 1.65.
+* Minimum supported Rust version is now 1.70.
 
 ## 0.1.0
 

@@ -3,7 +3,7 @@ name = "apple-bundles"
 version = "0.17.0"
 authors = ["Gregory Szorc <gregory.szorc@gmail.com>"]
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.70"
 license = "MPL-2.0"
 description = "Interface with Apple bundle primitives"
 keywords = ["apple", "macos", "bundle", "appbundle"]
@@ -12,10 +12,10 @@ repository = "https://github.com/indygreg/apple-platform-rs.git"
 readme = "README.md"
 
 [dependencies]
-anyhow = "1.0.71"
-plist = "1.4.3"
+anyhow = "1.0.75"
+plist = "1.5.1"
 simple-file-manifest = "0.11.0"
-walkdir = "2.3.3"
+walkdir = "2.4.0"
 
 [dev-dependencies]
-tempfile = "3.5.0"
+tempfile = "3.8.1"

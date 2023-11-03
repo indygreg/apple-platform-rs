@@ -3,7 +3,7 @@ name = "apple-xar"
 version = "0.13.0"
 authors = ["Gregory Szorc <gregory.szorc@gmail.com>"]
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.70"
 license = "MPL-2.0"
 description = "XAR archive reading and writing"
 keywords = ["apple", "xar"]
@@ -12,25 +12,25 @@ repository = "https://github.com/indygreg/apple-platform-rs.git"
 readme = "README.md"
 
 [dependencies]
-base64 = "0.21.2"
-bcder = "0.7.2"
+base64 = "0.21.5"
+bcder = "0.7.3"
 bzip2 = "0.4.4"
-chrono = { version = "0.4.26", features = ["serde"] }
+chrono = { version = "0.4.31", features = ["serde"] }
 cryptographic-message-syntax = "0.23.0"
 digest = "0.10.7"
-log = "0.4.18"
-md-5 = "0.10.5"
-flate2 = "1.0.26"
+log = "0.4.20"
+md-5 = "0.10.6"
+flate2 = "1.0.28"
 rand = "0.8.5"
-reqwest = { version = "0.11.18", default-features = false }
+reqwest = { version = "0.11.22", default-features = false }
 scroll = { version = "0.11.0", features = ["derive"] }
 serde-xml-rs = "0.6.0"
-serde = { version = "1.0.163", features = ["derive"] }
-sha1 = "0.10.5"
-sha2 = "0.10.6"
+serde = { version = "1.0.190", features = ["derive"] }
+sha1 = "0.10.6"
+sha2 = "0.10.8"
 signature = { version = "2.1.0", features = ["std"] }
-thiserror = "1.0.40"
-url = "2.3.1"
-xml-rs = "0.8.14"
+thiserror = "1.0.50"
+url = "2.4.1"
+xml-rs = "0.8.19"
 x509-certificate = "0.20.0"
 xz2 = { version = "0.1.7", features = ["static"] }

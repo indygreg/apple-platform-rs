@@ -8,7 +8,7 @@ Released on ReleaseDate.
 
 * Notarization features are now optional and can be controlled via the
   enabled-by-default `notarize` crate feature. (#78)
-* Minimum supported Rust version changed from 1.62.1 to 1.65.0.
+* Minimum supported Rust version changed from 1.62.1 to 1.70.0.
 * CLI argument parsing has been rewritten to use clap's derive mode
   instead of the builder mode. The intent was to mostly preserve existing
   CLI behavior. However, some minor changes - possibly bugs - may have
