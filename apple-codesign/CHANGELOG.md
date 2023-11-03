@@ -33,7 +33,7 @@ Released on ReleaseDate.
 * signature 1.6 -> 2.0.
 * spake2 0.3 -> 0.4.
 * spki 0.6 -> 0.7.
-* tungstenite 0.18 -> 0.19.
+* tungstenite 0.18 -> 0.20.
 * x509-certificate 0.16 -> 0.22.
 
 ## 0.22.0

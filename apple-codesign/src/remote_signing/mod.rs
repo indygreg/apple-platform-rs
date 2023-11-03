@@ -364,7 +364,6 @@ fn create_websocket(
     req: impl IntoClientRequest,
 ) -> Result<WebSocket<MaybeTlsStream<TcpStream>>, RemoteSignError> {
     let config = WebSocketConfig {
-        max_send_queue: Some(1),
         ..Default::default()
     };
 
@@ -380,7 +379,7 @@ fn wait_for_server_response(
     ws: &mut WebSocket<MaybeTlsStream<TcpStream>>,
 ) -> Result<ServerResponse, RemoteSignError> {
     loop {
-        match ws.read_message()? {
+        match ws.read()? {
             Message::Text(text) => {
                 let message = serde_json::from_str::<ServerMessage>(&text)?;
                 debug!(
@@ -615,7 +614,8 @@ impl UnjoinedSigningClient {
         };
 
         let body = serde_json::to_string(&message)?;
-        self.ws.write_message(body.into())?;
+        self.ws.send(body.into())?;
+        self.ws.flush()?;
 
         Ok(())
     }
@@ -669,7 +669,8 @@ impl PairedClient {
         };
 
         let body = serde_json::to_string(&message)?;
-        self.ws.write_message(body.into())?;
+        self.ws.send(body.into())?;
+        self.ws.flush()?;
 
         Ok(())
     }
