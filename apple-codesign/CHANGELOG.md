@@ -20,7 +20,7 @@ Released on ReleaseDate.
 * rsa 0.7 -> 0.8.
 * signature 1.6 -> 2.0.
 * x509-certificate 0.16 -> 0.22.
-* aws crates 0.53 -> 0.55.
+* aws crates 0.53 -> 0.57.
 * dirs 4.0 -> 5.0.
 * bitflags 1.3 -> 2.0.
 * elliptic-curve 0.12 -> 0.13.
