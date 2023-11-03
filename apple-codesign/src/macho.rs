@@ -818,7 +818,12 @@ mod tests {
                         }
                     }
                     Ok(None) => {
-                        panic!("this shouln't happen (validated signature data is present");
+                        // This has been observed to occur in the wild. But not from Apple
+                        // signed binaries. Mostly ignore it.
+                        eprintln!(
+                            "{} has a signature blob without CMS data; weird",
+                            path.display()
+                        );
                     }
                     Err(e) => {
                         println!("error performing CMS parse of {}: {:?}", path.display(), e);
