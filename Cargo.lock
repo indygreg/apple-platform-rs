@@ -2568,9 +2568,9 @@ dependencies = [
 
 [[package]]
 name = "rasn"
-version = "0.10.6"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76def3a472085e40dae01e4eeb106f2ed70f8c7dabe041faed1668a00ee143ef"
+checksum = "d08d79de01cfefc632ab5586c91c08b8bbaeba6c43c0d3768f9b90bc3124ec7b"
 dependencies = [
  "arrayvec",
  "bitvec",
@@ -2590,9 +2590,9 @@ dependencies = [
 
 [[package]]
 name = "rasn-derive"
-version = "0.10.6"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48d1fd02e16232e942b5e7ce305b447c550d09a9146255a3e8a2cf62a0e2ac2d"
+checksum = "e28b955fc92aaa28e5fb08165bbf45732e176b201c99a4f7301da10ad5f83305"
 dependencies = [
  "either",
  "itertools",

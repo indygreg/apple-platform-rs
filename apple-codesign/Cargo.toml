@@ -51,7 +51,7 @@ pkcs1 = { version = "0.7.5", features = ["alloc", "std", "pkcs8"] }
 pkcs8 = { version = "0.10.2", features = ["alloc", "std"] }
 plist = "1.5.1"
 rand = "0.8.5"
-rasn = "0.10.6"
+rasn = "0.11.0"
 rayon = "1.8.0"
 regex = "1.10.2"
 reqwest = { version = "0.11.22", default-features = false, features = ["blocking", "json", "rustls-tls"] }

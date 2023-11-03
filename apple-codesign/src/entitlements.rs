@@ -8,10 +8,10 @@ use {
     crate::{code_directory::ExecutableSegmentFlags, AppleCodesignError},
     plist::Value,
     rasn::{
-        ber::enc::{Encoder as DerEncoder, Error as DerError},
+        ber::enc::{EncodeError, Encoder as DerEncoder},
         enc::Error,
         types::{fields::Fields, Class, Constraints, Constructed, Tag},
-        Encoder,
+        Codec, Encoder,
     },
     std::collections::BTreeMap,
 };
@@ -23,7 +23,7 @@ impl Constructed for ValuePlaceholder {
 }
 
 /// Encode a [Value] to DER, writing to an encoder.
-fn der_encode_value(encoder: &mut DerEncoder, value: &Value) -> Result<(), DerError> {
+fn der_encode_value(encoder: &mut DerEncoder, value: &Value) -> Result<(), EncodeError> {
     match value {
         Value::Boolean(v) => encoder.encode_bool(Tag::BOOL, *v),
         Value::Integer(v) => {
@@ -66,12 +66,25 @@ fn der_encode_value(encoder: &mut DerEncoder, value: &Value) -> Result<(), DerEr
             )
         }
 
-        Value::Data(_) => Err(DerError::custom("encoding of data values not supported")),
-        Value::Date(_) => Err(DerError::custom("encoding of date values not supported")),
-        Value::Real(_) => Err(DerError::custom("encoding of real values not supported")),
-        Value::Uid(_) => Err(DerError::custom("encoding of uid values not supported")),
-        _ => Err(DerError::custom(
+        Value::Data(_) => Err(EncodeError::custom(
+            "encoding of data values not supported",
+            Codec::Der,
+        )),
+        Value::Date(_) => Err(EncodeError::custom(
+            "encoding of date values not supported",
+            Codec::Der,
+        )),
+        Value::Real(_) => Err(EncodeError::custom(
+            "encoding of real values not supported",
+            Codec::Der,
+        )),
+        Value::Uid(_) => Err(EncodeError::custom(
+            "encoding of uid values not supported",
+            Codec::Der,
+        )),
+        _ => Err(EncodeError::custom(
             "encoding of unknown value type not supported",
+            Codec::Der,
         )),
     }
 }
