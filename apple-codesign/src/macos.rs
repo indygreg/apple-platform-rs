@@ -141,12 +141,12 @@ impl Sign for KeychainCertificate {
     }
 
     fn signature_algorithm(&self) -> Result<SignatureAlgorithm, X509CertificateError> {
-        Ok(self.captured.signature_algorithm().ok_or(
-            X509CertificateError::UnknownSignatureAlgorithm(format!(
+        self.captured
+            .signature_algorithm()
+            .ok_or(X509CertificateError::UnknownSignatureAlgorithm(format!(
                 "{:?}",
                 self.captured.signature_algorithm_oid()
-            )),
-        )?)
+            )))
     }
 
     fn private_key_data(&self) -> Option<Vec<u8>> {
