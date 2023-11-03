@@ -355,7 +355,7 @@ pub enum AppleCodesignError {
 
     #[cfg(feature = "notarize")]
     #[error("bytestream creation error: {0}")]
-    AwsByteStream(#[from] aws_smithy_http::byte_stream::error::Error),
+    AwsByteStream(#[from] aws_smithy_types::byte_stream::error::Error),
 
     #[cfg(feature = "notarize")]
     #[error("s3 upload error: {0}")]

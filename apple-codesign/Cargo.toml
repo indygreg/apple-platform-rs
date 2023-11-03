@@ -20,6 +20,7 @@ anyhow = "1.0.75"
 aws-config = { version = "0.57.1", optional = true }
 aws-sdk-s3 = { version = "0.35.0", optional = true }
 aws-smithy-http = {version = "0.57.1", optional = true }
+aws-smithy-types = {version = "0.57.1", optional = true }
 base64 = "0.21.5"
 bcder = "0.7.3"
 bitflags = "2.4.1"
@@ -112,5 +113,11 @@ version = "0.14.16"
 
 [features]
 default = ["notarize"]
-notarize = ["app-store-connect", "aws-config", "aws-sdk-s3", "aws-smithy-http"]
+notarize = [
+    "app-store-connect",
+    "aws-config",
+    "aws-sdk-s3",
+    "aws-smithy-http",
+    "aws-smithy-types",
+]
 smartcard = ["yubikey"]

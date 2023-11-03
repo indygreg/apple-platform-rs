@@ -177,6 +177,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-s3",
  "aws-smithy-http",
+ "aws-smithy-types",
  "base64 0.21.5",
  "bcder",
  "bitflags 2.4.1",

@@ -19,7 +19,7 @@ use {
     app_store_connect::{AppStoreConnectClient, ConnectTokenEncoder, UnifiedApiKey},
     apple_bundles::DirectoryBundle,
     aws_sdk_s3::config::{Credentials, Region},
-    aws_smithy_http::byte_stream::ByteStream,
+    aws_smithy_types::byte_stream::ByteStream,
     log::{info, warn},
     sha2::Digest,
     std::{
