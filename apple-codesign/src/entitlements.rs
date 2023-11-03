@@ -10,11 +10,17 @@ use {
     rasn::{
         ber::enc::{Encoder as DerEncoder, Error as DerError},
         enc::Error,
-        types::{Class, Tag},
+        types::{fields::Fields, Class, Constraints, Constructed, Tag},
         Encoder,
     },
     std::collections::BTreeMap,
 };
+
+struct ValuePlaceholder {}
+
+impl Constructed for ValuePlaceholder {
+    const FIELDS: Fields = Fields::empty();
+}
 
 /// Encode a [Value] to DER, writing to an encoder.
 fn der_encode_value(encoder: &mut DerEncoder, value: &Value) -> Result<(), DerError> {
@@ -22,28 +28,42 @@ fn der_encode_value(encoder: &mut DerEncoder, value: &Value) -> Result<(), DerEr
         Value::Boolean(v) => encoder.encode_bool(Tag::BOOL, *v),
         Value::Integer(v) => {
             let integer = rasn::types::Integer::from(v.as_signed().unwrap());
-            encoder.encode_integer(Tag::INTEGER, &integer)
+            encoder.encode_integer(Tag::INTEGER, Constraints::NONE, &integer)
         }
-        Value::String(string) => encoder.encode_utf8_string(Tag::UTF8_STRING, string),
-        Value::Array(array) => encoder.encode_sequence(Tag::SEQUENCE, |encoder| {
-            for v in array {
-                der_encode_value(encoder, v)?;
-            }
-            Ok(())
-        }),
-        Value::Dictionary(dict) => {
-            // make sure it's sorted alphabetically
-            let map = dict.into_iter().collect::<BTreeMap<_, _>>();
-            encoder.encode_sequence(Tag::new(Class::Context, 16), |encoder| {
-                for (k, v) in map {
-                    encoder.encode_sequence(Tag::SEQUENCE, |encoder| {
-                        encoder.encode_utf8_string(Tag::UTF8_STRING, k)?;
-                        der_encode_value(encoder, v)?;
-                        Ok(())
-                    })?;
+        Value::String(string) => {
+            encoder.encode_utf8_string(Tag::UTF8_STRING, Constraints::NONE, string)
+        }
+        Value::Array(array) => {
+            encoder.encode_sequence::<ValuePlaceholder, _>(Tag::SEQUENCE, |encoder| {
+                for v in array {
+                    der_encode_value(encoder, v)?;
                 }
                 Ok(())
             })
+        }
+        Value::Dictionary(dict) => {
+            // make sure it's sorted alphabetically
+            let map = dict.into_iter().collect::<BTreeMap<_, _>>();
+            encoder.encode_sequence::<ValuePlaceholder, _>(
+                Tag::new(Class::Context, 16),
+                |encoder| {
+                    for (k, v) in map {
+                        encoder.encode_sequence::<ValuePlaceholder, _>(
+                            Tag::SEQUENCE,
+                            |encoder| {
+                                encoder.encode_utf8_string(
+                                    Tag::UTF8_STRING,
+                                    Constraints::NONE,
+                                    k,
+                                )?;
+                                der_encode_value(encoder, v)?;
+                                Ok(())
+                            },
+                        )?;
+                    }
+                    Ok(())
+                },
+            )
         }
 
         Value::Data(_) => Err(DerError::custom("encoding of data values not supported")),
@@ -59,11 +79,18 @@ fn der_encode_value(encoder: &mut DerEncoder, value: &Value) -> Result<(), DerEr
 /// Encode an entitlements plist to DER.
 pub fn der_encode_entitlements_plist(value: &Value) -> Result<Vec<u8>, AppleCodesignError> {
     rasn::der::encode_scope(|encoder| {
-        encoder.encode_sequence(Tag::new(Class::Application, 16), |encoder| {
-            encoder.encode_integer(Tag::INTEGER, &rasn::types::Integer::from(1))?;
-            der_encode_value(encoder, value)?;
-            Ok(())
-        })
+        encoder.encode_sequence::<ValuePlaceholder, _>(
+            Tag::new(Class::Application, 16),
+            |encoder| {
+                encoder.encode_integer(
+                    Tag::INTEGER,
+                    Constraints::NONE,
+                    &rasn::types::Integer::from(1),
+                )?;
+                der_encode_value(encoder, value)?;
+                Ok(())
+            },
+        )
     })
     .map_err(|e| AppleCodesignError::EntitlementsDerEncode(format!("{e}")))
 }

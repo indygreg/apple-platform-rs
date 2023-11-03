@@ -313,6 +313,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrayvec"
+version = "0.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96d30a06541fbafbc7f82ed10c06164cfbd2c401138f6addd8404629c4b16711"
+
+[[package]]
 name = "asn1-rs"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -820,6 +826,16 @@ dependencies = [
  "radium",
  "tap",
  "wyz",
+]
+
+[[package]]
+name = "bitvec-nom2"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4863ce31b7ff8812568eaffe956024c824d845a1f9f08c329706166c357cae53"
+dependencies = [
+ "bitvec",
+ "nom",
 ]
 
 [[package]]
@@ -2541,31 +2557,39 @@ dependencies = [
 
 [[package]]
 name = "rasn"
-version = "0.7.0"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0483f5a237256270cf5ea3da8ce35b7a4495927dd30020f842a2ba079a35deca"
+checksum = "9b8d6d2a0e8ed2c702de8b7bcc6c867faa8fe662d5fa87d6dbcae945fe276004"
 dependencies = [
+ "arrayvec",
  "bitvec",
+ "bitvec-nom2",
  "bytes",
  "chrono",
+ "either",
  "konst",
  "nom",
  "num-bigint",
+ "num-integer",
  "num-traits",
+ "once_cell",
  "rasn-derive",
  "snafu",
 ]
 
 [[package]]
 name = "rasn-derive"
-version = "0.6.0"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e1c39006ee96ffe7c83f656a5d20269366098a3feb35ad4a7c022e3784643cb"
+checksum = "52573d02ccf5e01c7d42b6009365728046a58202ec4001724b034815c9c35d3f"
 dependencies = [
+ "either",
  "itertools",
  "proc-macro2",
  "quote",
+ "rayon",
  "syn 1.0.109",
+ "uuid",
 ]
 
 [[package]]
@@ -3176,6 +3200,7 @@ version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4de37ad025c587a29e8f3f5605c00f70b98715ef90b9061a815b9e59e9042d6"
 dependencies = [
+ "backtrace",
  "doc-comment",
  "snafu-derive",
 ]
