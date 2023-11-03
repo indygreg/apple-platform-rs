@@ -74,7 +74,7 @@ pub trait CpioHeader: Debug {
 
     /// Modified time as a [DateTime].
     fn modified_time(&self) -> DateTime<Utc> {
-        DateTime::<Utc>::from_utc(
+        DateTime::<Utc>::from_naive_utc_and_offset(
             NaiveDateTime::from_timestamp_opt(self.mtime() as _, 0)
                 .expect("out of range timestamp"),
             Utc,
