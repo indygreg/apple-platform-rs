@@ -27,7 +27,7 @@ Released on ReleaseDate.
 * p256 0.11 -> 0.13.
 * pem 1.1 -> 3.0.
 * pkcs8 0.9 -> 0.10.
-* rasn 0.6 -> 0.8.
+* rasn 0.6 -> 0.10.
 * ring 0.16 -> 0.17.
 * rsa 0.7 -> 0.8.
 * signature 1.6 -> 2.0.
