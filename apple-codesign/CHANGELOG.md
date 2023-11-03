@@ -17,6 +17,7 @@ Released on ReleaseDate.
 * cryptographic-message-syntax 0.19 -> 0.25.
 * dialoguer 0.10 -> 0.11.
 * goblin 0.6 -> 0.7.
+* minicbor 0.19 -> 0.20.
 * once_cell 1.16 -> 1.17.
 * p256 0.11 -> 0.13.
 * rsa 0.7 -> 0.8.
