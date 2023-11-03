@@ -16,7 +16,7 @@ base64 = "0.21.5"
 clap = { version = "4.4.7", features = ["derive"] }
 dirs = "5.0.1"
 env_logger = "0.10.0"
-jsonwebtoken = "8.3.0"
+jsonwebtoken = "9.1.0"
 log = "0.4.20"
 pem = "2.0.1"
 rand = "0.8.5"
