@@ -437,7 +437,7 @@ impl Eq for PlatformDirectory {}
 
 impl PartialOrd for PlatformDirectory {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.path.partial_cmp(&other.path)
+        Some(self.cmp(other))
     }
 }
 
@@ -816,16 +816,16 @@ impl SdkVersion {
 
 impl PartialOrd for SdkVersion {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        let a = self.normalized_version().unwrap_or((0, 0, 0));
-        let b = other.normalized_version().unwrap_or((0, 0, 0));
-
-        a.partial_cmp(&b)
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for SdkVersion {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
+        let a = self.normalized_version().unwrap_or((0, 0, 0));
+        let b = other.normalized_version().unwrap_or((0, 0, 0));
+
+        a.cmp(&b)
     }
 }
 
