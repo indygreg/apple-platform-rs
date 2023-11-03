@@ -212,7 +212,7 @@ dependencies = [
  "rayon",
  "regex",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.5",
  "rsa 0.8.2",
  "scroll",
  "security-framework",
@@ -1145,17 +1145,17 @@ dependencies = [
 
 [[package]]
 name = "cryptographic-message-syntax"
-version = "0.23.0"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6feae8fe85bb2b93c8276eecad45e112a7d9ff5ace62f5859f659e00b6fcef05"
+checksum = "dd09d0ba046874e5e4bd5b0419a17f55ac909a2e6daba922fee1b06f104ff620"
 dependencies = [
  "bcder",
  "bytes",
  "chrono",
  "hex",
- "pem 2.0.1",
+ "pem 3.0.2",
  "reqwest",
- "ring 0.16.20",
+ "ring 0.17.5",
  "signature 2.1.0",
  "x509-certificate",
 ]
@@ -2362,6 +2362,16 @@ name = "pem"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6b13fe415cdf3c8e44518e18a7c95a13431d9bdf6d15367d82b23c377fdd441a"
+dependencies = [
+ "base64 0.21.5",
+ "serde",
+]
+
+[[package]]
+name = "pem"
+version = "3.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3163d2912b7c3b52d651a055f2c7eec9ba5cd22d26ef75b8dd3a59980b185923"
 dependencies = [
  "base64 0.21.5",
  "serde",
@@ -4146,17 +4156,17 @@ dependencies = [
 
 [[package]]
 name = "x509-certificate"
-version = "0.20.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2133ce6c08c050a5b368730a67c53a603ffd4a4a6c577c5218675a19f7782c05"
+checksum = "c36de03f37ba59e380fc97867ceae517d615d47f5cab346d30e24ef005eb0952"
 dependencies = [
  "bcder",
  "bytes",
  "chrono",
  "der 0.7.8",
  "hex",
- "pem 2.0.1",
- "ring 0.16.20",
+ "pem 3.0.2",
+ "ring 0.17.5",
  "signature 2.1.0",
  "spki 0.7.2",
  "thiserror",

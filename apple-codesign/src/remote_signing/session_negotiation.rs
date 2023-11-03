@@ -450,22 +450,19 @@ impl SessionInitiatePeer for PublicKeyInitiator {
 
         let public_key = UnparsedPublicKey::new(&X25519, public_key);
 
-        let (sealing, opening) = agree_ephemeral(
-            self.agreement_private,
-            &public_key,
-            RemoteSignError::Crypto("error deriving agreement key".into()),
-            |agreement_key| {
+        let (sealing, opening) =
+            agree_ephemeral(self.agreement_private, &public_key, |agreement_key| {
                 derive_aead_keys(
                     Role::A,
                     agreement_key.to_vec(),
                     &self.session_id,
                     &self.extra_identifier,
                 )
-            },
-        )
-        .map_err(|_| {
-            RemoteSignError::Crypto("error deriving AEAD keys from agreement key".into())
-        })?;
+            })
+            .map_err(|_| RemoteSignError::Crypto("error deriving agreement key".into()))?
+            .map_err(|_| {
+                RemoteSignError::Crypto("error deriving AEAD keys from agreement key".into())
+            })?;
 
         Ok(PeerKeys { sealing, opening })
     }
@@ -660,22 +657,19 @@ impl SessionJoinPeerHandshake for PublicKeyHandshakePeer {
     fn negotiate_session(self: Box<Self>) -> Result<PeerKeys> {
         let peer_public_key = UnparsedPublicKey::new(&X25519, &self.agreement_public);
 
-        let (sealing, opening) = agree_ephemeral(
-            self.agreement_private,
-            &peer_public_key,
-            RemoteSignError::Crypto("error deriving agreement key".into()),
-            |agreement_key| {
+        let (sealing, opening) =
+            agree_ephemeral(self.agreement_private, &peer_public_key, |agreement_key| {
                 derive_aead_keys(
                     Role::B,
                     agreement_key.to_vec(),
                     &self.session_id,
                     &self.extra_identifier,
                 )
-            },
-        )
-        .map_err(|_| {
-            RemoteSignError::Crypto("error deriving AEAD keys from agreement key".into())
-        })?;
+            })
+            .map_err(|_| RemoteSignError::Crypto("error deriving agreement key".into()))?
+            .map_err(|_| {
+                RemoteSignError::Crypto("error deriving AEAD keys from agreement key".into())
+            })?;
 
         Ok(PeerKeys { sealing, opening })
     }

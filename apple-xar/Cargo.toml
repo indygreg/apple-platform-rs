@@ -16,7 +16,7 @@ base64 = "0.21.5"
 bcder = "0.7.3"
 bzip2 = "0.4.4"
 chrono = { version = "0.4.31", features = ["serde"] }
-cryptographic-message-syntax = "0.23.0"
+cryptographic-message-syntax = "0.25.0"
 digest = "0.10.7"
 log = "0.4.20"
 md-5 = "0.10.6"
@@ -32,5 +32,5 @@ signature = { version = "2.1.0", features = ["std"] }
 thiserror = "1.0.50"
 url = "2.4.1"
 xml-rs = "0.8.19"
-x509-certificate = "0.20.0"
+x509-certificate = "0.22.0"
 xz2 = { version = "0.1.7", features = ["static"] }

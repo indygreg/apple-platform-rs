@@ -172,6 +172,7 @@ where
             curve.into(),
             private_key.as_ref(),
             public_key.as_bytes(),
+            &ring::rand::SystemRandom::new(),
         )
         .map_err(|e| {
             AppleCodesignError::CertificateGeneric(format!(
@@ -726,6 +727,7 @@ mod test {
         let ring_key = EcdsaKeyPair::from_pkcs8(
             &ring::signature::ECDSA_P256_SHA256_ASN1_SIGNING,
             SECP256_PKCS8_DER,
+            &ring::rand::SystemRandom::new(),
         )
         .unwrap();
         let ring_public_key_data = ring_key.public_key().as_ref();

@@ -14,12 +14,12 @@ Released on ReleaseDate.
   CLI behavior. However, some minor changes - possibly bugs - may have
   occurred as a result of this refactor.
 * `AppleCodesignError::AwsS3Error` now stores a `Box<T>`.
-* cryptographic-message-syntax 0.19 -> 0.23.
+* cryptographic-message-syntax 0.19 -> 0.25.
 * once_cell 1.16 -> 1.17.
 * p256 0.11 -> 0.13.
 * rsa 0.7 -> 0.8.
 * signature 1.6 -> 2.0.
-* x509-certificate 0.16 -> 0.20.
+* x509-certificate 0.16 -> 0.22.
 * aws crates 0.53 -> 0.55.
 * dirs 4.0 -> 5.0.
 * bitflags 1.3 -> 2.0.
@@ -28,6 +28,7 @@ Released on ReleaseDate.
 * pkcs1 0.4 -> 0.7.
 * pkcs8 0.9 -> 0.10.
 * rasn 0.6 -> 0.7.
+* ring 0.16 -> 0.17.
 * spki 0.6 -> 0.7.
 * tungstenite 0.18 -> 0.19.
 
