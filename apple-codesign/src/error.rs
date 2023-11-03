@@ -25,6 +25,9 @@ pub enum AppleCodesignError {
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
 
+    #[error("CLI error: {0}")]
+    CliDialoguer(#[from] dialoguer::Error),
+
     #[error("binary parsing error: {0}")]
     Goblin(#[from] goblin::error::Error),
 

@@ -29,7 +29,7 @@ clap = { version = "4.4.7", features = ["derive"] }
 chrono = "0.4.31"
 cryptographic-message-syntax = "0.25.0"
 der = "0.7.8"
-dialoguer = "0.10.4"
+dialoguer = "0.11.0"
 difference = "2.0.0"
 digest = "0.10.7"
 dirs = "5.0.1"
