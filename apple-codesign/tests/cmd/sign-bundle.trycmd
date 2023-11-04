@@ -82,7 +82,6 @@ $ rcodesign print-signature-info MyApp.app.signed
           - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
           - 'Resources (3): 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b'
-        entitlements_plist: null
         cms: null
 - path: Contents/_CodeSignature/CodeResources
   file_size: 2200
@@ -307,7 +306,6 @@ $ rcodesign print-signature-info MyApp.app.signed
             - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
             - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
             - 'Resources (3): 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b'
-        entitlements_plist: null
         cms: null
 - path: Contents/_CodeSignature/CodeResources
   file_size: 2200

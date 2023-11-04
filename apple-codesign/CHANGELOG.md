@@ -49,6 +49,8 @@ Released on ReleaseDate.
   to work, assuming certificates are installed on the local system. (#85)
 * Added a hidden `debug-create-entitlements` command for generating entitlements
   plist files. The command is intended to facilitate testing.
+* The `print-signature-info` command YAML output now encodes entitlements XML
+  as an array of strings for easier readability.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

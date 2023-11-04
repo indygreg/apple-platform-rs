@@ -90,7 +90,15 @@ $ rcodesign print-signature-info exe.signed
           - 'Entitlements (5): adea2675562421d85cc35e2c909ae27f33846eeb3b2b7c68017abd1b4b02f624'
           - 'Rep Specific (6): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'DER Entitlements (7): 4d9925d24f1357a00429379f31f567cedfaa8101d58442e7864f923bfb708794'
-        entitlements_plist: "<?xml version=/"1.0/" encoding=/"UTF-8/"?>/n<!DOCTYPE plist PUBLIC /"-//Apple//DTD PLIST 1.0//EN/" /"http://www.apple.com/DTDs/PropertyList-1.0.dtd/">/n<plist version=/"1.0/">/n<dict>/n/t<key>get-task-allow</key>/n/t<true/>/n</dict>/n</plist>"
+        entitlements_plist:
+        - <?xml version="1.0" encoding="UTF-8"?>
+        - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        - <plist version="1.0">
+        - <dict>
+        - '  <key>get-task-allow</key>'
+        - '  <true/>'
+        - </dict>
+        - </plist>
         cms: null
 
 $ rcodesign debug-create-entitlements --get-task-allow --run-unsigned-code --debugger --dynamic-code-signing --skip-library-validation entitlements.plist
@@ -188,7 +196,23 @@ $ rcodesign print-signature-info exe.signed
           - 'Entitlements (5): e49f5c5bbafe414f3e1061dbaa41d3f7bd618138870826ccd586fd3a004f5687'
           - 'Rep Specific (6): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'DER Entitlements (7): 901eb3ecea82e5ee82d092f460b76afea8daefd1b7b8014fe16c979bb62ac4d7'
-        entitlements_plist: "<?xml version=/"1.0/" encoding=/"UTF-8/"?>/n<!DOCTYPE plist PUBLIC /"-//Apple//DTD PLIST 1.0//EN/" /"http://www.apple.com/DTDs/PropertyList-1.0.dtd/">/n<plist version=/"1.0/">/n<dict>/n/t<key>get-task-allow</key>/n/t<true/>/n/t<key>run-unsigned-code</key>/n/t<true/>/n/t<key>com.apple.private.cs.debugger</key>/n/t<true/>/n/t<key>dynamic-codesigning</key>/n/t<true/>/n/t<key>com.apple.private.skip-library-validation</key>/n/t<true/>/n</dict>/n</plist>"
+        entitlements_plist:
+        - <?xml version="1.0" encoding="UTF-8"?>
+        - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        - <plist version="1.0">
+        - <dict>
+        - '  <key>get-task-allow</key>'
+        - '  <true/>'
+        - '  <key>run-unsigned-code</key>'
+        - '  <true/>'
+        - '  <key>com.apple.private.cs.debugger</key>'
+        - '  <true/>'
+        - '  <key>dynamic-codesigning</key>'
+        - '  <true/>'
+        - '  <key>com.apple.private.skip-library-validation</key>'
+        - '  <true/>'
+        - </dict>
+        - </plist>
         cms: null
 
 ```

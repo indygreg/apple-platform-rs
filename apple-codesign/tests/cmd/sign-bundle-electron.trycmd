@@ -254,7 +254,6 @@ $ rcodesign print-signature-info Electron.app.signed
           - 'Info (1): ca20386388c65cc7900433ebe743ff74f302160c0de829874df9a9839f318e4a'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
           - 'Resources (3): d1dbc59aea24c656af7d3692237408d83fa0f4550dc1c196a4464c9f8b1a0a4e'
-        entitlements_plist: null
         cms: null
 - path: Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler
   file_size: 22544
@@ -298,7 +297,6 @@ $ rcodesign print-signature-info Electron.app.signed
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-        entitlements_plist: null
         cms: null
 - path: Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib
   file_size: 16386
@@ -624,7 +622,6 @@ $ rcodesign print-signature-info Electron.app.signed
           - 'Info (1): 7d16bb3cf776fb0a7eb0ee77fd040468fc1e8723546668b11cdb23896bff0c9e'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
           - 'Resources (3): 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b'
-        entitlements_plist: null
         cms: null
 - path: Contents/Frameworks/Electron Helper (GPU).app/Contents/_CodeSignature/CodeResources
   file_size: 2200
@@ -796,7 +793,6 @@ $ rcodesign print-signature-info Electron.app.signed
           - 'Info (1): 542d886f74e466a0958e74db24ee7bf72f59a6813aacd5309e44b097c6806ea1'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
           - 'Resources (3): 738650a98f84347da27c928a05de06a52d205cc1ba4ea1d8befe4d0656cc0dd4'
-        entitlements_plist: null
         cms: null
 - path: Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist
   file_size: 576
@@ -986,7 +982,6 @@ $ rcodesign print-signature-info Electron.app.signed
           - 'Info (1): 863f967826aa4c32179d88ce7febeef529aed41c05ba2204c79dd1d2ab6b7296'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
           - 'Resources (3): f953fc0c07fbb5fa799d85efb4af372b0ec4243e48e3dc31a88c1ceccd9b06d4'
-        entitlements_plist: null
         cms: null
 - path: Contents/Resources/default_app.asar
   file_size: 0

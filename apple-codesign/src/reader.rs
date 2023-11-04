@@ -461,7 +461,8 @@ pub struct CodeSignature {
     pub code_directory: Option<CodeDirectory>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub alternative_code_directories: Vec<(String, CodeDirectory)>,
-    pub entitlements_plist: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub entitlements_plist: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub code_requirements: Vec<String>,
     pub cms: Option<CmsSignature>,
@@ -471,7 +472,7 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
     type Error = AppleCodesignError;
 
     fn try_from(sig: EmbeddedSignature<'a>) -> Result<Self, Self::Error> {
-        let mut entitlements_plist = None;
+        let mut entitlements_plist = vec![];
         let mut code_requirements = vec![];
         let mut cms = None;
 
@@ -488,7 +489,11 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
             .collect::<Result<Vec<_>, AppleCodesignError>>()?;
 
         if let Some(blob) = sig.entitlements()? {
-            entitlements_plist = Some(blob.as_str().to_string());
+            entitlements_plist = blob
+                .as_str()
+                .lines()
+                .map(|x| x.replace('\t', "  "))
+                .collect::<Vec<_>>();
         }
 
         if let Some(req) = sig.code_requirements()? {

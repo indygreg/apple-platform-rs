@@ -65,7 +65,6 @@ $ rcodesign print-signature-info exe.signed
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 362f0cbb74f1847e4b2c7e3159a9d55e63d112fd1bf085e379d1bdfaf2813472'
-        entitlements_plist: null
         code_requirements:
         - 'designated(3): 0: ((anchor apple generic) and (certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */)) and ((certificate leaf[field.1.2.840.113635.100.6.1.14] /* exists */) or (certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */));'
         cms: null

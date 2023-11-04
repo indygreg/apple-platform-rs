@@ -58,7 +58,6 @@ $ rcodesign print-signature-info exe.signed
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-        entitlements_plist: null
         cms: null
 
 $ rcodesign sign exe.signed exe.signed.2
@@ -120,7 +119,6 @@ $ rcodesign print-signature-info exe.signed.2
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-        entitlements_plist: null
         cms: null
 
 ```

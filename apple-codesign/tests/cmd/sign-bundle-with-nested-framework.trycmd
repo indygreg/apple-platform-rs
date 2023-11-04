@@ -369,7 +369,6 @@ $ rcodesign print-signature-info MyApp.app.signed
           - 'Info (1): fc10a69db39ae97327678df5b093982db866a9a478a77a84e8c47f6333170bdf'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
           - 'Resources (3): 29cfb9a77f12e2355823b74ca94527480784cc7930e5ebc63cf6bb4535d9d9ab'
-        entitlements_plist: null
         cms: null
 - path: Contents/Frameworks/Sparkle.framework/Versions/A/_CodeSignature/CodeResources
   file_size: 4311
@@ -638,7 +637,6 @@ $ rcodesign print-signature-info MyApp.app.signed
           - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
           - 'Resources (3): aef87f94d9df75b68f32d405eefc335347468229653c21dcf5d811e5e049d777'
-        entitlements_plist: null
         cms: null
 - path: Contents/Resources/AppIcon.icns
   file_size: 0
