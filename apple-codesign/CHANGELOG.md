@@ -47,6 +47,8 @@ Released on ReleaseDate.
   instead of a default set (based off Mozilla's maintained list). This should
   allow connections to HTTP proxies using custom/private certificate authorities
   to work, assuming certificates are installed on the local system. (#85)
+* Added a hidden `debug-create-entitlements` command for generating entitlements
+  plist files. The command is intended to facilitate testing.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

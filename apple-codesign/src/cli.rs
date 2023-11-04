@@ -966,6 +966,87 @@ impl DebugCreateCodeRequirements {
 }
 
 #[derive(Parser)]
+struct DebugCreateEntitlements {
+    /// Add the `get-task-allow` entitlement.
+    #[arg(long)]
+    get_task_allow: bool,
+
+    /// Add the `run-unsigned-code` entitlement.
+    #[arg(long)]
+    run_unsigned_code: bool,
+
+    /// Add the `com.apple.private.cs.debugger` entitlement.
+    #[arg(long)]
+    debugger: bool,
+
+    /// Add the `dynamic-codesigning` entitlement.
+    #[arg(long)]
+    dynamic_code_signing: bool,
+
+    /// Add the `com.apple.private.skip-library-validation` entitlement.
+    #[arg(long)]
+    skip_library_validation: bool,
+
+    /// Add the `com.apple.private.amfi.can-load-cdhash` entitlement.
+    #[arg(long)]
+    can_load_cd_hash: bool,
+
+    /// Add the `com.apple.private.amfi.can-execute-cdhash` entitlement.
+    #[arg(long)]
+    can_execute_cd_hash: bool,
+
+    /// Path to write entitlements to.
+    output_path: PathBuf,
+}
+
+impl DebugCreateEntitlements {
+    fn run(&self) -> Result<(), AppleCodesignError> {
+        let mut d = plist::Dictionary::default();
+
+        if self.get_task_allow {
+            d.insert("get-task-allow".into(), true.into());
+        }
+        if self.run_unsigned_code {
+            d.insert("run-unsigned-code".into(), true.into());
+        }
+        if self.debugger {
+            d.insert("com.apple.private.cs.debugger".into(), true.into());
+        }
+        if self.dynamic_code_signing {
+            d.insert("dynamic-codesigning".into(), true.into());
+        }
+        if self.skip_library_validation {
+            d.insert(
+                "com.apple.private.skip-library-validation".into(),
+                true.into(),
+            );
+        }
+        if self.can_load_cd_hash {
+            d.insert("com.apple.private.amfi.can-load-cdhash".into(), true.into());
+        }
+        if self.can_execute_cd_hash {
+            d.insert(
+                "com.apple.private.amfi.can-execute-cdhash".into(),
+                true.into(),
+            );
+        }
+
+        let value = plist::Value::from(d);
+        let mut xml = vec![];
+        value.to_writer_xml(&mut xml)?;
+
+        warn!("writing {}", self.output_path.display());
+        if let Some(parent) = self.output_path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+
+        std::fs::write(&self.output_path, &xml)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Parser)]
 struct DebugCreateInfoPlist {
     /// Name of the bundle.
     #[arg(long)]
@@ -2877,6 +2958,10 @@ enum Subcommands {
     #[command(hide = true)]
     DebugCreateCodeRequirements(DebugCreateCodeRequirements),
 
+    /// Create an entitlements file.
+    #[command(hide = true)]
+    DebugCreateEntitlements(DebugCreateEntitlements),
+
     /// Create an Info.plist file.
     #[command(hide = true)]
     DebugCreateInfoPlist(DebugCreateInfoPlist),
@@ -3009,6 +3094,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             command_encode_app_store_connect_api_key(args)
         }
         Subcommands::DebugCreateCodeRequirements(args) => args.run(),
+        Subcommands::DebugCreateEntitlements(args) => args.run(),
         Subcommands::DebugCreateInfoPlist(args) => args.run(),
         Subcommands::DebugCreateMacho(args) => args.run(),
         Subcommands::Extract(args) => args.run(),
