@@ -16,7 +16,7 @@ $ cat entitlements.plist
 </dict>
 </plist>
 $ rcodesign sign --entitlements-xml-path entitlements.plist exe exe.signed
-setting entitlments XML for main signing target from path entitlements.plist
+setting entitlements XML for main signing target from path entitlements.plist
 signing exe to exe.signed
 signing exe as a Mach-O binary
 inferring default signing settings from Mach-O binary
@@ -114,7 +114,7 @@ $ cat entitlements.plist
 </dict>
 </plist>
 $ rcodesign sign --entitlements-xml-path entitlements.plist exe exe.signed
-setting entitlments XML for main signing target from path entitlements.plist
+setting entitlements XML for main signing target from path entitlements.plist
 signing exe to exe.signed
 signing exe as a Mach-O binary
 inferring default signing settings from Mach-O binary

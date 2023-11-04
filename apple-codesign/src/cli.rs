@@ -2677,7 +2677,7 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
     for value in &args.entitlements_xml_path {
         let (scope, path) = parse_scoped_value(value)?;
 
-        warn!("setting entitlments XML for {} from path {}", scope, path);
+        warn!("setting entitlements XML for {} from path {}", scope, path);
         let entitlements_data = std::fs::read_to_string(path)?;
         settings.set_entitlements_xml(scope, entitlements_data)?;
     }
