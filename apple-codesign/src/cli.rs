@@ -959,7 +959,7 @@ impl DebugCreateCodeRequirements {
             std::fs::create_dir_all(parent)?;
         }
 
-        std::fs::write(&self.path, &data)?;
+        std::fs::write(&self.path, data)?;
 
         Ok(())
     }
@@ -1112,7 +1112,7 @@ impl DebugCreateMachO {
             std::fs::create_dir_all(parent)?;
         }
 
-        std::fs::write(&self.output_path, &data)?;
+        std::fs::write(&self.output_path, data)?;
 
         Ok(())
     }

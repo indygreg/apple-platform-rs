@@ -574,10 +574,10 @@ impl From<u32> for Platform {
     }
 }
 
-impl Into<u32> for Platform {
-    fn into(self) -> u32 {
-        match self {
-            Self::MacOs => 1,
+impl From<Platform> for u32 {
+    fn from(val: Platform) -> Self {
+        match val {
+            Platform::MacOs => 1,
             Platform::IOs => 2,
             Platform::TvOs => 3,
             Platform::WatchOs => 4,
