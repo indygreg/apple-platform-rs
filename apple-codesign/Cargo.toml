@@ -27,7 +27,7 @@ bitflags = "2.4.1"
 bytes = "1.5.0"
 clap = { version = "4.4.7", features = ["derive"] }
 chrono = "0.4.31"
-cryptographic-message-syntax = "0.25.0"
+cryptographic-message-syntax = "0.25.1"
 der = {  version = "0.7.8", features = ["alloc"] }
 dialoguer = "0.11.0"
 difference = "2.0.0"
@@ -75,7 +75,7 @@ tokio = { version = "1.33.0", features = ["rt"] }
 tungstenite = { version = "0.20.1", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.5.0", features = ["v4"] }
 x509 = "0.2.0"
-x509-certificate = "0.22.0"
+x509-certificate = "0.22.1"
 xml-rs = "0.8.19"
 yasna = "0.5.2"
 yubikey = { version = "0.8.0", optional = true, features = ["untested"] }
