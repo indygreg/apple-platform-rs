@@ -15,6 +15,10 @@ Error: error interfacing with directory-based bundle: Info.plist not found; not 
 $ rcodesign debug-create-info-plist --bundle-name MyApp MyApp.app/Contents/Info.plist
 writing MyApp.app/Contents/Info.plist
 
+$ mkdir -p MyApp.app/Resources
+$ touch MyApp.app/Resources/file-00.txt
+$ touch MyApp.app/Resources/file-01.txt
+
 $ rcodesign sign MyApp.app MyApp.app.signed
 signing MyApp.app to MyApp.app.signed
 signing bundle at MyApp.app
@@ -23,6 +27,10 @@ signing bundle at MyApp.app into MyApp.app.signed
 collecting code resources files
 Contents/Info.plist is the Info.plist file; handling specially
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
+sealing regular file Resources/file-00.txt
+copying file MyApp.app/Resources/file-00.txt -> MyApp.app.signed/Resources/file-00.txt
+sealing regular file Resources/file-01.txt
+copying file MyApp.app/Resources/file-01.txt -> MyApp.app.signed/Resources/file-01.txt
 writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
 setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
@@ -41,7 +49,7 @@ $ rcodesign print-signature-info MyApp.app.signed
   entity: other
 - path: Contents/MacOS/MyApp
   file_size: 22544
-  file_sha256: 5320635ab22c676386600c2dbf0b4b93fe223687df1614e03a9bcf6a80783640
+  file_sha256: 0e2027a7c6d687972a3526c512cc89e3acd5f5654a1e8a639862d6b72ed3d59d
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -57,8 +65,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 365
-          sha1: 59bc1b2ca8a3c122a9254e32b7b57e3ba380248b
-          sha256: 76ef857f4238cf6c3429d0c1436429a4ed142e696e94864b771c7d68b3deaaae
+          sha1: ea937121b2d2b4be4dd8d37e1b884e7f1c2201af
+          sha256: 3dfec63df494ed0e2dfeedf5d13a70b46b957bd73830cd7644a12e0ce6f08c00
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -81,11 +89,11 @@ $ rcodesign print-signature-info MyApp.app.signed
           slot_digests:
           - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-          - 'Resources (3): 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b'
+          - 'Resources (3): c844b31db66807774bd8ea00afe62cae1254bf6dfed2fa30d1204449d3c7e943'
         cms: null
 - path: Contents/_CodeSignature/CodeResources
-  file_size: 2200
-  file_sha256: 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b
+  file_size: 2672
+  file_sha256: c844b31db66807774bd8ea00afe62cae1254bf6dfed2fa30d1204449d3c7e943
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -93,9 +101,33 @@ $ rcodesign print-signature-info MyApp.app.signed
     - <plist version="1.0">
     - <dict>
     - '  <key>files</key>'
-    - '  <dict/>'
+    - '  <dict>'
+    - '    <key>Resources/file-00.txt</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '    <key>Resources/file-01.txt</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '  </dict>'
     - '  <key>files2</key>'
-    - '  <dict/>'
+    - '  <dict>'
+    - '    <key>Resources/file-00.txt</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/file-01.txt</key>'
+    - '    <dict>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '  </dict>'
     - '  <key>rules</key>'
     - '  <dict>'
     - '    <key>^Resources/</key>'
@@ -204,6 +236,14 @@ $ rcodesign print-signature-info MyApp.app.signed
     - </dict>
     - </plist>
     - ''
+- path: Resources/file-00.txt
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Resources/file-01.txt
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
 
 ```
 
@@ -226,6 +266,10 @@ activating SHA-1 + SHA-256 signing due to requirements of main executable
 collecting code resources files
 Contents/Info.plist is the Info.plist file; handling specially
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
+sealing regular file Resources/file-00.txt
+copying file MyApp.app/Resources/file-00.txt -> MyApp.app.signed/Resources/file-00.txt
+sealing regular file Resources/file-01.txt
+copying file MyApp.app/Resources/file-01.txt -> MyApp.app.signed/Resources/file-01.txt
 writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
 setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
@@ -246,7 +290,7 @@ $ rcodesign print-signature-info MyApp.app.signed
   entity: other
 - path: Contents/MacOS/MyApp
   file_size: 23568
-  file_sha256: 6165a0d76093125a9c8a14525fcaa865bbce2cbcdc8cfb66d52b49a95066e814
+  file_sha256: 0e1c406b4bd8ac2a94a79c325db69a2a19876c753971284c4c45468e047505f4
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -262,8 +306,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 269
-          sha1: ff42d26c8112481ed6bbe1a21c099c82ff650457
-          sha256: eeecd27380a05e4397f610bde11848f0eea1faf362efc9af2e8db99a41b65653
+          sha1: daa7889f0fc39e6920ab2f468b80b06e04f714f5
+          sha256: f9530a6c35ec6da7f21a047873953248668b59a63d3879754781c5ff5d8b5038
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -272,8 +316,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: 'CodeDirectory Alternate #0 (4096)'
           magic: fade0c02
           length: 365
-          sha1: ee17f5c87d244ab43457bef71a636de950811392
-          sha256: aca48af867ddedb54ff45ccf984416ffa1af3d29d32f185386c28af12842f14d
+          sha1: 78b08e2a2b243714a59975d7db86d0c77164a9f3
+          sha256: 0210dbf647e161423f7ed74183dca566bc6e6e1b7a045079002b660385c5a26c
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 8
@@ -291,7 +335,7 @@ $ rcodesign print-signature-info MyApp.app.signed
           slot_digests:
           - 'Info (1): 65bf1c26bc63ccdfe6688cc787b06f88f3435ef0'
           - 'RequirementSet (2): 3a75f6db058529148e14dd7ea1b4729cc09ec973'
-          - 'Resources (3): 630a08873072069616cdcc31f55e6d7423086d78'
+          - 'Resources (3): bba07ca7abb366417d2b426b767c25838f5aeb58'
         alternative_code_directories:
         - - 'CodeDirectory Alternate #0 (4096)'
           - version: '0x20400'
@@ -305,11 +349,11 @@ $ rcodesign print-signature-info MyApp.app.signed
             slot_digests:
             - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
             - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-            - 'Resources (3): 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b'
+            - 'Resources (3): ba6147622a84edef406a5bc43b6ba041cef593326e34c5c53e662f9f57343263'
         cms: null
 - path: Contents/_CodeSignature/CodeResources
-  file_size: 2200
-  file_sha256: 6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b
+  file_size: 2816
+  file_sha256: ba6147622a84edef406a5bc43b6ba041cef593326e34c5c53e662f9f57343263
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -317,9 +361,41 @@ $ rcodesign print-signature-info MyApp.app.signed
     - <plist version="1.0">
     - <dict>
     - '  <key>files</key>'
-    - '  <dict/>'
+    - '  <dict>'
+    - '    <key>Resources/file-00.txt</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '    <key>Resources/file-01.txt</key>'
+    - '    <data>'
+    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '    </data>'
+    - '  </dict>'
     - '  <key>files2</key>'
-    - '  <dict/>'
+    - '  <dict>'
+    - '    <key>Resources/file-00.txt</key>'
+    - '    <dict>'
+    - '      <key>hash</key>'
+    - '      <data>'
+    - '      2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '      </data>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '    <key>Resources/file-01.txt</key>'
+    - '    <dict>'
+    - '      <key>hash</key>'
+    - '      <data>'
+    - '      2jmj7l5rSw0yVb/vlWAYkK/YBwk='
+    - '      </data>'
+    - '      <key>hash2</key>'
+    - '      <data>'
+    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+    - '      </data>'
+    - '    </dict>'
+    - '  </dict>'
     - '  <key>rules</key>'
     - '  <dict>'
     - '    <key>^Resources/</key>'
@@ -428,5 +504,13 @@ $ rcodesign print-signature-info MyApp.app.signed
     - </dict>
     - </plist>
     - ''
+- path: Resources/file-00.txt
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
+- path: Resources/file-01.txt
+  file_size: 0
+  file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  entity: other
 
 ```
