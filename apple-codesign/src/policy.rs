@@ -281,7 +281,7 @@ pub fn derive_designated_requirements(
         }
         CertificateProfile::MacInstallerDistribution | CertificateProfile::DeveloperIdInstaller => {
             Err(AppleCodesignError::PolicyFormulationError(format!(
-                "(deriving for {profile:?}) we do not know how to handle this policy"
+                "(deriving for {profile:?}) a designated requirement cannot be derived for installer code signing certificates; if you see this message you should probably be using a different code signing certificate for signing applications"
             )))
         }
     }

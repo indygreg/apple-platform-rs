@@ -642,7 +642,7 @@ setting binary identifier to exe
 parsing Mach-O
 signing Mach-O binary at index 0
 attempting to derive code requirements from signing certificate
-Error: unable to generate code requirement policy: (deriving for DeveloperIdInstaller) we do not know how to handle this policy
+Error: unable to generate code requirement policy: (deriving for DeveloperIdInstaller) a designated requirement cannot be derived for installer code signing certificates; if you see this message you should probably be using a different code signing certificate for signing applications
 
 $ rcodesign print-signature-info exe.developer-id-installer
 ? 1
@@ -660,7 +660,7 @@ setting binary identifier to exe
 parsing Mach-O
 signing Mach-O binary at index 0
 attempting to derive code requirements from signing certificate
-Error: unable to generate code requirement policy: (deriving for MacInstallerDistribution) we do not know how to handle this policy
+Error: unable to generate code requirement policy: (deriving for MacInstallerDistribution) a designated requirement cannot be derived for installer code signing certificates; if you see this message you should probably be using a different code signing certificate for signing applications
 
 $ rcodesign print-signature-info exe.mac-installer-distribution
 ? 1
