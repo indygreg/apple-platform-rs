@@ -52,10 +52,12 @@ impl MachOType {
 
         let magic = goblin::mach::peek(&header, 0)?;
 
-        match magic {
-            FAT_MAGIC => Ok(Some(Self::Mach)),
-            _ if parse_magic_and_ctx(&header, 0).is_ok() => Ok(Some(Self::MachO)),
-            _ => Ok(None),
+        if magic == FAT_MAGIC {
+            Ok(Some(Self::Mach))
+        } else if let Ok((_, Some(_))) = parse_magic_and_ctx(&header, 0) {
+            Ok(Some(Self::MachO))
+        } else {
+            Ok(None)
         }
     }
 }

@@ -58,6 +58,7 @@ Released on ReleaseDate.
 * The `generate-self-signed-certificate` command gained a
   `--pem-unified-filename` argument to write a PEM encoded file containing
   both the private key and public certificate.
+* Fixed a bug where files would be identified as Mach-O when they weren't.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
