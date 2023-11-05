@@ -55,6 +55,9 @@ Released on ReleaseDate.
   time instead of the current time. The CMS signing and settings APIs have
   changed accordingly. The `sign` command now accepts a `--signing-time`
   argument to control the signing time.
+* The `generate-self-signed-certificate` command gained a
+  `--pem-unified-filename` argument to write a PEM encoded file containing
+  both the private key and public certificate.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

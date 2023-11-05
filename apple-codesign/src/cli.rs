@@ -2038,6 +2038,10 @@ struct GenerateSelfSignedCertificate {
     /// Base name of files to write PEM encoded certificate to
     #[arg(long)]
     pem_filename: Option<String>,
+
+    /// Filename to write PEM encoded private key and public certificate to.
+    #[arg(long)]
+    pem_unified_filename: Option<PathBuf>,
 }
 
 fn command_generate_self_signed_certificate(
@@ -2079,6 +2083,19 @@ fn command_generate_self_signed_certificate(
         std::fs::write(&cert_path, cert_pem.as_bytes())?;
         println!("writing private signing key to {}", key_path.display());
         std::fs::write(&key_path, key_pem.as_bytes())?;
+
+        wrote_file = true;
+    }
+
+    if let Some(path) = &args.pem_unified_filename {
+        let content = format!("{}{}", key_pem, cert_pem);
+
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+
+        println!("writing unified PEM to {}", path.display());
+        std::fs::write(&path, content.as_bytes())?;
 
         wrote_file = true;
     }

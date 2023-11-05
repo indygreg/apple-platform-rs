@@ -60,6 +60,9 @@ Options:
       --pem-filename <PEM_FILENAME>
           Base name of files to write PEM encoded certificate to
 
+      --pem-unified-filename <PEM_UNIFIED_FILENAME>
+          Filename to write PEM encoded private key and public certificate to
+
   -h, --help
           Print help (see a summary with '-h')
 
