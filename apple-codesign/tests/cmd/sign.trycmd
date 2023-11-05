@@ -260,6 +260,17 @@ Options:
       --team-name <TEAM_NAME>
           Team name/identifier to include in code signature
 
+      --signing-time <SIGNING_TIME>
+          An RFC 3339 date and time string to be used in signatures.
+          
+          e.g. 2023-11-05T10:42:00Z.
+          
+          If not specified, the current time will be used.
+          
+          Setting is only used when signing with a signing certificate.
+          
+          This setting is typically not necessary. It was added to facilitate deterministic signing behavior.
+
       --timestamp-url <TIMESTAMP_URL>
           URL of time-stamp server to use to obtain a token of the CMS signature
           

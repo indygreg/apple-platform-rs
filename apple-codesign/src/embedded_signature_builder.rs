@@ -208,6 +208,9 @@ impl<'a> EmbeddedSignatureBuilder<'a> {
     ///
     /// `certificates` are extra X.509 certificates to register in the signing chain.
     ///
+    /// `signing_time` defines the signing time to use. If not defined, the
+    /// current time is used.
+    ///
     /// This method errors if called before a code directory is registered.
     pub fn create_cms_signature(
         &mut self,
@@ -215,6 +218,7 @@ impl<'a> EmbeddedSignatureBuilder<'a> {
         signing_cert: &CapturedX509Certificate,
         time_stamp_url: Option<&Url>,
         certificates: impl Iterator<Item = CapturedX509Certificate>,
+        signing_time: Option<chrono::DateTime<chrono::Utc>>,
     ) -> Result<(), AppleCodesignError> {
         let main_cd = self
             .code_directory()
@@ -285,14 +289,22 @@ impl<'a> EmbeddedSignatureBuilder<'a> {
             signer
         };
 
-        let der = SignedDataBuilder::default()
+        let builder = SignedDataBuilder::default()
             // The default is `signed-data`. But Apple appears to use the `data` content-type,
             // in violation of RFC 5652 Section 5, which says `signed-data` should be
             // used when there are signatures.
             .content_type(Oid(OID_ID_DATA.as_ref().into()))
             .signer(signer)
-            .certificates(certificates)
-            .build_der()?;
+            .certificates(certificates);
+
+        let builder = if let Some(time) = signing_time {
+            info!("Using signing time {}", time.to_rfc3339());
+            builder.signing_time(time.into())
+        } else {
+            builder
+        };
+
+        let der = builder.build_der()?;
 
         self.blobs.insert(
             CodeSigningSlot::Signature,
@@ -303,9 +315,7 @@ impl<'a> EmbeddedSignatureBuilder<'a> {
         Ok(())
     }
 
-    pub fn create_empty_cms_signature(
-        &mut self,
-    ) -> Result<(), AppleCodesignError> {
+    pub fn create_empty_cms_signature(&mut self) -> Result<(), AppleCodesignError> {
         self.blobs.insert(
             CodeSigningSlot::Signature,
             BlobData::BlobWrapper(Box::new(BlobWrapperBlob::from_data_owned(Vec::new()))),

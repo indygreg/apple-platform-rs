@@ -252,6 +252,7 @@ pub struct SigningSettings<'key> {
     signing_key: Option<(&'key dyn KeyInfoSigner, CapturedX509Certificate)>,
     certificates: Vec<CapturedX509Certificate>,
     time_stamp_url: Option<Url>,
+    signing_time: Option<chrono::DateTime<chrono::Utc>>,
     digest_type: DigestType,
     path_exclusion_patterns: Vec<Pattern>,
 
@@ -389,6 +390,20 @@ impl<'key> SigningSettings<'key> {
         self.time_stamp_url = Some(url.into_url()?);
 
         Ok(())
+    }
+
+    /// Obtain the signing time to embed in signatures.
+    ///
+    /// If None, the current time at the time of signing is used.
+    pub fn signing_time(&self) -> Option<chrono::DateTime<chrono::Utc>> {
+        self.signing_time
+    }
+
+    /// Set the signing time to embed in signatures.
+    ///
+    /// If not called, the current time at time of signing will be used.
+    pub fn set_signing_time(&mut self, time: chrono::DateTime<chrono::Utc>) {
+        self.signing_time = Some(time);
     }
 
     /// Obtain the team identifier for signed binaries.
@@ -943,6 +958,7 @@ impl<'key> SigningSettings<'key> {
             signing_key: self.signing_key.clone(),
             certificates: self.certificates.clone(),
             time_stamp_url: self.time_stamp_url.clone(),
+            signing_time: self.signing_time,
             team_id: self.team_id.clone(),
             digest_type: self.digest_type,
             path_exclusion_patterns: self.path_exclusion_patterns.clone(),

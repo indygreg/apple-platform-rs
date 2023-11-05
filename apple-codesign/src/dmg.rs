@@ -345,6 +345,7 @@ impl DmgSigner {
                 signing_cert,
                 settings.time_stamp_url(),
                 settings.certificate_chain().iter().cloned(),
+                settings.signing_time(),
             )?;
         }
 

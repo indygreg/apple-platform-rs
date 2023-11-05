@@ -1,0 +1,117 @@
+```
+$ rcodesign debug-create-macho exe
+assuming default minimum version 11.0.0
+writing Mach-O to exe
+
+$ rcodesign sign --pem-source src/testdata/self-signed-ecdsa-apple-development.pem --timestamp-url none exe exe.signed
+reading PEM data from src/testdata/self-signed-ecdsa-apple-development.pem
+registering signing key
+automatically setting team ID from signing certificate: test
+signing exe to exe.signed
+signing exe as a Mach-O binary
+inferring default signing settings from Mach-O binary
+setting binary identifier to exe
+parsing Mach-O
+signing Mach-O binary at index 0
+attempting to derive code requirements from signing certificate
+code requirements: 0: (identifier "exe") and ((anchor apple generic) and ((certificate leaf[subject.CN] = "Apple Development: ECDSA Apple Development (test)") and (certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */)));
+binary targets macOS >= 11.0.0 with SDK 11.0.0
+code directory version: 132096
+creating cryptographic signature with certificate Apple Development: ECDSA Apple Development (test)
+total signature size: 1969 bytes
+writing Mach-O to exe.signed
+
+$ rcodesign print-signature-info exe.signed
+- path: exe.signed
+  file_size: 22544
+  file_sha256: febb59012931ded23711578da4a358856a35e696da04ad77e47d7b19ef5edb4b
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
+      signature:
+        superblob_length: 1969
+        blob_count: 3
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 321
+          sha1: 7ebf9d31a4733801dad6638ead8fba575084bd5f
+          sha256: 46dc948de9a1da6e97a8c231d8b5c1b99b833cad7eca6cc3299142de0af00788
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 172
+          sha1: 8918023229658b8236dc9a5b9aa44168fae9589e
+          sha256: 0f649994dfd04fb3db5f7fa974bc99ed404dc81a37394d03502dca9f7341f4dd
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 1440
+          sha1: 932548f1ab9314ae04457db2b8925dd37ebbb395
+          sha256: 96cc19fcc42287d3f3fef0820ad68bdafdea4b87c2a8ef095a1b5ede6100a1bd
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(0x0)
+          identifier: exe
+          team_name: test
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16400
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+          - 'RequirementSet (2): 0f649994dfd04fb3db5f7fa974bc99ed404dc81a37394d03502dca9f7341f4dd'
+        code_requirements:
+        - 'designated(3): 0: (identifier "exe") and ((anchor apple generic) and ((certificate leaf[subject.CN] = "Apple Development: ECDSA Apple Development (test)") and (certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */)));'
+        cms:
+          certificates:
+          - subject: 'CN=Apple Development: ECDSA Apple Development (test), OU=test, O=ECDSA Apple Development, C=US'
+            issuer: 'CN=Apple Development: ECDSA Apple Development (test), OU=test, O=ECDSA Apple Development, C=US'
+            key_algorithm: ECDSA
+            signature_algorithm: ECDSA with SHA-256
+            signed_with_algorithm: ECDSA with SHA-256
+            is_apple_root_ca: false
+            is_apple_intermediate_ca: false
+            chains_to_apple_root_ca: false
+            apple_extended_key_usages:
+            - Code Signing
+            apple_code_signing_extensions:
+            - iPhone Developer
+            - Mac Developer
+            apple_certificate_profile: apple-development
+            apple_team_id: test
+          signers:
+          - issuer: 'CN=Apple Development: ECDSA Apple Development (test), OU=test, O=ECDSA Apple Development, C=US'
+            digest_algorithm: SHA-256
+            signature_algorithm: ECDSA with SHA-256
+            attributes:
+            - 1.2.840.113549.1.9.3
+            - 1.2.840.113549.1.9.4
+            - 1.2.840.113549.1.9.5
+            - 1.2.840.113635.100.9.1
+            - 1.2.840.113635.100.9.2
+            content_type: 1.2.840.113549.1.7.1
+            message_digest: 46dc948de9a1da6e97a8c231d8b5c1b99b833cad7eca6cc3299142de0af00788
+            signing_time: 2023-11-05T02:02:14Z
+            cdhash_plist:
+            - <?xml version="1.0" encoding="UTF-8"?>
+            - <plist version="1.0">
+            - '  <dict>'
+            - '    <key>cdhashes</key>'
+            - '    <array>'
+            - '      <data>'
+            - "/t/tRtyUjemh2m6XqMIx2LXBuZuDPK0="
+            - "/t/t</data>"
+            - '    </array>'
+            - '  </dict>'
+            - </plist>
+            cdhash_digests:
+            - - 2.16.840.1.101.3.4.2.1
+              - 46dc948de9a1da6e97a8c231d8b5c1b99b833cad7eca6cc3299142de0af00788
+            signature_verifies: true
+
+```

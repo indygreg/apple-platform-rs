@@ -2529,6 +2529,19 @@ struct Sign {
     #[arg(long)]
     team_name: Option<String>,
 
+    /// An RFC 3339 date and time string to be used in signatures.
+    ///
+    /// e.g. 2023-11-05T10:42:00Z.
+    ///
+    /// If not specified, the current time will be used.
+    ///
+    /// Setting is only used when signing with a signing certificate.
+    ///
+    /// This setting is typically not necessary. It was added to facilitate
+    /// deterministic signing behavior.
+    #[arg(long)]
+    signing_time: Option<String>,
+
     /// URL of time-stamp server to use to obtain a token of the CMS signature
     ///
     /// Can be set to the special value `none` to disable the generation of time-stamp
@@ -2590,6 +2603,14 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
             warn!("using time-stamp protocol server {}", args.timestamp_url);
             settings.set_time_stamp_url(&args.timestamp_url)?;
         }
+    }
+
+    if let Some(time) = &args.signing_time {
+        let time = chrono::DateTime::parse_from_rfc3339(time).map_err(|e| {
+            AppleCodesignError::CliGeneralError(format!("invalid signing time format: {}", e))
+        })?;
+        let time = time.with_timezone(&chrono::Utc);
+        settings.set_signing_time(time);
     }
 
     if let Some(team_id) = settings.set_team_id_from_signing_certificate() {

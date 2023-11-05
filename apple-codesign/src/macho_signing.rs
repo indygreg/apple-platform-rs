@@ -416,6 +416,7 @@ impl<'data> MachOSigner<'data> {
                 signing_cert,
                 settings.time_stamp_url(),
                 settings.certificate_chain().iter().cloned(),
+                settings.signing_time(),
             )?;
         } else {
             builder.create_empty_cms_signature()?;

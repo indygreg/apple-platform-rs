@@ -51,6 +51,10 @@ Released on ReleaseDate.
   plist files. The command is intended to facilitate testing.
 * The `print-signature-info` command YAML output now encodes entitlements XML
   as an array of strings for easier readability.
+* A custom signing time can now be specified to force using a specific
+  time instead of the current time. The CMS signing and settings APIs have
+  changed accordingly. The `sign` command now accepts a `--signing-time`
+  argument to control the signing time.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
