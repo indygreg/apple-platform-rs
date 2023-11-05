@@ -249,6 +249,7 @@ dependencies = [
  "trycmd",
  "tungstenite",
  "uuid",
+ "walkdir",
  "x509",
  "x509-certificate",
  "xml-rs",

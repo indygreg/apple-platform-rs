@@ -25,7 +25,6 @@ signing bundle at MyApp.app
 signing 0 nested bundles in the following order:
 signing bundle at MyApp.app into MyApp.app.signed
 collecting code resources files
-Contents/Info.plist is the Info.plist file; handling specially
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
 sealing regular file Resources/file-00.txt
 copying file MyApp.app/Resources/file-00.txt -> MyApp.app.signed/Resources/file-00.txt
@@ -264,7 +263,6 @@ signing 0 nested bundles in the following order:
 signing bundle at MyApp.app into MyApp.app.signed
 activating SHA-1 + SHA-256 signing due to requirements of main executable
 collecting code resources files
-Contents/Info.plist is the Info.plist file; handling specially
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
 sealing regular file Resources/file-00.txt
 copying file MyApp.app/Resources/file-00.txt -> MyApp.app.signed/Resources/file-00.txt

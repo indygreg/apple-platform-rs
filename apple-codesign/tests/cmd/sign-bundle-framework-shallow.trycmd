@@ -15,12 +15,11 @@ signing 0 nested bundles in the following order:
 signing bundle at Shallow.framework into Shallow.framework.signed
 found an unversioned framework; signing like normal
 collecting code resources files
-Resources/Info.plist is the Info.plist file; handling specially
 sealing regular file Resources/Info.plist
 copying file Shallow.framework/Resources/Info.plist -> Shallow.framework.signed/Resources/Info.plist
 sealing regular file Resources/root-00.txt
 copying file Shallow.framework/Resources/root-00.txt -> Shallow.framework.signed/Resources/root-00.txt
-sealing Mach-O file Shallow
+sealing nested Mach-O binary: Shallow
 signing Mach-O file Shallow
 inferring default signing settings from Mach-O binary
 Mach-O is missing binary identifier; setting to Shallow based on file name

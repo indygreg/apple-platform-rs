@@ -26,10 +26,9 @@ signing bundle at MyApp.app
 signing 0 nested bundles in the following order:
 signing bundle at MyApp.app into MyApp.app.signed
 collecting code resources files
-Contents/Info.plist is the Info.plist file; handling specially
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
-sealing Mach-O file MacOS/bin
-signing Mach-O file MacOS/bin
+sealing nested Mach-O binary: Contents/MacOS/bin
+signing Mach-O file Contents/MacOS/bin
 inferring default signing settings from Mach-O binary
 Mach-O is missing binary identifier; setting to bin based on file name
 signing Mach-O binary at index 0
@@ -37,9 +36,9 @@ binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 372 bytes
-writing Mach-O to MyApp.app.signed/MacOS/bin
-sealing Mach-O file MacOS/lib.dylib
-signing Mach-O file MacOS/lib.dylib
+writing Mach-O to MyApp.app.signed/Contents/MacOS/bin
+sealing nested Mach-O binary: Contents/MacOS/lib.dylib
+signing Mach-O file Contents/MacOS/lib.dylib
 inferring default signing settings from Mach-O binary
 Mach-O is missing binary identifier; setting to lib based on file name
 signing Mach-O binary at index 0
@@ -47,8 +46,9 @@ binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
 total signature size: 372 bytes
-writing Mach-O to MyApp.app.signed/MacOS/lib.dylib
+writing Mach-O to MyApp.app.signed/Contents/MacOS/lib.dylib
 sealing regular file Resources/non-nested-bin
+non-nested file is a Mach-O binary; it is NOT signed automatically: Contents/Resources/non-nested-bin
 copying file MyApp.app/Contents/Resources/non-nested-bin -> MyApp.app.signed/Contents/Resources/non-nested-bin
 writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
@@ -109,6 +109,92 @@ $ rcodesign print-signature-info MyApp.app.signed
           - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
           - 'Resources (3): 29ca54092b8a1ee42bd378889eae9382dd64f94f6ac99e093d5aff76af6ea2bf'
+        cms: null
+- path: Contents/MacOS/bin
+  file_size: 22544
+  file_sha256: 222272e624fadf178495f7eeabdac248a951a0fb1e49002f494dde7067e456c8
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
+      signature:
+        superblob_length: 372
+        blob_count: 3
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 316
+          sha1: c86136679b8fb8b73c260c3f5143eb4787ba7408
+          sha256: 319e12d5056d6b83506f2a51858ddfd99a244ed7b1bb261d9f7a1befa55239db
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: bin
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16400
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+        cms: null
+- path: Contents/MacOS/lib.dylib
+  file_size: 22544
+  file_sha256: f5bf39926f898f9d8b10749c2c2e02d89e6ca1ab85e5210df86a711afc35f1bd
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
+      signature:
+        superblob_length: 372
+        blob_count: 3
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 316
+          sha1: af401622e3c8ad117ef8e8048542a0f6ce3e0d7c
+          sha256: df488d463c798ba6e7afbb55d1f86959aefc12753467b49d5a984611e11ec8d0
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: lib
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16400
+          executable_segment_flags: ExecutableSegmentFlags(0x0)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
         cms: null
 - path: Contents/Resources/non-nested-bin
   file_size: 16386
@@ -274,91 +360,5 @@ $ rcodesign print-signature-info MyApp.app.signed
     - </dict>
     - </plist>
     - ''
-- path: MacOS/bin
-  file_size: 22544
-  file_sha256: 222272e624fadf178495f7eeabdac248a951a0fb1e49002f494dde7067e456c8
-  entity:
-    mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
-      signature:
-        superblob_length: 372
-        blob_count: 3
-        blobs:
-        - slot: CodeDirectory (0)
-          magic: fade0c02
-          length: 316
-          sha1: c86136679b8fb8b73c260c3f5143eb4787ba7408
-          sha256: 319e12d5056d6b83506f2a51858ddfd99a244ed7b1bb261d9f7a1befa55239db
-        - slot: RequirementSet (2)
-          magic: fade0c01
-          length: 12
-          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
-          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
-        - slot: CMS Signature (65536)
-          magic: fade0b01
-          length: 8
-          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
-          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
-        code_directory:
-          version: '0x20400'
-          flags: CodeSignatureFlags(ADHOC)
-          identifier: bin
-          digest_type: sha256
-          platform: 0
-          signed_entity_size: 16400
-          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
-          code_digests_count: 5
-          slot_digests:
-          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-        cms: null
-- path: MacOS/lib.dylib
-  file_size: 22544
-  file_sha256: f5bf39926f898f9d8b10749c2c2e02d89e6ca1ab85e5210df86a711afc35f1bd
-  entity:
-    mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
-      signature:
-        superblob_length: 372
-        blob_count: 3
-        blobs:
-        - slot: CodeDirectory (0)
-          magic: fade0c02
-          length: 316
-          sha1: af401622e3c8ad117ef8e8048542a0f6ce3e0d7c
-          sha256: df488d463c798ba6e7afbb55d1f86959aefc12753467b49d5a984611e11ec8d0
-        - slot: RequirementSet (2)
-          magic: fade0c01
-          length: 12
-          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
-          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
-        - slot: CMS Signature (65536)
-          magic: fade0b01
-          length: 8
-          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
-          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
-        code_directory:
-          version: '0x20400'
-          flags: CodeSignatureFlags(ADHOC)
-          identifier: lib
-          digest_type: sha256
-          platform: 0
-          signed_entity_size: 16400
-          executable_segment_flags: ExecutableSegmentFlags(0x0)
-          code_digests_count: 5
-          slot_digests:
-          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-        cms: null
 
 ```

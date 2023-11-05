@@ -59,6 +59,9 @@ Released on ReleaseDate.
   `--pem-unified-filename` argument to write a PEM encoded file containing
   both the private key and public certificate.
 * Fixed a bug where files would be identified as Mach-O when they weren't.
+* Bundle signing logic has been significantly overhauled to hopefully make
+  it conform with Apple tooling's behavior. This likely fixed several bugs
+  with bundle signing.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

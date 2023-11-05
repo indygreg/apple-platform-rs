@@ -81,7 +81,7 @@ entering nested bundle Electron.app/Contents/Frameworks/Electron Framework.frame
 signing bundle at Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A into Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A
 found an unversioned framework; signing like normal
 collecting code resources files
-sealing Mach-O file Helpers/chrome_crashpad_handler
+sealing nested Mach-O binary: Helpers/chrome_crashpad_handler
 signing Mach-O file Helpers/chrome_crashpad_handler
 inferring default signing settings from Mach-O binary
 Mach-O is missing binary identifier; setting to chrome_crashpad_handler based on file name
@@ -92,10 +92,10 @@ code directory version: 132096
 total signature size: 392 bytes
 writing Mach-O to Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler
 sealing regular file Libraries/libEGL.dylib
+non-nested file is a Mach-O binary; it is NOT signed automatically: Libraries/libEGL.dylib
 copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib
 sealing regular file Libraries/vk_swiftshader_icd.json
 copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/vk_swiftshader_icd.json -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/vk_swiftshader_icd.json
-Resources/Info.plist is the Info.plist file; handling specially
 sealing regular file Resources/Info.plist
 copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist
 sealing regular file Resources/MainMenu.nib
@@ -134,7 +134,6 @@ entering nested bundle Electron.app/Contents/Frameworks/Mantle.framework/Version
 signing bundle at Electron.app/Contents/Frameworks/Mantle.framework/Versions/A into Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A
 found an unversioned framework; signing like normal
 collecting code resources files
-Resources/Info.plist is the Info.plist file; handling specially
 sealing regular file Resources/Info.plist
 copying file Electron.app/Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist -> Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist
 writing sealed resources to Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/_CodeSignature/CodeResources
@@ -151,7 +150,6 @@ leaving nested bundle Electron.app/Contents/Frameworks/Mantle.framework/Versions
 entering nested bundle Electron.app/Contents/Frameworks/Electron Helper (GPU).app
 signing bundle at Electron.app/Contents/Frameworks/Electron Helper (GPU).app into Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app
 collecting code resources files
-Contents/Info.plist is the Info.plist file; handling specially
 copying file Electron.app/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist -> Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist
 writing sealed resources to Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/Electron Helper (GPU)
@@ -173,7 +171,12 @@ replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Ver
 leaving nested bundle Electron.app/Contents/Frameworks/Mantle.framework
 signing bundle at Electron.app into Electron.app.signed
 collecting code resources files
-Contents/Info.plist is the Info.plist file; handling specially
+sealing nested directory as a bundle: Contents/Frameworks/Electron Framework.framework
+reading Mach-O signature from Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Electron Framework
+sealing nested directory as a bundle: Contents/Frameworks/Electron Helper (GPU).app
+reading Mach-O signature from Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)
+sealing nested directory as a bundle: Contents/Frameworks/Mantle.framework
+reading Mach-O signature from Electron.app.signed/Contents/Frameworks/Mantle.framework/Mantle
 copying file Electron.app/Contents/Info.plist -> Electron.app.signed/Contents/Info.plist
 sealing regular file Resources/default_app.asar
 copying file Electron.app/Contents/Resources/default_app.asar -> Electron.app.signed/Contents/Resources/default_app.asar
@@ -181,12 +184,6 @@ sealing regular file Resources/electron.icns
 copying file Electron.app/Contents/Resources/electron.icns -> Electron.app.signed/Contents/Resources/electron.icns
 sealing regular file Resources/en.lproj
 copying file Electron.app/Contents/Resources/en.lproj -> Electron.app.signed/Contents/Resources/en.lproj
-reading code signature from main executable Electron Framework
-sealing nested bundle at Frameworks/Electron Framework.framework
-reading code signature from main executable Contents/MacOS/Electron Helper (GPU)
-sealing nested bundle at Frameworks/Electron Helper (GPU).app
-reading code signature from main executable Mantle
-sealing nested bundle at Frameworks/Mantle.framework
 writing sealed resources to Electron.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/Electron
 setting main executable binary identifier to com.github.Electron (derived from CFBundleIdentifier in Info.plist)

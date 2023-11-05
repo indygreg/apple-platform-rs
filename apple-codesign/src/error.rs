@@ -259,6 +259,9 @@ pub enum AppleCodesignError {
     #[error("error producing universal Mach-O binary: {0}")]
     UniversalMachO(#[from] UniversalMachOError),
 
+    #[error("walkdir error: {0}")]
+    WalkDir(#[from] walkdir::Error),
+
     #[error("zip error: {0}")]
     ZipError(#[from] zip::result::ZipError),
 

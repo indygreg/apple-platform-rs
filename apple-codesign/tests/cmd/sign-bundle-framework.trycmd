@@ -20,7 +20,7 @@ entering nested bundle MyFramework.framework/Versions/A
 signing bundle at MyFramework.framework/Versions/A into MyFramework.framework.signed/Versions/A
 found an unversioned framework; signing like normal
 collecting code resources files
-sealing Mach-O file MyFramework
+sealing nested Mach-O binary: MyFramework
 signing Mach-O file MyFramework
 inferring default signing settings from Mach-O binary
 Mach-O is missing binary identifier; setting to MyFramework based on file name
@@ -30,7 +30,6 @@ creating ad-hoc signature
 code directory version: 132096
 total signature size: 380 bytes
 writing Mach-O to MyFramework.framework.signed/Versions/A/MyFramework
-Resources/Info.plist is the Info.plist file; handling specially
 sealing regular file Resources/Info.plist
 copying file MyFramework.framework/Versions/A/Resources/Info.plist -> MyFramework.framework.signed/Versions/A/Resources/Info.plist
 sealing regular file Resources/root-A-00.txt

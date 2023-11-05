@@ -53,7 +53,6 @@ Contents/Frameworks/Sparkle.framework
 entering nested bundle MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
 signing bundle at MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app into MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
 collecting code resources files
-Contents/Info.plist is the Info.plist file; handling specially
 copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist
 sealing regular file Resources/en.lproj/Sparkle.strings
 copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings
@@ -79,12 +78,12 @@ copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Modules/
 sealing regular file Resources/Autoupdate.app/Contents/Info.plist
 copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist
 sealing regular file Resources/Autoupdate.app/Contents/MacOS/Autoupdate
+non-nested file is a Mach-O binary; it is NOT signed automatically: Resources/Autoupdate.app/Contents/MacOS/Autoupdate
 copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS/Autoupdate -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS/Autoupdate
 sealing regular file Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings
 copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings
 sealing regular file Resources/DarkAqua.css
 copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/DarkAqua.css -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/DarkAqua.css
-Resources/Info.plist is the Info.plist file; handling specially
 sealing regular file Resources/Info.plist
 copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Info.plist -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Info.plist
 sealing regular file Resources/en.lproj/Sparkle.strings
@@ -112,12 +111,11 @@ replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versi
 leaving nested bundle MyApp.app/Contents/Frameworks/Sparkle.framework
 signing bundle at MyApp.app into MyApp.app.signed
 collecting code resources files
-Contents/Info.plist is the Info.plist file; handling specially
+sealing nested directory as a bundle: Contents/Frameworks/Sparkle.framework
+reading Mach-O signature from MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Sparkle
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
 sealing regular file Resources/AppIcon.icns
 copying file MyApp.app/Contents/Resources/AppIcon.icns -> MyApp.app.signed/Contents/Resources/AppIcon.icns
-reading code signature from main executable Sparkle
-sealing nested bundle at Frameworks/Sparkle.framework
 writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
 setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)

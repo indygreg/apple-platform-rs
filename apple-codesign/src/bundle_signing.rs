@@ -8,7 +8,7 @@ use {
     crate::{
         code_directory::CodeDirectoryBlob,
         code_requirement::{CodeRequirementExpression, RequirementType},
-        code_resources::{CodeResourcesBuilder, CodeResourcesRule},
+        code_resources::{normalized_resources_path, CodeResourcesBuilder, CodeResourcesRule},
         embedded_signature::{Blob, BlobData, DigestType},
         error::AppleCodesignError,
         macho::MachFile,
@@ -265,6 +265,8 @@ impl SignedMachOInfo {
 /// This abstraction lets entities like [CodeResourcesBuilder] drive the
 /// installation of files into a new bundle.
 pub trait BundleFileHandler {
+    fn dest_dir(&self) -> &Path;
+
     /// Ensures a file (regular or symlink) is installed.
     fn install_file(
         &self,
@@ -289,6 +291,10 @@ struct SingleBundleHandler<'a, 'key> {
 }
 
 impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
+    fn dest_dir(&self) -> &Path {
+        &self.dest_dir
+    }
+
     fn install_file(
         &self,
         source_path: &Path,
@@ -325,6 +331,7 @@ impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
                     source_path.display(),
                     dest_path.display()
                 );
+                // TODO consider stripping XATTR_RESOURCEFORK_NAME and XATTR_FINDERINFO_NAME.
                 std::fs::copy(source_path, &dest_path)?;
                 filetime::set_file_mtime(&dest_path, mtime)?;
             }
@@ -525,67 +532,32 @@ impl SingleBundleSigner {
         resources_builder.add_exclusion_rule(CodeResourcesRule::new("^_CodeSignature/")?.exclude());
         // Ignore notarization ticket.
         resources_builder.add_exclusion_rule(CodeResourcesRule::new("^CodeResources$")?.exclude());
+        // Ignore store manifest directory.
+        resources_builder.add_exclusion_rule(CodeResourcesRule::new("^_MASReceipt$")?.exclude());
+
+        // The bundle's main executable file's code directory needs to hold a
+        // digest of the CodeResources file for the bundle. Therefore it needs to
+        // be handled last. We add an exclusion rule to prevent the directory walker
+        // from touching this file.
+        if let Some(main_exe) = &main_exe {
+            // Also seal the resources normalized path, just in case it is different.
+            resources_builder.add_exclusion_rule(
+                CodeResourcesRule::new(format!(
+                    "^{}$",
+                    regex::escape(&normalized_resources_path(main_exe.relative_path()))
+                ))?
+                .exclude(),
+            );
+        }
 
         let handler = SingleBundleHandler {
             dest_dir: dest_dir_root.clone(),
             settings,
         };
 
-        let mut info_plist_data = None;
+        resources_builder.walk_and_seal_directory(self.bundle.root_dir(), &handler)?;
 
-        // Iterate files in this bundle and register as code resources.
-        //
-        // Traversing into nested bundles seems wrong but it is correct. The resources builder
-        // has rules to determine whether to process a path and assuming the rules and evaluation
-        // of them is correct, it is able to decide for itself how to handle a path.
-        //
-        // Furthermore, this behavior is needed as bundles can encapsulate signatures for nested
-        // bundles. For example, you could have a framework bundle with an embedded app bundle in
-        // `Resources/MyApp.app`! In this case, the framework's CodeResources encapsulates the
-        // content of `Resources/My.app` per the processing rules.
-        for file in self
-            .bundle
-            .files(true)
-            .map_err(AppleCodesignError::DirectoryBundle)?
-        {
-            // The main executable is special and handled below.
-            if file
-                .is_main_executable()
-                .map_err(AppleCodesignError::DirectoryBundle)?
-            {
-                continue;
-            } else if file.is_info_plist() {
-                // The Info.plist is digested specially. But it may also be handled by
-                // the resources handler. So always feed it through.
-                info!(
-                    "{} is the Info.plist file; handling specially",
-                    file.relative_path().display()
-                );
-                resources_builder.process_file(&file, &handler)?;
-                info_plist_data = Some(std::fs::read(file.absolute_path())?);
-            } else {
-                resources_builder.process_file(&file, &handler)?;
-            }
-        }
-
-        // Seal code directory digests of any nested bundles.
-        //
-        // Apple's tooling seems to only do this for some bundle type combinations. I'm
-        // not yet sure what the complete heuristic is. But we observed that frameworks
-        // don't appear to include digests of any nested app bundles. So we add that
-        // exclusion. iOS bundles don't seem to include digests for nested bundles either.
-        // We should figure out what the actual rules here...
-        if !self.bundle.shallow() {
-            let dest_bundle = DirectoryBundle::new_from_path(&dest_dir)
-                .map_err(AppleCodesignError::DirectoryBundle)?;
-
-            for (rel_path, nested_bundle) in dest_bundle
-                .nested_bundles(false)
-                .map_err(AppleCodesignError::DirectoryBundle)?
-            {
-                resources_builder.process_nested_bundle(&rel_path, &nested_bundle)?;
-            }
-        }
+        let info_plist_data = std::fs::read(self.bundle.info_plist_path())?;
 
         // The resources are now sealed. Write out that XML file.
         let code_resources_path = dest_dir.join("_CodeSignature").join("CodeResources");
@@ -627,9 +599,7 @@ impl SingleBundleSigner {
 
             settings.set_code_resources_data(SettingsScope::Main, resources_data);
 
-            if let Some(info_plist_data) = info_plist_data {
-                settings.set_info_plist_data(SettingsScope::Main, info_plist_data);
-            }
+            settings.set_info_plist_data(SettingsScope::Main, info_plist_data);
 
             let mut new_data = Vec::<u8>::with_capacity(macho_data.len() + 2_usize.pow(17));
             signer.write_signed_binary(&settings, &mut new_data)?;
