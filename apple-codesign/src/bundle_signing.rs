@@ -39,7 +39,7 @@ pub fn copy_bundle(bundle: &DirectoryBundle, dest_dir: &Path) -> Result<(), Appl
         .files(false)
         .map_err(AppleCodesignError::DirectoryBundle)?
     {
-        handler.install_file(&file)?;
+        handler.install_file(file.absolute_path(), file.relative_path())?;
     }
 
     Ok(())
@@ -266,7 +266,11 @@ impl SignedMachOInfo {
 /// installation of files into a new bundle.
 pub trait BundleFileHandler {
     /// Ensures a file (regular or symlink) is installed.
-    fn install_file(&self, file: &DirectoryBundleFile) -> Result<(), AppleCodesignError>;
+    fn install_file(
+        &self,
+        source_path: &Path,
+        dest_rel_path: &Path,
+    ) -> Result<(), AppleCodesignError>;
 
     /// Sign a Mach-O file and ensure its new content is installed.
     ///
@@ -284,9 +288,12 @@ struct SingleBundleHandler<'a, 'key> {
 }
 
 impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
-    fn install_file(&self, file: &DirectoryBundleFile) -> Result<(), AppleCodesignError> {
-        let source_path = file.absolute_path();
-        let dest_path = self.dest_dir.join(file.relative_path());
+    fn install_file(
+        &self,
+        source_path: &Path,
+        dest_rel_path: &Path,
+    ) -> Result<(), AppleCodesignError> {
+        let dest_path = self.dest_dir.join(dest_rel_path);
 
         if source_path != dest_path {
             std::fs::create_dir_all(
@@ -298,10 +305,8 @@ impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
             let metadata = source_path.symlink_metadata()?;
             let mtime = filetime::FileTime::from_last_modification_time(&metadata);
 
-            if let Some(target) = file
-                .symlink_target()
-                .map_err(AppleCodesignError::DirectoryBundle)?
-            {
+            if metadata.file_type().is_symlink() {
+                let target = std::fs::read_link(source_path)?;
                 info!(
                     "replicating symlink {} -> {}",
                     dest_path.display(),
@@ -437,7 +442,7 @@ impl SingleBundleSigner {
                     .files(false)
                     .map_err(AppleCodesignError::DirectoryBundle)?
                 {
-                    handler.install_file(&file)?;
+                    handler.install_file(file.absolute_path(), file.relative_path())?;
                 }
 
                 return DirectoryBundle::new_from_path(dest_dir)

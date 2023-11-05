@@ -1214,7 +1214,7 @@ impl CodeResourcesBuilder {
             }
             RulesEvaluation::Omit => {
                 // Omitted files aren't sealed. But they are installed.
-                file_handler.install_file(file)
+                file_handler.install_file(file.absolute_path(), file.relative_path())
             }
             RulesEvaluation::NoRule => {
                 // No rule match is assumed to mean full ignore.
@@ -1223,7 +1223,7 @@ impl CodeResourcesBuilder {
             RulesEvaluation::SealSymlink(relative_path, target) => {
                 info!("sealing symlink {} -> {}", relative_path, target);
                 self.resources.seal_symlink(relative_path, target);
-                file_handler.install_file(file)
+                file_handler.install_file(file.absolute_path(), file.relative_path())
             }
             RulesEvaluation::SealNested(relative_path, optional) => {
                 // The assumption that a nested match means Mach-O may not be correct.
@@ -1245,7 +1245,7 @@ impl CodeResourcesBuilder {
 
                 self.resources
                     .seal_regular_file(flavor, relative_path, data, optional)?;
-                file_handler.install_file(file)
+                file_handler.install_file(file.absolute_path(), file.relative_path())
             }
         }
     }
