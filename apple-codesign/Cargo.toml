@@ -50,7 +50,7 @@ p256 = { version = "0.13.2", default-features = false, features = ["arithmetic",
 pem = "3.0.2"
 pkcs1 = { version = "0.7.5", features = ["alloc", "std", "pkcs8"] }
 pkcs8 = { version = "0.10.2", features = ["alloc", "std"] }
-plist = "1.5.1"
+plist = "1.6.0"
 rand = "0.8.5"
 rasn = "0.11.0"
 rayon = "1.8.0"

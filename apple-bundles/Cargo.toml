@@ -13,7 +13,7 @@ readme = "README.md"
 
 [dependencies]
 anyhow = "1.0.75"
-plist = "1.5.1"
+plist = "1.6.0"
 simple-file-manifest = "0.11.0"
 walkdir = "2.4.0"
 
