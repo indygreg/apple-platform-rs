@@ -88,9 +88,15 @@ pub fn path_is_zip(path: impl AsRef<Path>) -> Result<bool, AppleCodesignError> {
     }
 }
 
+/// Whether the specified filesystem path is a Mach-O binary.
+pub fn path_is_macho(path: impl AsRef<Path>) -> Result<bool, AppleCodesignError> {
+    Ok(MachOType::from_path(path)?.is_some())
+}
+
 /// Describes the type of entity at a path.
 ///
 /// This represents a best guess.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PathType {
     MachO,
     Dmg,
@@ -107,21 +113,20 @@ impl PathType {
 
         if path.is_file() {
             if path_is_dmg(path)? {
-                Ok(PathType::Dmg)
+                Ok(Self::Dmg)
             } else if path_is_xar(path)? {
-                Ok(PathType::Xar)
+                Ok(Self::Xar)
             } else if path_is_zip(path)? {
-                Ok(PathType::Zip)
+                Ok(Self::Zip)
+            } else if path_is_macho(path)? {
+                Ok(Self::MachO)
             } else {
-                match MachOType::from_path(path)? {
-                    Some(MachOType::Mach | MachOType::MachO) => Ok(Self::MachO),
-                    None => Ok(Self::Other),
-                }
+                Ok(Self::Other)
             }
         } else if path.is_dir() {
-            Ok(PathType::Bundle)
+            Ok(Self::Bundle)
         } else {
-            Ok(PathType::Other)
+            Ok(Self::Other)
         }
     }
 }
