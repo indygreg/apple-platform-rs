@@ -1228,7 +1228,8 @@ impl CodeResourcesBuilder {
             RulesEvaluation::SealNested(relative_path, optional) => {
                 // The assumption that a nested match means Mach-O may not be correct.
                 info!("sealing Mach-O file {}", relative_path);
-                let macho_info = file_handler.sign_and_install_macho(file)?;
+                let macho_info = file_handler
+                    .sign_and_install_macho(file.absolute_path(), &PathBuf::from(&relative_path))?;
 
                 self.resources
                     .seal_macho(relative_path, &macho_info, optional)

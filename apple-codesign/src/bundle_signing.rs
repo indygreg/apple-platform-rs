@@ -15,7 +15,7 @@ use {
         macho_signing::{write_macho_file, MachOSigner},
         signing_settings::{SettingsScope, SigningSettings},
     },
-    apple_bundles::{BundlePackageType, DirectoryBundle, DirectoryBundleFile},
+    apple_bundles::{BundlePackageType, DirectoryBundle},
     log::{info, warn},
     simple_file_manifest::create_symlink,
     std::{
@@ -278,7 +278,8 @@ pub trait BundleFileHandler {
     /// [crate::code_resources::CodeResources].
     fn sign_and_install_macho(
         &self,
-        file: &DirectoryBundleFile,
+        source_path: &Path,
+        dest_rel_path: &Path,
     ) -> Result<SignedMachOInfo, AppleCodesignError>;
 }
 
@@ -334,16 +335,17 @@ impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
 
     fn sign_and_install_macho(
         &self,
-        file: &DirectoryBundleFile,
+        source_path: &Path,
+        dest_rel_path: &Path,
     ) -> Result<SignedMachOInfo, AppleCodesignError> {
-        info!("signing Mach-O file {}", file.relative_path().display());
+        info!("signing Mach-O file {}", dest_rel_path.display());
 
-        let macho_data = std::fs::read(file.absolute_path())?;
+        let macho_data = std::fs::read(source_path)?;
         let signer = MachOSigner::new(&macho_data)?;
 
         let mut settings = self
             .settings
-            .as_bundle_macho_settings(file.relative_path().to_string_lossy().as_ref());
+            .as_bundle_macho_settings(dest_rel_path.to_string_lossy().as_ref());
 
         settings.import_settings_from_macho(&macho_data)?;
 
@@ -351,8 +353,7 @@ impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
         // and we avoid a signing error due to missing identifier.
         // TODO do we need to check the nested Mach-O settings?
         if settings.binary_identifier(SettingsScope::Main).is_none() {
-            let identifier = file
-                .relative_path()
+            let identifier = dest_rel_path
                 .file_name()
                 .expect("failure to extract filename (this should never happen)")
                 .to_string_lossy();
@@ -371,10 +372,10 @@ impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
         let mut new_data = Vec::<u8>::with_capacity(macho_data.len() + 2_usize.pow(17));
         signer.write_signed_binary(&settings, &mut new_data)?;
 
-        let dest_path = self.dest_dir.join(file.relative_path());
+        let dest_path = self.dest_dir.join(dest_rel_path);
 
         info!("writing Mach-O to {}", dest_path.display());
-        write_macho_file(file.absolute_path(), &dest_path, &new_data)?;
+        write_macho_file(source_path, &dest_path, &new_data)?;
 
         SignedMachOInfo::parse_data(&new_data)
     }
