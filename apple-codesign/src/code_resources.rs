@@ -22,7 +22,7 @@ use {
         error::AppleCodesignError,
     },
     apple_bundles::DirectoryBundle,
-    log::{debug, info, warn},
+    log::{debug, error, info, warn},
     plist::{Dictionary, Value},
     std::{
         cmp::Ordering,
@@ -1209,8 +1209,18 @@ impl CodeResourcesBuilder {
                                 rule.optional,
                             )?;
                         } else {
-                            // TODO what should we do here?
-                            info!("would seal nested file: {}", rel_path.display());
+                            // TODO implement this?
+                            // The logical intent is to sign and seal the nested entity.
+                            // But if we're not a directory bundle and not a Mach-O, I'm
+                            // unsure how to convey that seal. Maybe other entities like
+                            // DMG and pkg installers can have their signature digest
+                            // encapsulated in a cdhash?
+                            error!(
+                                "encountered a non Mach-O file with a nested rule: {}",
+                                rel_path.display()
+                            );
+                            error!("we do not know how to handle this scenario; either your bundle layout is invalid or you found a bug in this program");
+                            error!("if the bundle signs and verifies with Apple's tooling, consider reporting this issue");
                         }
                     } else {
                         self.seal_rules2_file(
