@@ -303,11 +303,9 @@ impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
         let dest_path = self.dest_dir.join(dest_rel_path);
 
         if source_path != dest_path {
-            std::fs::create_dir_all(
-                dest_path
-                    .parent()
-                    .expect("parent directory should be available"),
-            )?;
+            if let Some(parent) = dest_path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
 
             let metadata = source_path.symlink_metadata()?;
             let mtime = filetime::FileTime::from_last_modification_time(&metadata);
