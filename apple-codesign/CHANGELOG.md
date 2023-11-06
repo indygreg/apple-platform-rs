@@ -64,6 +64,8 @@ Released on ReleaseDate.
   with bundle signing.
 * Fixed a bundle signing bug where overwriting symlinks would incorrectly
   result in an `Error: I/O error: File exists (os error 17)` or similar.
+* When signing bundles, symlinks in directories marked as *nested* should
+  now get properly sealed and installed. (#10)
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

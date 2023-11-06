@@ -1,0 +1,290 @@
+Sign a bundle with symlinks in a nested directory
+
+```
+$ rcodesign debug-create-macho MyApp.app/Contents/MacOS/MyApp
+assuming default minimum version 11.0.0
+writing Mach-O to MyApp.app/Contents/MacOS/MyApp
+
+$ rcodesign debug-create-info-plist --bundle-name MyApp MyApp.app/Contents/Info.plist
+writing MyApp.app/Contents/Info.plist
+
+$ rcodesign debug-create-macho --file-type dylib MyApp.app/Contents/Frameworks/libssh.4.8.8.dylib
+assuming default minimum version 11.0.0
+writing Mach-O to MyApp.app/Contents/Frameworks/libssh.4.8.8.dylib
+
+$ ln -s libssh.4.8.8.dylib MyApp.app/Contents/Frameworks/libssh.4.dylib
+$ ln -s libssh.4.dylib MyApp.app/Contents/Frameworks/libssh.dylib
+
+$ rcodesign sign MyApp.app MyApp.app.signed
+signing MyApp.app to MyApp.app.signed
+signing bundle at MyApp.app
+signing 0 nested bundles in the following order:
+signing bundle at MyApp.app into MyApp.app.signed
+collecting code resources files
+sealing nested Mach-O binary: Contents/Frameworks/libssh.4.8.8.dylib
+signing Mach-O file Contents/Frameworks/libssh.4.8.8.dylib
+inferring default signing settings from Mach-O binary
+Mach-O is missing binary identifier; setting to libssh.4.8.8 based on file name
+signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 381 bytes
+writing Mach-O to MyApp.app.signed/Contents/Frameworks/libssh.4.8.8.dylib
+sealing symlink Frameworks/libssh.4.dylib -> libssh.4.8.8.dylib
+replicating symlink MyApp.app.signed/Contents/Frameworks/libssh.4.dylib -> libssh.4.8.8.dylib
+sealing symlink Frameworks/libssh.dylib -> libssh.4.dylib
+replicating symlink MyApp.app.signed/Contents/Frameworks/libssh.dylib -> libssh.4.dylib
+copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
+writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
+signing main executable Contents/MacOS/MyApp
+setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
+inferring default signing settings from Mach-O binary
+signing Mach-O binary at index 0
+binary targets macOS >= 11.0.0 with SDK 11.0.0
+creating ad-hoc signature
+code directory version: 132096
+total signature size: 421 bytes
+writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
+
+$ rcodesign print-signature-info MyApp.app.signed
+- path: Contents/Frameworks/libssh.4.8.8.dylib
+  file_size: 22544
+  file_sha256: 95566b60f24ce66003061a0e572d1db2e55ae0e666bba9d13a8af9b959ac2cbe
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
+      signature:
+        superblob_length: 381
+        blob_count: 3
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 325
+          sha1: 9bb62d2fdae6551eec5eacceb650ee5181f4d326
+          sha256: 86e287421489643ffb6cbd07c7898b090ae6c6175d8475433d999b1c7dfb2290
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: libssh.4.8.8
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16400
+          executable_segment_flags: ExecutableSegmentFlags(0x0)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+        cms: null
+- path: Contents/Frameworks/libssh.4.dylib
+  symlink_target: libssh.4.8.8.dylib
+  entity: other
+- path: Contents/Frameworks/libssh.dylib
+  symlink_target: libssh.4.dylib
+  entity: other
+- path: Contents/Info.plist
+  file_size: 576
+  file_sha256: 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5
+  entity: other
+- path: Contents/MacOS/MyApp
+  file_size: 22544
+  file_sha256: 0b577ed98ce1915f2d294405daa4b7ae867009234a887d964005ac188b1de3d4
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
+      signature:
+        superblob_length: 421
+        blob_count: 3
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 365
+          sha1: f01d0fb20b48da47daf2cbd9737a6677bfc9b1ba
+          sha256: ed915ac10a98c64a8faca4377d1ad5754d495edb4b0192f8653dcb31e1399b88
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 12
+          sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
+          sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 8
+          sha1: 2a7254313aa41796079bb0e9d0f044345f69f98b
+          sha256: e6c83bc98a10348492c7d4d2378a54572ef29e1a5692ccd02b5e29f4b762d6a0
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(ADHOC)
+          identifier: com.example.mybundle
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16400
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
+          - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
+          - 'Resources (3): ae26f0a8b94cc8fc6179e9c92c6f705766a4130165208a42e5c44dcc35fd9b73'
+        cms: null
+- path: Contents/_CodeSignature/CodeResources
+  file_size: 2673
+  file_sha256: ae26f0a8b94cc8fc6179e9c92c6f705766a4130165208a42e5c44dcc35fd9b73
+  entity:
+    bundle_code_signature_file: !ResourcesXml
+    - <?xml version="1.0" encoding="UTF-8"?>
+    - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    - <plist version="1.0">
+    - <dict>
+    - '  <key>files</key>'
+    - '  <dict/>'
+    - '  <key>files2</key>'
+    - '  <dict>'
+    - '    <key>Frameworks/libssh.4.8.8.dylib</key>'
+    - '    <dict>'
+    - '      <key>cdhash</key>'
+    - '      <data>'
+    - '      huKHQhSJZD/7bL0Hx4mLCQrmxhc='
+    - '      </data>'
+    - '      <key>requirement</key>'
+    - '      <string>cdhash H"86e287421489643ffb6cbd07c7898b090ae6c617"</string>'
+    - '    </dict>'
+    - '    <key>Frameworks/libssh.4.dylib</key>'
+    - '    <dict>'
+    - '      <key>symlink</key>'
+    - '      <string>libssh.4.8.8.dylib</string>'
+    - '    </dict>'
+    - '    <key>Frameworks/libssh.dylib</key>'
+    - '    <dict>'
+    - '      <key>symlink</key>'
+    - '      <string>libssh.4.dylib</string>'
+    - '    </dict>'
+    - '  </dict>'
+    - '  <key>rules</key>'
+    - '  <dict>'
+    - '    <key>^Resources/</key>'
+    - '    <true/>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^version.plist$</key>'
+    - '    <true/>'
+    - '  </dict>'
+    - '  <key>rules2</key>'
+    - '  <dict>'
+    - '    <key>.*/.dSYM($|/)</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>11</real>'
+    - '    </dict>'
+    - '    <key>^(.*/)?/.DS_Store$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>2000</real>'
+    - '    </dict>'
+    - '    <key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^.*</key>'
+    - '    <true/>'
+    - '    <key>^Info/.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^PkgInfo$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>optional</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1000</real>'
+    - '    </dict>'
+    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
+    - '    <dict>'
+    - '      <key>omit</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>1100</real>'
+    - '    </dict>'
+    - '    <key>^Resources/Base/.lproj/</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>1010</real>'
+    - '    </dict>'
+    - '    <key>^[^/]+$</key>'
+    - '    <dict>'
+    - '      <key>nested</key>'
+    - '      <true/>'
+    - '      <key>weight</key>'
+    - '      <real>10</real>'
+    - '    </dict>'
+    - '    <key>^embedded/.provisionprofile$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '    <key>^version/.plist$</key>'
+    - '    <dict>'
+    - '      <key>weight</key>'
+    - '      <real>20</real>'
+    - '    </dict>'
+    - '  </dict>'
+    - </dict>
+    - </plist>
+    - ''
+
+```

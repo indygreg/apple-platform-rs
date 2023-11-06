@@ -283,6 +283,7 @@ fn cli_tests() {
         cases.skip("tests/cmd/sign-bundle-framework.trycmd");
         cases.skip("tests/cmd/sign-bundle-with-nested-framework.trycmd");
         cases.skip("tests/cmd/sign-bundle-electron.trycmd");
+        cases.skip("tests/cmd/sign-bundle-nested-symlinks.trycmd");
         cases.skip("tests/cmd/sign-bundle-symlink-overwrite.trycmd");
     }
 }
