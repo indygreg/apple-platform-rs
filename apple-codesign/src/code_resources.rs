@@ -1022,11 +1022,11 @@ impl CodeResourcesBuilder {
         slf.add_rule(CodeResourcesRule::new("^version.plist$")?);
         slf.add_rule(CodeResourcesRule::new("^.*")?);
         slf.add_rule(
-            CodeResourcesRule::new("^.*\\.lproj")?
+            CodeResourcesRule::new("^.*\\.lproj/")?
                 .optional()
                 .weight(1000),
         );
-        slf.add_rule(CodeResourcesRule::new("^Base\\.lproj")?.weight(1010));
+        slf.add_rule(CodeResourcesRule::new("^Base\\.lproj/")?.weight(1010));
         slf.add_rule(
             CodeResourcesRule::new("^.*\\.lproj/locversion.plist$")?
                 .omit()
@@ -1048,7 +1048,7 @@ impl CodeResourcesBuilder {
                 .optional()
                 .weight(1000),
         );
-        slf.add_rule2(CodeResourcesRule::new("^Base\\.lproj")?.weight(1010));
+        slf.add_rule2(CodeResourcesRule::new("^Base\\.lproj/")?.weight(1010));
         slf.add_rule2(
             CodeResourcesRule::new("^.*\\.lproj/locversion.plist$")?
                 .omit()

@@ -83,6 +83,9 @@ Released on ReleaseDate.
   the highest log level).
 * The `sign --exclude` argument is now honored for Mach-O binaries within
   bundles. Previously, it only applied to bundle paths.
+* The default `CodeResources` rules for bundles lacking a `Resources/`
+  now properly have trailing `/` on rules referencing `.lproj` directories.
+  Previously, these directories were likely not handled correctly. (#42)
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
