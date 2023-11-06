@@ -303,6 +303,13 @@ impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
         let dest_path = self.dest_dir.join(dest_rel_path);
 
         if source_path != dest_path {
+            // Remove an existing file before installing the replacement. In
+            // the case of symlinks this is required due to how symlink creation
+            // works.
+            if dest_path.symlink_metadata().is_ok() {
+                std::fs::remove_file(&dest_path)?;
+            }
+
             if let Some(parent) = dest_path.parent() {
                 std::fs::create_dir_all(parent)?;
             }

@@ -62,6 +62,8 @@ Released on ReleaseDate.
 * Bundle signing logic has been significantly overhauled to hopefully make
   it conform with Apple tooling's behavior. This likely fixed several bugs
   with bundle signing.
+* Fixed a bundle signing bug where overwriting symlinks would incorrectly
+  result in an `Error: I/O error: File exists (os error 17)` or similar.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
