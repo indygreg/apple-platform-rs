@@ -260,7 +260,7 @@ fn cli_tests() {
             bin_path.set_extension("exe");
         }
 
-        if !bin_path.exists() {
+        if bin_path.symlink_metadata().is_err() {
             install_coreutils_bin(&coreutils_multicall, &bin_path).unwrap();
         }
 
