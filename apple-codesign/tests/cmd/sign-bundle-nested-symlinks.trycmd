@@ -18,7 +18,6 @@ $ ln -s libssh.4.dylib MyApp.app/Contents/Frameworks/libssh.dylib
 $ rcodesign sign MyApp.app MyApp.app.signed
 signing MyApp.app to MyApp.app.signed
 signing bundle at MyApp.app
-signing 0 nested bundles in the following order:
 signing bundle at MyApp.app into MyApp.app.signed
 collecting code resources files
 sealing nested Mach-O binary: Contents/Frameworks/libssh.4.8.8.dylib

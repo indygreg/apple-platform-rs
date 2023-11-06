@@ -16,7 +16,6 @@ $ ln -s file-00.txt MyApp.app/Contents/Resources/file.txt
 $ rcodesign sign MyApp.app MyApp.app.signed
 signing MyApp.app to MyApp.app.signed
 signing bundle at MyApp.app
-signing 0 nested bundles in the following order:
 signing bundle at MyApp.app into MyApp.app.signed
 collecting code resources files
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
@@ -42,7 +41,6 @@ $ ln -sf file-01.txt MyApp.app/Contents/Resources/file.txt
 $ rcodesign sign MyApp.app MyApp.app.signed
 signing MyApp.app to MyApp.app.signed
 signing bundle at MyApp.app
-signing 0 nested bundles in the following order:
 signing bundle at MyApp.app into MyApp.app.signed
 collecting code resources files
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist

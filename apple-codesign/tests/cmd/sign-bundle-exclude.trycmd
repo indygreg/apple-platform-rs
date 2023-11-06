@@ -208,7 +208,6 @@ writing MyApp.app/Contents/Info.plist
 $ rcodesign sign --exclude Contents/MacOS/macos-bin MyApp.app MyApp.app.NoMacOSBin
 signing MyApp.app to MyApp.app.NoMacOSBin
 signing bundle at MyApp.app
-signing 0 nested bundles in the following order:
 signing bundle at MyApp.app into MyApp.app.NoMacOSBin
 collecting code resources files
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.NoMacOSBin/Contents/Info.plist
@@ -258,7 +257,6 @@ f 0acb1d044d421846ebc7 MyApp.app.NoMacOSBin/Contents/_CodeSignature/CodeResource
 $ rcodesign sign --exclude Contents/Resources/resource-bin MyApp.app MyApp.app.NoResourcesBin
 signing MyApp.app to MyApp.app.NoResourcesBin
 signing bundle at MyApp.app
-signing 0 nested bundles in the following order:
 signing bundle at MyApp.app into MyApp.app.NoResourcesBin
 collecting code resources files
 copying file MyApp.app/Contents/Info.plist -> MyApp.app.NoResourcesBin/Contents/Info.plist

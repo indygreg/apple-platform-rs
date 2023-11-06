@@ -105,12 +105,14 @@ impl BundleSigner {
         // should be deterministic.
         bundles.sort_by(|(a, _), (b, _)| b.len().cmp(&a.len()));
 
-        warn!(
-            "signing {} nested bundles in the following order:",
-            bundles.len()
-        );
-        for bundle in &bundles {
-            warn!("{}", bundle.0);
+        if !bundles.is_empty() {
+            warn!(
+                "signing {} nested bundles in the following order:",
+                bundles.len()
+            );
+            for bundle in &bundles {
+                warn!("{}", bundle.0);
+            }
         }
 
         for (rel, nested) in bundles {
