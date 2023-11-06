@@ -115,10 +115,7 @@ impl BundleSigner {
 
         for (rel, nested) in bundles {
             let nested_dest_dir = dest_dir.join(rel);
-            info!(
-                "entering nested bundle {}",
-                nested.bundle.root_dir().display(),
-            );
+            info!("entering nested bundle {}", rel,);
 
             // If we excluded this bundle from signing, just copy all the files.
             if settings
@@ -135,10 +132,7 @@ impl BundleSigner {
                 )?;
             }
 
-            info!(
-                "leaving nested bundle {}",
-                nested.bundle.root_dir().display()
-            );
+            info!("leaving nested bundle {}", rel);
         }
 
         let main = self

@@ -50,7 +50,7 @@ signing 3 nested bundles in the following order:
 Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
 Contents/Frameworks/Sparkle.framework/Versions/A
 Contents/Frameworks/Sparkle.framework
-entering nested bundle MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
+entering nested bundle Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
 signing bundle at MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app into MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
 collecting code resources files
 copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist
@@ -66,8 +66,8 @@ creating ad-hoc signature
 code directory version: 132096
 total signature size: 421 bytes
 writing signed main executable to MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS/Autoupdate
-leaving nested bundle MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
-entering nested bundle MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A
+leaving nested bundle Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
+entering nested bundle Contents/Frameworks/Sparkle.framework/Versions/A
 signing bundle at MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A into MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A
 found an unversioned framework; signing like normal
 collecting code resources files
@@ -105,8 +105,8 @@ creating ad-hoc signature
 code directory version: 132096
 total signature size: 421 bytes
 writing signed main executable to MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Sparkle
-leaving nested bundle MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A
-entering nested bundle MyApp.app/Contents/Frameworks/Sparkle.framework
+leaving nested bundle Contents/Frameworks/Sparkle.framework/Versions/A
+entering nested bundle Contents/Frameworks/Sparkle.framework
 signing bundle at MyApp.app/Contents/Frameworks/Sparkle.framework into MyApp.app.signed/Contents/Frameworks/Sparkle.framework
 found a versioned framework; each version will be signed as its own bundle
 replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Headers -> Versions/Current/Headers
@@ -115,7 +115,7 @@ replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Priva
 replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Resources -> Versions/Current/Resources
 replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Sparkle -> Versions/Current/Sparkle
 replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/Current -> A
-leaving nested bundle MyApp.app/Contents/Frameworks/Sparkle.framework
+leaving nested bundle Contents/Frameworks/Sparkle.framework
 signing bundle at MyApp.app into MyApp.app.signed
 collecting code resources files
 sealing nested directory as a bundle: Contents/Frameworks/Sparkle.framework

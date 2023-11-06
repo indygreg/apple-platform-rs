@@ -77,7 +77,7 @@ Contents/Frameworks/Electron Framework.framework
 Contents/Frameworks/Mantle.framework/Versions/A
 Contents/Frameworks/Electron Helper (GPU).app
 Contents/Frameworks/Mantle.framework
-entering nested bundle Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A
+entering nested bundle Contents/Frameworks/Electron Framework.framework/Versions/A
 signing bundle at Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A into Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A
 found an unversioned framework; signing like normal
 collecting code resources files
@@ -127,8 +127,8 @@ creating ad-hoc signature
 code directory version: 132096
 total signature size: 430 bytes
 writing signed main executable to Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
-leaving nested bundle Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A
-entering nested bundle Electron.app/Contents/Frameworks/Electron Framework.framework
+leaving nested bundle Contents/Frameworks/Electron Framework.framework/Versions/A
+entering nested bundle Contents/Frameworks/Electron Framework.framework
 signing bundle at Electron.app/Contents/Frameworks/Electron Framework.framework into Electron.app.signed/Contents/Frameworks/Electron Framework.framework
 found a versioned framework; each version will be signed as its own bundle
 replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Electron Framework -> Versions/Current/Electron Framework
@@ -136,8 +136,8 @@ replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.f
 replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Libraries -> Versions/Current/Libraries
 replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Resources -> Versions/Current/Resources
 replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/Current -> A
-leaving nested bundle Electron.app/Contents/Frameworks/Electron Framework.framework
-entering nested bundle Electron.app/Contents/Frameworks/Mantle.framework/Versions/A
+leaving nested bundle Contents/Frameworks/Electron Framework.framework
+entering nested bundle Contents/Frameworks/Mantle.framework/Versions/A
 signing bundle at Electron.app/Contents/Frameworks/Mantle.framework/Versions/A into Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A
 found an unversioned framework; signing like normal
 collecting code resources files
@@ -153,8 +153,8 @@ creating ad-hoc signature
 code directory version: 132096
 total signature size: 418 bytes
 writing signed main executable to Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/Mantle
-leaving nested bundle Electron.app/Contents/Frameworks/Mantle.framework/Versions/A
-entering nested bundle Electron.app/Contents/Frameworks/Electron Helper (GPU).app
+leaving nested bundle Contents/Frameworks/Mantle.framework/Versions/A
+entering nested bundle Contents/Frameworks/Electron Helper (GPU).app
 signing bundle at Electron.app/Contents/Frameworks/Electron Helper (GPU).app into Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app
 collecting code resources files
 copying file Electron.app/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist -> Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist
@@ -168,14 +168,14 @@ creating ad-hoc signature
 code directory version: 132096
 total signature size: 427 bytes
 writing signed main executable to Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)
-leaving nested bundle Electron.app/Contents/Frameworks/Electron Helper (GPU).app
-entering nested bundle Electron.app/Contents/Frameworks/Mantle.framework
+leaving nested bundle Contents/Frameworks/Electron Helper (GPU).app
+entering nested bundle Contents/Frameworks/Mantle.framework
 signing bundle at Electron.app/Contents/Frameworks/Mantle.framework into Electron.app.signed/Contents/Frameworks/Mantle.framework
 found a versioned framework; each version will be signed as its own bundle
 replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Mantle -> Versions/Current/Mantle
 replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Resources -> Versions/Current/Resources
 replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/Current -> A
-leaving nested bundle Electron.app/Contents/Frameworks/Mantle.framework
+leaving nested bundle Contents/Frameworks/Mantle.framework
 signing bundle at Electron.app into Electron.app.signed
 collecting code resources files
 sealing nested directory as a bundle: Contents/Frameworks/Electron Framework.framework

@@ -16,7 +16,7 @@ signing MyFramework.framework to MyFramework.framework.signed
 signing bundle at MyFramework.framework
 signing 1 nested bundles in the following order:
 Versions/A
-entering nested bundle MyFramework.framework/Versions/A
+entering nested bundle Versions/A
 signing bundle at MyFramework.framework/Versions/A into MyFramework.framework.signed/Versions/A
 found an unversioned framework; signing like normal
 collecting code resources files
@@ -36,7 +36,7 @@ sealing regular file Resources/root-A-00.txt
 copying file MyFramework.framework/Versions/A/Resources/root-A-00.txt -> MyFramework.framework.signed/Versions/A/Resources/root-A-00.txt
 writing sealed resources to MyFramework.framework.signed/Versions/A/_CodeSignature/CodeResources
 bundle has no main executable to sign specially
-leaving nested bundle MyFramework.framework/Versions/A
+leaving nested bundle Versions/A
 signing bundle at MyFramework.framework into MyFramework.framework.signed
 found a versioned framework; each version will be signed as its own bundle
 replicating symlink MyFramework.framework.signed/Resources -> Versions/Current/Resources
