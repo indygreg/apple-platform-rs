@@ -218,6 +218,8 @@ pub struct MachOBuilder {
     page_size: usize,
     file_type: u32,
     macho_flags: u32,
+    /// Start offset for __TEXT segment.
+    text_segment_start_offset: usize,
     segments: Vec<Segment>,
     /// Sections within the Mach-O.
     ///
@@ -303,6 +305,7 @@ impl MachOBuilder {
             file_type,
             page_size,
             macho_flags: 0,
+            text_segment_start_offset: 0,
             segments,
             sections,
             macho_target: None,
@@ -324,6 +327,17 @@ impl MachOBuilder {
     /// Will result in a LC_BUILD_VERSION load command being emitted.
     pub fn macho_target(mut self, target: MachoTarget) -> Self {
         self.macho_target = Some(target);
+        self
+    }
+
+    /// Set the start offset for the __TEXT segment.
+    ///
+    /// Normally the __TEXT segment starts at 0x0.
+    ///
+    /// Very little validation is performed on the value. It may be possible
+    /// to write corrupted Mach-O by feeding this a sufficiently large number.
+    pub fn text_segment_start_offset(mut self, offset: usize) -> Self {
+        self.text_segment_start_offset = offset;
         self
     }
 
@@ -573,7 +587,7 @@ impl MachOBuilder {
                     // But there's a special case for __TEXT, which starts at the beginning of the
                     // file and encompasses the header and load commands.
                     if segment_name == "__TEXT" {
-                        metadata.file_offset = 0;
+                        metadata.file_offset = self.text_segment_start_offset;
 
                         metadata.file_size = if let Some(next_section) =
                             section_metadata.get(last_section_index + 1)
@@ -581,7 +595,7 @@ impl MachOBuilder {
                             next_section.offset
                         } else {
                             current_file_offset
-                        };
+                        } - self.text_segment_start_offset;
                     }
                 }
             }

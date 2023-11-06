@@ -1134,6 +1134,10 @@ struct DebugCreateMachO {
     #[arg(long)]
     sdk_version: Option<semver::Version>,
 
+    /// Set the file start offset of the __TEXT segment.
+    #[arg(long)]
+    text_segment_start_offset: Option<usize>,
+
     /// Filename of Mach-O binary to write.
     output_path: PathBuf,
 }
@@ -1184,6 +1188,10 @@ impl DebugCreateMachO {
 
         if let Some(target) = target {
             builder = builder.macho_target(target);
+        }
+
+        if let Some(offset) = self.text_segment_start_offset {
+            builder = builder.text_segment_start_offset(offset);
         }
 
         let data = builder.write_macho()?;
