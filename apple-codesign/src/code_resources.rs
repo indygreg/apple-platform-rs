@@ -1181,7 +1181,7 @@ impl CodeResourcesBuilder {
                         if crate::reader::path_is_macho(path)? {
                             info!("sealing nested Mach-O binary: {}", rel_path.display());
 
-                            let macho_info = context.sign_and_install_macho(path, rel_path)?;
+                            let macho_info = context.sign_and_install_macho(path, rel_path)?.1;
 
                             self.resources.seal_macho(
                                 &rel_path_normalized,
@@ -1303,21 +1303,32 @@ impl CodeResourcesBuilder {
         optional: bool,
         context: &BundleSigningContext<'ctx, 'key>,
     ) -> Result<(), AppleCodesignError> {
+        let mut need_install = true;
+
         // Only seal if the omit flag is unset. But install unconditionally
         // in all cases.
         if !omit {
-            // It could be a Mach-O binary. In which case sign it. But seal as
-            // a regular file.
-            info!("sealing regular file {}", rel_path_normalized);
+            // Unlike Apple's tooling, we recognize Mach-O binaries when the nested
+            // flag isn't set and we automatically sign.
+            //
+            // When we seal the file, we treat it as a regular file since the
+            // nested flag isn't set. Note that we need to read the signed/installed
+            // version of the file since signing will change its content.
 
-            if crate::reader::path_is_macho(full_path)? {
-                warn!(
-                    "non-nested file is a Mach-O binary; it is NOT signed automatically: {}",
+            // TODO honor --exclude.
+            let read_path = if crate::reader::path_is_macho(full_path)? {
+                info!(
+                    "non-nested file is a Mach-O binary; signing accordingly {}",
                     rel_path.display()
                 );
-            }
+                need_install = false;
+                context.sign_and_install_macho(full_path, rel_path)?.0
+            } else {
+                info!("sealing regular file {}", rel_path_normalized);
+                full_path.to_path_buf()
+            };
 
-            let data = std::fs::read(full_path)?;
+            let data = std::fs::read(&read_path)?;
 
             let flavor = if self.digests.contains(&DigestType::Sha1) {
                 FilesFlavor::Rules2WithSha1
@@ -1329,7 +1340,9 @@ impl CodeResourcesBuilder {
                 .seal_regular_file(flavor, rel_path_normalized, data, optional)?;
         }
 
-        context.install_file(full_path, rel_path)?;
+        if need_install {
+            context.install_file(full_path, rel_path)?;
+        }
 
         Ok(())
     }

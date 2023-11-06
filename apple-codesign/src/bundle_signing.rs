@@ -332,7 +332,7 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
         &self,
         source_path: &Path,
         dest_rel_path: &Path,
-    ) -> Result<SignedMachOInfo, AppleCodesignError> {
+    ) -> Result<(PathBuf, SignedMachOInfo), AppleCodesignError> {
         info!("signing Mach-O file {}", dest_rel_path.display());
 
         let macho_data = std::fs::read(source_path)?;
@@ -372,7 +372,9 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
         info!("writing Mach-O to {}", dest_path.display());
         write_macho_file(source_path, &dest_path, &new_data)?;
 
-        SignedMachOInfo::parse_data(&new_data)
+        let info = SignedMachOInfo::parse_data(&new_data)?;
+
+        Ok((dest_path, info))
     }
 }
 

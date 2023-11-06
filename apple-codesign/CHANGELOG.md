@@ -66,6 +66,14 @@ Released on ReleaseDate.
   result in an `Error: I/O error: File exists (os error 17)` or similar.
 * When signing bundles, symlinks in directories marked as *nested* should
   now get properly sealed and installed. (#10)
+* When signing bundles, Mach-O binaries outside of *nested* directories
+  (e.g. `Libraries/libFoo.dylib`) are automatically detected as Mach-O
+  binaries and signed. This behavior conforms with our stated behavior of
+  recursively signing all signable entities. However, it is incompatible
+  with Apple's tooling, which only signs Mach-O binaries located in
+  specific directories having the *nested* flag set. This change should
+  result in *it just works* single command signing of many complex
+  bundles.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
