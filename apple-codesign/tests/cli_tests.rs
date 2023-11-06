@@ -14,8 +14,8 @@ use {
 
 const COREUTILS_VERSION: &str = "0.0.22";
 /// List of coreutils binaries to materialize in trycmd test environments.
-const COREUTILS_BINARIES: [&str; 9] = [
-    "cat", "cp", "hashsum", "ln", "ls", "mkdir", "sort", "test", "touch",
+const COREUTILS_BINARIES: [&str; 10] = [
+    "cat", "cp", "hashsum", "ln", "ls", "mkdir", "rm", "sort", "test", "touch",
 ];
 
 const COREUTILS_ARTIFACT_URL: &str = "https://github.com/uutils/coreutils/releases/download";
@@ -283,6 +283,7 @@ fn cli_tests() {
         cases.skip("tests/cmd/sign-bundle-framework.trycmd");
         cases.skip("tests/cmd/sign-bundle-with-nested-framework.trycmd");
         cases.skip("tests/cmd/sign-bundle-electron.trycmd");
+        cases.skip("tests/cmd/sign-bundle-exclude.trycmd");
         cases.skip("tests/cmd/sign-bundle-nested-symlinks.trycmd");
         cases.skip("tests/cmd/sign-bundle-symlink-overwrite.trycmd");
     }
