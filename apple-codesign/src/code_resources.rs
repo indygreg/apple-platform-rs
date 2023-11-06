@@ -17,7 +17,7 @@
 
 use {
     crate::{
-        bundle_signing::{BundleFileHandler, SignedMachOInfo},
+        bundle_signing::{BundleSigningContext, SignedMachOInfo},
         embedded_signature::DigestType,
         error::AppleCodesignError,
     },
@@ -1101,10 +1101,10 @@ impl CodeResourcesBuilder {
     ///
     /// As a side-effect, files are copied/installed into the destination
     /// directory as part of sealing.
-    pub fn walk_and_seal_directory(
+    pub fn walk_and_seal_directory<'ctx, 'key>(
         &mut self,
         root: &Path,
-        file_handler: &dyn BundleFileHandler,
+        context: &BundleSigningContext<'ctx, 'key>,
     ) -> Result<(), AppleCodesignError> {
         let mut skipping_rel_dirs = BTreeSet::new();
 
@@ -1155,7 +1155,7 @@ impl CodeResourcesBuilder {
                                 rel_path,
                                 &rel_path_normalized,
                                 rule.optional,
-                                file_handler.dest_dir(),
+                                &context.dest_dir,
                             )?;
 
                             skipping_rel_dirs.insert(rel_path.to_path_buf());
@@ -1181,7 +1181,7 @@ impl CodeResourcesBuilder {
                         if crate::reader::path_is_macho(path)? {
                             info!("sealing nested Mach-O binary: {}", rel_path.display());
 
-                            let macho_info = file_handler.sign_and_install_macho(path, rel_path)?;
+                            let macho_info = context.sign_and_install_macho(path, rel_path)?;
 
                             self.resources.seal_macho(
                                 &rel_path_normalized,
@@ -1199,7 +1199,7 @@ impl CodeResourcesBuilder {
                             &rel_path_normalized,
                             rule.omit,
                             rule.optional,
-                            file_handler,
+                            context,
                         )?;
                     }
                 } else if entry.file_type().is_symlink() {
@@ -1216,7 +1216,7 @@ impl CodeResourcesBuilder {
                         rel_path,
                         &rel_path_normalized,
                         rule.omit,
-                        file_handler,
+                        context,
                     )?;
                 } else {
                     warn!(
@@ -1294,14 +1294,14 @@ impl CodeResourcesBuilder {
     }
 
     /// Seal a file for version 2 rules.
-    fn seal_rules2_file(
+    fn seal_rules2_file<'ctx, 'key>(
         &mut self,
         full_path: &Path,
         rel_path: &Path,
         rel_path_normalized: &str,
         omit: bool,
         optional: bool,
-        handler: &dyn BundleFileHandler,
+        context: &BundleSigningContext<'ctx, 'key>,
     ) -> Result<(), AppleCodesignError> {
         // Only seal if the omit flag is unset. But install unconditionally
         // in all cases.
@@ -1329,18 +1329,18 @@ impl CodeResourcesBuilder {
                 .seal_regular_file(flavor, rel_path_normalized, data, optional)?;
         }
 
-        handler.install_file(full_path, rel_path)?;
+        context.install_file(full_path, rel_path)?;
 
         Ok(())
     }
 
-    fn seal_rules2_symlink(
+    fn seal_rules2_symlink<'ctx, 'key>(
         &mut self,
         full_path: &Path,
         rel_path: &Path,
         rel_path_normalized: &str,
         omit: bool,
-        handler: &dyn BundleFileHandler,
+        context: &BundleSigningContext<'ctx, 'key>,
     ) -> Result<(), AppleCodesignError> {
         let link_target = std::fs::read_link(full_path)?
             .to_string_lossy()
@@ -1351,7 +1351,7 @@ impl CodeResourcesBuilder {
             self.resources
                 .seal_symlink(rel_path_normalized, link_target);
         }
-        handler.install_file(full_path, rel_path)?;
+        context.install_file(full_path, rel_path)?;
 
         Ok(())
     }

@@ -27,10 +27,14 @@ use {
 };
 
 /// Copy a bundle's contents to a destination directory.
+///
+/// This does not use the CodeResources rules for a bundle. Rather, it
+/// blindly copies all files in the bundle. This means that excluded files
+/// can be copied.
 pub fn copy_bundle(bundle: &DirectoryBundle, dest_dir: &Path) -> Result<(), AppleCodesignError> {
     let settings = SigningSettings::default();
 
-    let handler = SingleBundleHandler {
+    let context = BundleSigningContext {
         dest_dir: dest_dir.to_path_buf(),
         settings: &settings,
     };
@@ -39,7 +43,7 @@ pub fn copy_bundle(bundle: &DirectoryBundle, dest_dir: &Path) -> Result<(), Appl
         .files(false)
         .map_err(AppleCodesignError::DirectoryBundle)?
     {
-        handler.install_file(file.absolute_path(), file.relative_path())?;
+        context.install_file(file.absolute_path(), file.relative_path())?;
     }
 
     Ok(())
@@ -260,42 +264,17 @@ impl SignedMachOInfo {
     }
 }
 
-/// Used to process individual files within a bundle.
-///
-/// This abstraction lets entities like [CodeResourcesBuilder] drive the
-/// installation of files into a new bundle.
-pub trait BundleFileHandler {
-    fn dest_dir(&self) -> &Path;
-
-    /// Ensures a file (regular or symlink) is installed.
-    fn install_file(
-        &self,
-        source_path: &Path,
-        dest_rel_path: &Path,
-    ) -> Result<(), AppleCodesignError>;
-
-    /// Sign a Mach-O file and ensure its new content is installed.
-    ///
-    /// Returns Mach-O metadata which will be recorded in
-    /// [crate::code_resources::CodeResources].
-    fn sign_and_install_macho(
-        &self,
-        source_path: &Path,
-        dest_rel_path: &Path,
-    ) -> Result<SignedMachOInfo, AppleCodesignError>;
+/// Holds state and helper methods to facilitate signing a bundle.
+pub struct BundleSigningContext<'a, 'key> {
+    /// Settings for this bundle.
+    pub settings: &'a SigningSettings<'key>,
+    /// Where the bundle is getting installed to.
+    pub dest_dir: PathBuf,
 }
 
-struct SingleBundleHandler<'a, 'key> {
-    settings: &'a SigningSettings<'key>,
-    dest_dir: PathBuf,
-}
-
-impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
-    fn dest_dir(&self) -> &Path {
-        &self.dest_dir
-    }
-
-    fn install_file(
+impl<'a, 'key> BundleSigningContext<'a, 'key> {
+    /// Install a file (regular or symlink) in the destination directory.
+    pub fn install_file(
         &self,
         source_path: &Path,
         dest_rel_path: &Path,
@@ -345,7 +324,11 @@ impl<'a, 'key> BundleFileHandler for SingleBundleHandler<'a, 'key> {
         Ok(())
     }
 
-    fn sign_and_install_macho(
+    /// Sign a Mach-O file and ensure its new content is installed.
+    ///
+    /// Returns Mach-O metadata which can be recorded in a CodeResources file.
+
+    pub fn sign_and_install_macho(
         &self,
         source_path: &Path,
         dest_rel_path: &Path,
@@ -445,7 +428,7 @@ impl SingleBundleSigner {
                 // But we still need to preserve files (hopefully just symlinks) outside the
                 // nested bundles under `Versions/`. Since we don't nest into child bundles
                 // here, it should be safe to handle each encountered file.
-                let handler = SingleBundleHandler {
+                let context = BundleSigningContext {
                     dest_dir: dest_dir.to_path_buf(),
                     settings,
                 };
@@ -455,7 +438,7 @@ impl SingleBundleSigner {
                     .files(false)
                     .map_err(AppleCodesignError::DirectoryBundle)?
                 {
-                    handler.install_file(file.absolute_path(), file.relative_path())?;
+                    context.install_file(file.absolute_path(), file.relative_path())?;
                 }
 
                 return DirectoryBundle::new_from_path(dest_dir)
@@ -555,12 +538,12 @@ impl SingleBundleSigner {
             );
         }
 
-        let handler = SingleBundleHandler {
+        let context = BundleSigningContext {
             dest_dir: dest_dir_root.clone(),
             settings,
         };
 
-        resources_builder.walk_and_seal_directory(self.bundle.root_dir(), &handler)?;
+        resources_builder.walk_and_seal_directory(self.bundle.root_dir(), &context)?;
 
         let info_plist_data = std::fs::read(self.bundle.info_plist_path())?;
 
