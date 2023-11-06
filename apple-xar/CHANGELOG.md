@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.14.0
+
+Released on 2023-11-06.
+
 * Minimum supported Rust version is now 1.70.
 * cryptographic-message-syntax 0.20 -> 0.25.
 * signature 1.6 -> 2.0.

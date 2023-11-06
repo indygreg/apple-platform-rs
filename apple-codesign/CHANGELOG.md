@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.23.0
+
+Released on 2023-11-06.
+
 * Notarization features are now optional and can be controlled via the
   enabled-by-default `notarize` crate feature. (#78)
 * Minimum supported Rust version changed from 1.62.1 to 1.70.0.

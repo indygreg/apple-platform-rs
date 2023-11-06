@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.3.0
+
+Released on 2023-11-06.
+
 * Minimum supported Rust version is now 1.70.
 
 ## 0.2.0

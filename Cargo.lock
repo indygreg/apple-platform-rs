@@ -109,7 +109,7 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
 name = "app-store-connect"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "base64",
@@ -130,7 +130,7 @@ dependencies = [
 
 [[package]]
 name = "apple-bom"
-version = "0.1.0-pre"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "clap",
@@ -143,7 +143,7 @@ dependencies = [
 
 [[package]]
 name = "apple-bundles"
-version = "0.17.0"
+version = "0.18.0"
 dependencies = [
  "anyhow",
  "plist",
@@ -154,7 +154,7 @@ dependencies = [
 
 [[package]]
 name = "apple-codesign"
-version = "0.22.0"
+version = "0.23.0"
 dependencies = [
  "anyhow",
  "app-store-connect",
@@ -237,7 +237,7 @@ dependencies = [
 
 [[package]]
 name = "apple-dmg"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -255,7 +255,7 @@ dependencies = [
 
 [[package]]
 name = "apple-flat-package"
-version = "0.13.0"
+version = "0.14.0"
 dependencies = [
  "apple-xar",
  "cpio-archive",
@@ -268,7 +268,7 @@ dependencies = [
 
 [[package]]
 name = "apple-sdk"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "plist",
  "serde",
@@ -277,7 +277,7 @@ dependencies = [
 
 [[package]]
 name = "apple-xar"
-version = "0.13.0"
+version = "0.14.0"
 dependencies = [
  "base64",
  "bcder",
@@ -1048,7 +1048,7 @@ checksum = "e496a50fda8aacccc86d7529e2c1e0892dbd0f898a6b5645b5561b89c3210efa"
 
 [[package]]
 name = "cpio-archive"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "chrono",
  "is_executable",

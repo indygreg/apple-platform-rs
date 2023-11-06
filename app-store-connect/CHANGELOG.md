@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.2.0
+
+Released on 2023-11-06.
+
 * Minimum supported Rust version changed from 1.62 to 1.64.
 * CLI code moved from `main.rs` to a `cli` module.
 * HTTP requests now use the operating system's trusted X.509 certificates

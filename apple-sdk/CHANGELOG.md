@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.5.0
+
+Released on 2023-11-06.
+
 * Change `PlatformDirectory` and `SdkVersion` `partial_cmp()` to be
   implemented in terms of `cmp()`. Should have no visible effects.
 
