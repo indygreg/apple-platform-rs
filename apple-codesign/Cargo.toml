@@ -110,12 +110,8 @@ flate2 = "1.0.28"
 indoc = "2.0.4"
 simple-file-manifest = "0.11.0"
 tar = "0.4.40"
+trycmd-indygreg-fork = "0.14.20"
 zip = { version = "0.6.6", default-features = false }
-
-[dev-dependencies.trycmd]
-git = "https://github.com/indygreg/trycmd"
-rev = "32e9de6feb47b35d5b8e338feb555a9981778f24"
-version = "0.14.16"
 
 [features]
 default = ["notarize"]

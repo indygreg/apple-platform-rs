@@ -55,21 +55,6 @@ dependencies = [
 
 [[package]]
 name = "anstream"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ca84f3628370c59db74ee214b3263d58f9aadd9b4fe7e711fd87dc452b7f163"
-dependencies = [
- "anstyle",
- "anstyle-parse",
- "anstyle-query",
- "anstyle-wincon 1.0.2",
- "colorchoice",
- "is-terminal",
- "utf8parse",
-]
-
-[[package]]
-name = "anstream"
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2ab91ebe16eb252986481c5b62f6098f3b698a45e34b5b98200cf20dd2484a44"
@@ -77,7 +62,7 @@ dependencies = [
  "anstyle",
  "anstyle-parse",
  "anstyle-query",
- "anstyle-wincon 3.0.1",
+ "anstyle-wincon",
  "colorchoice",
  "utf8parse",
 ]
@@ -103,16 +88,6 @@ version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5ca11d4be1bab0c8bc8734a9aa7bf4ee8316d462a08c6ac5052f888fef5b494b"
 dependencies = [
- "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "anstyle-wincon"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c677ab05e09154296dd37acecd46420c17b9713e8366facafa8fc0885167cf4c"
-dependencies = [
- "anstyle",
  "windows-sys 0.48.0",
 ]
 
@@ -246,7 +221,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
- "trycmd",
+ "trycmd-indygreg-fork",
  "tungstenite",
  "uuid",
  "walkdir",
@@ -985,7 +960,7 @@ version = "4.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c77ed9a32a62e6ca27175d00d29d05ca32e396ea1eb5fb01d8256b669cec7663"
 dependencies = [
- "anstream 0.6.4",
+ "anstream",
  "anstyle",
  "clap_lex",
  "strsim",
@@ -3238,10 +3213,11 @@ dependencies = [
 
 [[package]]
 name = "snapbox"
-version = "0.4.11"
-source = "git+https://github.com/indygreg/trycmd?rev=32e9de6feb47b35d5b8e338feb555a9981778f24#32e9de6feb47b35d5b8e338feb555a9981778f24"
+version = "0.4.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4b377c0b6e4715c116473d8e40d51e3fa5b0a2297ca9b2a931ba800667b259ed"
 dependencies = [
- "anstream 0.3.2",
+ "anstream",
  "anstyle",
  "content_inspector",
  "dunce",
@@ -3259,10 +3235,11 @@ dependencies = [
 
 [[package]]
 name = "snapbox-macros"
-version = "0.3.4"
-source = "git+https://github.com/indygreg/trycmd?rev=32e9de6feb47b35d5b8e338feb555a9981778f24#32e9de6feb47b35d5b8e338feb555a9981778f24"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed1559baff8a696add3322b9be3e940d433e7bb4e38d79017205fd37ff28b28e"
 dependencies = [
- "anstream 0.3.2",
+ "anstream",
 ]
 
 [[package]]
@@ -3577,9 +3554,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.19.15"
+version = "0.20.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
+checksum = "70f427fce4d84c72b5b732388bf4a9f4531b53f74e2887e3ecb2481f68f66d81"
 dependencies = [
  "indexmap 2.1.0",
  "serde",
@@ -3632,9 +3609,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3528ecfd12c466c6f163363caf2d02a71161dd5e1cc6ae7b34207ea2d42d81ed"
 
 [[package]]
-name = "trycmd"
-version = "0.14.16"
-source = "git+https://github.com/indygreg/trycmd?rev=32e9de6feb47b35d5b8e338feb555a9981778f24#32e9de6feb47b35d5b8e338feb555a9981778f24"
+name = "trycmd-indygreg-fork"
+version = "0.14.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea50b5f4225e7fcfbeaf36babe97acd166db5d4352febc0152b52b070025e45a"
 dependencies = [
  "glob",
  "humantime",

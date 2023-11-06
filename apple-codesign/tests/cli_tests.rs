@@ -9,7 +9,7 @@ use {
         io::Read,
         path::{Path, PathBuf},
     },
-    trycmd::{schema::TryCmd, Error},
+    trycmd_indygreg_fork::{schema::TryCmd, Error, TestCases},
 };
 
 const COREUTILS_VERSION: &str = "0.0.22";
@@ -252,7 +252,7 @@ fn cli_tests() {
     let coreutils_multicall = ensure_coreutils_multicall().unwrap();
     let coreutils_bin = coreutils_multicall.parent().unwrap();
 
-    let cases = trycmd::TestCases::new();
+    let cases = TestCases::new();
 
     for bin in COREUTILS_BINARIES {
         let mut bin_path = coreutils_bin.join(bin);
