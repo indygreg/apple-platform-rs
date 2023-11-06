@@ -8,14 +8,8 @@ writing Mach-O to exe
 $ rcodesign sign --digest sha1 exe exe.signed
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 288 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
@@ -73,17 +67,8 @@ writing Mach-O to exe
 $ rcodesign sign --digest sha1 --extra-digest sha256 exe exe.signed
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-adding alternative code directory using digest Sha256
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-total signature size: 612 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
@@ -160,18 +145,8 @@ writing Mach-O to exe
 $ rcodesign sign exe exe.signed
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
-activating SHA-1 digests because minimum OS target 10.11.3 is not >=10.11.4
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-binary targets macOS >= 10.11.3 with SDK 10.11.3
-creating ad-hoc signature
-code directory version: 132096
-adding alternative code directory using digest Sha256
-binary targets macOS >= 10.11.3 with SDK 10.11.3
-creating ad-hoc signature
-total signature size: 612 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
@@ -248,16 +223,8 @@ writing Mach-O to exe
 $ rcodesign sign exe exe.signed
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
-activating SHA-1 digests because no platform targeting in Mach-O
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-creating ad-hoc signature
-code directory version: 132096
-adding alternative code directory using digest Sha256
-creating ad-hoc signature
-total signature size: 612 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed

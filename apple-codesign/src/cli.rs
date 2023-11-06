@@ -3161,10 +3161,10 @@ struct Cli {
 pub fn main_impl() -> Result<(), AppleCodesignError> {
     let cli = Cli::parse();
 
-    // TODO make default log level warn once we audit logging sites.
     let log_level = match cli.verbose {
-        0 => LevelFilter::Info,
-        1 => LevelFilter::Debug,
+        0 => LevelFilter::Warn,
+        1 => LevelFilter::Info,
+        2 => LevelFilter::Debug,
         _ => LevelFilter::Trace,
     };
 

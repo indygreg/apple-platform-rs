@@ -79,128 +79,26 @@ Contents/Frameworks/Electron Helper (GPU).app
 Contents/Frameworks/Mantle.framework
 entering nested bundle Contents/Frameworks/Electron Framework.framework/Versions/A
 signing bundle at Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A into Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A
-found an unversioned framework; signing like normal
-collecting code resources files
-sealing nested Mach-O binary: Helpers/chrome_crashpad_handler
 signing Mach-O file Helpers/chrome_crashpad_handler
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to chrome_crashpad_handler based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 392 bytes
-writing Mach-O to Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler
-non-nested file is a Mach-O binary; signing accordingly Libraries/libEGL.dylib
 signing Mach-O file Libraries/libEGL.dylib
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to libEGL based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 375 bytes
-writing Mach-O to Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib
-sealing regular file Libraries/vk_swiftshader_icd.json
-copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/vk_swiftshader_icd.json -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/vk_swiftshader_icd.json
-sealing regular file Resources/Info.plist
-copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist
-sealing regular file Resources/MainMenu.nib
-copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/MainMenu.nib -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/MainMenu.nib
-sealing regular file Resources/chrome_100_percent.pak
-copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/chrome_100_percent.pak -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/chrome_100_percent.pak
-sealing regular file Resources/en.lproj/locale.pak
-copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj/locale.pak -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj/locale.pak
-sealing regular file Resources/icudtl.dat
-copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/icudtl.dat -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/icudtl.dat
-sealing regular file Resources/resources.pak
-copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/resources.pak -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/resources.pak
-sealing regular file Resources/v8_context_snapshot.arm64.bin
-copying file Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/v8_context_snapshot.arm64.bin -> Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/v8_context_snapshot.arm64.bin
-writing sealed resources to Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/_CodeSignature/CodeResources
 signing main executable Electron Framework
-setting main executable binary identifier to com.github.Electron.framework (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 430 bytes
-writing signed main executable to Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
 leaving nested bundle Contents/Frameworks/Electron Framework.framework/Versions/A
 entering nested bundle Contents/Frameworks/Electron Framework.framework
 signing bundle at Electron.app/Contents/Frameworks/Electron Framework.framework into Electron.app.signed/Contents/Frameworks/Electron Framework.framework
-found a versioned framework; each version will be signed as its own bundle
-replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Electron Framework -> Versions/Current/Electron Framework
-replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Helpers -> Versions/Current/Helpers
-replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Libraries -> Versions/Current/Libraries
-replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Resources -> Versions/Current/Resources
-replicating symlink Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/Current -> A
 leaving nested bundle Contents/Frameworks/Electron Framework.framework
 entering nested bundle Contents/Frameworks/Mantle.framework/Versions/A
 signing bundle at Electron.app/Contents/Frameworks/Mantle.framework/Versions/A into Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A
-found an unversioned framework; signing like normal
-collecting code resources files
-sealing regular file Resources/Info.plist
-copying file Electron.app/Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist -> Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist
-writing sealed resources to Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/_CodeSignature/CodeResources
 signing main executable Mantle
-setting main executable binary identifier to org.mantle.Mantle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 418 bytes
-writing signed main executable to Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/Mantle
 leaving nested bundle Contents/Frameworks/Mantle.framework/Versions/A
 entering nested bundle Contents/Frameworks/Electron Helper (GPU).app
 signing bundle at Electron.app/Contents/Frameworks/Electron Helper (GPU).app into Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app
-collecting code resources files
-copying file Electron.app/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist -> Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist
-writing sealed resources to Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/Electron Helper (GPU)
-setting main executable binary identifier to com.github.Electron.helper (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 427 bytes
-writing signed main executable to Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)
 leaving nested bundle Contents/Frameworks/Electron Helper (GPU).app
 entering nested bundle Contents/Frameworks/Mantle.framework
 signing bundle at Electron.app/Contents/Frameworks/Mantle.framework into Electron.app.signed/Contents/Frameworks/Mantle.framework
-found a versioned framework; each version will be signed as its own bundle
-replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Mantle -> Versions/Current/Mantle
-replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Resources -> Versions/Current/Resources
-replicating symlink Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/Current -> A
 leaving nested bundle Contents/Frameworks/Mantle.framework
 signing bundle at Electron.app into Electron.app.signed
-collecting code resources files
-sealing nested directory as a bundle: Contents/Frameworks/Electron Framework.framework
-reading Mach-O signature from Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Electron Framework
-sealing nested directory as a bundle: Contents/Frameworks/Electron Helper (GPU).app
-reading Mach-O signature from Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)
-sealing nested directory as a bundle: Contents/Frameworks/Mantle.framework
-reading Mach-O signature from Electron.app.signed/Contents/Frameworks/Mantle.framework/Mantle
-copying file Electron.app/Contents/Info.plist -> Electron.app.signed/Contents/Info.plist
-sealing regular file Resources/default_app.asar
-copying file Electron.app/Contents/Resources/default_app.asar -> Electron.app.signed/Contents/Resources/default_app.asar
-sealing regular file Resources/electron.icns
-copying file Electron.app/Contents/Resources/electron.icns -> Electron.app.signed/Contents/Resources/electron.icns
-sealing regular file Resources/en.lproj
-copying file Electron.app/Contents/Resources/en.lproj -> Electron.app.signed/Contents/Resources/en.lproj
-writing sealed resources to Electron.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/Electron
-setting main executable binary identifier to com.github.Electron (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 420 bytes
-writing signed main executable to Electron.app.signed/Contents/MacOS/Electron
 
 $ rcodesign debug-file-tree Electron.app.signed
 d                      Electron.app.signed/

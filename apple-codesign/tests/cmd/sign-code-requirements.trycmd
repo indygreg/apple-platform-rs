@@ -10,16 +10,8 @@ $ rcodesign sign --code-requirements-path reqs exe exe.signed
 setting designated code requirements for main signing target: ((anchor apple generic) and (certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */)) and ((certificate leaf[field.1.2.840.113635.100.6.1.14] /* exists */) or (certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */))
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-using provided code requirements
-code requirements: 0: ((anchor apple generic) and (certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */)) and ((certificate leaf[field.1.2.840.113635.100.6.1.14] /* exists */) or (certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */));
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 492 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed

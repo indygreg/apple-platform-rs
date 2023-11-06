@@ -9,17 +9,9 @@ registering signing key
 automatically setting team ID from signing certificate: test
 signing exe to exe.apple-development
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-attempting to derive code requirements from signing certificate
-code requirements: 0: (identifier "exe") and ((anchor apple generic) and ((certificate leaf[subject.CN] = "Apple Development: ED25519 Apple Development (test)") and (certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */)));
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-code directory version: 132096
 creating cryptographic signature with certificate Apple Development: ED25519 Apple Development (test)
-Using signing time 2023-11-05T10:00:00+00:00
-total signature size: 1908 bytes
 writing Mach-O to exe.apple-development
 
 $ rcodesign extract cms-info exe.apple-development
@@ -413,17 +405,9 @@ registering signing key
 automatically setting team ID from signing certificate: test
 signing exe to exe.apple-distribution
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-attempting to derive code requirements from signing certificate
-code requirements: 0: (identifier "exe") and ((anchor apple generic) and ((certificate leaf[subject.CN] = "Apple Distribution: ED25519 Apple Distribution (test)") and (certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */)));
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-code directory version: 132096
 creating cryptographic signature with certificate Apple Distribution: ED25519 Apple Distribution (test)
-Using signing time 2023-11-05T10:00:00+00:00
-total signature size: 1921 bytes
 writing Mach-O to exe.apple-distribution
 
 $ rcodesign print-signature-info exe.apple-distribution
@@ -525,17 +509,9 @@ registering signing key
 automatically setting team ID from signing certificate: test
 signing exe to exe.developer-id-application
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-attempting to derive code requirements from signing certificate
-code requirements: 0: (identifier "exe") and ((anchor apple generic) and ((certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */) and ((certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */) and (certificate leaf[subject.OU] = "test"))));
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-code directory version: 132096
 creating cryptographic signature with certificate Developer ID Application: ED25519 Developer ID Application (test)
-Using signing time 2023-11-05T10:00:00+00:00
-total signature size: 1934 bytes
 writing Mach-O to exe.developer-id-application
 
 $ rcodesign print-signature-info exe.developer-id-application
@@ -637,11 +613,8 @@ registering signing key
 automatically setting team ID from signing certificate: test
 signing exe to exe.developer-id-installer
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-attempting to derive code requirements from signing certificate
 Error: unable to generate code requirement policy: (deriving for DeveloperIdInstaller) a designated requirement cannot be derived for installer code signing certificates; if you see this message you should probably be using a different code signing certificate for signing applications
 
 $ rcodesign print-signature-info exe.developer-id-installer
@@ -655,11 +628,8 @@ registering signing key
 automatically setting team ID from signing certificate: test
 signing exe to exe.mac-installer-distribution
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-attempting to derive code requirements from signing certificate
 Error: unable to generate code requirement policy: (deriving for MacInstallerDistribution) a designated requirement cannot be derived for installer code signing certificates; if you see this message you should probably be using a different code signing certificate for signing applications
 
 $ rcodesign print-signature-info exe.mac-installer-distribution

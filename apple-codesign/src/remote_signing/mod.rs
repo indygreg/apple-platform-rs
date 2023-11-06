@@ -21,7 +21,7 @@ use {
         Mode, Oid,
     },
     bytes::Bytes,
-    log::{debug, error, info, warn},
+    log::{debug, error, warn},
     serde::{de::DeserializeOwned, Deserialize, Serialize},
     signature::Signer,
     std::{
@@ -771,7 +771,7 @@ impl PairedClient {
         )?;
 
         wait_for_server_message(&mut self.ws)?.into_result()?;
-        info!("relay server confirmed session termination");
+        warn!("relay server confirmed session termination");
 
         Ok(())
     }
@@ -1047,7 +1047,7 @@ impl<'key> SigningClient<'key> {
         )?;
 
         wait_for_expected_server_message(&mut client.ws, ServerMessageType::MessageSent)?;
-        info!("relay acknowledged signature message received");
+        warn!("relay acknowledged signature message received");
 
         Ok(())
     }
@@ -1055,7 +1055,7 @@ impl<'key> SigningClient<'key> {
     fn process_next_message(&self) -> Result<bool, RemoteSignError> {
         let mut client = self.client.borrow_mut();
 
-        info!("waiting for server to send us a message...");
+        warn!("waiting for server to send us a message...");
         let res = if let Some(res) = client.wait_for_peer_message()? {
             res
         } else {

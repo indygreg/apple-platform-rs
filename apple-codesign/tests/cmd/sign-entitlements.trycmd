@@ -19,17 +19,8 @@ $ rcodesign sign --entitlements-xml-path entitlements.plist exe exe.signed
 setting entitlements XML for main signing target from path entitlements.plist
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-adding entitlements XML
-adding entitlements DER
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-entitlements imply executable segment flags: ExecutableSegmentFlags(ALLOW_UNSIGNED)
-code directory version: 132096
-total signature size: 815 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
@@ -125,17 +116,8 @@ $ rcodesign sign --entitlements-xml-path entitlements.plist exe exe.signed
 setting entitlements XML for main signing target from path entitlements.plist
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-adding entitlements XML
-adding entitlements DER
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-entitlements imply executable segment flags: ExecutableSegmentFlags(ALLOW_UNSIGNED | DEBUGGER | JIT | SKIP_LIBRARY_VALIDATION)
-code directory version: 132096
-total signature size: 1145 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed

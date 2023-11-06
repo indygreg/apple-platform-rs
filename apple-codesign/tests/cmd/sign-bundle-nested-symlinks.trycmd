@@ -19,32 +19,8 @@ $ rcodesign sign MyApp.app MyApp.app.signed
 signing MyApp.app to MyApp.app.signed
 signing bundle at MyApp.app
 signing bundle at MyApp.app into MyApp.app.signed
-collecting code resources files
-sealing nested Mach-O binary: Contents/Frameworks/libssh.4.8.8.dylib
 signing Mach-O file Contents/Frameworks/libssh.4.8.8.dylib
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to libssh.4.8.8 based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 381 bytes
-writing Mach-O to MyApp.app.signed/Contents/Frameworks/libssh.4.8.8.dylib
-sealing symlink Frameworks/libssh.4.dylib -> libssh.4.8.8.dylib
-replicating symlink MyApp.app.signed/Contents/Frameworks/libssh.4.dylib -> libssh.4.8.8.dylib
-sealing symlink Frameworks/libssh.dylib -> libssh.4.dylib
-replicating symlink MyApp.app.signed/Contents/Frameworks/libssh.dylib -> libssh.4.dylib
-copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
-writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
 $ rcodesign debug-file-tree MyApp.app.signed
 d                      MyApp.app.signed/

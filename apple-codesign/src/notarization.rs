@@ -20,7 +20,7 @@ use {
     apple_bundles::DirectoryBundle,
     aws_sdk_s3::config::{Credentials, Region},
     aws_smithy_types::byte_stream::ByteStream,
-    log::{info, warn},
+    log::warn,
     sha2::Digest,
     std::{
         fs::File,
@@ -317,7 +317,7 @@ impl Notarizer {
             "uploading asset to s3://{}/{}",
             submission.data.attributes.bucket, submission.data.attributes.object
         );
-        info!("(you may see additional log output from S3 client)");
+        warn!("(you may see additional log output from S3 client)");
 
         // TODO: Support multi-part upload.
         // Unfortunately, aws-sdk-s3 does not have a simple upload_file helper
@@ -383,7 +383,7 @@ impl Notarizer {
 
             let elapsed = start_time.elapsed();
 
-            info!(
+            warn!(
                 "poll state after {}s: {:?}",
                 elapsed.as_secs(),
                 status.data.attributes.status

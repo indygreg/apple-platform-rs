@@ -52,87 +52,18 @@ Contents/Frameworks/Sparkle.framework/Versions/A
 Contents/Frameworks/Sparkle.framework
 entering nested bundle Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
 signing bundle at MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app into MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
-collecting code resources files
-copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist
-sealing regular file Resources/en.lproj/Sparkle.strings
-copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings
-writing sealed resources to MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/Autoupdate
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS/Autoupdate
 leaving nested bundle Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
 entering nested bundle Contents/Frameworks/Sparkle.framework/Versions/A
 signing bundle at MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A into MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A
-found an unversioned framework; signing like normal
-collecting code resources files
-sealing regular file Headers/Sparkle.h
-copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Headers/Sparkle.h -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Headers/Sparkle.h
-sealing regular file Modules/module.modulemap
-copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Modules/module.modulemap -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Modules/module.modulemap
-sealing regular file Resources/Autoupdate.app/Contents/Info.plist
-copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist
-non-nested file is a Mach-O binary; signing accordingly Resources/Autoupdate.app/Contents/MacOS/Autoupdate
 signing Mach-O file Resources/Autoupdate.app/Contents/MacOS/Autoupdate
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to Autoupdate based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 379 bytes
-writing Mach-O to MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS/Autoupdate
-sealing regular file Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings
-copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings
-sealing regular file Resources/DarkAqua.css
-copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/DarkAqua.css -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/DarkAqua.css
-sealing regular file Resources/Info.plist
-copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Info.plist -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Info.plist
-sealing regular file Resources/en.lproj/Sparkle.strings
-copying file MyApp.app/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/en.lproj/Sparkle.strings -> MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/en.lproj/Sparkle.strings
-writing sealed resources to MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/_CodeSignature/CodeResources
 signing main executable Sparkle
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Sparkle
 leaving nested bundle Contents/Frameworks/Sparkle.framework/Versions/A
 entering nested bundle Contents/Frameworks/Sparkle.framework
 signing bundle at MyApp.app/Contents/Frameworks/Sparkle.framework into MyApp.app.signed/Contents/Frameworks/Sparkle.framework
-found a versioned framework; each version will be signed as its own bundle
-replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Headers -> Versions/Current/Headers
-replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Modules -> Versions/Current/Modules
-replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/PrivateHeaders -> Versions/Current/PrivateHeaders
-replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Resources -> Versions/Current/Resources
-replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Sparkle -> Versions/Current/Sparkle
-replicating symlink MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/Current -> A
 leaving nested bundle Contents/Frameworks/Sparkle.framework
 signing bundle at MyApp.app into MyApp.app.signed
-collecting code resources files
-sealing nested directory as a bundle: Contents/Frameworks/Sparkle.framework
-reading Mach-O signature from MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Sparkle
-copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
-sealing regular file Resources/AppIcon.icns
-copying file MyApp.app/Contents/Resources/AppIcon.icns -> MyApp.app.signed/Contents/Resources/AppIcon.icns
-writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
 $ rcodesign debug-file-tree MyApp.app.signed
 d                      MyApp.app.signed/

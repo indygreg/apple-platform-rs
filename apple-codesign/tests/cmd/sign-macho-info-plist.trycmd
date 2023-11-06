@@ -9,14 +9,8 @@ writing Info.plist
 $ rcodesign sign --info-plist-path Info.plist exe exe.signed
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 372 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed

@@ -26,41 +26,14 @@ Contents/Frameworks/MyFramework.framework/Versions/A
 Contents/Frameworks/MyFramework.framework
 entering nested bundle Contents/Frameworks/MyFramework.framework/Versions/A
 signing bundle at MyApp.app/Contents/Frameworks/MyFramework.framework/Versions/A into MyApp.app.NoMyFramework/Contents/Frameworks/MyFramework.framework/Versions/A
-found an unversioned framework; signing like normal
-collecting code resources files
-sealing regular file Resources/Info.plist
-copying file MyApp.app/Contents/Frameworks/MyFramework.framework/Versions/A/Resources/Info.plist -> MyApp.app.NoMyFramework/Contents/Frameworks/MyFramework.framework/Versions/A/Resources/Info.plist
-writing sealed resources to MyApp.app.NoMyFramework/Contents/Frameworks/MyFramework.framework/Versions/A/_CodeSignature/CodeResources
 signing main executable MyFramework
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.NoMyFramework/Contents/Frameworks/MyFramework.framework/Versions/A/MyFramework
 leaving nested bundle Contents/Frameworks/MyFramework.framework/Versions/A
 entering nested bundle Contents/Frameworks/MyFramework.framework
 bundle is in exclusion list; it will be copied instead of signed
-replicating symlink MyApp.app.NoMyFramework/Contents/Frameworks/MyFramework.framework/Resources -> Versions/Current/Resources
-replicating symlink MyApp.app.NoMyFramework/Contents/Frameworks/MyFramework.framework/Versions/Current -> A
 leaving nested bundle Contents/Frameworks/MyFramework.framework
 signing bundle at MyApp.app into MyApp.app.NoMyFramework
-collecting code resources files
-sealing nested directory as a bundle: Contents/Frameworks/MyFramework.framework
 could not find main executable of presumed nested bundle: Contents/Frameworks/MyFramework.framework
-copying file MyApp.app/Contents/Info.plist -> MyApp.app.NoMyFramework/Contents/Info.plist
-writing sealed resources to MyApp.app.NoMyFramework/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.NoMyFramework/Contents/MacOS/MyApp
 
 $ rcodesign debug-file-tree MyApp.app.NoMyFramework
 d                      MyApp.app.NoMyFramework/
@@ -90,30 +63,13 @@ Contents/Frameworks/MyFramework.framework/Versions/A
 Contents/Frameworks/MyFramework.framework
 entering nested bundle Contents/Frameworks/MyFramework.framework/Versions/A
 bundle is in exclusion list; it will be copied instead of signed
-copying file MyApp.app/Contents/Frameworks/MyFramework.framework/Versions/A/MyFramework -> MyApp.app.NoMyFrameworkDoubleWild/Contents/Frameworks/MyFramework.framework/Versions/A/MyFramework
-copying file MyApp.app/Contents/Frameworks/MyFramework.framework/Versions/A/Resources/Info.plist -> MyApp.app.NoMyFrameworkDoubleWild/Contents/Frameworks/MyFramework.framework/Versions/A/Resources/Info.plist
 leaving nested bundle Contents/Frameworks/MyFramework.framework/Versions/A
 entering nested bundle Contents/Frameworks/MyFramework.framework
 signing bundle at MyApp.app/Contents/Frameworks/MyFramework.framework into MyApp.app.NoMyFrameworkDoubleWild/Contents/Frameworks/MyFramework.framework
-found a versioned framework; each version will be signed as its own bundle
-replicating symlink MyApp.app.NoMyFrameworkDoubleWild/Contents/Frameworks/MyFramework.framework/Resources -> Versions/Current/Resources
-replicating symlink MyApp.app.NoMyFrameworkDoubleWild/Contents/Frameworks/MyFramework.framework/Versions/Current -> A
 leaving nested bundle Contents/Frameworks/MyFramework.framework
 signing bundle at MyApp.app into MyApp.app.NoMyFrameworkDoubleWild
-collecting code resources files
-sealing nested directory as a bundle: Contents/Frameworks/MyFramework.framework
 could not find main executable of presumed nested bundle: Contents/Frameworks/MyFramework.framework
-copying file MyApp.app/Contents/Info.plist -> MyApp.app.NoMyFrameworkDoubleWild/Contents/Info.plist
-writing sealed resources to MyApp.app.NoMyFrameworkDoubleWild/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.NoMyFrameworkDoubleWild/Contents/MacOS/MyApp
 
 $ rcodesign debug-file-tree MyApp.app.NoMyFrameworkDoubleWild
 d                      MyApp.app.NoMyFrameworkDoubleWild/
@@ -141,29 +97,13 @@ Contents/Frameworks/MyFramework.framework/Versions/A
 Contents/Frameworks/MyFramework.framework
 entering nested bundle Contents/Frameworks/MyFramework.framework/Versions/A
 bundle is in exclusion list; it will be copied instead of signed
-copying file MyApp.app/Contents/Frameworks/MyFramework.framework/Versions/A/MyFramework -> MyApp.app.NoFrameworksDoubleWild/Contents/Frameworks/MyFramework.framework/Versions/A/MyFramework
-copying file MyApp.app/Contents/Frameworks/MyFramework.framework/Versions/A/Resources/Info.plist -> MyApp.app.NoFrameworksDoubleWild/Contents/Frameworks/MyFramework.framework/Versions/A/Resources/Info.plist
 leaving nested bundle Contents/Frameworks/MyFramework.framework/Versions/A
 entering nested bundle Contents/Frameworks/MyFramework.framework
 bundle is in exclusion list; it will be copied instead of signed
-replicating symlink MyApp.app.NoFrameworksDoubleWild/Contents/Frameworks/MyFramework.framework/Resources -> Versions/Current/Resources
-replicating symlink MyApp.app.NoFrameworksDoubleWild/Contents/Frameworks/MyFramework.framework/Versions/Current -> A
 leaving nested bundle Contents/Frameworks/MyFramework.framework
 signing bundle at MyApp.app into MyApp.app.NoFrameworksDoubleWild
-collecting code resources files
-sealing nested directory as a bundle: Contents/Frameworks/MyFramework.framework
 could not find main executable of presumed nested bundle: Contents/Frameworks/MyFramework.framework
-copying file MyApp.app/Contents/Info.plist -> MyApp.app.NoFrameworksDoubleWild/Contents/Info.plist
-writing sealed resources to MyApp.app.NoFrameworksDoubleWild/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.NoFrameworksDoubleWild/Contents/MacOS/MyApp
 
 $ rcodesign debug-file-tree MyApp.app.NoFrameworksDoubleWild
 d                      MyApp.app.NoFrameworksDoubleWild/
@@ -209,38 +149,9 @@ $ rcodesign sign --exclude Contents/MacOS/macos-bin MyApp.app MyApp.app.NoMacOSB
 signing MyApp.app to MyApp.app.NoMacOSBin
 signing bundle at MyApp.app
 signing bundle at MyApp.app into MyApp.app.NoMacOSBin
-collecting code resources files
-copying file MyApp.app/Contents/Info.plist -> MyApp.app.NoMacOSBin/Contents/Info.plist
-sealing nested Mach-O binary: Contents/MacOS/macos-bin
 signing Mach-O file Contents/MacOS/macos-bin
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to macos-bin based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 378 bytes
-writing Mach-O to MyApp.app.NoMacOSBin/Contents/MacOS/macos-bin
-non-nested file is a Mach-O binary; signing accordingly Contents/Resources/resource-bin
 signing Mach-O file Contents/Resources/resource-bin
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to resource-bin based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 381 bytes
-writing Mach-O to MyApp.app.NoMacOSBin/Contents/Resources/resource-bin
-writing sealed resources to MyApp.app.NoMacOSBin/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.NoMacOSBin/Contents/MacOS/MyApp
 
 $ rcodesign debug-file-tree MyApp.app.NoMacOSBin
 d                      MyApp.app.NoMacOSBin/
@@ -258,38 +169,9 @@ $ rcodesign sign --exclude Contents/Resources/resource-bin MyApp.app MyApp.app.N
 signing MyApp.app to MyApp.app.NoResourcesBin
 signing bundle at MyApp.app
 signing bundle at MyApp.app into MyApp.app.NoResourcesBin
-collecting code resources files
-copying file MyApp.app/Contents/Info.plist -> MyApp.app.NoResourcesBin/Contents/Info.plist
-sealing nested Mach-O binary: Contents/MacOS/macos-bin
 signing Mach-O file Contents/MacOS/macos-bin
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to macos-bin based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 378 bytes
-writing Mach-O to MyApp.app.NoResourcesBin/Contents/MacOS/macos-bin
-non-nested file is a Mach-O binary; signing accordingly Contents/Resources/resource-bin
 signing Mach-O file Contents/Resources/resource-bin
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to resource-bin based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 381 bytes
-writing Mach-O to MyApp.app.NoResourcesBin/Contents/Resources/resource-bin
-writing sealed resources to MyApp.app.NoResourcesBin/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.NoResourcesBin/Contents/MacOS/MyApp
 
 $ rcodesign debug-file-tree MyApp.app.NoResourcesBin
 d                      MyApp.app.NoResourcesBin/

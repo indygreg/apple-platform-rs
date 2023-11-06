@@ -12,23 +12,7 @@ $ rcodesign sign Shallow.framework Shallow.framework.signed
 signing Shallow.framework to Shallow.framework.signed
 signing bundle at Shallow.framework
 signing bundle at Shallow.framework into Shallow.framework.signed
-found an unversioned framework; signing like normal
-collecting code resources files
-sealing regular file Resources/Info.plist
-copying file Shallow.framework/Resources/Info.plist -> Shallow.framework.signed/Resources/Info.plist
-sealing regular file Resources/root-00.txt
-copying file Shallow.framework/Resources/root-00.txt -> Shallow.framework.signed/Resources/root-00.txt
-sealing nested Mach-O binary: Shallow
 signing Mach-O file Shallow
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to Shallow based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 376 bytes
-writing Mach-O to Shallow.framework.signed/Shallow
-writing sealed resources to Shallow.framework.signed/_CodeSignature/CodeResources
 bundle has no main executable to sign specially
 
 $ rcodesign debug-file-tree Shallow.framework.signed

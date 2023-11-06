@@ -77,6 +77,10 @@ Released on ReleaseDate.
 * Added a hidden `debug-file-tree` command to print simple directory
   trees. The command is used by snapshot tests to validate bundle signing
   behavior.
+* The CLI default log level has been changed to `warn`. As a result,
+  command output is less verbose. `-v` restores the prior behavior. And
+  `-vvv` is now needed to activate `trace` logging (previously `-vv` was
+  the highest log level).
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.

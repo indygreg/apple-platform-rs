@@ -17,24 +17,7 @@ $ rcodesign sign MyApp.app MyApp.app.signed
 signing MyApp.app to MyApp.app.signed
 signing bundle at MyApp.app
 signing bundle at MyApp.app into MyApp.app.signed
-collecting code resources files
-copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
-sealing regular file Resources/file-00.txt
-copying file MyApp.app/Contents/Resources/file-00.txt -> MyApp.app.signed/Contents/Resources/file-00.txt
-sealing regular file Resources/file-01.txt
-copying file MyApp.app/Contents/Resources/file-01.txt -> MyApp.app.signed/Contents/Resources/file-01.txt
-sealing symlink Resources/file.txt -> file-00.txt
-replicating symlink MyApp.app.signed/Contents/Resources/file.txt -> file-00.txt
-writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
 $ ln -sf file-01.txt MyApp.app/Contents/Resources/file.txt
 
@@ -42,24 +25,7 @@ $ rcodesign sign MyApp.app MyApp.app.signed
 signing MyApp.app to MyApp.app.signed
 signing bundle at MyApp.app
 signing bundle at MyApp.app into MyApp.app.signed
-collecting code resources files
-copying file MyApp.app/Contents/Info.plist -> MyApp.app.signed/Contents/Info.plist
-sealing regular file Resources/file-00.txt
-copying file MyApp.app/Contents/Resources/file-00.txt -> MyApp.app.signed/Contents/Resources/file-00.txt
-sealing regular file Resources/file-01.txt
-copying file MyApp.app/Contents/Resources/file-01.txt -> MyApp.app.signed/Contents/Resources/file-01.txt
-sealing symlink Resources/file.txt -> file-01.txt
-replicating symlink MyApp.app.signed/Contents/Resources/file.txt -> file-01.txt
-writing sealed resources to MyApp.app.signed/Contents/_CodeSignature/CodeResources
 signing main executable Contents/MacOS/MyApp
-setting main executable binary identifier to com.example.mybundle (derived from CFBundleIdentifier in Info.plist)
-inferring default signing settings from Mach-O binary
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 421 bytes
-writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
 $ rcodesign debug-file-tree MyApp.app.signed
 d                      MyApp.app.signed/

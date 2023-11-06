@@ -117,7 +117,7 @@ impl BundleSigner {
 
         for (rel, nested) in bundles {
             let nested_dest_dir = dest_dir.join(rel);
-            info!("entering nested bundle {}", rel,);
+            warn!("entering nested bundle {}", rel,);
 
             // If we excluded this bundle from signing, just copy all the files.
             if settings
@@ -134,7 +134,7 @@ impl BundleSigner {
                 )?;
             }
 
-            info!("leaving nested bundle {}", rel);
+            warn!("leaving nested bundle {}", rel);
         }
 
         let main = self
@@ -329,7 +329,7 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
         source_path: &Path,
         dest_rel_path: &Path,
     ) -> Result<(PathBuf, SignedMachOInfo), AppleCodesignError> {
-        info!("signing Mach-O file {}", dest_rel_path.display());
+        warn!("signing Mach-O file {}", dest_rel_path.display());
 
         let macho_data = std::fs::read(source_path)?;
         let signer = MachOSigner::new(&macho_data)?;
@@ -421,7 +421,7 @@ impl SingleBundleSigner {
         // a valid framework warranting signing.
         if self.bundle.package_type() == BundlePackageType::Framework {
             if self.bundle.root_dir().join("Versions").is_dir() {
-                warn!("found a versioned framework; each version will be signed as its own bundle");
+                info!("found a versioned framework; each version will be signed as its own bundle");
 
                 // But we still need to preserve files (hopefully just symlinks) outside the
                 // nested bundles under `Versions/`. Since we don't nest into child bundles
@@ -442,7 +442,7 @@ impl SingleBundleSigner {
                 return DirectoryBundle::new_from_path(dest_dir)
                     .map_err(AppleCodesignError::DirectoryBundle);
             } else {
-                warn!("found an unversioned framework; signing like normal");
+                info!("found an unversioned framework; signing like normal");
             }
         }
 
@@ -496,7 +496,7 @@ impl SingleBundleSigner {
             }
         }
 
-        warn!("collecting code resources files");
+        info!("collecting code resources files");
 
         // The set of rules to use is determined by whether the bundle *can* have a
         // `Resources/`, not whether it necessarily does. The exact rules for this are not
@@ -547,7 +547,7 @@ impl SingleBundleSigner {
 
         // The resources are now sealed. Write out that XML file.
         let code_resources_path = dest_dir.join("_CodeSignature").join("CodeResources");
-        warn!(
+        info!(
             "writing sealed resources to {}",
             code_resources_path.display()
         );

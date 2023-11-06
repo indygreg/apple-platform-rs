@@ -53,14 +53,8 @@ writing Mach-O to exe
 $ rcodesign sign exe
 signing exe in place
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-binary targets macOS >= 11.2.0 with SDK 11.2.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 372 bytes
 writing Mach-O to exe
 
 $ rcodesign extract blobs exe

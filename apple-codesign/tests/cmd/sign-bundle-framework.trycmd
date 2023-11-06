@@ -18,29 +18,10 @@ signing 1 nested bundles in the following order:
 Versions/A
 entering nested bundle Versions/A
 signing bundle at MyFramework.framework/Versions/A into MyFramework.framework.signed/Versions/A
-found an unversioned framework; signing like normal
-collecting code resources files
-sealing nested Mach-O binary: MyFramework
 signing Mach-O file MyFramework
-inferring default signing settings from Mach-O binary
-Mach-O is missing binary identifier; setting to MyFramework based on file name
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 380 bytes
-writing Mach-O to MyFramework.framework.signed/Versions/A/MyFramework
-sealing regular file Resources/Info.plist
-copying file MyFramework.framework/Versions/A/Resources/Info.plist -> MyFramework.framework.signed/Versions/A/Resources/Info.plist
-sealing regular file Resources/root-A-00.txt
-copying file MyFramework.framework/Versions/A/Resources/root-A-00.txt -> MyFramework.framework.signed/Versions/A/Resources/root-A-00.txt
-writing sealed resources to MyFramework.framework.signed/Versions/A/_CodeSignature/CodeResources
 bundle has no main executable to sign specially
 leaving nested bundle Versions/A
 signing bundle at MyFramework.framework into MyFramework.framework.signed
-found a versioned framework; each version will be signed as its own bundle
-replicating symlink MyFramework.framework.signed/Resources -> Versions/Current/Resources
-replicating symlink MyFramework.framework.signed/Versions/Current -> A
 
 $ rcodesign debug-file-tree MyFramework.framework.signed
 d                      MyFramework.framework.signed/

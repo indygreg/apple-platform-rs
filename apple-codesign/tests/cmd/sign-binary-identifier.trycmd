@@ -6,13 +6,7 @@ writing Mach-O to exe
 $ rcodesign sign --binary-identifier my-binary exe exe.signed
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 parsing Mach-O
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 378 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
@@ -63,17 +57,8 @@ $ rcodesign print-signature-info exe.signed
 $ rcodesign sign exe.signed exe.signed.2
 signing exe.signed to exe.signed.2
 signing exe.signed as a Mach-O binary
-inferring default signing settings from Mach-O binary
-preserving existing binary identifier in Mach-O
-preserving code signature flags in existing Mach-O signature
 setting binary identifier to exe.signed
 parsing Mach-O
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-adding code signature flags from signing settings: CodeSignatureFlags(ADHOC)
-creating ad-hoc signature
-code directory version: 132096
-total signature size: 378 bytes
 writing Mach-O to exe.signed.2
 
 $ rcodesign print-signature-info exe.signed.2

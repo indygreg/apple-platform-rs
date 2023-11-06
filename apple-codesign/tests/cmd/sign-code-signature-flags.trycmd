@@ -12,17 +12,8 @@ adding code signature flag CodeSignatureFlags(RUNTIME) to main signing target
 adding code signature flag CodeSignatureFlags(LINKER_SIGNED) to main signing target
 signing exe to exe.signed
 signing exe as a Mach-O binary
-inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-adding code signature flags from signing settings: CodeSignatureFlags(HOST | FORCE_HARD | FORCE_KILL | FORCE_EXPIRATION | RUNTIME | LINKER_SIGNED)
-creating ad-hoc signature
-removing linker signed flag from code signature (we're not a linker)
-using hardened runtime version 11.0.0 derived from SDK version
-code directory version: 132352
-total signature size: 380 bytes
 writing Mach-O to exe.signed
 
 $ rcodesign print-signature-info exe.signed
@@ -75,19 +66,8 @@ $ rcodesign sign --code-signature-flags host exe.signed exe.signed.2
 adding code signature flag CodeSignatureFlags(HOST) to main signing target
 signing exe.signed to exe.signed.2
 signing exe.signed as a Mach-O binary
-inferring default signing settings from Mach-O binary
-preserving existing binary identifier in Mach-O
-using code signature flags from settings
-preserving runtime version in existing Mach-O signature
 setting binary identifier to exe.signed
 parsing Mach-O
-signing Mach-O binary at index 0
-binary targets macOS >= 11.0.0 with SDK 11.0.0
-adding code signature flags from signing settings: CodeSignatureFlags(HOST)
-creating ad-hoc signature
-using hardened runtime version 11.0.0 from signing settings
-code directory version: 132352
-total signature size: 380 bytes
 writing Mach-O to exe.signed.2
 
 $ rcodesign print-signature-info exe.signed.2
