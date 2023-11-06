@@ -121,6 +121,8 @@ the following::
       - 1.2.840.113635.100.6.1.33 (DeveloperIdDate)
       - 1.2.840.113635.100.6.1.13 (DeveloperIdApplication)
 
+.. _apple_codesign_smartcard_key_generation:
+
 Creating a Certificate with a Private Key Exclusive to the Smart Card
 =====================================================================
 
