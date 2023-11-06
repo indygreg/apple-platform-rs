@@ -29,7 +29,7 @@ use {
         macho::{MachFile, MachOBinary},
     },
     cryptographic_message_syntax::{CmsError, SignedData},
-    std::path::{Path, PathBuf},
+    std::path::PathBuf,
     x509_certificate::{DigestAlgorithm, SignatureAlgorithm},
 };
 
@@ -165,31 +165,6 @@ impl std::fmt::Display for VerificationProblem {
             None => f.write_str(&message),
         }
     }
-}
-
-/// Verifies a binary in a given path.
-///
-/// Returns a vector of problems detected. An empty vector means no
-/// problems were found.
-pub fn verify_path(path: impl AsRef<Path>) -> Vec<VerificationProblem> {
-    let path = path.as_ref();
-
-    let context = VerificationContext {
-        path: Some(path.to_path_buf()),
-        fat_index: None,
-    };
-
-    let data = match std::fs::read(path) {
-        Ok(data) => data,
-        Err(e) => {
-            return vec![VerificationProblem {
-                context,
-                problem: VerificationProblemType::IoError(e),
-            }];
-        }
-    };
-
-    verify_macho_data_internal(data, context)
 }
 
 /// Verifies unparsed Mach-O data.
