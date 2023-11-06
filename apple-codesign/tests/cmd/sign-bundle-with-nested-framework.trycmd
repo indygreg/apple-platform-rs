@@ -134,6 +134,49 @@ code directory version: 132096
 total signature size: 421 bytes
 writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
+$ rcodesign debug-file-tree MyApp.app.signed
+d                      MyApp.app.signed/
+d                      MyApp.app.signed/Contents
+d                      MyApp.app.signed/Contents/Frameworks
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework
+l                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Headers -> Versions/Current/Headers
+l                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Modules -> Versions/Current/Modules
+l                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/PrivateHeaders -> Versions/Current/PrivateHeaders
+l                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Resources -> Versions/Current/Resources
+l                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Sparkle -> Versions/Current/Sparkle
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Headers
+f e3b0c44298fc1c149afb MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Headers/Sparkle.h
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Modules
+f e3b0c44298fc1c149afb MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Modules/module.modulemap
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents
+f 41d88c15e923bda8c225 MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Info.plist
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS
+f e5285f3d61163f8e24e7 MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/MacOS/Autoupdate
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj
+f e3b0c44298fc1c149afb MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/Resources/en.lproj/Sparkle.strings
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/_CodeSignature
+f 0740079f9cc964f82201 MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app/Contents/_CodeSignature/CodeResources
+f e3b0c44298fc1c149afb MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/DarkAqua.css
+f fc10a69db39ae9732767 MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Info.plist
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/en.lproj
+f e3b0c44298fc1c149afb MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/en.lproj/Sparkle.strings
+f 5026a5974b59f2d51496 MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/Sparkle
+d                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/_CodeSignature
+f 3f7b659efab61e49f00e MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/A/_CodeSignature/CodeResources
+l                      MyApp.app.signed/Contents/Frameworks/Sparkle.framework/Versions/Current -> A
+f 0a5902dc8e47f490d038 MyApp.app.signed/Contents/Info.plist
+d                      MyApp.app.signed/Contents/MacOS
+f 0a12ae975b24eff375a4 MyApp.app.signed/Contents/MacOS/MyApp
+d                      MyApp.app.signed/Contents/Resources
+f e3b0c44298fc1c149afb MyApp.app.signed/Contents/Resources/AppIcon.icns
+d                      MyApp.app.signed/Contents/_CodeSignature
+f 58059ede340668b8ba13 MyApp.app.signed/Contents/_CodeSignature/CodeResources
+
 $ rcodesign print-signature-info MyApp.app.signed
 - path: Contents/Frameworks/Sparkle.framework/Headers
   symlink_target: Versions/Current/Headers

@@ -41,6 +41,18 @@ code directory version: 132096
 total signature size: 421 bytes
 writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
+$ rcodesign debug-file-tree MyApp.app.signed
+d                      MyApp.app.signed/
+d                      MyApp.app.signed/Contents
+f 0a5902dc8e47f490d038 MyApp.app.signed/Contents/Info.plist
+d                      MyApp.app.signed/Contents/MacOS
+f 0e2027a7c6d687972a35 MyApp.app.signed/Contents/MacOS/MyApp
+d                      MyApp.app.signed/Contents/_CodeSignature
+f c844b31db66807774bd8 MyApp.app.signed/Contents/_CodeSignature/CodeResources
+d                      MyApp.app.signed/Resources
+f e3b0c44298fc1c149afb MyApp.app.signed/Resources/file-00.txt
+f e3b0c44298fc1c149afb MyApp.app.signed/Resources/file-01.txt
+
 $ rcodesign print-signature-info MyApp.app.signed
 - path: Contents/Info.plist
   file_size: 576

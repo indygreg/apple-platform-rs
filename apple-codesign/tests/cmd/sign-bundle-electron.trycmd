@@ -202,6 +202,63 @@ code directory version: 132096
 total signature size: 420 bytes
 writing signed main executable to Electron.app.signed/Contents/MacOS/Electron
 
+$ rcodesign debug-file-tree Electron.app.signed
+d                      Electron.app.signed/
+d                      Electron.app.signed/Contents
+d                      Electron.app.signed/Contents/Frameworks
+d                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework
+l                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Electron Framework -> Versions/Current/Electron Framework
+l                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Helpers -> Versions/Current/Helpers
+l                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Libraries -> Versions/Current/Libraries
+l                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Resources -> Versions/Current/Resources
+d                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions
+d                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A
+f 5bfdbd61b1b630eb4c42 Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework
+d                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers
+f 136b73cf509765caec58 Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Helpers/chrome_crashpad_handler
+d                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries
+f 554535fd2d43b0025065 Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libEGL.dylib
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/vk_swiftshader_icd.json
+d                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources
+f ca20386388c65cc79004 Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/Info.plist
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/MainMenu.nib
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/chrome_100_percent.pak
+d                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj/locale.pak
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/icudtl.dat
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/resources.pak
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/v8_context_snapshot.arm64.bin
+d                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/_CodeSignature
+f 0875b5aa7dfec9d4966a Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/A/_CodeSignature/CodeResources
+l                      Electron.app.signed/Contents/Frameworks/Electron Framework.framework/Versions/Current -> A
+d                      Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app
+d                      Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents
+f 7d16bb3cf776fb0a7eb0 Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/Info.plist
+d                      Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS
+f 35677ddaf12c56b88860 Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/MacOS/Electron Helper (GPU)
+d                      Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/_CodeSignature
+f 6686de10a28a2fe11b36 Electron.app.signed/Contents/Frameworks/Electron Helper (GPU).app/Contents/_CodeSignature/CodeResources
+d                      Electron.app.signed/Contents/Frameworks/Mantle.framework
+l                      Electron.app.signed/Contents/Frameworks/Mantle.framework/Mantle -> Versions/Current/Mantle
+l                      Electron.app.signed/Contents/Frameworks/Mantle.framework/Resources -> Versions/Current/Resources
+d                      Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions
+d                      Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A
+f ce8d29746a1cc2fb4036 Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/Mantle
+d                      Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/Resources
+f 542d886f74e466a0958e Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/Resources/Info.plist
+d                      Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/_CodeSignature
+f 738650a98f84347da27c Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/A/_CodeSignature/CodeResources
+l                      Electron.app.signed/Contents/Frameworks/Mantle.framework/Versions/Current -> A
+f 863f967826aa4c32179d Electron.app.signed/Contents/Info.plist
+d                      Electron.app.signed/Contents/MacOS
+f c8415cf8d3caa9b5cc32 Electron.app.signed/Contents/MacOS/Electron
+d                      Electron.app.signed/Contents/Resources
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Resources/default_app.asar
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Resources/electron.icns
+f e3b0c44298fc1c149afb Electron.app.signed/Contents/Resources/en.lproj
+d                      Electron.app.signed/Contents/_CodeSignature
+f 43f58322dbb289168319 Electron.app.signed/Contents/_CodeSignature/CodeResources
+
 $ rcodesign print-signature-info Electron.app.signed
 - path: Contents/Frameworks/Electron Framework.framework/Electron Framework
   symlink_target: Versions/Current/Electron Framework

@@ -32,6 +32,15 @@ writing Mach-O to Shallow.framework.signed/Shallow
 writing sealed resources to Shallow.framework.signed/_CodeSignature/CodeResources
 bundle has no main executable to sign specially
 
+$ rcodesign debug-file-tree Shallow.framework.signed
+d                      Shallow.framework.signed/
+d                      Shallow.framework.signed/Resources
+f 4ccd32815c007b1014a9 Shallow.framework.signed/Resources/Info.plist
+f e3b0c44298fc1c149afb Shallow.framework.signed/Resources/root-00.txt
+f 6b0a00ccc659f8758965 Shallow.framework.signed/Shallow
+d                      Shallow.framework.signed/_CodeSignature
+f 7c9c39f0c67dd8f067b9 Shallow.framework.signed/_CodeSignature/CodeResources
+
 $ rcodesign print-signature-info Shallow.framework.signed
 - path: Resources/Info.plist
   file_size: 612

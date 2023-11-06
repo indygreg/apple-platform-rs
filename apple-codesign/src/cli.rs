@@ -1200,6 +1200,66 @@ impl DebugCreateMachO {
 }
 
 #[derive(Parser)]
+struct DebugFileTree {
+    /// Directory to walk.
+    path: PathBuf,
+}
+
+impl DebugFileTree {
+    fn run(&self) -> Result<(), AppleCodesignError> {
+        let root = self
+            .path
+            .components()
+            .last()
+            .expect("should have final component")
+            .as_os_str()
+            .to_string_lossy()
+            .to_string();
+
+        for entry in walkdir::WalkDir::new(&self.path).sort_by_file_name() {
+            let entry = entry?;
+
+            let path = entry.path();
+
+            let rel_path = if let Ok(p) = path.strip_prefix(&self.path) {
+                format!("{}/{}", root, p.to_string_lossy().replace('\\', "/"))
+            } else {
+                root.clone()
+            };
+
+            let metadata = entry.metadata()?;
+
+            let entry_type = if metadata.is_symlink() {
+                'l'
+            } else if metadata.is_dir() {
+                'd'
+            } else if metadata.is_file() {
+                'f'
+            } else {
+                'u'
+            };
+
+            let sha256 = if entry_type == 'f' {
+                let data = std::fs::read(path)?;
+                hex::encode(DigestType::Sha256.digest_data(&data)?)[0..20].to_string()
+            } else {
+                std::iter::repeat(' ').take(20).collect::<String>()
+            };
+
+            let link_target = if entry_type == 'l' {
+                format!(" -> {}", std::fs::read_link(path)?.to_string_lossy())
+            } else {
+                "".to_string()
+            };
+
+            println!("{} {} {}{}", entry_type, sha256, rel_path, link_target);
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Parser)]
 struct DiffSignatures {
     /// The first path to compare
     path0: PathBuf,
@@ -3008,6 +3068,10 @@ enum Subcommands {
     #[command(hide = true)]
     DebugCreateMacho(DebugCreateMachO),
 
+    /// Print a filesystem tree with basic metadata.
+    #[command(hide = true)]
+    DebugFileTree(DebugFileTree),
+
     /// Print a diff between the signature content of two paths
     DiffSignatures(DiffSignatures),
 
@@ -3135,6 +3199,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::DebugCreateEntitlements(args) => args.run(),
         Subcommands::DebugCreateInfoPlist(args) => args.run(),
         Subcommands::DebugCreateMacho(args) => args.run(),
+        Subcommands::DebugFileTree(args) => args.run(),
         Subcommands::Extract(args) => args.run(),
         Subcommands::GenerateCertificateSigningRequest(args) => {
             command_generate_certificate_signing_request(args)

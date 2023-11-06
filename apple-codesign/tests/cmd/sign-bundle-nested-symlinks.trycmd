@@ -47,6 +47,19 @@ code directory version: 132096
 total signature size: 421 bytes
 writing signed main executable to MyApp.app.signed/Contents/MacOS/MyApp
 
+$ rcodesign debug-file-tree MyApp.app.signed
+d                      MyApp.app.signed/
+d                      MyApp.app.signed/Contents
+d                      MyApp.app.signed/Contents/Frameworks
+f 95566b60f24ce6600306 MyApp.app.signed/Contents/Frameworks/libssh.4.8.8.dylib
+l                      MyApp.app.signed/Contents/Frameworks/libssh.4.dylib -> libssh.4.8.8.dylib
+l                      MyApp.app.signed/Contents/Frameworks/libssh.dylib -> libssh.4.dylib
+f 0a5902dc8e47f490d038 MyApp.app.signed/Contents/Info.plist
+d                      MyApp.app.signed/Contents/MacOS
+f 0b577ed98ce1915f2d29 MyApp.app.signed/Contents/MacOS/MyApp
+d                      MyApp.app.signed/Contents/_CodeSignature
+f ae26f0a8b94cc8fc6179 MyApp.app.signed/Contents/_CodeSignature/CodeResources
+
 $ rcodesign print-signature-info MyApp.app.signed
 - path: Contents/Frameworks/libssh.4.8.8.dylib
   file_size: 22544

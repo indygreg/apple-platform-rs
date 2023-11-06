@@ -74,6 +74,9 @@ Released on ReleaseDate.
   specific directories having the *nested* flag set. This change should
   result in *it just works* single command signing of many complex
   bundles.
+* Added a hidden `debug-file-tree` command to print simple directory
+  trees. The command is used by snapshot tests to validate bundle signing
+  behavior.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
