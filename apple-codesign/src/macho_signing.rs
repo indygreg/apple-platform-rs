@@ -163,6 +163,12 @@ fn create_macho_with_signature(
     }
 
     // If we didn't see a signature load command, write one out now.
+    // Note: we're assuming that there's enough space between the end of
+    // the original load commands and the beginning of the first section.
+    // All this intermediate data should be 0s and we shouldn't be
+    // interfering with anything here. But you never know.
+    // TODO validate the added load command doesn't overflow into a section
+    // or otherwise clobber data in the binary.
     if !seen_signature_load_command {
         let command = LinkeditDataCommand {
             cmd: LC_CODE_SIGNATURE,

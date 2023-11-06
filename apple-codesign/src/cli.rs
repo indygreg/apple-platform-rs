@@ -3004,6 +3004,16 @@ struct Verify {
 }
 
 fn command_verify(args: &Verify) -> Result<(), AppleCodesignError> {
+    let path_type = crate::PathType::from_path(&args.path)?;
+
+    if path_type != crate::PathType::MachO {
+        return Err(AppleCodesignError::CliGeneralError(format!(
+            "verify command only works on Mach-O binaries; provided path is a {:?}",
+            path_type
+        )));
+    }
+
+    warn!("(the verify command is known to be buggy and gives misleading results; we highly recommend using Apple's tooling until this message is removed)");
     let data = std::fs::read(&args.path)?;
 
     let problems = crate::verify::verify_macho_data(data);
