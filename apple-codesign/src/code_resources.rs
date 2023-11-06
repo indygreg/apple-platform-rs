@@ -1127,8 +1127,6 @@ impl CodeResourcesBuilder {
                 .to_string_lossy()
                 .to_string();
 
-            //debug!("{}:{}:{}", root.display(), rel_path_normalized, file_name);
-
             // We're excluding a parent directory. Do nothing.
             if skipping_rel_dirs.iter().any(|p| rel_path.starts_with(p)) {
                 debug!("{} ignored because marked as skipped", rel_path.display());
@@ -1137,6 +1135,13 @@ impl CodeResourcesBuilder {
 
             // Rules version 2.
             if let Some(rule) = find_rule(&self.rules2, rel_path) {
+                debug!(
+                    "{}:{} matches rules2 {:?}",
+                    root.display(),
+                    rel_path.display(),
+                    rule
+                );
+
                 if entry.file_type().is_dir() {
                     if rule.nested {
                         // Only treat as a nested bundle iff it has a dot in its name.
@@ -1219,11 +1224,24 @@ impl CodeResourcesBuilder {
                         rel_path_normalized
                     );
                 }
+            } else {
+                debug!(
+                    "{}:{} doesn't match any rules2 rule",
+                    root.display(),
+                    rel_path.display()
+                );
             }
 
             // Now rules version 1. Only regular files can be sealed. Version
             // 1 does not support nested signatures nor symlinks.
             if let Some(rule) = find_rule(&self.rules, rel_path) {
+                debug!(
+                    "{}:{} matches rules rule {:?}",
+                    root.display(),
+                    rel_path.display(),
+                    rule
+                );
+
                 if entry.file_type().is_file() {
                     if rule.exclude {
                         continue;
