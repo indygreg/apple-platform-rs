@@ -174,11 +174,12 @@ fn create_macho_with_signature(
         cursor.iowrite_with(command, ctx.le)?;
     }
 
+    let mut wrote_non_empty_segment = false;
+
     // Write out segments, updating the __LINKEDIT segment when we encounter it.
     for segment in macho.segments_by_file_offset() {
         // The initial __PAGEZERO segment contains no data (it is the magic and load
-        // commands) and overlaps with the __TEXT segment, which has .fileoff =0, so
-        // we ignore it.
+        // commands) and overlaps with the __TEXT segment, so we ignore it.
         if matches!(segment.name(), Ok(SEG_PAGEZERO)) {
             continue;
         }
@@ -195,9 +196,19 @@ fn create_macho_with_signature(
                 );
                 cursor.write_all(padding)?;
             }
+
             // The __TEXT segment usually has .fileoff = 0, which has it overlapping with
             // already written data. Allow this special case through.
             Ordering::Greater if segment.fileoff == 0 => {}
+
+            // The initial non-empty segment is special because it can overlap
+            // we the already written load commands.
+            //
+            // Usually the first non-empty segment is __TEXT and its file start
+            // offset is 0x0. But we've seen binaries in the wild where the
+            // offset is > 0x0. As long as the current cursor is before the first
+            // section data, there should be no data corruption and we're good.
+            Ordering::Greater if !wrote_non_empty_segment => {}
 
             // The writer has overran into this segment. That means we screwed up on a
             // previous loop iteration.
@@ -210,8 +221,6 @@ fn create_macho_with_signature(
             }
             Ordering::Equal => {}
         }
-
-        assert!(segment.fileoff == 0 || segment.fileoff == cursor.position());
 
         match segment.name() {
             Ok(SEG_LINKEDIT) => {
@@ -244,6 +253,8 @@ fn create_macho_with_signature(
                 }
             }
         }
+
+        wrote_non_empty_segment = true;
     }
 
     Ok(cursor.into_inner())

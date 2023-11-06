@@ -86,6 +86,9 @@ Released on ReleaseDate.
 * The default `CodeResources` rules for bundles lacking a `Resources/`
   now properly have trailing `/` on rules referencing `.lproj` directories.
   Previously, these directories were likely not handled correctly. (#42)
+* Fixed a bug where attempting to sign Mach-O binaries having a `__TEXT` segment
+  whose start offset was >0 resulted in a `Mach-O segment corruption` error.
+  We can now properly sign such files. (#91)
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
