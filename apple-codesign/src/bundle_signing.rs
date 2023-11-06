@@ -120,11 +120,7 @@ impl BundleSigner {
             warn!("entering nested bundle {}", rel,);
 
             // If we excluded this bundle from signing, just copy all the files.
-            if settings
-                .path_exclusion_patterns()
-                .iter()
-                .any(|pattern| pattern.matches(rel))
-            {
+            if settings.path_exclusion_pattern_matches(rel) {
                 warn!("bundle is in exclusion list; it will be copied instead of signed");
                 copy_bundle(&nested.bundle, &nested_dest_dir)?;
             } else {

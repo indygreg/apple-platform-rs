@@ -449,11 +449,11 @@ impl<'key> SigningSettings<'key> {
         }
     }
 
-    /// Return relative paths that should be excluded from signing.
-    ///
-    /// Values are glob pattern matches as defined the by `glob` crate.
-    pub fn path_exclusion_patterns(&self) -> &[Pattern] {
-        &self.path_exclusion_patterns
+    /// Whether a given path matches a path exclusion pattern.
+    pub fn path_exclusion_pattern_matches(&self, path: &str) -> bool {
+        self.path_exclusion_patterns
+            .iter()
+            .any(|pattern| pattern.matches(path))
     }
 
     /// Add a path to the exclusions list.
