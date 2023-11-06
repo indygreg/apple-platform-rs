@@ -68,15 +68,21 @@ impl BundleSigner {
     pub fn new_from_path(path: impl AsRef<Path>) -> Result<Self, AppleCodesignError> {
         let main_bundle = DirectoryBundle::new_from_path(path.as_ref())
             .map_err(AppleCodesignError::DirectoryBundle)?;
+        let root_bundle_path = main_bundle.root_dir().to_path_buf();
 
         let mut bundles = main_bundle
             .nested_bundles(true)
             .map_err(AppleCodesignError::DirectoryBundle)?
             .into_iter()
-            .map(|(k, bundle)| (Some(k), SingleBundleSigner::new(bundle)))
+            .map(|(k, bundle)| {
+                (
+                    Some(k),
+                    SingleBundleSigner::new(root_bundle_path.clone(), bundle),
+                )
+            })
             .collect::<BTreeMap<Option<String>, SingleBundleSigner>>();
 
-        bundles.insert(None, SingleBundleSigner::new(main_bundle));
+        bundles.insert(None, SingleBundleSigner::new(root_bundle_path, main_bundle));
 
         Ok(Self { bundles })
     }
@@ -270,7 +276,7 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
         &self,
         source_path: &Path,
         dest_rel_path: &Path,
-    ) -> Result<(), AppleCodesignError> {
+    ) -> Result<PathBuf, AppleCodesignError> {
         let dest_path = self.dest_dir.join(dest_rel_path);
 
         if source_path != dest_path {
@@ -313,7 +319,7 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
             }
         }
 
-        Ok(())
+        Ok(dest_path)
     }
 
     /// Sign a Mach-O file and ensure its new content is installed.
@@ -377,14 +383,20 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
 /// for signing bundles, as failure to account for nested bundles can result in
 /// signature verification errors.
 pub struct SingleBundleSigner {
+    /// Path of the root bundle being signed.
+    root_bundle_path: PathBuf,
+
     /// The bundle being signed.
     bundle: DirectoryBundle,
 }
 
 impl SingleBundleSigner {
     /// Construct a new instance.
-    pub fn new(bundle: DirectoryBundle) -> Self {
-        Self { bundle }
+    pub fn new(root_bundle_path: PathBuf, bundle: DirectoryBundle) -> Self {
+        Self {
+            root_bundle_path,
+            bundle,
+        }
     }
 
     /// Write a signed bundle to the given directory.
@@ -537,7 +549,11 @@ impl SingleBundleSigner {
             settings,
         };
 
-        resources_builder.walk_and_seal_directory(self.bundle.root_dir(), &context)?;
+        resources_builder.walk_and_seal_directory(
+            &self.root_bundle_path,
+            self.bundle.root_dir(),
+            &context,
+        )?;
 
         let info_plist_data = std::fs::read(self.bundle.info_plist_path())?;
 

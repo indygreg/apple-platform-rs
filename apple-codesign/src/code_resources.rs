@@ -1103,22 +1103,28 @@ impl CodeResourcesBuilder {
     /// directory as part of sealing.
     pub fn walk_and_seal_directory<'ctx, 'key>(
         &mut self,
-        root: &Path,
+        root_bundle_path: &Path,
+        bundle_root: &Path,
         context: &BundleSigningContext<'ctx, 'key>,
     ) -> Result<(), AppleCodesignError> {
         let mut skipping_rel_dirs = BTreeSet::new();
 
-        for entry in walkdir::WalkDir::new(root).sort_by_file_name() {
+        for entry in walkdir::WalkDir::new(bundle_root).sort_by_file_name() {
             let entry = entry?;
             let path = entry.path();
 
-            if path == root {
+            if path == bundle_root {
                 continue;
             }
 
             let rel_path = path
-                .strip_prefix(root)
+                .strip_prefix(bundle_root)
                 .expect("stripping path prefix should always work");
+            let root_rel_path_normalized = path
+                .strip_prefix(root_bundle_path)
+                .expect("stripping root prefix should always work")
+                .to_string_lossy()
+                .replace('\\', "/");
             let rel_path_normalized = normalized_resources_path(rel_path);
 
             let file_name = rel_path
@@ -1137,7 +1143,7 @@ impl CodeResourcesBuilder {
             if let Some(rule) = find_rule(&self.rules2, rel_path) {
                 debug!(
                     "{}:{} matches rules2 {:?}",
-                    root.display(),
+                    bundle_root.display(),
                     rel_path.display(),
                     rule
                 );
@@ -1181,7 +1187,21 @@ impl CodeResourcesBuilder {
                         if crate::reader::path_is_macho(path)? {
                             info!("sealing nested Mach-O binary: {}", rel_path.display());
 
-                            let macho_info = context.sign_and_install_macho(path, rel_path)?.1;
+                            let macho_info = if context
+                                .settings
+                                .path_exclusion_pattern_matches(&root_rel_path_normalized)
+                            {
+                                warn!("skipping signing of nested Mach-O binary because excluded by settings: {}", rel_path.display());
+                                warn!("(an error will occur if this binary is not already signed)");
+                                warn!("(if you see an error, sign that Mach-O explicitly or remove it from the exclusion settings)");
+
+                                let dest_path = context.install_file(path, rel_path)?;
+                                let data = std::fs::read(&dest_path)?;
+
+                                SignedMachOInfo::parse_data(&data)?
+                            } else {
+                                context.sign_and_install_macho(path, rel_path)?.1
+                            };
 
                             self.resources.seal_macho(
                                 &rel_path_normalized,
@@ -1197,6 +1217,7 @@ impl CodeResourcesBuilder {
                             path,
                             rel_path,
                             &rel_path_normalized,
+                            &root_rel_path_normalized,
                             rule.omit,
                             rule.optional,
                             context,
@@ -1227,7 +1248,7 @@ impl CodeResourcesBuilder {
             } else {
                 debug!(
                     "{}:{} doesn't match any rules2 rule",
-                    root.display(),
+                    bundle_root.display(),
                     rel_path.display()
                 );
             }
@@ -1237,7 +1258,7 @@ impl CodeResourcesBuilder {
             if let Some(rule) = find_rule(&self.rules, rel_path) {
                 debug!(
                     "{}:{} matches rules rule {:?}",
-                    root.display(),
+                    bundle_root.display(),
                     rel_path.display(),
                     rule
                 );
@@ -1299,6 +1320,7 @@ impl CodeResourcesBuilder {
         full_path: &Path,
         rel_path: &Path,
         rel_path_normalized: &str,
+        root_rel_path: &str,
         omit: bool,
         optional: bool,
         context: &BundleSigningContext<'ctx, 'key>,
@@ -1315,8 +1337,11 @@ impl CodeResourcesBuilder {
             // nested flag isn't set. Note that we need to read the signed/installed
             // version of the file since signing will change its content.
 
-            // TODO honor --exclude.
-            let read_path = if crate::reader::path_is_macho(full_path)? {
+            let read_path = if crate::reader::path_is_macho(full_path)?
+                && !context
+                    .settings
+                    .path_exclusion_pattern_matches(root_rel_path)
+            {
                 info!(
                     "non-nested file is a Mach-O binary; signing accordingly {}",
                     rel_path.display()

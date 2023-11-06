@@ -146,10 +146,29 @@ $ rcodesign debug-create-info-plist --bundle-name MyApp MyApp.app/Contents/Info.
 writing MyApp.app/Contents/Info.plist
 
 $ rcodesign sign --exclude Contents/MacOS/macos-bin MyApp.app MyApp.app.NoMacOSBin
+? 1
 signing MyApp.app to MyApp.app.NoMacOSBin
 signing bundle at MyApp.app
 signing bundle at MyApp.app into MyApp.app.NoMacOSBin
-signing Mach-O file Contents/MacOS/macos-bin
+skipping signing of nested Mach-O binary because excluded by settings: Contents/MacOS/macos-bin
+(an error will occur if this binary is not already signed)
+(if you see an error, sign that Mach-O explicitly or remove it from the exclusion settings)
+Error: binary does not have code signature data
+
+$ rcodesign sign MyApp.app/Contents/MacOS/macos-bin
+signing MyApp.app/Contents/MacOS/macos-bin in place
+signing MyApp.app/Contents/MacOS/macos-bin as a Mach-O binary
+setting binary identifier to macos-bin
+parsing Mach-O
+writing Mach-O to MyApp.app/Contents/MacOS/macos-bin
+
+$ rcodesign sign --exclude Contents/MacOS/macos-bin MyApp.app MyApp.app.NoMacOSBin
+signing MyApp.app to MyApp.app.NoMacOSBin
+signing bundle at MyApp.app
+signing bundle at MyApp.app into MyApp.app.NoMacOSBin
+skipping signing of nested Mach-O binary because excluded by settings: Contents/MacOS/macos-bin
+(an error will occur if this binary is not already signed)
+(if you see an error, sign that Mach-O explicitly or remove it from the exclusion settings)
 signing Mach-O file Contents/Resources/resource-bin
 signing main executable Contents/MacOS/MyApp
 
@@ -170,7 +189,6 @@ signing MyApp.app to MyApp.app.NoResourcesBin
 signing bundle at MyApp.app
 signing bundle at MyApp.app into MyApp.app.NoResourcesBin
 signing Mach-O file Contents/MacOS/macos-bin
-signing Mach-O file Contents/Resources/resource-bin
 signing main executable Contents/MacOS/MyApp
 
 $ rcodesign debug-file-tree MyApp.app.NoResourcesBin
@@ -178,11 +196,82 @@ d                      MyApp.app.NoResourcesBin/
 d                      MyApp.app.NoResourcesBin/Contents
 f 0a5902dc8e47f490d038 MyApp.app.NoResourcesBin/Contents/Info.plist
 d                      MyApp.app.NoResourcesBin/Contents/MacOS
-f 83e61e1e1c3407ff46d1 MyApp.app.NoResourcesBin/Contents/MacOS/MyApp
+f 322195d604cd3061f59d MyApp.app.NoResourcesBin/Contents/MacOS/MyApp
 f 90dd49841af359158311 MyApp.app.NoResourcesBin/Contents/MacOS/macos-bin
 d                      MyApp.app.NoResourcesBin/Contents/Resources
-f 30b6fef6ae310318e47f MyApp.app.NoResourcesBin/Contents/Resources/resource-bin
+f 4cfaf70bc9fb6827fcf7 MyApp.app.NoResourcesBin/Contents/Resources/resource-bin
 d                      MyApp.app.NoResourcesBin/Contents/_CodeSignature
-f 0acb1d044d421846ebc7 MyApp.app.NoResourcesBin/Contents/_CodeSignature/CodeResources
+f a1c3ba13551ece11eda7 MyApp.app.NoResourcesBin/Contents/_CodeSignature/CodeResources
 
+$ rm -rf MyApp.app
+
+```
+
+Exclude a Mach-O in a nested bundle
+
+```
+$ rcodesign debug-create-macho MyApp.app/Contents/MacOS/MyApp
+assuming default minimum version 11.0.0
+writing Mach-O to MyApp.app/Contents/MacOS/MyApp
+
+$ rcodesign debug-create-info-plist --bundle-name MyApp MyApp.app/Contents/Info.plist
+writing MyApp.app/Contents/Info.plist
+
+$ rcodesign debug-create-macho MyApp.app/Contents/MacOS/Extra.app/Contents/MacOS/Extra
+assuming default minimum version 11.0.0
+writing Mach-O to MyApp.app/Contents/MacOS/Extra.app/Contents/MacOS/Extra
+
+$ rcodesign debug-create-macho MyApp.app/Contents/MacOS/Extra.app/Contents/MacOS/extra-bin
+assuming default minimum version 11.0.0
+writing Mach-O to MyApp.app/Contents/MacOS/Extra.app/Contents/MacOS/extra-bin
+
+$ rcodesign sign MyApp.app/Contents/MacOS/Extra.app/Contents/MacOS/extra-bin
+signing MyApp.app/Contents/MacOS/Extra.app/Contents/MacOS/extra-bin in place
+signing MyApp.app/Contents/MacOS/Extra.app/Contents/MacOS/extra-bin as a Mach-O binary
+setting binary identifier to extra-bin
+parsing Mach-O
+writing Mach-O to MyApp.app/Contents/MacOS/Extra.app/Contents/MacOS/extra-bin
+
+$ rcodesign debug-create-macho MyApp.app/Contents/MacOS/Extra.app/Contents/Resources/resource-bin
+assuming default minimum version 11.0.0
+writing Mach-O to MyApp.app/Contents/MacOS/Extra.app/Contents/Resources/resource-bin
+
+$ rcodesign debug-create-info-plist --bundle-name Extra MyApp.app/Contents/MacOS/Extra.app/Contents/Info.plist
+writing MyApp.app/Contents/MacOS/Extra.app/Contents/Info.plist
+
+$ rcodesign sign --exclude Contents/MacOS/Extra.app/Contents/MacOS/extra-bin --exclude Contents/MacOS/Extra.app/Contents/Resources/resource-bin MyApp.app MyApp.app.NoExtraBin
+signing MyApp.app to MyApp.app.NoExtraBin
+signing bundle at MyApp.app
+signing 1 nested bundles in the following order:
+Contents/MacOS/Extra.app
+entering nested bundle Contents/MacOS/Extra.app
+signing bundle at MyApp.app/Contents/MacOS/Extra.app into MyApp.app.NoExtraBin/Contents/MacOS/Extra.app
+skipping signing of nested Mach-O binary because excluded by settings: Contents/MacOS/extra-bin
+(an error will occur if this binary is not already signed)
+(if you see an error, sign that Mach-O explicitly or remove it from the exclusion settings)
+signing main executable Contents/MacOS/Extra
+leaving nested bundle Contents/MacOS/Extra.app
+signing bundle at MyApp.app into MyApp.app.NoExtraBin
+signing main executable Contents/MacOS/MyApp
+
+$ rcodesign debug-file-tree MyApp.app.NoExtraBin
+d                      MyApp.app.NoExtraBin/
+d                      MyApp.app.NoExtraBin/Contents
+f 0a5902dc8e47f490d038 MyApp.app.NoExtraBin/Contents/Info.plist
+d                      MyApp.app.NoExtraBin/Contents/MacOS
+d                      MyApp.app.NoExtraBin/Contents/MacOS/Extra.app
+d                      MyApp.app.NoExtraBin/Contents/MacOS/Extra.app/Contents
+f 63154cc4f75820c926eb MyApp.app.NoExtraBin/Contents/MacOS/Extra.app/Contents/Info.plist
+d                      MyApp.app.NoExtraBin/Contents/MacOS/Extra.app/Contents/MacOS
+f 0c02af539846df8f4e94 MyApp.app.NoExtraBin/Contents/MacOS/Extra.app/Contents/MacOS/Extra
+f c83cc7362ebbacb94ac0 MyApp.app.NoExtraBin/Contents/MacOS/Extra.app/Contents/MacOS/extra-bin
+d                      MyApp.app.NoExtraBin/Contents/MacOS/Extra.app/Contents/Resources
+f 4cfaf70bc9fb6827fcf7 MyApp.app.NoExtraBin/Contents/MacOS/Extra.app/Contents/Resources/resource-bin
+d                      MyApp.app.NoExtraBin/Contents/MacOS/Extra.app/Contents/_CodeSignature
+f 596d62f4669d89f6bc8e MyApp.app.NoExtraBin/Contents/MacOS/Extra.app/Contents/_CodeSignature/CodeResources
+f 1efc495c2cb290e5b2d3 MyApp.app.NoExtraBin/Contents/MacOS/MyApp
+d                      MyApp.app.NoExtraBin/Contents/_CodeSignature
+f c9a63c1dbccfd48e50b5 MyApp.app.NoExtraBin/Contents/_CodeSignature/CodeResources
+
+$ rm -rf MyApp.app
 ```

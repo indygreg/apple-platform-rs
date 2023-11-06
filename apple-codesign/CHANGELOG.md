@@ -81,6 +81,8 @@ Released on ReleaseDate.
   command output is less verbose. `-v` restores the prior behavior. And
   `-vvv` is now needed to activate `trace` logging (previously `-vv` was
   the highest log level).
+* The `sign --exclude` argument is now honored for Mach-O binaries within
+  bundles. Previously, it only applied to bundle paths.
 * aws crates 0.53 -> 0.57.
 * bitflags 1.3 -> 2.0.
 * cryptographic-message-syntax 0.19 -> 0.25.
