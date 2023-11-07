@@ -22,7 +22,7 @@ use {
     p256::NistP256,
     pkcs1::RsaPrivateKey,
     pkcs8::{EncodePrivateKey, ObjectIdentifier, PrivateKeyInfo},
-    ring::signature::{EcdsaKeyPair, Ed25519KeyPair, KeyPair, RsaKeyPair},
+    ring::signature::{Ed25519KeyPair, KeyPair},
     rsa::{pkcs1::DecodeRsaPrivateKey, BigUint, Oaep, RsaPrivateKey as RsaConstructedKey},
     signature::Signer,
     spki::AlgorithmIdentifier,
@@ -90,14 +90,17 @@ impl TryFrom<InMemoryRsaKey> for InMemorySigningKeyPair {
     type Error = AppleCodesignError;
 
     fn try_from(value: InMemoryRsaKey) -> Result<Self, Self::Error> {
-        let key_pair = RsaKeyPair::from_der(value.private_key.as_bytes()).map_err(|e| {
-            AppleCodesignError::CertificateGeneric(format!("error importing RSA key to ring: {e}"))
-        })?;
-
-        Ok(InMemorySigningKeyPair::Rsa(
-            key_pair,
-            value.private_key.as_bytes().to_vec(),
-        ))
+        Ok(Self::from_pkcs8_der(
+            value
+                .to_pkcs8_der()
+                .map_err(|e| {
+                    AppleCodesignError::CertificateGeneric(format!(
+                        "error converting RSA key to DER: {}",
+                        e
+                    ))
+                })?
+                .as_bytes(),
+        )?)
     }
 }
 
@@ -163,24 +166,16 @@ where
     type Error = AppleCodesignError;
 
     fn try_from(key: InMemoryEcdsaKey<C>) -> Result<Self, Self::Error> {
-        let curve = key.curve()?;
-
-        let private_key = key.secret_key.to_bytes();
-        let public_key = key.secret_key.public_key().to_encoded_point(false);
-
-        let key_pair = EcdsaKeyPair::from_private_key_and_public_key(
-            curve.into(),
-            private_key.as_ref(),
-            public_key.as_bytes(),
-            &ring::rand::SystemRandom::new(),
-        )
-        .map_err(|e| {
-            AppleCodesignError::CertificateGeneric(format!(
-                "unable to convert ECDSA private key: {e}"
-            ))
-        })?;
-
-        Ok(Self::Ecdsa(key_pair, curve, vec![]))
+        Ok(Self::from_pkcs8_der(
+            key.to_pkcs8_der()
+                .map_err(|e| {
+                    AppleCodesignError::CertificateGeneric(format!(
+                        "error converting ECDSA key to DER: {}",
+                        e
+                    ))
+                })?
+                .as_bytes(),
+        )?)
     }
 }
 
@@ -228,14 +223,16 @@ impl TryFrom<InMemoryEd25519Key> for InMemorySigningKeyPair {
     type Error = AppleCodesignError;
 
     fn try_from(key: InMemoryEd25519Key) -> Result<Self, Self::Error> {
-        let key_pair =
-            Ed25519KeyPair::from_seed_unchecked(key.private_key.as_ref()).map_err(|e| {
-                AppleCodesignError::CertificateGeneric(format!(
-                    "unable to convert ED25519 private key: {e}"
-                ))
-            })?;
-
-        Ok(Self::Ed25519(key_pair))
+        Ok(Self::from_pkcs8_der(
+            key.to_pkcs8_der()
+                .map_err(|e| {
+                    AppleCodesignError::CertificateGeneric(format!(
+                        "error converting ED25519 key to DER: {}",
+                        e
+                    ))
+                })?
+                .as_bytes(),
+        )?)
     }
 }
 
@@ -714,7 +711,11 @@ fn mgf1_xor(out: &mut [u8], digest: &mut dyn DynDigest, seed: &[u8]) {
 
 #[cfg(test)]
 mod test {
-    use {super::*, ring::signature::KeyPair, x509_certificate::Sign};
+    use {
+        super::*,
+        ring::signature::{EcdsaKeyPair, KeyPair, RsaKeyPair},
+        x509_certificate::Sign,
+    };
 
     const RSA_2048_PKCS8_DER: &[u8] = include_bytes!("testdata/rsa-2048.pk8");
     const ED25519_PKCS8_DER: &[u8] = include_bytes!("testdata/ed25519.pk8");
