@@ -3,7 +3,6 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 use {
-    anyhow::Result,
     goblin::mach::{
         fat::{FatArch, FAT_MAGIC, SIZEOF_FAT_ARCH, SIZEOF_FAT_HEADER},
         Mach,
