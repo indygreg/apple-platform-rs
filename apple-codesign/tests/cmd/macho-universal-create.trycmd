@@ -1,0 +1,36 @@
+```
+$ rcodesign help macho-universal-create
+Create a universal ("fat") Mach-O binary.
+
+This is similar to the `lipo -create` command. Use it to stitch multiple single architecture Mach-O binaries into a single multi-arch binary.
+
+Usage: rcodesign[EXE] macho-universal-create [OPTIONS] --output <OUTPUT> [INPUT]...
+
+Arguments:
+  [INPUT]...
+          Input Mach-O binaries to combine
+
+Options:
+  -o, --output <OUTPUT>
+          Output file to write
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+$ rcodesign debug-create-macho --architecture aarch64 exe.aarch64
+assuming default minimum version 11.0.0
+writing Mach-O to exe.aarch64
+
+$ rcodesign debug-create-macho --architecture x86-64 exe.x86-64
+assuming default minimum version 11.0.0
+writing Mach-O to exe.x86-64
+
+$ rcodesign macho-universal-create -o exe exe.aarch64 exe.x86-64
+adding exe.aarch64
+adding exe.x86-64
+writing exe
+
+```

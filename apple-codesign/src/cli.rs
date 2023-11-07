@@ -2276,6 +2276,40 @@ fn command_keychain_print_certificates(
     ))
 }
 
+#[derive(Parser)]
+struct MachoUniversalCreate {
+    /// Input Mach-O binaries to combine.
+    input: Vec<PathBuf>,
+
+    /// Output file to write.
+    #[arg(short = 'o', long)]
+    output: PathBuf,
+}
+
+impl MachoUniversalCreate {
+    fn run(&self) -> Result<(), AppleCodesignError> {
+        let mut builder = crate::macho_universal::UniversalBinaryBuilder::default();
+
+        for path in &self.input {
+            eprintln!("adding {}", path.display());
+            let data = std::fs::read(path)?;
+            builder.add_binary(data)?;
+        }
+
+        eprintln!("writing {}", self.output.display());
+
+        if let Some(parent) = self.output.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+
+        let mut fh = std::fs::File::create(&self.output)?;
+        simple_file_manifest::set_executable(&mut fh)?;
+        builder.write(&mut fh)?;
+
+        Ok(())
+    }
+}
+
 #[cfg(feature = "notarize")]
 const NOTARIZE_ABOUT: &str = "\
 Submit a notarization request to Apple.
@@ -3118,6 +3152,13 @@ enum Subcommands {
     /// Print information about certificates in the macOS keychain
     KeychainPrintCertificates(KeychainPrintCertificates),
 
+    /// Create a universal ("fat") Mach-O binary.
+    ///
+    /// This is similar to the `lipo -create` command. Use it to stitch
+    /// multiple single architecture Mach-O binaries into a single multi-arch
+    /// binary.
+    MachoUniversalCreate(MachoUniversalCreate),
+
     #[cfg(feature = "notarize")]
     /// Fetch the notarization log for a previous submission
     NotaryLog(NotaryLog),
@@ -3229,6 +3270,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
             command_keychain_export_certificate_chain(args)
         }
         Subcommands::KeychainPrintCertificates(args) => command_keychain_print_certificates(args),
+        Subcommands::MachoUniversalCreate(args) => args.run(),
         #[cfg(feature = "notarize")]
         Subcommands::NotaryLog(args) => command_notary_log(args),
         #[cfg(feature = "notarize")]

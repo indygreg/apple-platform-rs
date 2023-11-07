@@ -15,6 +15,7 @@ Commands:
   generate-self-signed-certificate      Generate a self-signed certificate for code signing
   keychain-export-certificate-chain     Export Apple CA certificates from the macOS Keychain
   keychain-print-certificates           Print information about certificates in the macOS keychain
+  macho-universal-create                Create a universal ("fat") Mach-O binary
   notary-log                            Fetch the notarization log for a previous submission
   notary-submit                         Upload an asset to Apple for notarization and possibly staple it
   notary-wait                           Wait for completion of a previous submission
@@ -53,6 +54,7 @@ Commands:
   generate-self-signed-certificate      Generate a self-signed certificate for code signing
   keychain-export-certificate-chain     Export Apple CA certificates from the macOS Keychain
   keychain-print-certificates           Print information about certificates in the macOS keychain
+  macho-universal-create                Create a universal ("fat") Mach-O binary
   notary-log                            Fetch the notarization log for a previous submission
   notary-submit                         Upload an asset to Apple for notarization and possibly staple it
   notary-wait                           Wait for completion of a previous submission

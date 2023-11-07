@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+* Add a `macho-universal-create` command to assemble single-arch Mach-O
+  binaries into a single multi-arch / universal / fat binary. The command
+  can be used as a replacement for Apple's `lipo -create`.
+
 ## 0.23.0
 
 Released on 2023-11-06.
