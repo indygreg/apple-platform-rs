@@ -103,6 +103,8 @@ impl TryFrom<InMemoryRsaKey> for InMemorySigningKeyPair {
 
 impl EncodePrivateKey for InMemoryRsaKey {
     fn to_pkcs8_der(&self) -> pkcs8::Result<SecretDocument> {
+        // We don't need to store the public key because it can always be
+        // derived from the private key for RSA keys.
         let raw = PrivateKeyInfo::new(pkcs1::ALGORITHM_ID, self.private_key.as_bytes()).to_der()?;
 
         Ok(Document::from_der(&raw)?.into_secret())
@@ -247,7 +249,18 @@ impl EncodePrivateKey for InMemoryEd25519Key {
         let key_ref: &[u8] = self.private_key.as_ref();
         let value = Zeroizing::new(asn1::OctetString::new(key_ref)?.to_der()?);
 
-        PrivateKeyInfo::new(algorithm, value.as_ref()).try_into()
+        let mut pki = PrivateKeyInfo::new(algorithm, value.as_ref());
+
+        let public_key =
+            if let Ok(key) = Ed25519KeyPair::from_seed_unchecked(self.private_key.as_ref()) {
+                Bytes::copy_from_slice(key.public_key().as_ref())
+            } else {
+                Bytes::new()
+            };
+
+        pki.public_key = Some(public_key.as_ref());
+
+        pki.try_into()
     }
 }
 
@@ -734,6 +747,10 @@ mod test {
 
         InMemoryPrivateKey::from_pkcs8_der(RSA_2048_PKCS8_DER)?;
 
+        let random_key = rsa::RsaPrivateKey::new(&mut rand::thread_rng(), 2048).unwrap();
+        let random_key_pkcs8 = random_key.to_pkcs8_der().unwrap();
+        InMemorySigningKeyPair::from_pkcs8_der(random_key_pkcs8.as_bytes())?;
+
         Ok(())
     }
 
@@ -743,7 +760,13 @@ mod test {
         let seed = &pki.private_key[2..];
         let key = InMemoryPrivateKey::try_from(pki).unwrap();
 
-        assert_eq!(key.to_pkcs8_der().unwrap().as_bytes(), ED25519_PKCS8_DER);
+        assert!(
+            InMemorySigningKeyPair::from_pkcs8_der(ED25519_PKCS8_DER).is_err(),
+            "stored key doesn't have public key, which ring rejects loading"
+        );
+
+        // But out PKCS#8 export includes it so it can round trip.
+        InMemorySigningKeyPair::from_pkcs8_der(key.to_pkcs8_der().unwrap().as_bytes()).unwrap();
 
         let our_key = InMemorySigningKeyPair::try_from(key)?;
         let our_public_key = our_key.public_key_data();
@@ -773,6 +796,7 @@ mod test {
 
         assert_eq!(key.to_pkcs8_der().unwrap().as_bytes(), SECP256_PKCS8_DER);
 
+        InMemorySigningKeyPair::from_pkcs8_der(SECP256_PKCS8_DER)?;
         let our_key = InMemorySigningKeyPair::try_from(key)?;
         let our_public_key = our_key.public_key_data();
 
