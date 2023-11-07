@@ -14,6 +14,9 @@ Released on ReleaseDate.
   a Mach-O contained both SHA-1 and SHA-256 code directories, only the
   SHA-256 hash would be emitted. The new behavior matches Apple's tooling.
   (#95)
+* The `general-self-signed-certificate` command has gained the `--p12-file`
+  and `--p12-password` arguments to write a self-signed certificate to a
+  PKCS#12 / p12 / PFX file.
 
 ## 0.23.0
 

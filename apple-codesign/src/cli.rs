@@ -2125,6 +2125,16 @@ struct GenerateSelfSignedCertificate {
     /// Filename to write PEM encoded private key and public certificate to.
     #[arg(long)]
     pem_unified_filename: Option<PathBuf>,
+
+    /// Filename to write a PKCS#12 / p12 / PFX encoded certificate to.
+    #[arg(long = "p12-file", alias = "pfx-file")]
+    p12_path: Option<PathBuf>,
+
+    /// Password to use to encrypt --p12-path.
+    ///
+    /// If not provided you will be prompted for a password.
+    #[arg(long)]
+    p12_password: Option<String>,
 }
 
 impl GenerateSelfSignedCertificate {
@@ -2178,6 +2188,30 @@ impl GenerateSelfSignedCertificate {
 
             println!("writing unified PEM to {}", path.display());
             std::fs::write(&path, content.as_bytes())?;
+
+            wrote_file = true;
+        }
+
+        if let Some(path) = &self.p12_path {
+            let password = get_pkcs12_password(self.p12_password.clone(), None::<PathBuf>)?;
+
+            let pfx = p12::PFX::new(
+                &cert.encode_der()?,
+                raw.as_ref(),
+                None,
+                &password,
+                "code-signing",
+            )
+            .ok_or_else(|| {
+                AppleCodesignError::CliGeneralError("failed to create PFX structure".into())
+            })?;
+
+            println!("writing PKCS#12 certificate to {}", path.display());
+
+            if let Some(parent) = path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+            std::fs::write(path, &pfx.to_der())?;
 
             wrote_file = true;
         }

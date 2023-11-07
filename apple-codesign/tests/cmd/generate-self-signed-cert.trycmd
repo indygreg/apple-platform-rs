@@ -63,6 +63,14 @@ Options:
       --pem-unified-filename <PEM_UNIFIED_FILENAME>
           Filename to write PEM encoded private key and public certificate to
 
+      --p12-file <P12_PATH>
+          Filename to write a PKCS#12 / p12 / PFX encoded certificate to
+
+      --p12-password <P12_PASSWORD>
+          Password to use to encrypt --p12-path.
+          
+          If not provided you will be prompted for a password.
+
   -h, --help
           Print help (see a summary with '-h')
 
@@ -90,5 +98,13 @@ $ rcodesign generate-self-signed-certificate --profile apple-development --perso
 [..]
 [..]
 -----END PRIVATE KEY-----
+
+```
+
+Try a PKCS#12 file
+
+```
+$ rcodesign generate-self-signed-certificate --profile apple-development --person-name 'Johnny Apple' --p12-file test.p12 --p12-password password
+writing PKCS#12 certificate to test.p12
 
 ```
