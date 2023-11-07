@@ -1,0 +1,403 @@
+Signing with a PKCS#12 / PFX file works
+
+```
+$ rcodesign debug-create-macho exe
+assuming default minimum version 11.0.0
+writing Mach-O to exe
+
+$ rcodesign sign --p12-file src/testdata/self-signed-ed25519-apple-development.p12 --p12-password password --signing-time 2023-11-05T10:00:00Z --timestamp-url none exe exe.signed
+registering signing key
+automatically setting team ID from signing certificate: test
+signing exe to exe.signed
+signing exe as a Mach-O binary
+setting binary identifier to exe
+parsing Mach-O
+creating cryptographic signature with certificate Apple Development: ED25519 Apple Development (test)
+writing Mach-O to exe.signed
+
+$ rcodesign extract cms-info exe.signed
+signed content (embedded): None
+signed content (external): Some("fade0c02000001410002040000000000000000a1000000580000000200000005000040102002000c")... (321 bytes)
+signed content SHA-1:   7187d96250cef728030583ccd8ec0f7035cfebaf
+signed content SHA-256: 69658fdd037a76a632b5a43d018c7a3960aa51d31a61cbca21cede8f24bb97dd
+signed content SHA-384: 1a34d89e9c79f1bbff458f759c3b9962e2d89c0e0407cddea1222bcecd099a3f679616335d4f7c8aed7b59ea71489bd9
+signed content SHA-512: acf126e4c49e001e352fa8aafb93f0a5331c7bedf97da65c37984ab65a3cf72b6dc0fd2bea0dcdd540fb9beb4840a1a81966e1726516552dad16b2a5ec93910e
+certificate count: 1
+certificate #0: subject CN=Apple Development: ED25519 Apple Development (test); self signed=true
+signer count: 1
+signer #0: digest algorithm: Sha256
+signer #0: signature algorithm: Ed25519
+signer #0: content type: 1.2.840.113549.1.7.1
+signer #0: message digest: 69658fdd037a76a632b5a43d018c7a3960aa51d31a61cbca21cede8f24bb97dd
+signer #0: signing time: Some(2023-11-05T10:00:00Z)
+signer #0: signature content SHA-1:   21b99d196ce35ac1e3babf568e376a6a67fb0616
+signer #0: signature content SHA-256: 689ba416bdafd29265be673e58fc2c166f94a039b5916cbf819697ad85c0abf5
+signer #0: signature content SHA-384: f8728c88bbfb94d755fde2169de1f30c58fc054b8afc030a9fe705af594faa56462071e8307e153b89745564059c60cc
+signer #0: signature content SHA-512: b2a655c783a862f653dffd622e438c14b9471ad46a99d72121ee4969a88ecdd68e463baa34a27f976136404f52ba247422270207fa6871899401d9659f215ecf
+signer #0: signature valid: true
+signer #0: time-stamp token present: false
+
+$ rcodesign extract cms exe.signed
+SignedData {
+    digest_algorithms: {
+        Sha256,
+    },
+    signed_content: None,
+    certificates: Some(
+        [
+            CapturedX509Certificate {
+                original: Ber(30820241308201f1a003020102020101300706032b6570050030819431143012060a0992268993f22c6401010c0474657374313c303a06035504030c334170706c6520446576656c6f706d656e743a2045443235353139204170706c6520446576656c6f706d656e7420287465737429310d300b060355040b0c047465737431223020060355040a0c1945443235353139204170706c6520446576656c6f706d656e74310b3009060355040613025553301e170d3233313130373035323630325a170d3233313130383035323630325a30819431143012060a0992268993f22c6401010c0474657374313c303a06035504030c334170706c6520446576656c6f706d656e743a2045443235353139204170706c6520446576656c6f706d656e7420287465737429310d300b060355040b0c047465737431223020060355040a0c1945443235353139204170706c6520446576656c6f706d656e74310b3009060355040613025553302c300706032b656e050003210092c7293d2a51764029668476a403f13a415ebf909a374fdfc81d3eab566cb709a3623060300c0603551d130101ff0402300030160603551d250101ff040c300a06082b06010505070303300e0603551d0f0101ff0404030207803013060a2a864886f763640601020101ff040205003013060a2a864886f7636406010c0101ff04020500300706032b6570050003410027bba34d221e73bbcf380520fa16da41aa55d7e7e8fd3d0b649239a6cab80ab0993675cce86ba0524a25834795ceaa5ddb255a57b010ae8ce834c2d061e6b50f),
+                inner: X509Certificate(
+                    Certificate {
+                        tbs_certificate: TbsCertificate {
+                            version: Some(
+                                V3,
+                            ),
+                            serial_number: Integer(
+                                b"/x01",
+                            ),
+                            signature: AlgorithmIdentifier {
+                                algorithm: 1.3.101.112,
+                                parameters: Some(
+                                    AlgorithmParameter(
+                                        [ 05 00 ],
+                                    ),
+                                ),
+                            },
+                            issuer: RdnSequence(
+                                RdnSequence(
+                                    [
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 0.9.2342.19200300.100.1.1,
+                                                    value: 0c0474657374,
+                                                },
+                                            ],
+                                        ),
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 2.5.4.3,
+                                                    value: 0c334170706c6520446576656c6f706d656e743a2045443235353139204170706c6520446576656c6f706d656e7420287465737429,
+                                                },
+                                            ],
+                                        ),
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 2.5.4.11,
+                                                    value: 0c0474657374,
+                                                },
+                                            ],
+                                        ),
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 2.5.4.10,
+                                                    value: 0c1945443235353139204170706c6520446576656c6f706d656e74,
+                                                },
+                                            ],
+                                        ),
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 2.5.4.6,
+                                                    value: 13025553,
+                                                },
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                            ),
+                            validity: Validity {
+                                not_before: UtcTime(
+                                    UtcTime(
+                                        2023-11-07T05:26:02Z,
+                                    ),
+                                ),
+                                not_after: UtcTime(
+                                    UtcTime(
+                                        2023-11-08T05:26:02Z,
+                                    ),
+                                ),
+                            },
+                            subject: RdnSequence(
+                                RdnSequence(
+                                    [
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 0.9.2342.19200300.100.1.1,
+                                                    value: 0c0474657374,
+                                                },
+                                            ],
+                                        ),
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 2.5.4.3,
+                                                    value: 0c334170706c6520446576656c6f706d656e743a2045443235353139204170706c6520446576656c6f706d656e7420287465737429,
+                                                },
+                                            ],
+                                        ),
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 2.5.4.11,
+                                                    value: 0c0474657374,
+                                                },
+                                            ],
+                                        ),
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 2.5.4.10,
+                                                    value: 0c1945443235353139204170706c6520446576656c6f706d656e74,
+                                                },
+                                            ],
+                                        ),
+                                        RelativeDistinguishedName(
+                                            [
+                                                AttributeTypeAndValue {
+                                                    type: 2.5.4.6,
+                                                    value: 13025553,
+                                                },
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                            ),
+                            subject_public_key_info: SubjectPublicKeyInfo {
+                                algorithm: AlgorithmIdentifier {
+                                    algorithm: 1.3.101.110,
+                                    parameters: Some(
+                                        AlgorithmParameter(
+                                            [ 05 00 ],
+                                        ),
+                                    ),
+                                },
+                                subject_public_key: 92c7293d2a51764029668476a403f13a415ebf909a374fdfc81d3eab566cb709 (unused 0),
+                            },
+                            issuer_unique_id: None,
+                            subject_unique_id: None,
+                            extensions: Some(
+                                Extensions(
+                                    [
+                                        Extension {
+                                            id: 2.5.29.19,
+                                            critical: Some(
+                                                true,
+                                            ),
+                                            value: 3000,
+                                        },
+                                        Extension {
+                                            id: 2.5.29.37,
+                                            critical: Some(
+                                                true,
+                                            ),
+                                            value: 300a06082b06010505070303,
+                                        },
+                                        Extension {
+                                            id: 2.5.29.15,
+                                            critical: Some(
+                                                true,
+                                            ),
+                                            value: 03020780,
+                                        },
+                                        Extension {
+                                            id: 1.2.840.113635.100.6.1.2,
+                                            critical: Some(
+                                                true,
+                                            ),
+                                            value: 0500,
+                                        },
+                                        Extension {
+                                            id: 1.2.840.113635.100.6.1.12,
+                                            critical: Some(
+                                                true,
+                                            ),
+                                            value: 0500,
+                                        },
+                                    ],
+                                ),
+                            ),
+                            raw_data: Some("308201f1a003020102020101300706032b6570050030819431143012060a0992268993f22c6401010c0474657374313c303a06035504030c334170706c6520446576656c6f706d656e743a2045443235353139204170706c6520446576656c6f706d656e7420287465737429310d300b060355040b0c047465737431223020060355040a0c1945443235353139204170706c6520446576656c6f706d656e74310b3009060355040613025553301e170d3233313130373035323630325a170d3233313130383035323630325a30819431143012060a0992268993f22c6401010c0474657374313c303a06035504030c334170706c6520446576656c6f706d656e743a2045443235353139204170706c6520446576656c6f706d656e7420287465737429310d300b060355040b0c047465737431223020060355040a0c1945443235353139204170706c6520446576656c6f706d656e74310b3009060355040613025553302c300706032b656e050003210092c7293d2a51764029668476a403f13a415ebf909a374fdfc81d3eab566cb709a3623060300c0603551d130101ff0402300030160603551d250101ff040c300a06082b06010505070303300e0603551d0f0101ff0404030207803013060a2a864886f763640601020101ff040205003013060a2a864886f7636406010c0101ff04020500"),
+                        },
+                        signature_algorithm: AlgorithmIdentifier {
+                            algorithm: 1.3.101.112,
+                            parameters: Some(
+                                AlgorithmParameter(
+                                    [ 05 00 ],
+                                ),
+                            ),
+                        },
+                        signature: 27bba34d221e73bbcf380520fa16da41aa55d7e7e8fd3d0b649239a6cab80ab0993675cce86ba0524a25834795ceaa5ddb255a57b010ae8ce834c2d061e6b50f (unused 0),
+                    },
+                ),
+            },
+        ],
+    ),
+    signers: [
+        SignerInfo {
+            issuer: RdnSequence(
+                RdnSequence(
+                    [
+                        RelativeDistinguishedName(
+                            [
+                                AttributeTypeAndValue {
+                                    type: 0.9.2342.19200300.100.1.1,
+                                    value: 0c0474657374,
+                                },
+                            ],
+                        ),
+                        RelativeDistinguishedName(
+                            [
+                                AttributeTypeAndValue {
+                                    type: 2.5.4.3,
+                                    value: 0c334170706c6520446576656c6f706d656e743a2045443235353139204170706c6520446576656c6f706d656e7420287465737429,
+                                },
+                            ],
+                        ),
+                        RelativeDistinguishedName(
+                            [
+                                AttributeTypeAndValue {
+                                    type: 2.5.4.11,
+                                    value: 0c0474657374,
+                                },
+                            ],
+                        ),
+                        RelativeDistinguishedName(
+                            [
+                                AttributeTypeAndValue {
+                                    type: 2.5.4.10,
+                                    value: 0c1945443235353139204170706c6520446576656c6f706d656e74,
+                                },
+                            ],
+                        ),
+                        RelativeDistinguishedName(
+                            [
+                                AttributeTypeAndValue {
+                                    type: 2.5.4.6,
+                                    value: 13025553,
+                                },
+                            ],
+                        ),
+                    ],
+                ),
+            ),
+            serial_number: Integer(
+                b"/x01",
+            ),
+            digest_algorithm: Sha256,
+            signature_algorithm: Ed25519,
+            signature: acab2dd66e5d67e93b1336e0c77e09edddfc98c9ce677cd6b2ba1ec77ed06f3b6c5c35e28ceac9efb42c805f1e0287a17c16e5b3db8b11e42184c62ccb041200,
+            signed_attributes: Some(
+                SignedAttributes {
+                    content_type: 1.2.840.113549.1.7.1,
+                    message_digest: 69658fdd037a76a632b5a43d018c7a3960aa51d31a61cbca21cede8f24bb97dd,
+                    signing_time: Some(
+                        2023-11-05T10:00:00Z,
+                    ),
+                },
+            ),
+            digested_signed_attributes_data: Some("318201d4301806092a864886f70d010903310b06092a864886f70d010701301c06092a864886f70d010905310f170d3233313130353130303030305a302f06092a864886f70d0109043122042069658fdd037a76a632b5a43d018c7a3960aa51d31a61cbca21cede8f24bb97dd303c06092a864886f763640902312f302d0609608648016503040201042069658fdd037a76a632b5a43d018c7a3960aa51d31a61cbca21cede8f24bb97dd3082012906092a864886f7636409013182011a048201163c3f786d6c2076657273696f6e3d22312e302220656e636f64696e673d225554462d38223f3e0a3c21444f435459504520706c697374205055424c494320222d2f2f4170706c652f2f44544420504c49535420312e302f2f454e222022687474703a2f2f7777772e6170706c652e636f6d2f445444732f50726f70657274794c6973742d312e302e647464223e0a3c706c6973742076657273696f6e3d22312e30223e0a3c646963743e0a093c6b65793e63646861736865733c2f6b65793e0a093c61727261793e0a09093c646174613e0a09096157575033514e366471597974615139415978364f57437155644d3d0a09093c2f646174613e0a093c2f61727261793e0a3c2f646963743e0a3c2f706c6973743e0a"),
+            unsigned_attributes: None,
+        },
+    ],
+}
+
+$ rcodesign print-signature-info exe.signed
+- path: exe.signed
+  file_size: 22544
+  file_sha256: 5decbe23a054ba4f4ae8df4fd7ba4e473b5f78c6f7fdcf331bc2569e66cba138
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
+      signature:
+        superblob_length: 1908
+        blob_count: 3
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 321
+          sha1: 7187d96250cef728030583ccd8ec0f7035cfebaf
+          sha256: 69658fdd037a76a632b5a43d018c7a3960aa51d31a61cbca21cede8f24bb97dd
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 172
+          sha1: 7ef40467d549ac623235b0e2f2ec9dfd67cf0217
+          sha256: b5d1cc0c9cce08739d37a1aa101f958532d5c61bb6056de826cba88481e1d39a
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 1379
+          sha1: 4691c48006ccc7a21434263316d633f90af39eab
+          sha256: d0e0e172f9056c8a0349b57b65930d8438fd8e51996c0af155557440094a9459
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(0x0)
+          identifier: exe
+          team_name: test
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16400
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+          - 'RequirementSet (2): b5d1cc0c9cce08739d37a1aa101f958532d5c61bb6056de826cba88481e1d39a'
+        code_requirements:
+        - 'designated(3): 0: (identifier "exe") and ((anchor apple generic) and ((certificate leaf[subject.CN] = "Apple Development: ED25519 Apple Development (test)") and (certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */)));'
+        cms:
+          certificates:
+          - subject: 'CN=Apple Development: ED25519 Apple Development (test), OU=test, O=ED25519 Apple Development, C=US'
+            issuer: 'CN=Apple Development: ED25519 Apple Development (test), OU=test, O=ED25519 Apple Development, C=US'
+            key_algorithm: ED25519
+            signature_algorithm: ED25519
+            signed_with_algorithm: ED25519
+            is_apple_root_ca: false
+            is_apple_intermediate_ca: false
+            chains_to_apple_root_ca: false
+            apple_extended_key_usages:
+            - Code Signing
+            apple_code_signing_extensions:
+            - iPhone Developer
+            - Mac Developer
+            apple_certificate_profile: apple-development
+            apple_team_id: test
+          signers:
+          - issuer: 'CN=Apple Development: ED25519 Apple Development (test), OU=test, O=ED25519 Apple Development, C=US'
+            digest_algorithm: SHA-256
+            signature_algorithm: ED25519
+            attributes:
+            - 1.2.840.113549.1.9.3
+            - 1.2.840.113549.1.9.4
+            - 1.2.840.113549.1.9.5
+            - 1.2.840.113635.100.9.1
+            - 1.2.840.113635.100.9.2
+            content_type: 1.2.840.113549.1.7.1
+            message_digest: 69658fdd037a76a632b5a43d018c7a3960aa51d31a61cbca21cede8f24bb97dd
+            signing_time: 2023-11-05T10:00:00Z
+            cdhash_plist:
+            - <?xml version="1.0" encoding="UTF-8"?>
+            - <plist version="1.0">
+            - '  <dict>'
+            - '    <key>cdhashes</key>'
+            - '    <array>'
+            - '      <data>'
+            - "/t/taWWP3QN6dqYytaQ9AYx6OWCqUdM="
+            - "/t/t</data>"
+            - '    </array>'
+            - '  </dict>'
+            - </plist>
+            cdhash_digests:
+            - - 2.16.840.1.101.3.4.2.1
+              - 69658fdd037a76a632b5a43d018c7a3960aa51d31a61cbca21cede8f24bb97dd
+            signature_verifies: true
+
+```
