@@ -17,6 +17,8 @@ Released on ReleaseDate.
 * The `general-self-signed-certificate` command has gained the `--p12-file`
   and `--p12-password` arguments to write a self-signed certificate to a
   PKCS#12 / p12 / PFX file.
+* cryptographic-message-syntax 0.25 -> 0.26.
+* x509-certificate 0.22 -> 0.23.
 
 ## 0.23.0
 

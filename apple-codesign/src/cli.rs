@@ -2063,12 +2063,7 @@ fn command_generate_certificate_signing_request(
         private_keys.into_iter().next().expect("checked size above")
     };
 
-    let key_algorithm = private_key.key_algorithm().ok_or_else(|| {
-        error!("unable to determine key algorithm of private key (please report this issue)");
-        AppleCodesignError::CliBadArgument
-    })?;
-
-    let mut builder = X509CertificateBuilder::new(key_algorithm);
+    let mut builder = X509CertificateBuilder::default();
     builder
         .subject()
         .append_common_name_utf8_string("Apple Code Signing CSR")
@@ -2149,7 +2144,7 @@ impl GenerateSelfSignedCertificate {
 
         let validity_duration = chrono::Duration::days(self.validity_days);
 
-        let (cert, _, raw) = create_self_signed_code_signing_certificate(
+        let (cert, key_pair) = create_self_signed_code_signing_certificate(
             algorithm,
             profile,
             &self.team_id,
@@ -2159,7 +2154,10 @@ impl GenerateSelfSignedCertificate {
         )?;
 
         let cert_pem = cert.encode_pem();
-        let key_pem = pem::encode(&pem::Pem::new("PRIVATE KEY", raw.as_ref().to_vec()));
+        let key_pem = pem::encode(&pem::Pem::new(
+            "PRIVATE KEY",
+            key_pair.to_pkcs8_one_asymmetric_key_der().to_vec(),
+        ));
 
         let mut wrote_file = false;
 
@@ -2197,7 +2195,7 @@ impl GenerateSelfSignedCertificate {
 
             let pfx = p12::PFX::new(
                 &cert.encode_der()?,
-                raw.as_ref(),
+                &key_pair.to_pkcs8_one_asymmetric_key_der(),
                 None,
                 &password,
                 "code-signing",

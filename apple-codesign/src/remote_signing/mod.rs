@@ -38,6 +38,7 @@ use {
         CapturedX509Certificate, KeyAlgorithm, KeyInfoSigner, Sign, Signature, SignatureAlgorithm,
         X509CertificateError,
     },
+    zeroize::Zeroizing,
 };
 
 /// URL of default server to use.
@@ -936,12 +937,14 @@ impl Sign for InitiatorClient {
         }
     }
 
-    fn private_key_data(&self) -> Option<Vec<u8>> {
+    fn private_key_data(&self) -> Option<Zeroizing<Vec<u8>>> {
         // We never have access to private keys from the remote signer.
         None
     }
 
-    fn rsa_primes(&self) -> Result<Option<(Vec<u8>, Vec<u8>)>, X509CertificateError> {
+    fn rsa_primes(
+        &self,
+    ) -> Result<Option<(Zeroizing<Vec<u8>>, Zeroizing<Vec<u8>>)>, X509CertificateError> {
         // We never have access to private keys from the remote signer.
         Ok(None)
     }

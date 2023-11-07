@@ -13,12 +13,12 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use x509_certificate::{InMemorySigningKeyPair, Sign, X509CertificateBuilder};
+use x509_certificate::{InMemorySigningKeyPair, X509CertificateBuilder};
 
 pub fn generate_signing_certificate(api_key: &Path, ty: CertificateType, pem: &Path) -> Result<()> {
     let secret = RsaPrivateKey::new(&mut OsRng, 2048)?;
     let key = InMemorySigningKeyPair::from_pkcs8_der(secret.to_pkcs8_der()?.as_bytes())?;
-    let mut builder = X509CertificateBuilder::new(key.key_algorithm().unwrap());
+    let mut builder = X509CertificateBuilder::default();
     builder
         .subject()
         .append_common_name_utf8_string("Apple Code Signing CSR")

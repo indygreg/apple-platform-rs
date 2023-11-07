@@ -1167,9 +1167,9 @@ dependencies = [
 
 [[package]]
 name = "cryptographic-message-syntax"
-version = "0.25.1"
+version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc1446cf906b15d075c371557a0f1032d3f4f501a4b2b4fa0fdc30ae781103b5"
+checksum = "43c324ba1028cef7e3a71a00cbf585637bb0215dec2f6a2b566d094190a1309b"
 dependencies = [
  "bcder",
  "bytes",
@@ -4112,9 +4112,9 @@ dependencies = [
 
 [[package]]
 name = "x509-certificate"
-version = "0.22.1"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a0dc9efdc7565165aebcd9d0c7ca1f66680e7718a317249cd5cb20202443d61"
+checksum = "b1fe272476b03fc9255bd66e69133cb2238b3fa1e4668c4980bb718ab4992c31"
 dependencies = [
  "bcder",
  "bytes",
@@ -4126,6 +4126,7 @@ dependencies = [
  "signature 2.1.0",
  "spki 0.7.2",
  "thiserror",
+ "zeroize",
 ]
 
 [[package]]

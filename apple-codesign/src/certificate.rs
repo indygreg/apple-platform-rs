@@ -1091,9 +1091,7 @@ impl AppleCertificateBuilder for X509CertificateBuilder {
             } else if extensions
                 .contains(&CodeSigningCertificateExtension::AppleMacAppSigningSubmission)
             {
-                format!(
-                    "3rd Party Mac Developer Installer: {person_name} ({team_id})"
-                )
+                format!("3rd Party Mac Developer Installer: {person_name} ({team_id})")
             } else if extensions.contains(&CodeSigningCertificateExtension::MacDeveloper) {
                 format!("Apple Development: {person_name} ({team_id})")
             } else {
@@ -1326,21 +1324,14 @@ pub fn create_self_signed_code_signing_certificate(
     person_name: &str,
     country: &str,
     validity_duration: chrono::Duration,
-) -> Result<
-    (
-        CapturedX509Certificate,
-        InMemorySigningKeyPair,
-        ring::pkcs8::Document,
-    ),
-    AppleCodesignError,
-> {
-    let mut builder = X509CertificateBuilder::new(algorithm);
+) -> Result<(CapturedX509Certificate, InMemorySigningKeyPair), AppleCodesignError> {
+    let mut builder = X509CertificateBuilder::default();
 
     builder.apple_certificate_profile(profile)?;
     builder.apple_subject(team_id, person_name, country)?;
     builder.validity_duration(validity_duration);
 
-    Ok(builder.create_with_random_keypair()?)
+    Ok(builder.create_with_random_keypair(algorithm)?)
 }
 
 #[cfg(test)]
@@ -1397,7 +1388,7 @@ mod tests {
     #[test]
     fn cms_self_signed_certificate_signing_ecdsa() {
         for curve in EcdsaCurve::all() {
-            let (cert, signing_key, _) = create_self_signed_code_signing_certificate(
+            let (cert, signing_key) = create_self_signed_code_signing_certificate(
                 KeyAlgorithm::Ecdsa(*curve),
                 CertificateProfile::DeveloperIdInstaller,
                 "team",
@@ -1428,7 +1419,7 @@ mod tests {
 
     #[test]
     fn cms_self_signed_certificate_signing_ed25519() {
-        let (cert, signing_key, _) = create_self_signed_code_signing_certificate(
+        let (cert, signing_key) = create_self_signed_code_signing_certificate(
             KeyAlgorithm::Ed25519,
             CertificateProfile::DeveloperIdInstaller,
             "team",
@@ -1492,12 +1483,15 @@ mod tests {
         );
         assert_eq!(cert.apple_team_id(), Some("MK22MZP987".into()));
 
-        let mut builder = X509CertificateBuilder::new(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1));
+        let mut builder = X509CertificateBuilder::default();
         builder
             .apple_certificate_profile(CertificateProfile::MacInstallerDistribution)
             .unwrap();
 
-        let built = builder.create_with_random_keypair().unwrap().0;
+        let built = builder
+            .create_with_random_keypair(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1))
+            .unwrap()
+            .0;
 
         assert_eq!(
             built.apple_extended_key_usage_purposes(),
@@ -1552,12 +1546,15 @@ mod tests {
         );
         assert_eq!(cert.apple_team_id(), Some("MK22MZP987".into()));
 
-        let mut builder = X509CertificateBuilder::new(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1));
+        let mut builder = X509CertificateBuilder::default();
         builder
             .apple_certificate_profile(CertificateProfile::AppleDevelopment)
             .unwrap();
 
-        let built = builder.create_with_random_keypair().unwrap().0;
+        let built = builder
+            .create_with_random_keypair(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1))
+            .unwrap()
+            .0;
 
         assert_eq!(
             built.apple_extended_key_usage_purposes(),
@@ -1612,12 +1609,15 @@ mod tests {
         );
         assert_eq!(cert.apple_team_id(), Some("MK22MZP987".into()));
 
-        let mut builder = X509CertificateBuilder::new(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1));
+        let mut builder = X509CertificateBuilder::default();
         builder
             .apple_certificate_profile(CertificateProfile::AppleDistribution)
             .unwrap();
 
-        let built = builder.create_with_random_keypair().unwrap().0;
+        let built = builder
+            .create_with_random_keypair(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1))
+            .unwrap()
+            .0;
 
         assert_eq!(
             built.apple_extended_key_usage_purposes(),
@@ -1672,12 +1672,15 @@ mod tests {
         );
         assert_eq!(cert.apple_team_id(), Some("MK22MZP987".into()));
 
-        let mut builder = X509CertificateBuilder::new(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1));
+        let mut builder = X509CertificateBuilder::default();
         builder
             .apple_certificate_profile(CertificateProfile::DeveloperIdApplication)
             .unwrap();
 
-        let built = builder.create_with_random_keypair().unwrap().0;
+        let built = builder
+            .create_with_random_keypair(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1))
+            .unwrap()
+            .0;
 
         assert_eq!(
             built.apple_extended_key_usage_purposes(),
@@ -1736,12 +1739,15 @@ mod tests {
         );
         assert_eq!(cert.apple_team_id(), Some("MK22MZP987".into()));
 
-        let mut builder = X509CertificateBuilder::new(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1));
+        let mut builder = X509CertificateBuilder::default();
         builder
             .apple_certificate_profile(CertificateProfile::DeveloperIdInstaller)
             .unwrap();
 
-        let built = builder.create_with_random_keypair().unwrap().0;
+        let built = builder
+            .create_with_random_keypair(KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1))
+            .unwrap()
+            .0;
 
         assert_eq!(
             built.apple_extended_key_usage_purposes(),

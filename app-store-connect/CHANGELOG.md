@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* x509-certificate 0.22 -> 0.23.
+
 ## 0.2.0
 
 Released on 2023-11-06.

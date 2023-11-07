@@ -396,21 +396,23 @@ impl Sign for InMemoryPrivateKey {
         })
     }
 
-    fn private_key_data(&self) -> Option<Vec<u8>> {
+    fn private_key_data(&self) -> Option<Zeroizing<Vec<u8>>> {
         match self {
-            Self::EcdsaP256(key) => Some(key.secret_key.to_bytes().to_vec()),
-            Self::Ed25519(key) => Some((*key.private_key).clone()),
-            Self::Rsa(key) => Some(key.private_key.as_bytes().to_vec()),
+            Self::EcdsaP256(key) => Some(Zeroizing::new(key.secret_key.to_bytes().to_vec())),
+            Self::Ed25519(key) => Some(Zeroizing::new((*key.private_key).clone())),
+            Self::Rsa(key) => Some(Zeroizing::new(key.private_key.as_bytes().to_vec())),
         }
     }
 
-    fn rsa_primes(&self) -> Result<Option<(Vec<u8>, Vec<u8>)>, X509CertificateError> {
+    fn rsa_primes(
+        &self,
+    ) -> Result<Option<(Zeroizing<Vec<u8>>, Zeroizing<Vec<u8>>)>, X509CertificateError> {
         if let Self::Rsa(key) = self {
             let key = key.rsa_private_key();
 
             Ok(Some((
-                key.prime1.as_bytes().to_vec(),
-                key.prime2.as_bytes().to_vec(),
+                Zeroizing::new(key.prime1.as_bytes().to_vec()),
+                Zeroizing::new(key.prime2.as_bytes().to_vec()),
             )))
         } else {
             Ok(None)

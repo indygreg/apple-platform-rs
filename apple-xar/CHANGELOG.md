@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* cryptographic-message-syntax 0.25 -> 0.26.
+* x509-certificate 0.22 -> 0.23.
+
 ## 0.14.0
 
 Released on 2023-11-06.
