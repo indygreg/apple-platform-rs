@@ -30,7 +30,12 @@ use {
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
     spki::EncodePublicKey,
-    std::{io::Write, ops::Deref, path::PathBuf, str::FromStr},
+    std::{
+        io::Write,
+        ops::Deref,
+        path::{Path, PathBuf},
+        str::FromStr,
+    },
     x509_certificate::{CapturedX509Certificate, EcdsaCurve, KeyAlgorithm, X509CertificateBuilder},
 };
 
@@ -323,6 +328,27 @@ fn parse_scoped_value(s: &str) -> Result<(SettingsScope, &str), AppleCodesignErr
     }
 }
 
+fn get_pkcs12_password(
+    password: Option<impl ToString>,
+    password_file: Option<impl AsRef<Path>>,
+) -> Result<String, AppleCodesignError> {
+    if let Some(password) = password {
+        Ok(password.to_string())
+    } else if let Some(path) = password_file {
+        Ok(std::fs::read_to_string(path.as_ref())?
+            .lines()
+            .next()
+            .ok_or_else(|| {
+                AppleCodesignError::CliGeneralError("password file appears to be empty".into())
+            })?
+            .to_string())
+    } else {
+        Ok(dialoguer::Password::new()
+            .with_prompt("Please enter password for p12 file")
+            .interact()?)
+    }
+}
+
 #[derive(Args, Clone)]
 struct CertificateSource {
     /// Smartcard slot number of signing certificate to use (9c is common)
@@ -351,7 +377,7 @@ struct CertificateSource {
 
     /// Path to a .p12/PFX file containing a certificate key pair
     #[arg(long = "p12-file", alias = "pfx-file")]
-    p12_path: Option<String>,
+    p12_path: Option<PathBuf>,
 
     /// The password to use to open the --p12-file file
     #[arg(long, alias = "pfx-password", group = "p12-password")]
@@ -398,19 +424,8 @@ impl CertificateSource {
         if let Some(p12_path) = &self.p12_path {
             let p12_data = std::fs::read(p12_path)?;
 
-            let p12_password = if let Some(password) = &self.p12_password {
-                password.to_string()
-            } else if let Some(path) = &self.p12_password_file {
-                std::fs::read_to_string(path)?
-                    .lines()
-                    .next()
-                    .expect("should get a single line")
-                    .to_string()
-            } else {
-                dialoguer::Password::new()
-                    .with_prompt("Please enter password for p12 file")
-                    .interact()?
-            };
+            let p12_password =
+                get_pkcs12_password(self.p12_password.clone(), self.p12_password_file.clone())?;
 
             let (cert, key) = parse_pfx_data(&p12_data, &p12_password)?;
 
