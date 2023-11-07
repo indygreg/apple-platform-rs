@@ -33,10 +33,10 @@ d                      MyApp.app.signed/
 d                      MyApp.app.signed/Contents
 f 0a5902dc8e47f490d038 MyApp.app.signed/Contents/Info.plist
 d                      MyApp.app.signed/Contents/MacOS
-f 008c7be45e033e0ea8ff MyApp.app.signed/Contents/MacOS/MyApp
+f 3eb5869588cab4d817b5 MyApp.app.signed/Contents/MacOS/MyApp
 f f6e7481573cf18d78a0e MyApp.app.signed/Contents/MacOS/extra-bin
 d                      MyApp.app.signed/Contents/_CodeSignature
-f b13eb8a53e7cba2ab68c MyApp.app.signed/Contents/_CodeSignature/CodeResources
+f 730159f6d521ed5ac796 MyApp.app.signed/Contents/_CodeSignature/CodeResources
 
 $ rcodesign print-signature-info MyApp.app.signed
 - path: Contents/Info.plist
@@ -45,7 +45,7 @@ $ rcodesign print-signature-info MyApp.app.signed
   entity: other
 - path: Contents/MacOS/MyApp
   file_size: 60432
-  file_sha256: 008c7be45e033e0ea8ffc3826d8ecda4045e92ea5645270667993cdd63b5e70e
+  file_sha256: 3eb5869588cab4d817b5b2c1b79ae621b2be48356fbbe6c58777721587af047b
   sub_path: macho-index:0
   entity:
     mach_o:
@@ -62,8 +62,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 269
-          sha1: 9bb5342376d1906eb27255e24094e88afea44a94
-          sha256: 8afd2f25ad1703c551195cd552085d520857de95f228bcbc450c5a66c4fc33b0
+          sha1: 32ab361d982640eead191422e662fb8d96622fe3
+          sha256: 723ba236a1c66db54ac3d1b051cb604a1ce428ce042c2c79b30b4aec4b6cf68c
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -72,8 +72,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: 'CodeDirectory Alternate #0 (4096)'
           magic: fade0c02
           length: 365
-          sha1: 681be5cb223b023f3cf952feb301d027594c4c51
-          sha256: d23dc308700f5822d0423a247c5be07c3cbaaa243dce2b268e3795034d17dca0
+          sha1: 7e45ead6a3793876c2aac70ead9510fc6a206b31
+          sha256: df50890b3494d4e93fba241a2adf1667ab452210cfbc99269800b14ac9a6db4f
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 8
@@ -91,7 +91,7 @@ $ rcodesign print-signature-info MyApp.app.signed
           slot_digests:
           - 'Info (1): 65bf1c26bc63ccdfe6688cc787b06f88f3435ef0'
           - 'RequirementSet (2): 3a75f6db058529148e14dd7ea1b4729cc09ec973'
-          - 'Resources (3): 90f81c56d85496d09cb4e2f4bfef0c2eb581e641'
+          - 'Resources (3): b7902213e12d68fd98ce5d8f8129a6805d3eb4da'
         alternative_code_directories:
         - - 'CodeDirectory Alternate #0 (4096)'
           - version: '0x20400'
@@ -105,11 +105,11 @@ $ rcodesign print-signature-info MyApp.app.signed
             slot_digests:
             - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
             - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-            - 'Resources (3): b13eb8a53e7cba2ab68ca97e0daf994eb26b58fe795735a941fbc9ff7d8571d2'
+            - 'Resources (3): 730159f6d521ed5ac796783ae0077005b1dc406a348af63b6be3c349f59881b7'
         cms: null
 - path: Contents/MacOS/MyApp
   file_size: 60432
-  file_sha256: 008c7be45e033e0ea8ffc3826d8ecda4045e92ea5645270667993cdd63b5e70e
+  file_sha256: 3eb5869588cab4d817b5b2c1b79ae621b2be48356fbbe6c58777721587af047b
   sub_path: macho-index:1
   entity:
     mach_o:
@@ -126,8 +126,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 209
-          sha1: 3f4d7f93ca6a0b96fc9d7c7d4173f4fc9fc3fd5d
-          sha256: 57a49cd07307da1a6dd3fbd4e3004bff069a36bc4dbbb07b62660e6033828fc4
+          sha1: a80bc480c310d72c4125bf1cf54b5f492e451cca
+          sha256: 231dbee72992a30c9ead07159d14153ea3b48292ed449b38135aca0190747f54
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -136,8 +136,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: 'CodeDirectory Alternate #0 (4096)'
           magic: fade0c02
           length: 269
-          sha1: d7f0d9e2c4b0cd545e9eafeba3d0c6c163c62558
-          sha256: 451fae4e866938754e7374cc2c2435d709e56caa12c0c67cadeb7b2788c5eeca
+          sha1: 84c1812f00ed687db767796c66190a076ea7976e
+          sha256: 34b18e9cc482750023d52141da175ceae315215cf4a7ebc2122459a0a10fbc93
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 8
@@ -155,7 +155,7 @@ $ rcodesign print-signature-info MyApp.app.signed
           slot_digests:
           - 'Info (1): 65bf1c26bc63ccdfe6688cc787b06f88f3435ef0'
           - 'RequirementSet (2): 3a75f6db058529148e14dd7ea1b4729cc09ec973'
-          - 'Resources (3): 90f81c56d85496d09cb4e2f4bfef0c2eb581e641'
+          - 'Resources (3): b7902213e12d68fd98ce5d8f8129a6805d3eb4da'
         alternative_code_directories:
         - - 'CodeDirectory Alternate #0 (4096)'
           - version: '0x20400'
@@ -169,7 +169,7 @@ $ rcodesign print-signature-info MyApp.app.signed
             slot_digests:
             - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
             - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-            - 'Resources (3): b13eb8a53e7cba2ab68ca97e0daf994eb26b58fe795735a941fbc9ff7d8571d2'
+            - 'Resources (3): 730159f6d521ed5ac796783ae0077005b1dc406a348af63b6be3c349f59881b7'
         cms: null
 - path: Contents/MacOS/extra-bin
   file_size: 60432
@@ -296,8 +296,8 @@ $ rcodesign print-signature-info MyApp.app.signed
             - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
         cms: null
 - path: Contents/_CodeSignature/CodeResources
-  file_size: 2485
-  file_sha256: b13eb8a53e7cba2ab68ca97e0daf994eb26b58fe795735a941fbc9ff7d8571d2
+  file_size: 2601
+  file_sha256: 730159f6d521ed5ac796783ae0077005b1dc406a348af63b6be3c349f59881b7
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -315,7 +315,7 @@ $ rcodesign print-signature-info MyApp.app.signed
     - '      Y59tzzZhg3wU1ZuQe8YHzsZ1vH4='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>(cdhash H"639f6dcf3661837c14d59b907bc607cec675bc7e") or (cdhash H"3e8d1a5abf40765a1d15ff00407a8822f153afa9")</string>'
+    - '      <string>(((cdhash H"33d0d81907883efd5fdd04af1ad6325db9ca0973") or (cdhash H"639f6dcf3661837c14d59b907bc607cec675bc7e")) or (cdhash H"081cb913e277d2314f0cf29f09ad50d6706ee05c")) or (cdhash H"3e8d1a5abf40765a1d15ff00407a8822f153afa9")</string>'
     - '    </dict>'
     - '  </dict>'
     - '  <key>rules</key>'

@@ -9,6 +9,11 @@ Released on ReleaseDate.
 * Add a `macho-universal-create` command to assemble single-arch Mach-O
   binaries into a single multi-arch / universal / fat binary. The command
   can be used as a replacement for Apple's `lipo -create`.
+* When signing bundles, the `CodeResources` file for nested Mach-O binaries
+  now emits the code directory hashes for every code directory. Before, if
+  a Mach-O contained both SHA-1 and SHA-256 code directories, only the
+  SHA-256 hash would be emitted. The new behavior matches Apple's tooling.
+  (#95)
 
 ## 0.23.0
 

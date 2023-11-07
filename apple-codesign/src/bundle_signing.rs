@@ -192,29 +192,36 @@ impl SignedMachOInfo {
                 // In case no explicit requirements has been set, we use current file cdhashes.
                 let mut requirement_expr = None;
 
+                // We record the 20 byte digests of every code directory in every
+                // Mach-O.
+                // Note: Apple's tooling appears to always record the x86-64 Mach-O
+                // first, even if it isn't first in the universal binary. Since we're
+                // dealing with a bunch of OR'd code requirements expressions, we don't
+                // believe this difference is worth caring about.
                 for macho in mach.iter_macho() {
-                    let cd = macho
+                    for (_, cd) in macho
                         .code_signature()?
                         .ok_or(AppleCodesignError::BinaryNoCodeSignature)?
-                        .preferred_code_directory()?;
+                        .all_code_directories()?
+                    {
+                        let digest_type = if cd.digest_type == DigestType::Sha256 {
+                            DigestType::Sha256Truncated
+                        } else {
+                            cd.digest_type
+                        };
 
-                    let digest_type = if cd.digest_type == DigestType::Sha256 {
-                        DigestType::Sha256Truncated
-                    } else {
-                        cd.digest_type
-                    };
+                        let digest = digest_type.digest_data(&cd.to_blob_bytes()?)?;
+                        let expression = Box::new(CodeRequirementExpression::CodeDirectoryHash(
+                            Cow::from(digest),
+                        ));
 
-                    let digest = digest_type.digest_data(&cd.to_blob_bytes()?)?;
-                    let expression = Box::new(CodeRequirementExpression::CodeDirectoryHash(
-                        Cow::from(digest),
-                    ));
-
-                    if let Some(left_part) = requirement_expr {
-                        requirement_expr = Some(Box::new(CodeRequirementExpression::Or(
-                            left_part, expression,
-                        )))
-                    } else {
-                        requirement_expr = Some(expression);
+                        if let Some(left_part) = requirement_expr {
+                            requirement_expr = Some(Box::new(CodeRequirementExpression::Or(
+                                left_part, expression,
+                            )))
+                        } else {
+                            requirement_expr = Some(expression);
+                        }
                     }
                 }
 
