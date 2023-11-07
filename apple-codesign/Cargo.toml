@@ -52,7 +52,7 @@ pkcs1 = { version = "0.7.5", features = ["alloc", "std", "pkcs8"] }
 pkcs8 = { version = "0.10.2", features = ["alloc", "std"] }
 plist = "1.6.0"
 rand = "0.8.5"
-rasn = "0.11.0"
+rasn = "0.11.1"
 rayon = "1.8.0"
 regex = "1.10.2"
 reqwest = { version = "0.11.22", default-features = false, features = ["blocking", "json", "rustls-tls-native-roots"] }
@@ -61,7 +61,7 @@ rsa = "0.9.3"
 scroll = "0.11.0"
 sha2 = "0.10.8"
 semver = "1.0.20"
-serde = { version = "1.0.190", features = ["derive"] }
+serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
 serde_yaml = "0.9.27"
 signature = { version = "2.1.0", features = ["std"] }

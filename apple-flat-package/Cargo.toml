@@ -15,7 +15,7 @@ readme = "README.md"
 flate2 = "1.0.28"
 scroll = { version ="0.11.0", features = ["derive"] }
 serde-xml-rs = "0.6.0"
-serde = { version = "1.0.190", features = ["derive"] }
+serde = { version = "1.0.192", features = ["derive"] }
 thiserror = "1.0.50"
 
 [dependencies.apple-xar]
