@@ -2127,68 +2127,68 @@ struct GenerateSelfSignedCertificate {
     pem_unified_filename: Option<PathBuf>,
 }
 
-fn command_generate_self_signed_certificate(
-    args: &GenerateSelfSignedCertificate,
-) -> Result<(), AppleCodesignError> {
-    let algorithm = match args.algorithm.as_str() {
-        "ecdsa" => KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1),
-        "ed25519" => KeyAlgorithm::Ed25519,
-        value => panic!("algorithm values should have been validated by arg parser: {value}"),
-    };
+impl GenerateSelfSignedCertificate {
+    fn run(&self) -> Result<(), AppleCodesignError> {
+        let algorithm = match self.algorithm.as_str() {
+            "ecdsa" => KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1),
+            "ed25519" => KeyAlgorithm::Ed25519,
+            value => panic!("algorithm values should have been validated by arg parser: {value}"),
+        };
 
-    let profile = CertificateProfile::from_str(args.profile.as_str())?;
+        let profile = CertificateProfile::from_str(self.profile.as_str())?;
 
-    let validity_duration = chrono::Duration::days(args.validity_days);
+        let validity_duration = chrono::Duration::days(self.validity_days);
 
-    let (cert, _, raw) = create_self_signed_code_signing_certificate(
-        algorithm,
-        profile,
-        &args.team_id,
-        &args.person_name,
-        &args.country_name,
-        validity_duration,
-    )?;
+        let (cert, _, raw) = create_self_signed_code_signing_certificate(
+            algorithm,
+            profile,
+            &self.team_id,
+            &self.person_name,
+            &self.country_name,
+            validity_duration,
+        )?;
 
-    let cert_pem = cert.encode_pem();
-    let key_pem = pem::encode(&pem::Pem::new("PRIVATE KEY", raw.as_ref().to_vec()));
+        let cert_pem = cert.encode_pem();
+        let key_pem = pem::encode(&pem::Pem::new("PRIVATE KEY", raw.as_ref().to_vec()));
 
-    let mut wrote_file = false;
+        let mut wrote_file = false;
 
-    if let Some(pem_filename) = &args.pem_filename {
-        let cert_path = PathBuf::from(format!("{pem_filename}.crt"));
-        let key_path = PathBuf::from(format!("{pem_filename}.key"));
+        if let Some(pem_filename) = &self.pem_filename {
+            let cert_path = PathBuf::from(format!("{pem_filename}.crt"));
+            let key_path = PathBuf::from(format!("{pem_filename}.key"));
 
-        if let Some(parent) = cert_path.parent() {
-            std::fs::create_dir_all(parent)?;
+            if let Some(parent) = cert_path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+
+            println!("writing public certificate to {}", cert_path.display());
+            std::fs::write(&cert_path, cert_pem.as_bytes())?;
+            println!("writing private signing key to {}", key_path.display());
+            std::fs::write(&key_path, key_pem.as_bytes())?;
+
+            wrote_file = true;
         }
 
-        println!("writing public certificate to {}", cert_path.display());
-        std::fs::write(&cert_path, cert_pem.as_bytes())?;
-        println!("writing private signing key to {}", key_path.display());
-        std::fs::write(&key_path, key_pem.as_bytes())?;
+        if let Some(path) = &self.pem_unified_filename {
+            let content = format!("{}{}", key_pem, cert_pem);
 
-        wrote_file = true;
-    }
+            if let Some(parent) = path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
 
-    if let Some(path) = &args.pem_unified_filename {
-        let content = format!("{}{}", key_pem, cert_pem);
+            println!("writing unified PEM to {}", path.display());
+            std::fs::write(&path, content.as_bytes())?;
 
-        if let Some(parent) = path.parent() {
-            std::fs::create_dir_all(parent)?;
+            wrote_file = true;
         }
 
-        println!("writing unified PEM to {}", path.display());
-        std::fs::write(&path, content.as_bytes())?;
+        if !wrote_file {
+            print!("{cert_pem}");
+            print!("{key_pem}");
+        }
 
-        wrote_file = true;
+        Ok(())
     }
-
-    if !wrote_file {
-        print!("{cert_pem}");
-        print!("{key_pem}");
-    }
-
-    Ok(())
 }
 
 #[derive(Parser)]
@@ -3278,9 +3278,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
         Subcommands::GenerateCertificateSigningRequest(args) => {
             command_generate_certificate_signing_request(args)
         }
-        Subcommands::GenerateSelfSignedCertificate(args) => {
-            command_generate_self_signed_certificate(args)
-        }
+        Subcommands::GenerateSelfSignedCertificate(args) => args.run(),
         Subcommands::KeychainExportCertificateChain(args) => {
             command_keychain_export_certificate_chain(args)
         }
