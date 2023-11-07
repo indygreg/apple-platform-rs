@@ -17,6 +17,9 @@ Released on ReleaseDate.
 * The `general-self-signed-certificate` command has gained the `--p12-file`
   and `--p12-password` arguments to write a self-signed certificate to a
   PKCS#12 / p12 / PFX file.
+* The `generate-self-signed-certificate` command now supports generating
+  RSA certificates. RSA certificates are now the default, to match what
+  Apple tooling generates by default.
 * cryptographic-message-syntax 0.25 -> 0.26.
 * x509-certificate 0.22 -> 0.23.
 

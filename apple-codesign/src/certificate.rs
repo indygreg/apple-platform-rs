@@ -11,6 +11,7 @@ use {
         ConstOid, Oid,
     },
     bytes::Bytes,
+    pkcs8::EncodePrivateKey,
     std::{
         fmt::{Display, Formatter},
         str::FromStr,
@@ -1331,7 +1332,30 @@ pub fn create_self_signed_code_signing_certificate(
     builder.apple_subject(team_id, person_name, country)?;
     builder.validity_duration(validity_duration);
 
-    Ok(builder.create_with_random_keypair(algorithm)?)
+    // x509-certificate crate doesn't support RSA key generation. So do
+    // that ourselves.
+    if matches!(algorithm, KeyAlgorithm::Rsa) {
+        let private_key = rsa::RsaPrivateKey::new(&mut rand::thread_rng(), 2048).map_err(|e| {
+            AppleCodesignError::CertificateBuildError(format!("error generating RSA key: {}", e))
+        })?;
+        let key_pair = InMemorySigningKeyPair::from_pkcs8_der(
+            private_key
+                .to_pkcs8_der()
+                .map_err(|e| {
+                    AppleCodesignError::CertificateGeneric(format!(
+                        "error converting RSA key to DER: {}",
+                        e
+                    ))
+                })?
+                .as_bytes(),
+        )?;
+
+        let cert = builder.create_with_key_pair(&key_pair)?;
+
+        Ok((cert, key_pair))
+    } else {
+        Ok(builder.create_with_random_keypair(algorithm)?)
+    }
 }
 
 #[cfg(test)]

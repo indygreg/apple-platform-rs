@@ -2091,7 +2091,7 @@ fn command_generate_certificate_signing_request(
 #[derive(Parser)]
 struct GenerateSelfSignedCertificate {
     /// Which key type to use
-    #[arg(long, value_parser = ["ecdsa", "ed25519"], default_value = "ecdsa")]
+    #[arg(long, value_parser = ["ecdsa", "ed25519", "rsa"], default_value = "rsa")]
     algorithm: String,
 
     #[arg(long, value_parser = CertificateProfile::str_names(), default_value = "apple-development")]
@@ -2137,6 +2137,7 @@ impl GenerateSelfSignedCertificate {
         let algorithm = match self.algorithm.as_str() {
             "ecdsa" => KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1),
             "ed25519" => KeyAlgorithm::Ed25519,
+            "rsa" => KeyAlgorithm::Rsa,
             value => panic!("algorithm values should have been validated by arg parser: {value}"),
         };
 

@@ -29,8 +29,8 @@ Options:
       --algorithm <ALGORITHM>
           Which key type to use
           
-          [default: ecdsa]
-          [possible values: ecdsa, ed25519]
+          [default: rsa]
+          [possible values: ecdsa, ed25519, rsa]
 
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times
@@ -92,8 +92,39 @@ $ rcodesign generate-self-signed-certificate --profile apple-development --perso
 [..]
 [..]
 [..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
 -----END CERTIFICATE-----
 -----BEGIN PRIVATE KEY-----
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
+[..]
 [..]
 [..]
 [..]
