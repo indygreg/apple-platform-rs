@@ -248,7 +248,17 @@ const OID_CA_EXTENSION_APPLE_WORLDWIDE_DEVELOPER_RELATIONS_G2: ConstOid =
 const OID_CA_EXTENSION_APPLE_SOFTWARE_UPDATE_CERTIFICATION: ConstOid =
     Oid(&[42, 134, 72, 134, 247, 99, 100, 6, 2, 19]);
 
-const ALL_OID_CA_EXTENSIONS: &[&ConstOid; 8] = &[
+/// Apple Application Integration CA - G1.
+///
+/// This was introduced in `Apple Application Integration CA 7 - G1`
+/// The previous `Apple Application Integration CA 5 - G1` certificate
+/// had the legacy 1.2.840.113635.100.6.2.3 extension.
+///
+/// 1.2.840.113635.100.6.2.31
+const OID_CA_EXTENSION_APPLE_APPLICATION_INTEGRATION_G1: ConstOid =
+    Oid(&[42, 134, 72, 134, 247, 99, 100, 6, 2, 31]);
+
+const ALL_OID_CA_EXTENSIONS: &[&ConstOid; 9] = &[
     &OID_CA_EXTENSION_APPLE_WORLDWIDE_DEVELOPER_RELATIONS,
     &OID_CA_EXTENSION_APPLE_APPLICATION_INTEGRATION,
     &OID_CA_EXTENSION_DEVELOPER_ID,
@@ -257,6 +267,7 @@ const ALL_OID_CA_EXTENSIONS: &[&ConstOid; 8] = &[
     &OID_CA_EXTENSION_APPLE_APPLICATION_INTEGRATION_G3,
     &OID_CA_EXTENSION_APPLE_WORLDWIDE_DEVELOPER_RELATIONS_G2,
     &OID_CA_EXTENSION_APPLE_SOFTWARE_UPDATE_CERTIFICATION,
+    &OID_CA_EXTENSION_APPLE_APPLICATION_INTEGRATION_G1,
 ];
 
 /// Describes the type of code signing that a certificate is authorized to perform.
@@ -594,6 +605,9 @@ pub enum CertificateAuthorityExtension {
 
     /// Apple Software Update Certification.
     AppleSoftwareUpdateCertification,
+
+    /// Apple Application Integration CA - G1.
+    AppleApplicationIntegrationG1,
 }
 
 impl CertificateAuthorityExtension {
@@ -608,6 +622,7 @@ impl CertificateAuthorityExtension {
             Self::AppleApplicationIntegrationG3,
             Self::AppleWorldwideDeveloperRelationsG2,
             Self::AppleSoftwareUpdateCertification,
+            Self::AppleApplicationIntegrationG1,
         ]
     }
 
@@ -634,6 +649,9 @@ impl CertificateAuthorityExtension {
             Self::AppleSoftwareUpdateCertification => {
                 OID_CA_EXTENSION_APPLE_SOFTWARE_UPDATE_CERTIFICATION
             }
+            Self::AppleApplicationIntegrationG1 => {
+                OID_CA_EXTENSION_APPLE_APPLICATION_INTEGRATION_G1
+            }
         }
     }
 }
@@ -655,13 +673,16 @@ impl Display for CertificateAuthorityExtension {
                 f.write_str("Developer Authentication Certification Authority")
             }
             CertificateAuthorityExtension::AppleApplicationIntegrationG3 => {
-                f.write_str("Application Application Integration CA - G3")
+                f.write_str("Apple Application Integration CA - G3")
             }
             CertificateAuthorityExtension::AppleWorldwideDeveloperRelationsG2 => {
                 f.write_str("Apple Worldwide Developer Relations CA - G2")
             }
             CertificateAuthorityExtension::AppleSoftwareUpdateCertification => {
                 f.write_str("Apple Software Update Certification")
+            }
+            CertificateAuthorityExtension::AppleApplicationIntegrationG1 => {
+                f.write_str("Apple Application Integration CA - G1")
             }
         }
     }
@@ -688,6 +709,8 @@ impl TryFrom<&Oid> for CertificateAuthorityExtension {
             Ok(Self::AppleWorldwideDeveloperRelationsG2)
         } else if oid.as_ref() == OID_CA_EXTENSION_APPLE_SOFTWARE_UPDATE_CERTIFICATION.as_ref() {
             Ok(Self::AppleSoftwareUpdateCertification)
+        } else if oid.as_ref() == OID_CA_EXTENSION_APPLE_APPLICATION_INTEGRATION_G1.as_ref() {
+            Ok(Self::AppleApplicationIntegrationG1)
         } else {
             Err(AppleCodesignError::OidIsntCertificateAuthority)
         }

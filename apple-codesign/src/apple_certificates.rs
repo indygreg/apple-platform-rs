@@ -81,6 +81,15 @@ static APPLE_APPLICATION_INTEGRATION_CA_5_G1_CERTIFICATE: Lazy<CapturedX509Certi
         .unwrap()
     });
 
+/// Apple Application Integration CA 7 - G1 Certificate
+static APPLE_APPLICATION_INTEGRATION_CA_7_G1_CERTIFICATE: Lazy<CapturedX509Certificate> =
+    Lazy::new(|| {
+        CapturedX509Certificate::from_der(
+            include_bytes!("apple-certs/AppleApplicationIntegrationCA7G1.cer").to_vec(),
+        )
+        .unwrap()
+    });
+
 /// Developer Authentication Certificate
 static DEVELOPER_AUTHENTICATION_CERTIFICATE: Lazy<CapturedX509Certificate> = Lazy::new(|| {
     CapturedX509Certificate::from_der(include_bytes!("apple-certs/DevAuthCA.cer").to_vec()).unwrap()
@@ -154,6 +163,20 @@ static WORLD_WIDE_DEVELOPER_RELATIONS_G6_CERTIFICATE: Lazy<CapturedX509Certifica
             .unwrap()
     });
 
+/// Worldwide Developer Relations - G7 (Expiring 11/17/2023 20:40:52 UTC) Certificate
+static WORLD_WIDE_DEVELOPER_RELATIONS_G7_CERTIFICATE: Lazy<CapturedX509Certificate> =
+    Lazy::new(|| {
+        CapturedX509Certificate::from_der(include_bytes!("apple-certs/AppleWWDRCAG7.cer").to_vec())
+            .unwrap()
+    });
+
+/// Worldwide Developer Relations - G8 (Expiring 01/24/2025 00:00:00 UTC) Certificate
+static WORLD_WIDE_DEVELOPER_RELATIONS_G8_CERTIFICATE: Lazy<CapturedX509Certificate> =
+    Lazy::new(|| {
+        CapturedX509Certificate::from_der(include_bytes!("apple-certs/AppleWWDRCAG8.cer").to_vec())
+            .unwrap()
+    });
+
 /// All known Apple certificates.
 static KNOWN_CERTIFICATES: Lazy<Vec<&CapturedX509Certificate>> = Lazy::new(|| {
     vec![
@@ -168,6 +191,7 @@ static KNOWN_CERTIFICATES: Lazy<Vec<&CapturedX509Certificate>> = Lazy::new(|| {
         APPLICATION_INTEGRATION_2_CERTIFICATE.deref(),
         APPLICATION_INTEGRATION_G3_CERTIFICATE.deref(),
         APPLE_APPLICATION_INTEGRATION_CA_5_G1_CERTIFICATE.deref(),
+        APPLE_APPLICATION_INTEGRATION_CA_7_G1_CERTIFICATE.deref(),
         DEVELOPER_AUTHENTICATION_CERTIFICATE.deref(),
         DEVELOPER_ID_G1_CERTIFICATE.deref(),
         DEVELOPER_ID_G2_CERTIFICATE.deref(),
@@ -179,6 +203,8 @@ static KNOWN_CERTIFICATES: Lazy<Vec<&CapturedX509Certificate>> = Lazy::new(|| {
         WORLD_WIDE_DEVELOPER_RELATIONS_G4_CERTIFICATE.deref(),
         WORLD_WIDE_DEVELOPER_RELATIONS_G5_CERTIFICATE.deref(),
         WORLD_WIDE_DEVELOPER_RELATIONS_G6_CERTIFICATE.deref(),
+        WORLD_WIDE_DEVELOPER_RELATIONS_G7_CERTIFICATE.deref(),
+        WORLD_WIDE_DEVELOPER_RELATIONS_G8_CERTIFICATE.deref(),
     ]
 });
 
@@ -252,6 +278,11 @@ pub enum KnownCertificate {
     /// CN = Apple Application Integration CA 5 - G1, OU = Apple Certification Authority, O = Apple Inc., C = US
     AppleApplicationIntegrationCa5G1,
 
+    /// Apple Application Integration CA 7 - G1 Certificate
+    ///
+    /// CN=Apple Application Integration CA 7 - G1, OU=Apple Certification Authority, O=Apple Inc., C=US
+    AppleApplicationIntegrationCa7G1,
+
     /// Developer Authentication Certificate
     ///
     /// CN = Developer Authentication Certification Authority, OU = Apple Worldwide Developer Relations, O = Apple Inc., C = US
@@ -306,6 +337,16 @@ pub enum KnownCertificate {
     ///
     /// CN = Apple Worldwide Developer Relations Certification Authority, OU = G6, O = Apple Inc., C = US
     WwdrG6,
+
+    /// Worldwide Developer Relations - G7 (Expiring 11/17/2023 20:40:52 UTC)
+    ///
+    /// C=US, O=Apple Inc., OU=G7, CN=Apple Worldwide Developer Relations Certification Authority
+    WwdrG7,
+
+    /// Worldwide Developer Relations - G8 (Expiring 01/24/2025 00:00:00 UTC)
+    ///
+    /// C=US, O=Apple Inc., OU=G8, CN=Apple Worldwide Developer Relations Certification Authority
+    WwdrG8,
 }
 
 impl Deref for KnownCertificate {
@@ -325,6 +366,9 @@ impl Deref for KnownCertificate {
             Self::AppleApplicationIntegrationCa5G1 => {
                 APPLE_APPLICATION_INTEGRATION_CA_5_G1_CERTIFICATE.deref()
             }
+            Self::AppleApplicationIntegrationCa7G1 => {
+                APPLE_APPLICATION_INTEGRATION_CA_7_G1_CERTIFICATE.deref()
+            }
             Self::DeveloperAuthentication => DEVELOPER_AUTHENTICATION_CERTIFICATE.deref(),
             Self::DeveloperIdG1 => DEVELOPER_ID_G1_CERTIFICATE.deref(),
             Self::DeveloperIdG2 => DEVELOPER_ID_G2_CERTIFICATE.deref(),
@@ -336,6 +380,8 @@ impl Deref for KnownCertificate {
             Self::WwdrG4 => WORLD_WIDE_DEVELOPER_RELATIONS_G4_CERTIFICATE.deref(),
             Self::WwdrG5 => WORLD_WIDE_DEVELOPER_RELATIONS_G5_CERTIFICATE.deref(),
             Self::WwdrG6 => WORLD_WIDE_DEVELOPER_RELATIONS_G6_CERTIFICATE.deref(),
+            Self::WwdrG7 => WORLD_WIDE_DEVELOPER_RELATIONS_G7_CERTIFICATE.deref(),
+            Self::WwdrG8 => WORLD_WIDE_DEVELOPER_RELATIONS_G8_CERTIFICATE.deref(),
         }
     }
 }
@@ -381,6 +427,9 @@ impl TryFrom<&CapturedX509Certificate> for KnownCertificate {
             _ if APPLE_APPLICATION_INTEGRATION_CA_5_G1_CERTIFICATE.constructed_data() == want => {
                 Ok(Self::AppleApplicationIntegrationCa5G1)
             }
+            _ if APPLE_APPLICATION_INTEGRATION_CA_7_G1_CERTIFICATE.constructed_data() == want => {
+                Ok(Self::AppleApplicationIntegrationCa7G1)
+            }
             _ if DEVELOPER_AUTHENTICATION_CERTIFICATE.constructed_data() == want => {
                 Ok(Self::DeveloperAuthentication)
             }
@@ -405,6 +454,12 @@ impl TryFrom<&CapturedX509Certificate> for KnownCertificate {
             }
             _ if WORLD_WIDE_DEVELOPER_RELATIONS_G6_CERTIFICATE.constructed_data() == want => {
                 Ok(Self::WwdrG6)
+            }
+            _ if WORLD_WIDE_DEVELOPER_RELATIONS_G7_CERTIFICATE.constructed_data() == want => {
+                Ok(Self::WwdrG7)
+            }
+            _ if WORLD_WIDE_DEVELOPER_RELATIONS_G8_CERTIFICATE.constructed_data() == want => {
+                Ok(Self::WwdrG8)
             }
             _ => Err("certificate not found"),
         }
@@ -524,6 +579,14 @@ mod test {
         );
         assert_eq!(
             KnownCertificate::WwdrG6.apple_ca_extensions().first(),
+            Some(&CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
+        );
+        assert_eq!(
+            KnownCertificate::WwdrG7.apple_ca_extensions().first(),
+            Some(&CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
+        );
+        assert_eq!(
+            KnownCertificate::WwdrG8.apple_ca_extensions().first(),
             Some(&CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
         );
     }

@@ -31,6 +31,9 @@ Released on ReleaseDate.
 * Fixed a bug where the `AnchorCertificateHash` code requirements expression
   was being incorrectly formatted as `anchor <slot> H"<hash>"` instead of
   `certificate <slot> = H"<hash>"`.
+* Added awareness of new Apple CA certificates:
+  `Apple Application Integration CA 7 - G1 Certificate`,
+  `Worldwide Developer Relations - G7`, and `Worldwide Developer Relations - G8`.
 * cryptographic-message-syntax 0.25 -> 0.26.
 * x509-certificate 0.22 -> 0.23.
 

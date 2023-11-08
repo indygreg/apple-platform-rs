@@ -38,5 +38,6 @@ $ rcodesign x509-oids
 1.2.840.113635.100.6.2.14	AppleApplicationIntegrationG3
 1.2.840.113635.100.6.2.15	AppleWorldwideDeveloperRelationsG2
 1.2.840.113635.100.6.2.19	AppleSoftwareUpdateCertification
+1.2.840.113635.100.6.2.31	AppleApplicationIntegrationG1
 
 ```
