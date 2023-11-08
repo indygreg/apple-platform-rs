@@ -1187,25 +1187,12 @@ impl CodeResourcesBuilder {
                         if crate::reader::path_is_macho(path)? {
                             info!("sealing nested Mach-O binary: {}", rel_path.display());
 
-                            let macho_info = if context
-                                .settings
-                                .path_exclusion_pattern_matches(&root_rel_path_normalized)
-                            {
-                                warn!("skipping signing of nested Mach-O binary because excluded by settings: {}", rel_path.display());
-                                warn!("(an error will occur if this binary is not already signed)");
-                                warn!("(if you see an error, sign that Mach-O explicitly or remove it from the exclusion settings)");
-
-                                let dest_path = context.install_file(path, rel_path)?;
-                                let data = std::fs::read(&dest_path)?;
-
-                                SignedMachOInfo::parse_data(&data)?
-                            } else {
-                                context.sign_and_install_macho(path, rel_path)?.1
-                            };
-
-                            self.resources.seal_macho(
+                            self.seal_rules2_nested_macho(
+                                path,
+                                rel_path,
                                 &rel_path_normalized,
-                                &macho_info,
+                                &root_rel_path_normalized,
+                                context,
                                 rule.optional,
                             )?;
                         } else {
@@ -1322,6 +1309,39 @@ impl CodeResourcesBuilder {
         }
 
         Ok(())
+    }
+
+    /// Seal a Mach-O binary matching a nested rule.
+    fn seal_rules2_nested_macho<'ctx, 'key>(
+        &mut self,
+        full_path: &Path,
+        rel_path: &Path,
+        rel_path_normalized: &str,
+        root_rel_path: &str,
+        context: &BundleSigningContext<'ctx, 'key>,
+        optional: bool,
+    ) -> Result<(), AppleCodesignError> {
+        let macho_info = if context
+            .settings
+            .path_exclusion_pattern_matches(root_rel_path)
+        {
+            warn!(
+                "skipping signing of nested Mach-O binary because excluded by settings: {}",
+                rel_path.display()
+            );
+            warn!("(an error will occur if this binary is not already signed)");
+            warn!("(if you see an error, sign that Mach-O explicitly or remove it from the exclusion settings)");
+
+            let dest_path = context.install_file(full_path, rel_path)?;
+            let data = std::fs::read(&dest_path)?;
+
+            SignedMachOInfo::parse_data(&data)?
+        } else {
+            context.sign_and_install_macho(full_path, rel_path)?.1
+        };
+
+        self.resources
+            .seal_macho(rel_path_normalized, &macho_info, optional)
     }
 
     /// Seal a file for version 2 rules.
