@@ -486,41 +486,45 @@ mod test {
                     .all(|atv| !atv.to_string().unwrap().contains("GeoTrust"))
             })
         {
-            assert!(cert.apple_ca_extension().is_some());
+            assert!(!cert.apple_ca_extensions().is_empty());
         }
 
         // Let's spot check a few.
         assert_eq!(
-            KnownCertificate::DeveloperIdG1.apple_ca_extension(),
-            Some(CertificateAuthorityExtension::DeveloperId)
+            KnownCertificate::DeveloperIdG1
+                .apple_ca_extensions()
+                .first(),
+            Some(&CertificateAuthorityExtension::DeveloperId)
         );
         assert_eq!(
-            KnownCertificate::DeveloperIdG2.apple_ca_extension(),
-            Some(CertificateAuthorityExtension::DeveloperId)
+            KnownCertificate::DeveloperIdG2
+                .apple_ca_extensions()
+                .first(),
+            Some(&CertificateAuthorityExtension::DeveloperId)
         );
         assert_eq!(
-            KnownCertificate::WwdrG1.apple_ca_extension(),
-            Some(CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
+            KnownCertificate::WwdrG1.apple_ca_extensions().first(),
+            Some(&CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
         );
         assert_eq!(
-            KnownCertificate::WwdrG2.apple_ca_extension(),
-            Some(CertificateAuthorityExtension::AppleWorldwideDeveloperRelationsG2)
+            KnownCertificate::WwdrG2.apple_ca_extensions().first(),
+            Some(&CertificateAuthorityExtension::AppleWorldwideDeveloperRelationsG2)
         );
         assert_eq!(
-            KnownCertificate::WwdrG3.apple_ca_extension(),
-            Some(CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
+            KnownCertificate::WwdrG3.apple_ca_extensions().first(),
+            Some(&CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
         );
         assert_eq!(
-            KnownCertificate::WwdrG4.apple_ca_extension(),
-            Some(CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
+            KnownCertificate::WwdrG4.apple_ca_extensions().first(),
+            Some(&CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
         );
         assert_eq!(
-            KnownCertificate::WwdrG5.apple_ca_extension(),
-            Some(CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
+            KnownCertificate::WwdrG5.apple_ca_extensions().first(),
+            Some(&CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
         );
         assert_eq!(
-            KnownCertificate::WwdrG6.apple_ca_extension(),
-            Some(CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
+            KnownCertificate::WwdrG6.apple_ca_extensions().first(),
+            Some(&CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
         );
     }
 

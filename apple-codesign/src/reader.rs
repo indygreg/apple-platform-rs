@@ -202,8 +202,8 @@ pub struct CertificateInfo {
     pub is_apple_root_ca: bool,
     pub is_apple_intermediate_ca: bool,
     pub chains_to_apple_root_ca: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub apple_ca_extension: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub apple_ca_extensions: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub apple_extended_key_usages: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -233,7 +233,11 @@ impl TryFrom<&CapturedX509Certificate> for CertificateInfo {
             is_apple_root_ca: cert.is_apple_root_ca(),
             is_apple_intermediate_ca: cert.is_apple_intermediate_ca(),
             chains_to_apple_root_ca: cert.chains_to_apple_root_ca(),
-            apple_ca_extension: cert.apple_ca_extension().map(|x| x.to_string()),
+            apple_ca_extensions: cert
+                .apple_ca_extensions()
+                .into_iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<_>>(),
             apple_extended_key_usages: cert
                 .apple_extended_key_usage_purposes()
                 .into_iter()

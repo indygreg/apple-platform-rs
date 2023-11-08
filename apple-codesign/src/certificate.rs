@@ -820,15 +820,15 @@ pub trait AppleCertificate: Sized {
     /// known self-signed Apple certificates.
     fn is_apple_intermediate_ca(&self) -> bool;
 
-    /// Find a [CertificateAuthorityExtension] present on this certificate.
+    /// Find [CertificateAuthorityExtension] present on this certificate.
     ///
-    /// If this returns Some(T), the certificate says it is an Apple certificate
+    /// If this is non-empty, the certificate says it is an Apple certificate
     /// whose role is issuing other certificates using for signing things.
     ///
     /// This function does not perform trust validation that the underlying
     /// certificate is a legitimate Apple issued certificate: just that it has
     /// the desired property.
-    fn apple_ca_extension(&self) -> Option<CertificateAuthorityExtension>;
+    fn apple_ca_extensions(&self) -> Vec<CertificateAuthorityExtension>;
 
     /// Obtain all of Apple's [ExtendedKeyUsagePurpose] in this certificate.
     fn apple_extended_key_usage_purposes(&self) -> Vec<ExtendedKeyUsagePurpose>;
@@ -888,16 +888,12 @@ impl AppleCertificate for CapturedX509Certificate {
         KnownCertificate::all().contains(&self) && !KnownCertificate::all_roots().contains(&self)
     }
 
-    fn apple_ca_extension(&self) -> Option<CertificateAuthorityExtension> {
+    fn apple_ca_extensions(&self) -> Vec<CertificateAuthorityExtension> {
         let cert: &x509_certificate::rfc5280::Certificate = self.as_ref();
 
-        cert.iter_extensions().find_map(|extension| {
-            if let Ok(value) = CertificateAuthorityExtension::try_from(&extension.id) {
-                Some(value)
-            } else {
-                None
-            }
-        })
+        cert.iter_extensions()
+            .filter_map(|extension| CertificateAuthorityExtension::try_from(&extension.id).ok())
+            .collect::<Vec<_>>()
     }
 
     fn apple_extended_key_usage_purposes(&self) -> Vec<ExtendedKeyUsagePurpose> {

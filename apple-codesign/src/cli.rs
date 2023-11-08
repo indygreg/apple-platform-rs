@@ -768,14 +768,14 @@ fn print_certificate_info(cert: &CapturedX509Certificate) -> Result<(), AppleCod
         "Is Apple Intermediate CA?:   {}",
         cert.is_apple_intermediate_ca()
     );
-    println!(
-        "Apple CA Extension:          {}",
-        if let Some(ext) = cert.apple_ca_extension() {
-            format!("{} ({:?})", ext.as_oid(), ext)
-        } else {
-            "none".to_string()
+
+    if !cert.apple_ca_extensions().is_empty() {
+        println!("Apple CA Extensions:");
+        for ext in cert.apple_ca_extensions() {
+            println!("  - {} ({:?})", ext.as_oid(), ext);
         }
-    );
+    }
+
     println!("Apple Extended Key Usage Purpose Extensions:");
     for purpose in cert.apple_extended_key_usage_purposes() {
         println!("  - {} ({:?})", purpose.as_oid(), purpose);
