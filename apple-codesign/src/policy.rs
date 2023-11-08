@@ -22,8 +22,7 @@
 use {
     crate::{
         certificate::{
-            AppleCertificate, CertificateAuthorityExtension, CertificateProfile,
-            CodeSigningCertificateExtension,
+            AppleCertificate, CertificateAuthorityExtension, CodeSigningCertificateExtension,
         },
         code_requirement::{CodeRequirementExpression, CodeRequirementMatchExpression},
         error::AppleCodesignError,
@@ -183,66 +182,75 @@ impl TryFrom<&str> for ExecutionPolicy {
 
 /// Derive a designated requirements expression given a code signing certificate.
 ///
-/// This function figures out what the run-time requirements of a signed binary
-/// should be given its code signing certificate.
+/// The default expression is derived from properties of the signing
+/// certificate. If it is an Apple signed certificate, extensions on the
+/// issuer CA denote which expression to use.
 ///
-/// We determine the flavor of Apple code signing certificate in use and apply an
-/// appropriate requirements policy. We strive for behavior equivalence with
-/// Apple's `codesign` tool.
+/// For non-Apple signed certificates, the expression self-references the
+/// issuing certificate in the same Organization as the signing certificate.
 pub fn derive_designated_requirements(
-    cert: &CapturedX509Certificate,
+    signing_cert: &CapturedX509Certificate,
+    chain: &[CapturedX509Certificate],
     identifier: Option<String>,
 ) -> Result<Option<CodeRequirementExpression<'static>>, AppleCodesignError> {
-    let profile = if let Some(profile) = cert.apple_guess_profile() {
-        profile
+    let expr = if signing_cert.chains_to_apple_root_ca() {
+        let apple_chain = signing_cert.apple_issuing_chain();
+
+        assert!(
+            !apple_chain.is_empty(),
+            "we should be able to resolve the Apple CA chain if chains_to_apple_root_ca() is true"
+        );
+
+        let first = apple_chain[0];
+
+        if first
+            .apple_ca_extensions()
+            .into_iter()
+            .any(|ext| ext == CertificateAuthorityExtension::AppleWorldwideDeveloperRelations)
+        {
+            let cn = signing_cert.subject_common_name().ok_or_else(|| {
+                AppleCodesignError::PolicyFormulationError(
+                    "certificate common name not available".to_string(),
+                )
+            })?;
+            worldwide_developer_relations_signed_expression(cn)
+        } else if first
+            .apple_ca_extensions()
+            .into_iter()
+            .any(|ext| ext == CertificateAuthorityExtension::DeveloperId)
+        {
+            let team_id = signing_cert.apple_team_id().ok_or_else(|| {
+                AppleCodesignError::PolicyFormulationError(
+                    "could not find team identifier in signing certificate".to_string(),
+                )
+            })?;
+
+            developer_id_signed_expression(team_id)
+        } else {
+            CodeRequirementExpression::AnchorApple
+        }
     } else {
-        return Ok(None);
+        // Ensure the chain is sorted.
+        let chain = signing_cert
+            .resolve_signing_chain(chain.iter())
+            .into_iter()
+            .cloned()
+            .collect::<Vec<_>>();
+
+        non_apple_signed_expression(signing_cert, &chain)?
     };
 
-    match profile {
-        // These appear to be the same policy.
-        CertificateProfile::AppleDevelopment | CertificateProfile::AppleDistribution => {
-            let cn = cert.subject_common_name().ok_or_else(|| {
-                AppleCodesignError::PolicyFormulationError(format!(
-                    "(deriving for {profile:?}) certificate common name not available"
-                ))
-            })?;
+    // Chain the expression with the identifier, if given.
+    let expr = if let Some(identifier) = identifier {
+        CodeRequirementExpression::And(
+            Box::new(CodeRequirementExpression::Identifier(identifier.into())),
+            Box::new(expr),
+        )
+    } else {
+        expr
+    };
 
-            let expr = worldwide_developer_relations_signed_expression(cn);
-
-            Ok(Some(if let Some(identifier) = identifier {
-                CodeRequirementExpression::And(
-                    Box::new(CodeRequirementExpression::Identifier(identifier.into())),
-                    Box::new(expr),
-                )
-            } else {
-                expr
-            }))
-        }
-        CertificateProfile::DeveloperIdApplication => {
-            let team_id = cert.apple_team_id().ok_or_else(|| {
-                AppleCodesignError::PolicyFormulationError(format!(
-                    "(deriving for {profile:?}) could not find team identifier in signing certificate"
-                ))
-            })?;
-
-            let expr = developer_id_signed_expression(team_id);
-
-            Ok(Some(if let Some(identifier) = identifier {
-                CodeRequirementExpression::And(
-                    Box::new(CodeRequirementExpression::Identifier(identifier.into())),
-                    Box::new(expr),
-                )
-            } else {
-                expr
-            }))
-        }
-        CertificateProfile::MacInstallerDistribution | CertificateProfile::DeveloperIdInstaller => {
-            Err(AppleCodesignError::PolicyFormulationError(format!(
-                "(deriving for {profile:?}) a designated requirement cannot be derived for installer code signing certificates; if you see this message you should probably be using a different code signing certificate for signing applications"
-            )))
-        }
-    }
+    Ok(Some(expr))
 }
 
 /// Derive a code requirements expression for a Developer ID issued certificate.
@@ -307,6 +315,65 @@ pub fn worldwide_developer_relations_signed_expression(
     )
 }
 
+/// Derive the requirements expression for non Apple signed certificates.
+///
+/// The signing certificate should be the first certificate in the passed chain.
+/// The chain should be sorted so the root CA is last.
+pub fn non_apple_signed_expression(
+    signing_cert: &CapturedX509Certificate,
+    chain: &[CapturedX509Certificate],
+) -> Result<CodeRequirementExpression<'static>, AppleCodesignError> {
+    let leaf_raw: &x509_certificate::rfc5280::Certificate = signing_cert.as_ref();
+
+    let leaf_organization = leaf_raw
+        .tbs_certificate
+        .subject
+        .iter_organization()
+        .next()
+        .and_then(|o| o.to_string().ok());
+
+    // We pin the last certificate in the signing chain having the same
+    // organization as the signing certificate.
+
+    let mut pin_index = 0i32;
+
+    if let Some(leaf_organization) = leaf_organization {
+        for cert in chain.iter() {
+            let ca_raw: &x509_certificate::rfc5280::Certificate = cert.as_ref();
+
+            if let Some(org) = ca_raw
+                .tbs_certificate
+                .subject
+                .iter_organization()
+                .next()
+                .and_then(|o| o.to_string().ok())
+            {
+                if org != leaf_organization {
+                    break;
+                }
+
+                pin_index += 1;
+            }
+        }
+    }
+
+    // If the entire chain is signed by the same Organization, use the
+    // special cert index value to pin the root cert.
+    if pin_index as usize == chain.len() {
+        pin_index = -1;
+    }
+
+    let digest = signing_cert
+        .fingerprint(x509_certificate::DigestAlgorithm::Sha1)?
+        .as_ref()
+        .to_vec();
+
+    Ok(CodeRequirementExpression::AnchorCertificateHash(
+        pin_index,
+        digest.into(),
+    ))
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -326,6 +393,22 @@ mod test {
     const DEVELOPER_ID_TEXT: &str = "(anchor apple generic) and ((certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */) and ((certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */) and (certificate leaf[subject.OU] = \"MK22MZP987\")))";
     const WWDR_TEXT: &str = "(anchor apple generic) and ((certificate leaf[subject.CN] = \"Apple Development: Gregory Szorc (DD5YMVP48D)\") and (certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */))";
 
+    fn load_unified_pem(pem_data: &[u8]) -> CapturedX509Certificate {
+        pem::parse_many(pem_data)
+            .unwrap()
+            .into_iter()
+            .filter_map(|doc| {
+                if doc.tag() == "CERTIFICATE" {
+                    Some(doc.contents().to_vec())
+                } else {
+                    None
+                }
+            })
+            .map(|der| CapturedX509Certificate::from_der(der).unwrap())
+            .next()
+            .unwrap()
+    }
+
     #[test]
     fn developer_id_requirements_derive() {
         let der = include_bytes!("testdata/apple-signed-developer-id-application.cer");
@@ -336,7 +419,7 @@ mod test {
             DEVELOPER_ID_TEXT
         );
         assert_eq!(
-            derive_designated_requirements(&cert, None)
+            derive_designated_requirements(&cert, &[], None)
                 .unwrap()
                 .unwrap()
                 .to_string(),
@@ -349,6 +432,35 @@ mod test {
         assert_eq!(
             worldwide_developer_relations_signed_expression(APPLE_SIGNED_CN).to_string(),
             WWDR_TEXT
+        );
+    }
+
+    #[test]
+    fn non_apple_signed() {
+        let self_signed = load_unified_pem(include_bytes!(
+            "testdata/self-signed-rsa-apple-development.pem"
+        ));
+
+        assert_eq!(
+            non_apple_signed_expression(&self_signed, &[])
+                .unwrap()
+                .to_string(),
+            "anchor -1 H\"e1c7216e46533c923b7cfc94e86c7043790b96e9\""
+        );
+
+        // Now try with an Apple chain. The function doesn't care that it is
+        // operating on a non-Apple chain.
+        let apple_development = CapturedX509Certificate::from_der(
+            include_bytes!("testdata/apple-signed-apple-development.cer").to_vec(),
+        )
+        .unwrap();
+        let chain = apple_development.apple_root_certificate_chain().unwrap();
+
+        assert_eq!(
+            non_apple_signed_expression(&apple_development, &chain[1..])
+                .unwrap()
+                .to_string(),
+            "anchor 0 H\"5eeadb4befce055e06b4239ad4c5f0d1bfd6af8f\""
         );
     }
 
@@ -376,14 +488,14 @@ mod test {
         .unwrap();
 
         assert_eq!(
-            derive_designated_requirements(&apple_development, None)
+            derive_designated_requirements(&apple_development, &[], None)
                 .unwrap()
                 .unwrap()
                 .to_string(),
             WWDR_TEXT
         );
         assert_eq!(
-            derive_designated_requirements(&apple_distribution, None)
+            derive_designated_requirements(&apple_distribution, &[], None)
                 .unwrap()
                 .unwrap()
                 .to_string(),
@@ -393,30 +505,29 @@ mod test {
             .to_string()
         );
         assert_eq!(
-            derive_designated_requirements(&developer_id_application, None)
+            derive_designated_requirements(&developer_id_application, &[], None)
                 .unwrap()
                 .unwrap()
                 .to_string(),
             DEVELOPER_ID_TEXT
         );
-        assert!(derive_designated_requirements(&developer_id_installer, None).is_err());
-        assert!(derive_designated_requirements(&mac_installer_distribution, None).is_err());
-    }
-
-    fn load_unified_pem(pem_data: &[u8]) -> CapturedX509Certificate {
-        pem::parse_many(pem_data)
-            .unwrap()
-            .into_iter()
-            .filter_map(|doc| {
-                if doc.tag() == "CERTIFICATE" {
-                    Some(doc.contents().to_vec())
-                } else {
-                    None
-                }
-            })
-            .map(|der| CapturedX509Certificate::from_der(der).unwrap())
-            .next()
-            .unwrap()
+        assert_eq!(
+            derive_designated_requirements(&developer_id_installer, &[], None)
+                .unwrap()
+                .unwrap()
+                .to_string(),
+            developer_id_signed_expression("MK22MZP987").to_string()
+        );
+        assert_eq!(
+            derive_designated_requirements(&mac_installer_distribution, &[], None)
+                .unwrap()
+                .unwrap()
+                .to_string(),
+            worldwide_developer_relations_signed_expression(
+                "3rd Party Mac Developer Installer: Gregory Szorc (MK22MZP987)"
+            )
+            .to_string()
+        );
     }
 
     #[test]
@@ -438,7 +549,7 @@ mod test {
         ));
 
         let derive = |cert| -> String {
-            derive_designated_requirements(cert, None)
+            derive_designated_requirements(cert, &[], None)
                 .unwrap()
                 .unwrap()
                 .to_string()
@@ -446,23 +557,23 @@ mod test {
 
         assert_eq!(
             derive(&apple_development),
-            worldwide_developer_relations_signed_expression(
-                "Apple Development: RSA Apple Development (test)"
-            )
-            .to_string()
+            "anchor -1 H\"e1c7216e46533c923b7cfc94e86c7043790b96e9\""
         );
         assert_eq!(
             derive(&apple_distribution),
-            worldwide_developer_relations_signed_expression(
-                "Apple Distribution: RSA Apple Distribution (test)"
-            )
-            .to_string()
+            "anchor -1 H\"0383efdf909250708bf2de4d43753836ccb3d608\""
         );
         assert_eq!(
             derive(&developer_id_application),
-            developer_id_signed_expression("test").to_string()
+            "anchor -1 H\"3acf1d302fe3a4bba06a3c16aadc908045bc9162\""
         );
-        assert!(derive_designated_requirements(&developer_id_installer, None).is_err());
-        assert!(derive_designated_requirements(&mac_installer_distribution, None).is_err());
+        assert_eq!(
+            derive(&developer_id_installer),
+            "anchor -1 H\"5c1314a89e5a486ac7b1da86b38e08777adca4af\""
+        );
+        assert_eq!(
+            derive(&mac_installer_distribution),
+            "anchor -1 H\"58e39fe0fca55e7af4ca00027bc7c59e566e960a\""
+        );
     }
 }

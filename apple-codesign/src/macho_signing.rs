@@ -657,7 +657,11 @@ impl<'data> MachOSigner<'data> {
                             .to_string(),
                     );
 
-                    if let Some(expr) = derive_designated_requirements(cert, identifier)? {
+                    if let Some(expr) = derive_designated_requirements(
+                        cert,
+                        settings.certificate_chain(),
+                        identifier,
+                    )? {
                         requirements.push(expr);
                     }
                 }

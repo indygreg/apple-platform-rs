@@ -17,22 +17,22 @@ writing Mach-O to exe.apple-development
 $ rcodesign extract cms-info exe.apple-development
 signed content (embedded): None
 signed content (external): Some("fade0c02000001410002040000000000000000a1000000580000000200000005000040102002000c")... (321 bytes)
-signed content SHA-1:   f88dff78803f1d5ea49a43b332f8596f2f31138a
-signed content SHA-256: dc785a78f68cb227124176f1951670f428fcfbeeb7358d9a6dd8903fdeee34ef
-signed content SHA-384: 22aba0d1279ff9baeefc399ce83dad7cbe149f8b5cb03c8bf44bc753f698ece2ce58d9e5aca79704a56a770dac32c1dd
-signed content SHA-512: 17be489678c638bd8c99ac3d6f61b2470b5c313825c55841658f163dcbf41ab440ac9f01b3e6dcf508cb6b84a74632e23f8339d3eaa151c5bb680b68777e6132
+signed content SHA-1:   27ee9bba25ab1744a2127907053d482591fd6efe
+signed content SHA-256: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
+signed content SHA-384: 13da29451ce26c63c5b7cb4ff4c2398fe812ca98a1798bee6ed55d3f6b5bad39959b403d5f0060960d17bba6462d7675
+signed content SHA-512: bc0128772e654fb50c4b959ec0a6ecf86c0f6c0121287c9b6438c256e753d0bf7677f2418a5126b347866da9b21c4adb470f5f98c5e15b2ae135fe82bf9d0d5a
 certificate count: 1
 certificate #0: subject CN=Apple Development: RSA Apple Development (test); self signed=true
 signer count: 1
 signer #0: digest algorithm: Sha256
 signer #0: signature algorithm: RsaSha256
 signer #0: content type: 1.2.840.113549.1.7.1
-signer #0: message digest: dc785a78f68cb227124176f1951670f428fcfbeeb7358d9a6dd8903fdeee34ef
+signer #0: message digest: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
 signer #0: signing time: Some(2023-11-05T10:00:00Z)
-signer #0: signature content SHA-1:   0d954d003112f283067d5242fcc8b60aa334591e
-signer #0: signature content SHA-256: 6646783274b556cec21611d68546a39ae7c071c19d1dc608f5359b437fdf44bc
-signer #0: signature content SHA-384: 0595d4ef8919cd5499238aa5f75447142411bb3f9496727f5ab957687a1a49fbca60d7bddea770fc2ff1811489b4abec
-signer #0: signature content SHA-512: 7da2b24a3bbea8494bce3670e5c47465a92c22e41b8310b201ed117ed7202e04097108f8cc52c767240f2077896252d54f15d8a85fbdd85169800df1a1e5c5db
+signer #0: signature content SHA-1:   978d9484e038d086d52c475d117264b034079776
+signer #0: signature content SHA-256: 07a86c368e022c298674b8e58975baecb28922d2eae70f9a2c87ef6528c10e12
+signer #0: signature content SHA-384: 04815d1c0b51f48212a56b814d87c010dedd6246f5de144c28790bd1e7b5fc9d77cfde4e02f45e593a04c4fc8ddbf595
+signer #0: signature content SHA-512: 01a4b80be474295945f5973c746426a486990ed2a6956d09aa94815fcbdeea278215fb4393c23e5fc8fb24d2e91a319e87c03d993c84a6712e3dbc577fccef91
 signer #0: signature valid: true
 signer #0: time-stamp token present: false
 
@@ -290,17 +290,17 @@ SignedData {
             ),
             digest_algorithm: Sha256,
             signature_algorithm: RsaSha256,
-            signature: 86aa9aa435784572d6f45333715390913667fb63ad1f289faefb586b84de90dd63f360f43209190e71eeac2f461598dac70dbed98186bc9bea4907d9417ad5203c2da05732ef612b448d13f03e742b00c4fac276613346e696cc5002871dd79e374959455bc670038f5349f8aebf5fc154bda6be3983df684e06b11309121f3e0e7c8c21af84ff15c8723510a60799e64ae65c3a2429f071adb5e6f6dc153c5192f40099e6f5a14dfe808b1339015c1ce92fb2b700114cd632aa81631a70a08621d28998b727fc400dcafc1db95d6a57c69bab11ff04f71fa1224a229d42212b90f2a53d87bac47c8ddabef0964f223fbecee14e5383d2531ee3acc1c7d25faf,
+            signature: 96d6e33faaa1450e597c130814ae89731a4982079cd657dcd55dd11db58ba68a5ad9c9d06f668b54c1219d8c689cc2ae05492c9bf374607e069cfde4d997058f992ea4760ccb70b6706757661f44d4e19f0f7c108bc530d3d39528ee4787c215e7b94d7b4afed4501da94471ba92b7a12867d2f45c282b49ec5f136308253d38e63eadc8fd4360794a4b4d9ab918b2694badafdad2d3e74aa17af059bff922dfdd8c3cd55a8063ca0f8c25a6b68e8c5d915008c471f7e3232e74a01d86c2a672ab0d5665cba6ab22433b62f9309bbcfd7dc9480eeb47f6085e39b2c64d10a971c75e714d73bb3e4219d2c3f5ccf896f38c7ffb1cb46bbfffd043f1e726cd015f,
             signed_attributes: Some(
                 SignedAttributes {
                     content_type: 1.2.840.113549.1.7.1,
-                    message_digest: dc785a78f68cb227124176f1951670f428fcfbeeb7358d9a6dd8903fdeee34ef,
+                    message_digest: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066,
                     signing_time: Some(
                         2023-11-05T10:00:00Z,
                     ),
                 },
             ),
-            digested_signed_attributes_data: Some("318201d4301806092a864886f70d010903310b06092a864886f70d010701301c06092a864886f70d010905310f170d3233313130353130303030305a302f06092a864886f70d01090431220420dc785a78f68cb227124176f1951670f428fcfbeeb7358d9a6dd8903fdeee34ef303c06092a864886f763640902312f302d06096086480165030402010420dc785a78f68cb227124176f1951670f428fcfbeeb7358d9a6dd8903fdeee34ef3082012906092a864886f7636409013182011a048201163c3f786d6c2076657273696f6e3d22312e302220656e636f64696e673d225554462d38223f3e0a3c21444f435459504520706c697374205055424c494320222d2f2f4170706c652f2f44544420504c49535420312e302f2f454e222022687474703a2f2f7777772e6170706c652e636f6d2f445444732f50726f70657274794c6973742d312e302e647464223e0a3c706c6973742076657273696f6e3d22312e30223e0a3c646963743e0a093c6b65793e63646861736865733c2f6b65793e0a093c61727261793e0a09093c646174613e0a0909334868616550614d73696353515862786c525a7739436a382b2b343d0a09093c2f646174613e0a093c2f61727261793e0a3c2f646963743e0a3c2f706c6973743e0a"),
+            digested_signed_attributes_data: Some("318201d4301806092a864886f70d010903310b06092a864886f70d010701301c06092a864886f70d010905310f170d3233313130353130303030305a302f06092a864886f70d01090431220420842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066303c06092a864886f763640902312f302d06096086480165030402010420842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a0663082012906092a864886f7636409013182011a048201163c3f786d6c2076657273696f6e3d22312e302220656e636f64696e673d225554462d38223f3e0a3c21444f435459504520706c697374205055424c494320222d2f2f4170706c652f2f44544420504c49535420312e302f2f454e222022687474703a2f2f7777772e6170706c652e636f6d2f445444732f50726f70657274794c6973742d312e302e647464223e0a3c706c6973742076657273696f6e3d22312e30223e0a3c646963743e0a093c6b65793e63646861736865733c2f6b65793e0a093c61727261793e0a09093c646174613e0a0909684355426f6d4e61654964366875396c52644572516e43393846383d0a09093c2f646174613e0a093c2f61727261793e0a3c2f646963743e0a3c2f706c6973743e0a"),
             unsigned_attributes: None,
         },
     ],
@@ -309,7 +309,7 @@ SignedData {
 $ rcodesign print-signature-info exe.apple-development
 - path: exe.apple-development
   file_size: 22544
-  file_sha256: 9777b5fcc0038ca98f563f904b867399f3604f164fce497b1bdf88969fdddb61
+  file_sha256: 21b6d565e132590158cdb5e4ee25d938a03c3b967d1985c4ff2bef46725b194a
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -319,24 +319,24 @@ $ rcodesign print-signature-info exe.apple-development
       signature_linkedit_start_offset: 16
       signature_linkedit_end_offset: 6160
       signature:
-        superblob_length: 2534
+        superblob_length: 2446
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 321
-          sha1: f88dff78803f1d5ea49a43b332f8596f2f31138a
-          sha256: dc785a78f68cb227124176f1951670f428fcfbeeb7358d9a6dd8903fdeee34ef
+          sha1: 27ee9bba25ab1744a2127907053d482591fd6efe
+          sha256: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
         - slot: RequirementSet (2)
           magic: fade0c01
-          length: 168
-          sha1: 7fe394344d9162608518a1d6b216d61e425bb43a
-          sha256: 45dffbbf114ed608193bdb1461edfe8184015fbb6da399ea6410dc9d1f576411
+          length: 80
+          sha1: 4f9d3e687a7622d7209180eeca44e6a4c97a2187
+          sha256: f48f861e449222d508463e8342afee0c2241817878cab57b21e38e6aea0c08fa
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 2009
-          sha1: 7c1d86d97d86c1c6056c6a2edcd86343d6c8fbe6
-          sha256: d6936a5e662573d6e9ace6d8d1d05871cda7bdc38d167faf5fe0d22d4767faa3
+          sha1: bf3cf250f4be3406b856d8cf1f7d8636427b3f43
+          sha256: 507fb7575c75812e939975242897f46742fe981dce1ae7ab669e3a0d51fcb7af
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(0x0)
@@ -349,9 +349,9 @@ $ rcodesign print-signature-info exe.apple-development
           code_digests_count: 5
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'RequirementSet (2): 45dffbbf114ed608193bdb1461edfe8184015fbb6da399ea6410dc9d1f576411'
+          - 'RequirementSet (2): f48f861e449222d508463e8342afee0c2241817878cab57b21e38e6aea0c08fa'
         code_requirements:
-        - 'designated(3): 0: (identifier "exe") and ((anchor apple generic) and ((certificate leaf[subject.CN] = "Apple Development: RSA Apple Development (test)") and (certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */)));'
+        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"e1c7216e46533c923b7cfc94e86c7043790b96e9");'
         cms:
           certificates:
           - subject: 'CN=Apple Development: RSA Apple Development (test), OU=test, O=RSA Apple Development, C=US'
@@ -380,7 +380,7 @@ $ rcodesign print-signature-info exe.apple-development
             - 1.2.840.113635.100.9.1
             - 1.2.840.113635.100.9.2
             content_type: 1.2.840.113549.1.7.1
-            message_digest: dc785a78f68cb227124176f1951670f428fcfbeeb7358d9a6dd8903fdeee34ef
+            message_digest: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
             signing_time: 2023-11-05T10:00:00Z
             cdhash_plist:
             - <?xml version="1.0" encoding="UTF-8"?>
@@ -389,14 +389,14 @@ $ rcodesign print-signature-info exe.apple-development
             - '    <key>cdhashes</key>'
             - '    <array>'
             - '      <data>'
-            - "/t/t3HhaePaMsicSQXbxlRZw9Cj8++4="
+            - "/t/thCUBomNaeId6hu9lRdErQnC98F8="
             - "/t/t</data>"
             - '    </array>'
             - '  </dict>'
             - </plist>
             cdhash_digests:
             - - 2.16.840.1.101.3.4.2.1
-              - dc785a78f68cb227124176f1951670f428fcfbeeb7358d9a6dd8903fdeee34ef
+              - 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
             signature_verifies: true
 
 $ rcodesign sign --pem-source src/testdata/self-signed-rsa-apple-distribution.pem --signing-time 2023-11-05T10:00:00Z --timestamp-url none exe exe.apple-distribution
@@ -413,7 +413,7 @@ writing Mach-O to exe.apple-distribution
 $ rcodesign print-signature-info exe.apple-distribution
 - path: exe.apple-distribution
   file_size: 22544
-  file_sha256: 769382a98ede03ced88783aaff30342242776d0dcb39a04b0719dc1b99f88375
+  file_sha256: 1ed18a25d0c3f5dff5a920b18515d4d68a102355df1d1ab00304a07d4f200be7
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -423,24 +423,24 @@ $ rcodesign print-signature-info exe.apple-distribution
       signature_linkedit_start_offset: 16
       signature_linkedit_end_offset: 6160
       signature:
-        superblob_length: 2547
+        superblob_length: 2455
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 321
-          sha1: 2825fc1d41a050da72d2068435b579b0e62a63b6
-          sha256: 339dd527be8b2db588dbd5dde58b8c3b1e29c30dc6749e220ff92faeb80a552a
+          sha1: ebc580fcb66f61de81163c397bbed80ef254a0a3
+          sha256: 34ec9484091f7940277bf05a052ddf6105446071ba30fc3f47ca8ec49f60a33f
         - slot: RequirementSet (2)
           magic: fade0c01
-          length: 172
-          sha1: f658b0effe9a2f5115c5db674c89994c44498d7a
-          sha256: 47ec8f182faeaa84d19549ecf429c0c4bf07f3545abadeb8590953b1776ead5b
+          length: 80
+          sha1: b9d926a29a6b0a414a767d932df464b0ba4015bc
+          sha256: 93cc24502039c0f7c85f1165b021a7f703793b8d07ce1b71cbb3435c7e4c5d93
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 2018
-          sha1: c0b6a84c8c976a7591392a6e54c10fb958d2f11e
-          sha256: 5e4f0cf0e5d13f81459228afa60cacb90aa17a40e1e4d4477464c73e9b7a34af
+          sha1: f8f93556009c694d2956b3a616e82b9075c8a888
+          sha256: 91c9e1eb6290ff9ab3f5b3410393f3285a41a3252d08dd02e60cd15b31aed967
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(0x0)
@@ -453,9 +453,9 @@ $ rcodesign print-signature-info exe.apple-distribution
           code_digests_count: 5
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'RequirementSet (2): 47ec8f182faeaa84d19549ecf429c0c4bf07f3545abadeb8590953b1776ead5b'
+          - 'RequirementSet (2): 93cc24502039c0f7c85f1165b021a7f703793b8d07ce1b71cbb3435c7e4c5d93'
         code_requirements:
-        - 'designated(3): 0: (identifier "exe") and ((anchor apple generic) and ((certificate leaf[subject.CN] = "Apple Distribution: RSA Apple Distribution (test)") and (certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */)));'
+        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"0383efdf909250708bf2de4d43753836ccb3d608");'
         cms:
           certificates:
           - subject: 'CN=Apple Distribution: RSA Apple Distribution (test), OU=test, O=RSA Apple Distribution, C=US'
@@ -484,7 +484,7 @@ $ rcodesign print-signature-info exe.apple-distribution
             - 1.2.840.113635.100.9.1
             - 1.2.840.113635.100.9.2
             content_type: 1.2.840.113549.1.7.1
-            message_digest: 339dd527be8b2db588dbd5dde58b8c3b1e29c30dc6749e220ff92faeb80a552a
+            message_digest: 34ec9484091f7940277bf05a052ddf6105446071ba30fc3f47ca8ec49f60a33f
             signing_time: 2023-11-05T10:00:00Z
             cdhash_plist:
             - <?xml version="1.0" encoding="UTF-8"?>
@@ -493,14 +493,14 @@ $ rcodesign print-signature-info exe.apple-distribution
             - '    <key>cdhashes</key>'
             - '    <array>'
             - '      <data>'
-            - "/t/tM53VJ76LLbWI29Xd5YuMOx4pww0="
+            - "/t/tNOyUhAkfeUAne/BaBS3fYQVEYHE="
             - "/t/t</data>"
             - '    </array>'
             - '  </dict>'
             - </plist>
             cdhash_digests:
             - - 2.16.840.1.101.3.4.2.1
-              - 339dd527be8b2db588dbd5dde58b8c3b1e29c30dc6749e220ff92faeb80a552a
+              - 34ec9484091f7940277bf05a052ddf6105446071ba30fc3f47ca8ec49f60a33f
             signature_verifies: true
 
 $ rcodesign sign --pem-source src/testdata/self-signed-rsa-developer-id-application.pem --signing-time 2023-11-05T10:00:00Z --timestamp-url none exe exe.developer-id-application
@@ -517,7 +517,7 @@ writing Mach-O to exe.developer-id-application
 $ rcodesign print-signature-info exe.developer-id-application
 - path: exe.developer-id-application
   file_size: 22544
-  file_sha256: 9f1640606cc923e688fb05b2fdca28eb190ec8439dd220e6b629cbacd98a93ea
+  file_sha256: e4c7cc3a084dc96481e37edaa07882b4b791c97123ce1fab9c77acb35cf56fa6
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -527,24 +527,24 @@ $ rcodesign print-signature-info exe.developer-id-application
       signature_linkedit_start_offset: 16
       signature_linkedit_end_offset: 6160
       signature:
-        superblob_length: 2564
+        superblob_length: 2488
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 321
-          sha1: 531d2b126d6583989091af2698f0ab638192593e
-          sha256: 58f1b1687651ee57c743e3a1ebb9f40d3febe0f3338a4a47d2e91298feb040f8
+          sha1: f7c16473d54b343f3a2e797de51589204e558bdf
+          sha256: 880dad65af7c0349697e3985cfa81a2ef8f9d96cc984223903cecc758783ef99
         - slot: RequirementSet (2)
           magic: fade0c01
-          length: 156
-          sha1: 151f6b774522f253d6b85dfd8d390b8c13b0b1e5
-          sha256: af09fdfc77f0ab68572b850dc5cf9da0571072b5fb5d9a9c23268b5f4bec2502
+          length: 80
+          sha1: 6eb37ab943110f6b496aa327c4949c8348ba5456
+          sha256: 0c0961788fa02751edb6b397dd4f130c78edd4380d0a0ddc397cb69fd1e38efa
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 2051
-          sha1: 4c7644c26d9f705375f36f9ec922a29b7b8567e5
-          sha256: 0216e1e6711a3fcebcc1ef69c1c6e6c10483b188e4d2d04198b7c627282c48b4
+          sha1: 2ed5796dc8eff0d7b010f80355f120dd278710f5
+          sha256: c8605d35c8fd2e8ea2f29c84916cc386833359df0e0660c9f36effe9989a394a
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(0x0)
@@ -557,9 +557,9 @@ $ rcodesign print-signature-info exe.developer-id-application
           code_digests_count: 5
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'RequirementSet (2): af09fdfc77f0ab68572b850dc5cf9da0571072b5fb5d9a9c23268b5f4bec2502'
+          - 'RequirementSet (2): 0c0961788fa02751edb6b397dd4f130c78edd4380d0a0ddc397cb69fd1e38efa'
         code_requirements:
-        - 'designated(3): 0: (identifier "exe") and ((anchor apple generic) and ((certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */) and ((certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */) and (certificate leaf[subject.OU] = "test"))));'
+        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"3acf1d302fe3a4bba06a3c16aadc908045bc9162");'
         cms:
           certificates:
           - subject: 'CN=Developer ID Application: RSA Developer ID Application (test), OU=test, O=RSA Developer ID Application, C=US'
@@ -587,7 +587,7 @@ $ rcodesign print-signature-info exe.developer-id-application
             - 1.2.840.113635.100.9.1
             - 1.2.840.113635.100.9.2
             content_type: 1.2.840.113549.1.7.1
-            message_digest: 58f1b1687651ee57c743e3a1ebb9f40d3febe0f3338a4a47d2e91298feb040f8
+            message_digest: 880dad65af7c0349697e3985cfa81a2ef8f9d96cc984223903cecc758783ef99
             signing_time: 2023-11-05T10:00:00Z
             cdhash_plist:
             - <?xml version="1.0" encoding="UTF-8"?>
@@ -596,18 +596,17 @@ $ rcodesign print-signature-info exe.developer-id-application
             - '    <key>cdhashes</key>'
             - '    <array>'
             - '      <data>'
-            - "/t/tWPGxaHZR7lfHQ+Oh67n0DT/r4PM="
+            - "/t/tiA2tZa98A0lpfjmFz6gaLvj52Ww="
             - "/t/t</data>"
             - '    </array>'
             - '  </dict>'
             - </plist>
             cdhash_digests:
             - - 2.16.840.1.101.3.4.2.1
-              - 58f1b1687651ee57c743e3a1ebb9f40d3febe0f3338a4a47d2e91298feb040f8
+              - 880dad65af7c0349697e3985cfa81a2ef8f9d96cc984223903cecc758783ef99
             signature_verifies: true
 
 $ rcodesign sign --pem-source src/testdata/self-signed-rsa-developer-id-installer.pem --signing-time 2023-11-05T10:00:00Z --timestamp-url none exe exe.developer-id-installer
-? 1
 reading PEM data from src/testdata/self-signed-rsa-developer-id-installer.pem
 registering signing key
 automatically setting team ID from signing certificate: test
@@ -615,14 +614,102 @@ signing exe to exe.developer-id-installer
 signing exe as a Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-Error: unable to generate code requirement policy: (deriving for DeveloperIdInstaller) a designated requirement cannot be derived for installer code signing certificates; if you see this message you should probably be using a different code signing certificate for signing applications
+creating cryptographic signature with certificate Developer ID Installer: RSA Developer ID Installer (test)
+writing Mach-O to exe.developer-id-installer
 
 $ rcodesign print-signature-info exe.developer-id-installer
-? 1
-Error: specified path is not of a recognized type
+- path: exe.developer-id-installer
+  file_size: 22544
+  file_sha256: e238f7f8d681ca3a5871cc7de98fa991c7864a8de109d497679d060c3a4da355
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
+      signature:
+        superblob_length: 2471
+        blob_count: 3
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 321
+          sha1: 2ccfd26aa719891a9bc4240216fe3ed0595f7f34
+          sha256: aac8dfac025652c3b2b089d49f8a9ccd328031936b4a0eeb8305e3b04fb47b00
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 80
+          sha1: bbf8d975b30086c19734ae0c52a2f0a296515ab3
+          sha256: 77c190fb1bb2b3add5411d105d9d306cb5eb4bcb54ec1a7771239bebcc03e54c
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 2034
+          sha1: b4a2e9120d768e2ea8fabf72a84bfe9fb5de2472
+          sha256: 52fdc9fe8daafb36e10c54b359142a09a22a4be80676996a6af8da2ebb56153a
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(0x0)
+          identifier: exe
+          team_name: test
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16400
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+          - 'RequirementSet (2): 77c190fb1bb2b3add5411d105d9d306cb5eb4bcb54ec1a7771239bebcc03e54c'
+        code_requirements:
+        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"5c1314a89e5a486ac7b1da86b38e08777adca4af");'
+        cms:
+          certificates:
+          - subject: 'CN=Developer ID Installer: RSA Developer ID Installer (test), OU=test, O=RSA Developer ID Installer, C=US'
+            issuer: 'CN=Developer ID Installer: RSA Developer ID Installer (test), OU=test, O=RSA Developer ID Installer, C=US'
+            key_algorithm: RSA
+            signature_algorithm: SHA-256 with RSA encryption
+            signed_with_algorithm: SHA-256 with RSA encryption
+            is_apple_root_ca: false
+            is_apple_intermediate_ca: false
+            chains_to_apple_root_ca: false
+            apple_extended_key_usages:
+            - Developer ID Installer
+            apple_code_signing_extensions:
+            - Developer ID Installer
+            apple_certificate_profile: developer-id-installer
+            apple_team_id: test
+          signers:
+          - issuer: 'CN=Developer ID Installer: RSA Developer ID Installer (test), OU=test, O=RSA Developer ID Installer, C=US'
+            digest_algorithm: SHA-256
+            signature_algorithm: SHA-256 with RSA encryption
+            attributes:
+            - 1.2.840.113549.1.9.3
+            - 1.2.840.113549.1.9.4
+            - 1.2.840.113549.1.9.5
+            - 1.2.840.113635.100.9.1
+            - 1.2.840.113635.100.9.2
+            content_type: 1.2.840.113549.1.7.1
+            message_digest: aac8dfac025652c3b2b089d49f8a9ccd328031936b4a0eeb8305e3b04fb47b00
+            signing_time: 2023-11-05T10:00:00Z
+            cdhash_plist:
+            - <?xml version="1.0" encoding="UTF-8"?>
+            - <plist version="1.0">
+            - '  <dict>'
+            - '    <key>cdhashes</key>'
+            - '    <array>'
+            - '      <data>'
+            - "/t/tqsjfrAJWUsOysInUn4qczTKAMZM="
+            - "/t/t</data>"
+            - '    </array>'
+            - '  </dict>'
+            - </plist>
+            cdhash_digests:
+            - - 2.16.840.1.101.3.4.2.1
+              - aac8dfac025652c3b2b089d49f8a9ccd328031936b4a0eeb8305e3b04fb47b00
+            signature_verifies: true
 
 $ rcodesign sign --pem-source src/testdata/self-signed-rsa-mac-installer-distribution.pem --signing-time 2023-11-05T10:00:00Z --timestamp-url none exe exe.mac-installer-distribution
-? 1
 reading PEM data from src/testdata/self-signed-rsa-mac-installer-distribution.pem
 registering signing key
 automatically setting team ID from signing certificate: test
@@ -630,10 +717,99 @@ signing exe to exe.mac-installer-distribution
 signing exe as a Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
-Error: unable to generate code requirement policy: (deriving for MacInstallerDistribution) a designated requirement cannot be derived for installer code signing certificates; if you see this message you should probably be using a different code signing certificate for signing applications
+creating cryptographic signature with certificate 3rd Party Mac Developer Installer: RSA Mac Installer Distribution (test)
+writing Mach-O to exe.mac-installer-distribution
 
 $ rcodesign print-signature-info exe.mac-installer-distribution
-? 1
-Error: specified path is not of a recognized type
+- path: exe.mac-installer-distribution
+  file_size: 22544
+  file_sha256: 2ed7955e68de7cb5cb527d9130f81ede932b2bc5e97c0cfeb5950e93c36bc029
+  entity:
+    mach_o:
+      linkedit_segment_file_start_offset: 16384
+      linkedit_segment_file_end_offset: 22544
+      signature_file_start_offset: 16400
+      signature_file_end_offset: 22544
+      signature_linkedit_start_offset: 16
+      signature_linkedit_end_offset: 6160
+      signature:
+        superblob_length: 2528
+        blob_count: 3
+        blobs:
+        - slot: CodeDirectory (0)
+          magic: fade0c02
+          length: 321
+          sha1: 7b786fc83cb1065ae7df39e3da7c58d4b2a4031f
+          sha256: 02519246be0d0a4daa729661efd5e2a5df5cfce4118b47f85c3115a9b3b2b0b6
+        - slot: RequirementSet (2)
+          magic: fade0c01
+          length: 80
+          sha1: 79b9c12819b6a549c8b107dc31a253351ad82e55
+          sha256: 7d2395bc79aad815504fb0dcca84e5a009ac109a78843d24e8592c48f54388b7
+        - slot: CMS Signature (65536)
+          magic: fade0b01
+          length: 2091
+          sha1: 18b801bca68ce64bbf0dd20a36e0fb35018fee6e
+          sha256: 07d2e6c987d341969c43d3f0aafec49b2b366f36953b4a14fa1cc7c3d50fc0f8
+        code_directory:
+          version: '0x20400'
+          flags: CodeSignatureFlags(0x0)
+          identifier: exe
+          team_name: test
+          digest_type: sha256
+          platform: 0
+          signed_entity_size: 16400
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
+          code_digests_count: 5
+          slot_digests:
+          - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
+          - 'RequirementSet (2): 7d2395bc79aad815504fb0dcca84e5a009ac109a78843d24e8592c48f54388b7'
+        code_requirements:
+        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"58e39fe0fca55e7af4ca00027bc7c59e566e960a");'
+        cms:
+          certificates:
+          - subject: 'CN=3rd Party Mac Developer Installer: RSA Mac Installer Distribution (test), OU=test, O=RSA Mac Installer Distribution, C=US'
+            issuer: 'CN=3rd Party Mac Developer Installer: RSA Mac Installer Distribution (test), OU=test, O=RSA Mac Installer Distribution, C=US'
+            key_algorithm: RSA
+            signature_algorithm: SHA-256 with RSA encryption
+            signed_with_algorithm: SHA-256 with RSA encryption
+            is_apple_root_ca: false
+            is_apple_intermediate_ca: false
+            chains_to_apple_root_ca: false
+            apple_extended_key_usages:
+            - 3rd Party Mac Developer Installer Packaging Signing
+            apple_code_signing_extensions:
+            - Apple Mac App Signing Submission
+            apple_certificate_profile: mac-installer-distribution
+            apple_team_id: test
+          signers:
+          - issuer: 'CN=3rd Party Mac Developer Installer: RSA Mac Installer Distribution (test), OU=test, O=RSA Mac Installer Distribution, C=US'
+            digest_algorithm: SHA-256
+            signature_algorithm: SHA-256 with RSA encryption
+            attributes:
+            - 1.2.840.113549.1.9.3
+            - 1.2.840.113549.1.9.4
+            - 1.2.840.113549.1.9.5
+            - 1.2.840.113635.100.9.1
+            - 1.2.840.113635.100.9.2
+            content_type: 1.2.840.113549.1.7.1
+            message_digest: 02519246be0d0a4daa729661efd5e2a5df5cfce4118b47f85c3115a9b3b2b0b6
+            signing_time: 2023-11-05T10:00:00Z
+            cdhash_plist:
+            - <?xml version="1.0" encoding="UTF-8"?>
+            - <plist version="1.0">
+            - '  <dict>'
+            - '    <key>cdhashes</key>'
+            - '    <array>'
+            - '      <data>'
+            - "/t/tAlGSRr4NCk2qcpZh79Xipd9c/OQ="
+            - "/t/t</data>"
+            - '    </array>'
+            - '  </dict>'
+            - </plist>
+            cdhash_digests:
+            - - 2.16.840.1.101.3.4.2.1
+              - 02519246be0d0a4daa729661efd5e2a5df5cfce4118b47f85c3115a9b3b2b0b6
+            signature_verifies: true
 
 ```

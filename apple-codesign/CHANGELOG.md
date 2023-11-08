@@ -20,6 +20,12 @@ Released on ReleaseDate.
 * The `generate-self-signed-certificate` command now supports generating
   RSA certificates. RSA certificates are now the default, to match what
   Apple tooling generates by default.
+* Reworked how code requirements expressions are automatically derived.
+  This should result in self-signed certificates having correct requirements
+  expressions that no longer imply they were signed by Apple's CAs. In
+  addition, some Apple signing certificates should now opt into using a
+  more appropriate code requirements expression than before. This may have
+  fixed validation errors with some signatures. (#99)
 * cryptographic-message-syntax 0.25 -> 0.26.
 * x509-certificate 0.22 -> 0.23.
 
