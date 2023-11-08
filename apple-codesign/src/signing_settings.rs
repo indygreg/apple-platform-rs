@@ -329,6 +329,15 @@ impl<'key> SigningSettings<'key> {
         }
     }
 
+    /// Whether the signing certificate is signed by Apple.
+    pub fn signing_certificate_apple_signed(&self) -> bool {
+        if let Some((_, cert)) = &self.signing_key {
+            cert.chains_to_apple_root_ca()
+        } else {
+            false
+        }
+    }
+
     /// Add a parsed certificate to the signing certificate chain.
     ///
     /// When producing a cryptographic signature (see [SigningSettings::set_signing_key]),
@@ -433,7 +442,10 @@ impl<'key> SigningSettings<'key> {
     /// Returns `Some` if a team ID was set from the signing certificate or `None`
     /// otherwise.
     pub fn set_team_id_from_signing_certificate(&mut self) -> Option<&str> {
-        if let Some((_, cert)) = &self.signing_key {
+        // The team ID is only included for Apple signed certificates.
+        if !self.signing_certificate_apple_signed() {
+            None
+        } else if let Some((_, cert)) = &self.signing_key {
             if let Some(team_id) = cert.apple_team_id() {
                 self.set_team_id(team_id);
                 Some(
@@ -834,9 +846,15 @@ impl<'key> SigningSettings<'key> {
                     {
                         info!("using team ID from settings");
                     } else if let Some(team_id) = cd.team_name {
-                        info!("preserving team ID in existing Mach-O signature");
-                        self.team_id
-                            .insert(scope_index.clone(), team_id.to_string());
+                        // Team ID is only included when signing with an Apple signed
+                        // certificate.
+                        if self.signing_certificate_apple_signed() {
+                            info!("preserving team ID in existing Mach-O signature");
+                            self.team_id
+                                .insert(scope_index.clone(), team_id.to_string());
+                        } else {
+                            info!("dropping team ID {} because not signing with an Apple signed certificate", team_id);
+                        }
                     }
 
                     if self.code_signature_flags(&scope_main).is_some()

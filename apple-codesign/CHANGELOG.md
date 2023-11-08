@@ -26,6 +26,8 @@ Released on ReleaseDate.
   addition, some Apple signing certificates should now opt into using a
   more appropriate code requirements expression than before. This may have
   fixed validation errors with some signatures. (#99)
+* Team name is no longer included in signature when signing with a non
+  Apple signed certificate. This matches the behavior of Apple's tools. (#101)
 * cryptographic-message-syntax 0.25 -> 0.26.
 * x509-certificate 0.22 -> 0.23.
 

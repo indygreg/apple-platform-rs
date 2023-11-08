@@ -7,7 +7,6 @@ writing Mach-O to exe
 
 $ rcodesign sign --p12-file src/testdata/self-signed-rsa-apple-development.p12 --p12-password password --signing-time 2023-11-05T10:00:00Z --timestamp-url none exe exe.signed
 registering signing key
-automatically setting team ID from signing certificate: test
 signing exe to exe.signed
 signing exe as a Mach-O binary
 setting binary identifier to exe
@@ -17,23 +16,23 @@ writing Mach-O to exe.signed
 
 $ rcodesign extract cms-info exe.signed
 signed content (embedded): None
-signed content (external): Some("fade0c02000001410002040000000000000000a1000000580000000200000005000040102002000c")... (321 bytes)
-signed content SHA-1:   27ee9bba25ab1744a2127907053d482591fd6efe
-signed content SHA-256: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
-signed content SHA-384: 13da29451ce26c63c5b7cb4ff4c2398fe812ca98a1798bee6ed55d3f6b5bad39959b403d5f0060960d17bba6462d7675
-signed content SHA-512: bc0128772e654fb50c4b959ec0a6ecf86c0f6c0121287c9b6438c256e753d0bf7677f2418a5126b347866da9b21c4adb470f5f98c5e15b2ae135fe82bf9d0d5a
+signed content (external): Some("fade0c020000013c00020400000000000000009c000000580000000200000005000040102002000c")... (316 bytes)
+signed content SHA-1:   e1c19ec9ec8c13b3940f8385a8f5f9b56309330a
+signed content SHA-256: fbd3393f2015c87653f2ccef69a864fb60985e21d38485b3bb1c7deeb76d825c
+signed content SHA-384: 25a7989a6cb024c4d037cd56f0bcfcea0ba4b178362dc4d1694a2080e47d7c63bb178b5a85dfddc9bedf8764ac8d380a
+signed content SHA-512: 16db5b4b1ea0529186a760790ce2d2325ea31f3d009eb74a182beb97ac26617e5495bf638d4b79746eee8f469aa991ba3a341af41b46d3b8d59079cf6d376950
 certificate count: 1
 certificate #0: subject CN=Apple Development: RSA Apple Development (test); self signed=true
 signer count: 1
 signer #0: digest algorithm: Sha256
 signer #0: signature algorithm: RsaSha256
 signer #0: content type: 1.2.840.113549.1.7.1
-signer #0: message digest: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
+signer #0: message digest: fbd3393f2015c87653f2ccef69a864fb60985e21d38485b3bb1c7deeb76d825c
 signer #0: signing time: Some(2023-11-05T10:00:00Z)
-signer #0: signature content SHA-1:   978d9484e038d086d52c475d117264b034079776
-signer #0: signature content SHA-256: 07a86c368e022c298674b8e58975baecb28922d2eae70f9a2c87ef6528c10e12
-signer #0: signature content SHA-384: 04815d1c0b51f48212a56b814d87c010dedd6246f5de144c28790bd1e7b5fc9d77cfde4e02f45e593a04c4fc8ddbf595
-signer #0: signature content SHA-512: 01a4b80be474295945f5973c746426a486990ed2a6956d09aa94815fcbdeea278215fb4393c23e5fc8fb24d2e91a319e87c03d993c84a6712e3dbc577fccef91
+signer #0: signature content SHA-1:   fc8004e694122f8e134b5e39380392165732f648
+signer #0: signature content SHA-256: c07c8319b33e4410d2f6b06ad5344aebbd7a848894f9c5004057cbbe8e17474d
+signer #0: signature content SHA-384: 8b53dc40ee48b34eee4c4ba0c2d0fe411929ef4f80e9dbc167cf96c6ef4abd8d633affefffdca0ef6eadc0a055c31827
+signer #0: signature content SHA-512: f4cf4a8f0e4de256e07bbfedff1455d50ae05cdbd2d3fec3a12bbc055a1e77d7746b8f1b2bf55fc6380164fda04e1d12d3fd03085b5842f6fb7c5a00348eec84
 signer #0: signature valid: true
 signer #0: time-stamp token present: false
 
@@ -291,17 +290,17 @@ SignedData {
             ),
             digest_algorithm: Sha256,
             signature_algorithm: RsaSha256,
-            signature: 96d6e33faaa1450e597c130814ae89731a4982079cd657dcd55dd11db58ba68a5ad9c9d06f668b54c1219d8c689cc2ae05492c9bf374607e069cfde4d997058f992ea4760ccb70b6706757661f44d4e19f0f7c108bc530d3d39528ee4787c215e7b94d7b4afed4501da94471ba92b7a12867d2f45c282b49ec5f136308253d38e63eadc8fd4360794a4b4d9ab918b2694badafdad2d3e74aa17af059bff922dfdd8c3cd55a8063ca0f8c25a6b68e8c5d915008c471f7e3232e74a01d86c2a672ab0d5665cba6ab22433b62f9309bbcfd7dc9480eeb47f6085e39b2c64d10a971c75e714d73bb3e4219d2c3f5ccf896f38c7ffb1cb46bbfffd043f1e726cd015f,
+            signature: 427dab648570de5bb97d6660434a47057abd7fdbd2598419a96307c2e3b72f8dd3db12e4b540d3976ba30220c49a19ef82193d66b04cefdf5066ab49472b4c6b333cabf9c789167d04c25974b3ca2a3bf9d26a47cf575b209216fa3b6f7f849b026e168d248692db61f68ed974462423bcc69fe152b8db05c58b5b1dae0a6cde4c1f085c51ddba0621935ae4cc5fa764073a9681241dd03db9497844200749b31f1cb53345ab1c1626f4bc41c0171dd24178d14c66bc6392fc0cb1b7b8a27622af16bd52fdc54661939a07d49d0f9aebf833765fbaf4c2f8febc6741643ae4dc133ef35cf01eeb205b309d56ab240ae73ebf013ea80203b9c7dd613355c7585b,
             signed_attributes: Some(
                 SignedAttributes {
                     content_type: 1.2.840.113549.1.7.1,
-                    message_digest: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066,
+                    message_digest: fbd3393f2015c87653f2ccef69a864fb60985e21d38485b3bb1c7deeb76d825c,
                     signing_time: Some(
                         2023-11-05T10:00:00Z,
                     ),
                 },
             ),
-            digested_signed_attributes_data: Some("318201d4301806092a864886f70d010903310b06092a864886f70d010701301c06092a864886f70d010905310f170d3233313130353130303030305a302f06092a864886f70d01090431220420842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066303c06092a864886f763640902312f302d06096086480165030402010420842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a0663082012906092a864886f7636409013182011a048201163c3f786d6c2076657273696f6e3d22312e302220656e636f64696e673d225554462d38223f3e0a3c21444f435459504520706c697374205055424c494320222d2f2f4170706c652f2f44544420504c49535420312e302f2f454e222022687474703a2f2f7777772e6170706c652e636f6d2f445444732f50726f70657274794c6973742d312e302e647464223e0a3c706c6973742076657273696f6e3d22312e30223e0a3c646963743e0a093c6b65793e63646861736865733c2f6b65793e0a093c61727261793e0a09093c646174613e0a0909684355426f6d4e61654964366875396c52644572516e43393846383d0a09093c2f646174613e0a093c2f61727261793e0a3c2f646963743e0a3c2f706c6973743e0a"),
+            digested_signed_attributes_data: Some("318201d4301806092a864886f70d010903310b06092a864886f70d010701301c06092a864886f70d010905310f170d3233313130353130303030305a302f06092a864886f70d01090431220420fbd3393f2015c87653f2ccef69a864fb60985e21d38485b3bb1c7deeb76d825c303c06092a864886f763640902312f302d06096086480165030402010420fbd3393f2015c87653f2ccef69a864fb60985e21d38485b3bb1c7deeb76d825c3082012906092a864886f7636409013182011a048201163c3f786d6c2076657273696f6e3d22312e302220656e636f64696e673d225554462d38223f3e0a3c21444f435459504520706c697374205055424c494320222d2f2f4170706c652f2f44544420504c49535420312e302f2f454e222022687474703a2f2f7777772e6170706c652e636f6d2f445444732f50726f70657274794c6973742d312e302e647464223e0a3c706c6973742076657273696f6e3d22312e30223e0a3c646963743e0a093c6b65793e63646861736865733c2f6b65793e0a093c61727261793e0a09093c646174613e0a09092b394d355079415679485a5438737a766161686b2b3243595869453d0a09093c2f646174613e0a093c2f61727261793e0a3c2f646963743e0a3c2f706c6973743e0a"),
             unsigned_attributes: None,
         },
     ],
@@ -310,7 +309,7 @@ SignedData {
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
   file_size: 22544
-  file_sha256: 21b6d565e132590158cdb5e4ee25d938a03c3b967d1985c4ff2bef46725b194a
+  file_sha256: b79b1797e7e4da470e94c4b4881e1a04dab26e515cf3ecdc69e31cb16f48812d
   entity:
     mach_o:
       linkedit_segment_file_start_offset: 16384
@@ -320,14 +319,14 @@ $ rcodesign print-signature-info exe.signed
       signature_linkedit_start_offset: 16
       signature_linkedit_end_offset: 6160
       signature:
-        superblob_length: 2446
+        superblob_length: 2441
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
-          length: 321
-          sha1: 27ee9bba25ab1744a2127907053d482591fd6efe
-          sha256: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
+          length: 316
+          sha1: e1c19ec9ec8c13b3940f8385a8f5f9b56309330a
+          sha256: fbd3393f2015c87653f2ccef69a864fb60985e21d38485b3bb1c7deeb76d825c
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 80
@@ -336,13 +335,12 @@ $ rcodesign print-signature-info exe.signed
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 2009
-          sha1: bf3cf250f4be3406b856d8cf1f7d8636427b3f43
-          sha256: 507fb7575c75812e939975242897f46742fe981dce1ae7ab669e3a0d51fcb7af
+          sha1: faa96064b748df76d40c73c847cad6664772324c
+          sha256: f77bac63ecd33d9a152f4011d5cfefe695682e4dd15da5d89cdb9d8347350404
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(0x0)
           identifier: exe
-          team_name: test
           digest_type: sha256
           platform: 0
           signed_entity_size: 16400
@@ -381,7 +379,7 @@ $ rcodesign print-signature-info exe.signed
             - 1.2.840.113635.100.9.1
             - 1.2.840.113635.100.9.2
             content_type: 1.2.840.113549.1.7.1
-            message_digest: 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
+            message_digest: fbd3393f2015c87653f2ccef69a864fb60985e21d38485b3bb1c7deeb76d825c
             signing_time: 2023-11-05T10:00:00Z
             cdhash_plist:
             - <?xml version="1.0" encoding="UTF-8"?>
@@ -390,14 +388,14 @@ $ rcodesign print-signature-info exe.signed
             - '    <key>cdhashes</key>'
             - '    <array>'
             - '      <data>'
-            - "/t/thCUBomNaeId6hu9lRdErQnC98F8="
+            - "/t/t+9M5PyAVyHZT8szvaahk+2CYXiE="
             - "/t/t</data>"
             - '    </array>'
             - '  </dict>'
             - </plist>
             cdhash_digests:
             - - 2.16.840.1.101.3.4.2.1
-              - 842501a2635a78877a86ef6545d12b4270bdf05f1a28b196a72686348e37a066
+              - fbd3393f2015c87653f2ccef69a864fb60985e21d38485b3bb1c7deeb76d825c
             signature_verifies: true
 
 ```
