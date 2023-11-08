@@ -28,6 +28,9 @@ Released on ReleaseDate.
   fixed validation errors with some signatures. (#99)
 * Team name is no longer included in signature when signing with a non
   Apple signed certificate. This matches the behavior of Apple's tools. (#101)
+* Fixed a bug where the `AnchorCertificateHash` code requirements expression
+  was being incorrectly formatted as `anchor <slot> H"<hash>"` instead of
+  `certificate <slot> = H"<hash>"`.
 * cryptographic-message-syntax 0.25 -> 0.26.
 * x509-certificate 0.22 -> 0.23.
 

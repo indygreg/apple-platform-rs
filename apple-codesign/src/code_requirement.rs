@@ -523,7 +523,7 @@ pub enum CodeRequirementExpression<'a> {
 
     /// The certificate chain must anchor to a certificate with specified SHA-1 hash.
     ///
-    /// `anchor <slot> H"<hash>"`
+    /// `certificate <slot> = H"<hash>"`
     ///
     /// 4 bytes slot number, 4 bytes hash length, hash value.
     AnchorCertificateHash(i32, Cow<'a, [u8]>),
@@ -673,9 +673,11 @@ impl<'a> Display for CodeRequirementExpression<'a> {
             Self::True => f.write_str("always"),
             Self::Identifier(value) => f.write_fmt(format_args!("identifier \"{value}\"")),
             Self::AnchorApple => f.write_str("anchor apple"),
-            Self::AnchorCertificateHash(slot, digest) => {
-                f.write_fmt(format_args!("anchor {} H\"{}\"", slot, hex::encode(digest)))
-            }
+            Self::AnchorCertificateHash(slot, digest) => f.write_fmt(format_args!(
+                "certificate {} = H\"{}\"",
+                format_certificate_slot(*slot),
+                hex::encode(digest)
+            )),
             Self::InfoKeyValueLegacy(key, value) => {
                 f.write_fmt(format_args!("info[{key}] = \"{value}\""))
             }

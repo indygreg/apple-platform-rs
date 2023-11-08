@@ -349,7 +349,7 @@ $ rcodesign print-signature-info exe.apple-development
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): f48f861e449222d508463e8342afee0c2241817878cab57b21e38e6aea0c08fa'
         code_requirements:
-        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"e1c7216e46533c923b7cfc94e86c7043790b96e9");'
+        - 'designated(3): 0: (identifier "exe") and (certificate root = H"e1c7216e46533c923b7cfc94e86c7043790b96e9");'
         cms:
           certificates:
           - subject: 'CN=Apple Development: RSA Apple Development (test), OU=test, O=RSA Apple Development, C=US'
@@ -451,7 +451,7 @@ $ rcodesign print-signature-info exe.apple-distribution
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 93cc24502039c0f7c85f1165b021a7f703793b8d07ce1b71cbb3435c7e4c5d93'
         code_requirements:
-        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"0383efdf909250708bf2de4d43753836ccb3d608");'
+        - 'designated(3): 0: (identifier "exe") and (certificate root = H"0383efdf909250708bf2de4d43753836ccb3d608");'
         cms:
           certificates:
           - subject: 'CN=Apple Distribution: RSA Apple Distribution (test), OU=test, O=RSA Apple Distribution, C=US'
@@ -553,7 +553,7 @@ $ rcodesign print-signature-info exe.developer-id-application
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 0c0961788fa02751edb6b397dd4f130c78edd4380d0a0ddc397cb69fd1e38efa'
         code_requirements:
-        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"3acf1d302fe3a4bba06a3c16aadc908045bc9162");'
+        - 'designated(3): 0: (identifier "exe") and (certificate root = H"3acf1d302fe3a4bba06a3c16aadc908045bc9162");'
         cms:
           certificates:
           - subject: 'CN=Developer ID Application: RSA Developer ID Application (test), OU=test, O=RSA Developer ID Application, C=US'
@@ -654,7 +654,7 @@ $ rcodesign print-signature-info exe.developer-id-installer
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 77c190fb1bb2b3add5411d105d9d306cb5eb4bcb54ec1a7771239bebcc03e54c'
         code_requirements:
-        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"5c1314a89e5a486ac7b1da86b38e08777adca4af");'
+        - 'designated(3): 0: (identifier "exe") and (certificate root = H"5c1314a89e5a486ac7b1da86b38e08777adca4af");'
         cms:
           certificates:
           - subject: 'CN=Developer ID Installer: RSA Developer ID Installer (test), OU=test, O=RSA Developer ID Installer, C=US'
@@ -755,7 +755,7 @@ $ rcodesign print-signature-info exe.mac-installer-distribution
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 7d2395bc79aad815504fb0dcca84e5a009ac109a78843d24e8592c48f54388b7'
         code_requirements:
-        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"58e39fe0fca55e7af4ca00027bc7c59e566e960a");'
+        - 'designated(3): 0: (identifier "exe") and (certificate root = H"58e39fe0fca55e7af4ca00027bc7c59e566e960a");'
         cms:
           certificates:
           - subject: 'CN=3rd Party Mac Developer Installer: RSA Mac Installer Distribution (test), OU=test, O=RSA Mac Installer Distribution, C=US'

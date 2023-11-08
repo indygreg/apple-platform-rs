@@ -350,7 +350,7 @@ $ rcodesign print-signature-info exe.signed
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): f48f861e449222d508463e8342afee0c2241817878cab57b21e38e6aea0c08fa'
         code_requirements:
-        - 'designated(3): 0: (identifier "exe") and (anchor -1 H"e1c7216e46533c923b7cfc94e86c7043790b96e9");'
+        - 'designated(3): 0: (identifier "exe") and (certificate root = H"e1c7216e46533c923b7cfc94e86c7043790b96e9");'
         cms:
           certificates:
           - subject: 'CN=Apple Development: RSA Apple Development (test), OU=test, O=RSA Apple Development, C=US'

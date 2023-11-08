@@ -442,7 +442,7 @@ mod test {
             non_apple_signed_expression(&self_signed, &[])
                 .unwrap()
                 .to_string(),
-            "anchor -1 H\"e1c7216e46533c923b7cfc94e86c7043790b96e9\""
+            "certificate root = H\"e1c7216e46533c923b7cfc94e86c7043790b96e9\""
         );
 
         // Now try with an Apple chain. The function doesn't care that it is
@@ -457,7 +457,7 @@ mod test {
             non_apple_signed_expression(&apple_development, &chain[1..])
                 .unwrap()
                 .to_string(),
-            "anchor 0 H\"5eeadb4befce055e06b4239ad4c5f0d1bfd6af8f\""
+            "certificate leaf = H\"5eeadb4befce055e06b4239ad4c5f0d1bfd6af8f\""
         );
     }
 
@@ -548,23 +548,23 @@ mod test {
 
         assert_eq!(
             derive(&apple_development),
-            "anchor -1 H\"e1c7216e46533c923b7cfc94e86c7043790b96e9\""
+            "certificate root = H\"e1c7216e46533c923b7cfc94e86c7043790b96e9\""
         );
         assert_eq!(
             derive(&apple_distribution),
-            "anchor -1 H\"0383efdf909250708bf2de4d43753836ccb3d608\""
+            "certificate root = H\"0383efdf909250708bf2de4d43753836ccb3d608\""
         );
         assert_eq!(
             derive(&developer_id_application),
-            "anchor -1 H\"3acf1d302fe3a4bba06a3c16aadc908045bc9162\""
+            "certificate root = H\"3acf1d302fe3a4bba06a3c16aadc908045bc9162\""
         );
         assert_eq!(
             derive(&developer_id_installer),
-            "anchor -1 H\"5c1314a89e5a486ac7b1da86b38e08777adca4af\""
+            "certificate root = H\"5c1314a89e5a486ac7b1da86b38e08777adca4af\""
         );
         assert_eq!(
             derive(&mac_installer_distribution),
-            "anchor -1 H\"58e39fe0fca55e7af4ca00027bc7c59e566e960a\""
+            "certificate root = H\"58e39fe0fca55e7af4ca00027bc7c59e566e960a\""
         );
     }
 }
