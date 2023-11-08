@@ -52,14 +52,15 @@ $ rcodesign print-signature-info MyApp.app.signed
   file_sha256: f6d273743392c9487bf77591283131fe141924e27108c2475ad4862393550016
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
+      linkedit_segment_file_start_offset: 16384 / 0x4000
+      signature_file_start_offset: 16400 / 0x4010
+      signature_file_end_offset: 16821 / 0x41b5
+      linkedit_segment_file_end_offset: 22544 / 0x5810
+      signature_linkedit_start_offset: 16 / 0x10
+      signature_linkedit_end_offset: 437 / 0x1b5
+      linkedit_bytes_after_signature: 5723 / 0x165b
       signature:
-        superblob_length: 421
+        superblob_length: 421 / 0x1a5
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
@@ -96,14 +97,15 @@ $ rcodesign print-signature-info MyApp.app.signed
   file_sha256: 222272e624fadf178495f7eeabdac248a951a0fb1e49002f494dde7067e456c8
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
+      linkedit_segment_file_start_offset: 16384 / 0x4000
+      signature_file_start_offset: 16400 / 0x4010
+      signature_file_end_offset: 16772 / 0x4184
+      linkedit_segment_file_end_offset: 22544 / 0x5810
+      signature_linkedit_start_offset: 16 / 0x10
+      signature_linkedit_end_offset: 388 / 0x184
+      linkedit_bytes_after_signature: 5772 / 0x168c
       signature:
-        superblob_length: 372
+        superblob_length: 372 / 0x174
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
@@ -139,14 +141,15 @@ $ rcodesign print-signature-info MyApp.app.signed
   file_sha256: f5bf39926f898f9d8b10749c2c2e02d89e6ca1ab85e5210df86a711afc35f1bd
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
+      linkedit_segment_file_start_offset: 16384 / 0x4000
+      signature_file_start_offset: 16400 / 0x4010
+      signature_file_end_offset: 16772 / 0x4184
+      linkedit_segment_file_end_offset: 22544 / 0x5810
+      signature_linkedit_start_offset: 16 / 0x10
+      signature_linkedit_end_offset: 388 / 0x184
+      linkedit_bytes_after_signature: 5772 / 0x168c
       signature:
-        superblob_length: 372
+        superblob_length: 372 / 0x174
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
@@ -182,14 +185,15 @@ $ rcodesign print-signature-info MyApp.app.signed
   file_sha256: 17ee48591c2b454766b3d38e00ba5b342b3695c635c9114aad839117f45e3b38
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
+      linkedit_segment_file_start_offset: 16384 / 0x4000
+      signature_file_start_offset: 16400 / 0x4010
+      signature_file_end_offset: 16783 / 0x418f
+      linkedit_segment_file_end_offset: 22544 / 0x5810
+      signature_linkedit_start_offset: 16 / 0x10
+      signature_linkedit_end_offset: 399 / 0x18f
+      linkedit_bytes_after_signature: 5761 / 0x1681
       signature:
-        superblob_length: 383
+        superblob_length: 383 / 0x17f
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)

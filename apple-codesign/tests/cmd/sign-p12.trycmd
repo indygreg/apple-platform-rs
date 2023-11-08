@@ -312,14 +312,15 @@ $ rcodesign print-signature-info exe.signed
   file_sha256: b79b1797e7e4da470e94c4b4881e1a04dab26e515cf3ecdc69e31cb16f48812d
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
+      linkedit_segment_file_start_offset: 16384 / 0x4000
+      signature_file_start_offset: 16400 / 0x4010
+      signature_file_end_offset: 18841 / 0x4999
+      linkedit_segment_file_end_offset: 22544 / 0x5810
+      signature_linkedit_start_offset: 16 / 0x10
+      signature_linkedit_end_offset: 2457 / 0x999
+      linkedit_bytes_after_signature: 3703 / 0xe77
       signature:
-        superblob_length: 2441
+        superblob_length: 2441 / 0x989
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)

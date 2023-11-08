@@ -45,14 +45,15 @@ $ rcodesign print-signature-info MyFramework.framework.signed
   file_sha256: cec50992ab98ca1439994b302fc085703bd7f847a341e1e4a734ecace09fe858
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
+      linkedit_segment_file_start_offset: 16384 / 0x4000
+      signature_file_start_offset: 16400 / 0x4010
+      signature_file_end_offset: 16780 / 0x418c
+      linkedit_segment_file_end_offset: 22544 / 0x5810
+      signature_linkedit_start_offset: 16 / 0x10
+      signature_linkedit_end_offset: 396 / 0x18c
+      linkedit_bytes_after_signature: 5764 / 0x1684
       signature:
-        superblob_length: 380
+        superblob_length: 380 / 0x17c
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)

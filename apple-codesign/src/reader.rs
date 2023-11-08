@@ -133,6 +133,10 @@ impl PathType {
     }
 }
 
+fn format_integer<T: std::fmt::Display + std::fmt::LowerHex>(v: T) -> String {
+    format!("{} / 0x{:x}", v, v)
+}
+
 fn pretty_print_xml(xml: &[u8]) -> Result<Vec<u8>, AppleCodesignError> {
     let mut reader = xml::reader::EventReader::new(Cursor::new(xml));
     let mut emitter = xml::EmitterConfig::new()
@@ -465,7 +469,7 @@ impl<'a> TryFrom<CodeDirectoryBlob<'a>> for CodeDirectory {
 #[derive(Clone, Debug, Serialize)]
 pub struct CodeSignature {
     /// Length of the code signature data.
-    pub superblob_length: u32,
+    pub superblob_length: String,
     pub blob_count: u32,
     pub blobs: Vec<BlobDescription>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -528,7 +532,7 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
         }
 
         Ok(Self {
-            superblob_length: sig.length,
+            superblob_length: format_integer(sig.length),
             blob_count: sig.count,
             blobs: sig
                 .blobs
@@ -546,12 +550,13 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
 
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct MachOEntity {
-    pub linkedit_segment_file_start_offset: Option<usize>,
-    pub linkedit_segment_file_end_offset: Option<usize>,
-    pub signature_file_start_offset: Option<usize>,
-    pub signature_file_end_offset: Option<usize>,
-    pub signature_linkedit_start_offset: Option<usize>,
-    pub signature_linkedit_end_offset: Option<usize>,
+    pub linkedit_segment_file_start_offset: Option<String>,
+    pub signature_file_start_offset: Option<String>,
+    pub signature_file_end_offset: Option<String>,
+    pub linkedit_segment_file_end_offset: Option<String>,
+    pub signature_linkedit_start_offset: Option<String>,
+    pub signature_linkedit_end_offset: Option<String>,
+    pub linkedit_bytes_after_signature: Option<String>,
     pub signature: Option<CodeSignature>,
 }
 
@@ -904,15 +909,32 @@ impl SignatureReader {
         let mut entity = MachOEntity::default();
 
         if let Some(sig) = macho.find_signature_data()? {
-            entity.linkedit_segment_file_start_offset = Some(sig.linkedit_segment_start_offset);
-            entity.linkedit_segment_file_end_offset = Some(sig.linkedit_segment_end_offset);
-            entity.signature_file_start_offset = Some(sig.signature_file_start_offset);
-            entity.signature_file_end_offset = Some(sig.signature_file_end_offset);
-            entity.signature_linkedit_start_offset = Some(sig.signature_segment_start_offset);
-            entity.signature_linkedit_end_offset = Some(sig.signature_segment_end_offset);
+            entity.linkedit_segment_file_start_offset =
+                Some(format_integer(sig.linkedit_segment_start_offset));
+            entity.linkedit_segment_file_end_offset =
+                Some(format_integer(sig.linkedit_segment_end_offset));
+            entity.signature_file_start_offset =
+                Some(format_integer(sig.signature_file_start_offset));
+            entity.signature_linkedit_start_offset =
+                Some(format_integer(sig.signature_segment_start_offset));
         }
 
         if let Some(sig) = macho.code_signature()? {
+            if let Some(sig_info) = macho.find_signature_data()? {
+                entity.signature_file_end_offset = Some(format_integer(
+                    sig_info.signature_file_start_offset + sig.length as usize,
+                ));
+                entity.signature_linkedit_end_offset = Some(format_integer(
+                    sig_info.signature_segment_start_offset + sig.length as usize,
+                ));
+
+                let mut linkedit_remaining =
+                    sig_info.linkedit_segment_end_offset - sig_info.linkedit_segment_start_offset;
+                linkedit_remaining -= sig_info.signature_segment_start_offset;
+                linkedit_remaining -= sig.length as usize;
+                entity.linkedit_bytes_after_signature = Some(format_integer(linkedit_remaining));
+            }
+
             entity.signature = Some(sig.try_into()?);
         }
 

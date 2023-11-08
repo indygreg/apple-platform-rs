@@ -29,14 +29,15 @@ $ rcodesign print-signature-info exe.signed
   file_sha256: 76362775999fdb91e4ee35c83e8b9b47cf4b30643fb7e1298096cd23e38676d0
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
+      linkedit_segment_file_start_offset: 16384 / 0x4000
+      signature_file_start_offset: 16400 / 0x4010
+      signature_file_end_offset: 17215 / 0x433f
+      linkedit_segment_file_end_offset: 22544 / 0x5810
+      signature_linkedit_start_offset: 16 / 0x10
+      signature_linkedit_end_offset: 831 / 0x33f
+      linkedit_bytes_after_signature: 5329 / 0x14d1
       signature:
-        superblob_length: 815
+        superblob_length: 815 / 0x32f
         blob_count: 5
         blobs:
         - slot: CodeDirectory (0)
@@ -126,14 +127,15 @@ $ rcodesign print-signature-info exe.signed
   file_sha256: 430f7d90ca4ee8032a3449edc4bd653db9be9b25a2134bbfad6372572a45ae49
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384
-      linkedit_segment_file_end_offset: 22544
-      signature_file_start_offset: 16400
-      signature_file_end_offset: 22544
-      signature_linkedit_start_offset: 16
-      signature_linkedit_end_offset: 6160
+      linkedit_segment_file_start_offset: 16384 / 0x4000
+      signature_file_start_offset: 16400 / 0x4010
+      signature_file_end_offset: 17545 / 0x4489
+      linkedit_segment_file_end_offset: 22544 / 0x5810
+      signature_linkedit_start_offset: 16 / 0x10
+      signature_linkedit_end_offset: 1161 / 0x489
+      linkedit_bytes_after_signature: 4999 / 0x1387
       signature:
-        superblob_length: 1145
+        superblob_length: 1145 / 0x479
         blob_count: 5
         blobs:
         - slot: CodeDirectory (0)

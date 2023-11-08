@@ -34,6 +34,9 @@ Released on ReleaseDate.
 * Added awareness of new Apple CA certificates:
   `Apple Application Integration CA 7 - G1 Certificate`,
   `Worldwide Developer Relations - G7`, and `Worldwide Developer Relations - G8`.
+* `print-signature-info` now prints some integer values as strings containing
+  both the integer and hex forms. Additional fields are added to help debug
+  signature writing.
 * cryptographic-message-syntax 0.25 -> 0.26.
 * x509-certificate 0.22 -> 0.23.
 
