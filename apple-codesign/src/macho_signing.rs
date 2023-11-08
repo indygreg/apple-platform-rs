@@ -649,7 +649,7 @@ impl<'data> MachOSigner<'data> {
                 // If we are using an Apple-issued cert, this should automatically
                 // derive appropriate designated requirements.
                 if let Some((_, cert)) = settings.signing_key() {
-                    info!("attempting to derive code requirements from signing certificate");
+                    info!("deriving code requirements from signing certificate");
                     let identifier = Some(
                         settings
                             .binary_identifier(SettingsScope::Main)
@@ -657,13 +657,12 @@ impl<'data> MachOSigner<'data> {
                             .to_string(),
                     );
 
-                    if let Some(expr) = derive_designated_requirements(
+                    let expr = derive_designated_requirements(
                         cert,
                         settings.certificate_chain(),
                         identifier,
-                    )? {
-                        requirements.push(expr);
-                    }
+                    )?;
+                    requirements.push(expr);
                 }
             }
             DesignatedRequirementMode::Explicit(exprs) => {

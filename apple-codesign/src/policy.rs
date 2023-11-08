@@ -192,7 +192,7 @@ pub fn derive_designated_requirements(
     signing_cert: &CapturedX509Certificate,
     chain: &[CapturedX509Certificate],
     identifier: Option<String>,
-) -> Result<Option<CodeRequirementExpression<'static>>, AppleCodesignError> {
+) -> Result<CodeRequirementExpression<'static>, AppleCodesignError> {
     let expr = if signing_cert.chains_to_apple_root_ca() {
         let apple_chain = signing_cert.apple_issuing_chain();
 
@@ -241,16 +241,14 @@ pub fn derive_designated_requirements(
     };
 
     // Chain the expression with the identifier, if given.
-    let expr = if let Some(identifier) = identifier {
+    Ok(if let Some(identifier) = identifier {
         CodeRequirementExpression::And(
             Box::new(CodeRequirementExpression::Identifier(identifier.into())),
             Box::new(expr),
         )
     } else {
         expr
-    };
-
-    Ok(Some(expr))
+    })
 }
 
 /// Derive a code requirements expression for a Developer ID issued certificate.
@@ -421,7 +419,6 @@ mod test {
         assert_eq!(
             derive_designated_requirements(&cert, &[], None)
                 .unwrap()
-                .unwrap()
                 .to_string(),
             DEVELOPER_ID_TEXT
         );
@@ -490,13 +487,11 @@ mod test {
         assert_eq!(
             derive_designated_requirements(&apple_development, &[], None)
                 .unwrap()
-                .unwrap()
                 .to_string(),
             WWDR_TEXT
         );
         assert_eq!(
             derive_designated_requirements(&apple_distribution, &[], None)
-                .unwrap()
                 .unwrap()
                 .to_string(),
             worldwide_developer_relations_signed_expression(
@@ -507,20 +502,17 @@ mod test {
         assert_eq!(
             derive_designated_requirements(&developer_id_application, &[], None)
                 .unwrap()
-                .unwrap()
                 .to_string(),
             DEVELOPER_ID_TEXT
         );
         assert_eq!(
             derive_designated_requirements(&developer_id_installer, &[], None)
                 .unwrap()
-                .unwrap()
                 .to_string(),
             developer_id_signed_expression("MK22MZP987").to_string()
         );
         assert_eq!(
             derive_designated_requirements(&mac_installer_distribution, &[], None)
-                .unwrap()
                 .unwrap()
                 .to_string(),
             worldwide_developer_relations_signed_expression(
@@ -550,7 +542,6 @@ mod test {
 
         let derive = |cert| -> String {
             derive_designated_requirements(cert, &[], None)
-                .unwrap()
                 .unwrap()
                 .to_string()
         };
