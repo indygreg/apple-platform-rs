@@ -208,24 +208,7 @@ pub fn derive_designated_requirements(
                 ))
             })?;
 
-            let expr = CodeRequirementExpression::And(
-                // It chains to Apple root CA.
-                Box::new(CodeRequirementExpression::AnchorAppleGeneric),
-                Box::new(CodeRequirementExpression::And(
-                    // It was signed by this cert.
-                    Box::new(CodeRequirementExpression::CertificateField(
-                        0,
-                        "subject.CN".to_string().into(),
-                        CodeRequirementMatchExpression::Equal(cn.into()),
-                    )),
-                    // That cert was signed by a CA with WWDR extension.
-                    Box::new(CodeRequirementExpression::CertificateGeneric(
-                        1,
-                        CertificateAuthorityExtension::AppleWorldwideDeveloperRelations.as_oid(),
-                        CodeRequirementMatchExpression::Exists,
-                    )),
-                )),
-            );
+            let expr = worldwide_developer_relations_signed_expression(cn);
 
             Ok(Some(if let Some(identifier) = identifier {
                 CodeRequirementExpression::And(
@@ -243,32 +226,7 @@ pub fn derive_designated_requirements(
                 ))
             })?;
 
-            let expr = CodeRequirementExpression::And(
-                // Chains to Apple root CA.
-                Box::new(CodeRequirementExpression::AnchorAppleGeneric),
-                Box::new(CodeRequirementExpression::And(
-                    // Certificate issued by CA with Developer ID extension.
-                    Box::new(CodeRequirementExpression::CertificateGeneric(
-                        1,
-                        CertificateAuthorityExtension::DeveloperId.as_oid(),
-                        CodeRequirementMatchExpression::Exists,
-                    )),
-                    Box::new(CodeRequirementExpression::And(
-                        // A certificate entrusted with Developer ID Application signing rights.
-                        Box::new(CodeRequirementExpression::CertificateGeneric(
-                            0,
-                            CodeSigningCertificateExtension::DeveloperIdApplication.as_oid(),
-                            CodeRequirementMatchExpression::Exists,
-                        )),
-                        // Signed by this team ID.
-                        Box::new(CodeRequirementExpression::CertificateField(
-                            0,
-                            "subject.OU".to_string().into(),
-                            CodeRequirementMatchExpression::Equal(team_id.into()),
-                        )),
-                    )),
-                )),
-            );
+            let expr = developer_id_signed_expression(team_id);
 
             Ok(Some(if let Some(identifier) = identifier {
                 CodeRequirementExpression::And(
@@ -287,6 +245,68 @@ pub fn derive_designated_requirements(
     }
 }
 
+/// Derive a code requirements expression for a Developer ID issued certificate.
+///
+/// The expression is pinned to the team ID / organization unit of the signing
+/// certificate, which must be passed in.
+pub fn developer_id_signed_expression(
+    team_id: impl ToString,
+) -> CodeRequirementExpression<'static> {
+    CodeRequirementExpression::And(
+        // Chains to Apple root CA.
+        Box::new(CodeRequirementExpression::AnchorAppleGeneric),
+        Box::new(CodeRequirementExpression::And(
+            // Certificate issued by CA with Developer ID extension.
+            Box::new(CodeRequirementExpression::CertificateGeneric(
+                1,
+                CertificateAuthorityExtension::DeveloperId.as_oid(),
+                CodeRequirementMatchExpression::Exists,
+            )),
+            Box::new(CodeRequirementExpression::And(
+                // A certificate entrusted with Developer ID Application signing rights.
+                Box::new(CodeRequirementExpression::CertificateGeneric(
+                    0,
+                    CodeSigningCertificateExtension::DeveloperIdApplication.as_oid(),
+                    CodeRequirementMatchExpression::Exists,
+                )),
+                // Signed by this team ID.
+                Box::new(CodeRequirementExpression::CertificateField(
+                    0,
+                    "subject.OU".to_string().into(),
+                    CodeRequirementMatchExpression::Equal(team_id.to_string().into()),
+                )),
+            )),
+        )),
+    )
+}
+
+/// Derive the requirements expression for a cert signed by the Worldwide Developer Relations CA.
+///
+/// The expression is pinned to the Common Name (CN) field of the signing
+/// certificate, which must be passed in.
+pub fn worldwide_developer_relations_signed_expression(
+    leaf_common_name: impl ToString,
+) -> CodeRequirementExpression<'static> {
+    // anchor apple generic and
+    CodeRequirementExpression::And(
+        Box::new(CodeRequirementExpression::AnchorAppleGeneric),
+        // leaf[subject.CN] = <leaf subject> and
+        Box::new(CodeRequirementExpression::And(
+            Box::new(CodeRequirementExpression::CertificateField(
+                0,
+                "subject.CN".to_string().into(),
+                CodeRequirementMatchExpression::Equal(leaf_common_name.to_string().into()),
+            )),
+            // certificate 1[field.1.2.840.113635.100.6.2.1] exists
+            Box::new(CodeRequirementExpression::CertificateGeneric(
+                1,
+                CertificateAuthorityExtension::AppleWorldwideDeveloperRelations.as_oid(),
+                CodeRequirementMatchExpression::Exists,
+            )),
+        )),
+    )
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -300,5 +320,149 @@ mod test {
         ExecutionPolicy::DeveloperIdNotarizedInstaller
             .to_bytes()
             .unwrap();
+    }
+
+    const APPLE_SIGNED_CN: &str = "Apple Development: Gregory Szorc (DD5YMVP48D)";
+    const DEVELOPER_ID_TEXT: &str = "(anchor apple generic) and ((certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */) and ((certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */) and (certificate leaf[subject.OU] = \"MK22MZP987\")))";
+    const WWDR_TEXT: &str = "(anchor apple generic) and ((certificate leaf[subject.CN] = \"Apple Development: Gregory Szorc (DD5YMVP48D)\") and (certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */))";
+
+    #[test]
+    fn developer_id_requirements_derive() {
+        let der = include_bytes!("testdata/apple-signed-developer-id-application.cer");
+        let cert = CapturedX509Certificate::from_der(der.to_vec()).unwrap();
+
+        assert_eq!(
+            developer_id_signed_expression(cert.apple_team_id().unwrap()).to_string(),
+            DEVELOPER_ID_TEXT
+        );
+        assert_eq!(
+            derive_designated_requirements(&cert, None)
+                .unwrap()
+                .unwrap()
+                .to_string(),
+            DEVELOPER_ID_TEXT
+        );
+    }
+
+    #[test]
+    fn worldwide_developer_relations() {
+        assert_eq!(
+            worldwide_developer_relations_signed_expression(APPLE_SIGNED_CN).to_string(),
+            WWDR_TEXT
+        );
+    }
+
+    #[test]
+    fn apple_signed_auto_derive() {
+        let apple_development = CapturedX509Certificate::from_der(
+            include_bytes!("testdata/apple-signed-apple-development.cer").to_vec(),
+        )
+        .unwrap();
+        let apple_distribution = CapturedX509Certificate::from_der(
+            include_bytes!("testdata/apple-signed-apple-distribution.cer").to_vec(),
+        )
+        .unwrap();
+        let developer_id_application = CapturedX509Certificate::from_der(
+            include_bytes!("testdata/apple-signed-developer-id-application.cer").to_vec(),
+        )
+        .unwrap();
+        let developer_id_installer = CapturedX509Certificate::from_der(
+            include_bytes!("testdata/apple-signed-developer-id-installer.cer").to_vec(),
+        )
+        .unwrap();
+        let mac_installer_distribution = CapturedX509Certificate::from_der(
+            include_bytes!("testdata/apple-signed-3rd-party-mac.cer").to_vec(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            derive_designated_requirements(&apple_development, None)
+                .unwrap()
+                .unwrap()
+                .to_string(),
+            WWDR_TEXT
+        );
+        assert_eq!(
+            derive_designated_requirements(&apple_distribution, None)
+                .unwrap()
+                .unwrap()
+                .to_string(),
+            worldwide_developer_relations_signed_expression(
+                "Apple Distribution: Gregory Szorc (MK22MZP987)"
+            )
+            .to_string()
+        );
+        assert_eq!(
+            derive_designated_requirements(&developer_id_application, None)
+                .unwrap()
+                .unwrap()
+                .to_string(),
+            DEVELOPER_ID_TEXT
+        );
+        assert!(derive_designated_requirements(&developer_id_installer, None).is_err());
+        assert!(derive_designated_requirements(&mac_installer_distribution, None).is_err());
+    }
+
+    fn load_unified_pem(pem_data: &[u8]) -> CapturedX509Certificate {
+        pem::parse_many(pem_data)
+            .unwrap()
+            .into_iter()
+            .filter_map(|doc| {
+                if doc.tag() == "CERTIFICATE" {
+                    Some(doc.contents().to_vec())
+                } else {
+                    None
+                }
+            })
+            .map(|der| CapturedX509Certificate::from_der(der).unwrap())
+            .next()
+            .unwrap()
+    }
+
+    #[test]
+    fn self_signed_auto_derive() {
+        let apple_development = load_unified_pem(include_bytes!(
+            "testdata/self-signed-rsa-apple-development.pem"
+        ));
+        let apple_distribution = load_unified_pem(include_bytes!(
+            "testdata/self-signed-rsa-apple-distribution.pem"
+        ));
+        let developer_id_application = load_unified_pem(include_bytes!(
+            "testdata/self-signed-rsa-developer-id-application.pem"
+        ));
+        let developer_id_installer = load_unified_pem(include_bytes!(
+            "testdata/self-signed-rsa-developer-id-installer.pem"
+        ));
+        let mac_installer_distribution = load_unified_pem(include_bytes!(
+            "testdata/self-signed-rsa-mac-installer-distribution.pem"
+        ));
+
+        let derive = |cert| -> String {
+            derive_designated_requirements(cert, None)
+                .unwrap()
+                .unwrap()
+                .to_string()
+        };
+
+        assert_eq!(
+            derive(&apple_development),
+            worldwide_developer_relations_signed_expression(
+                "Apple Development: RSA Apple Development (test)"
+            )
+            .to_string()
+        );
+        assert_eq!(
+            derive(&apple_distribution),
+            worldwide_developer_relations_signed_expression(
+                "Apple Distribution: RSA Apple Distribution (test)"
+            )
+            .to_string()
+        );
+        assert_eq!(
+            derive(&developer_id_application),
+            developer_id_signed_expression("test").to_string()
+        );
+        assert!(derive_designated_requirements(&developer_id_installer, None).is_err());
+        assert!(derive_designated_requirements(&mac_installer_distribution, None).is_err());
     }
 }
