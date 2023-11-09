@@ -26,12 +26,13 @@ $ rcodesign print-signature-info exe.signed
   sub_path: macho-index:0
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384 / 0x4000
-      signature_file_start_offset: 16400 / 0x4010
-      signature_file_end_offset: 16772 / 0x4184
-      linkedit_segment_file_end_offset: 22544 / 0x5810
-      signature_linkedit_start_offset: 16 / 0x10
-      signature_linkedit_end_offset: 388 / 0x184
+      macho_linkedit_start_offset: 16384 / 0x4000
+      macho_signature_start_offset: 16400 / 0x4010
+      macho_signature_end_offset: 16772 / 0x4184
+      macho_linkedit_end_offset: 22544 / 0x5810
+      macho_end_offset: 22544 / 0x5810
+      linkedit_signature_start_offset: 16 / 0x10
+      linkedit_signature_end_offset: 388 / 0x184
       linkedit_bytes_after_signature: 5772 / 0x168c
       signature:
         superblob_length: 372 / 0x174
@@ -71,12 +72,13 @@ $ rcodesign print-signature-info exe.signed
   sub_path: macho-index:1
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 4096 / 0x1000
-      signature_file_start_offset: 4112 / 0x1010
-      signature_file_end_offset: 4388 / 0x1124
-      linkedit_segment_file_end_offset: 10256 / 0x2810
-      signature_linkedit_start_offset: 16 / 0x10
-      signature_linkedit_end_offset: 292 / 0x124
+      macho_linkedit_start_offset: 4096 / 0x1000
+      macho_signature_start_offset: 4112 / 0x1010
+      macho_signature_end_offset: 4388 / 0x1124
+      macho_linkedit_end_offset: 10256 / 0x2810
+      macho_end_offset: 10256 / 0x2810
+      linkedit_signature_start_offset: 16 / 0x10
+      linkedit_signature_end_offset: 292 / 0x124
       linkedit_bytes_after_signature: 5868 / 0x16ec
       signature:
         superblob_length: 276 / 0x114

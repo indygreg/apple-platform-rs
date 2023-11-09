@@ -550,12 +550,13 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
 
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct MachOEntity {
-    pub linkedit_segment_file_start_offset: Option<String>,
-    pub signature_file_start_offset: Option<String>,
-    pub signature_file_end_offset: Option<String>,
-    pub linkedit_segment_file_end_offset: Option<String>,
-    pub signature_linkedit_start_offset: Option<String>,
-    pub signature_linkedit_end_offset: Option<String>,
+    pub macho_linkedit_start_offset: Option<String>,
+    pub macho_signature_start_offset: Option<String>,
+    pub macho_signature_end_offset: Option<String>,
+    pub macho_linkedit_end_offset: Option<String>,
+    pub macho_end_offset: Option<String>,
+    pub linkedit_signature_start_offset: Option<String>,
+    pub linkedit_signature_end_offset: Option<String>,
     pub linkedit_bytes_after_signature: Option<String>,
     pub signature: Option<CodeSignature>,
 }
@@ -908,23 +909,25 @@ impl SignatureReader {
     fn resolve_macho_entity(macho: MachOBinary) -> Result<MachOEntity, AppleCodesignError> {
         let mut entity = MachOEntity::default();
 
+        entity.macho_end_offset = Some(format_integer(macho.data.len()));
+
         if let Some(sig) = macho.find_signature_data()? {
-            entity.linkedit_segment_file_start_offset =
+            entity.macho_linkedit_start_offset =
                 Some(format_integer(sig.linkedit_segment_start_offset));
-            entity.linkedit_segment_file_end_offset =
+            entity.macho_linkedit_end_offset =
                 Some(format_integer(sig.linkedit_segment_end_offset));
-            entity.signature_file_start_offset =
+            entity.macho_signature_start_offset =
                 Some(format_integer(sig.signature_file_start_offset));
-            entity.signature_linkedit_start_offset =
+            entity.linkedit_signature_start_offset =
                 Some(format_integer(sig.signature_segment_start_offset));
         }
 
         if let Some(sig) = macho.code_signature()? {
             if let Some(sig_info) = macho.find_signature_data()? {
-                entity.signature_file_end_offset = Some(format_integer(
+                entity.macho_signature_end_offset = Some(format_integer(
                     sig_info.signature_file_start_offset + sig.length as usize,
                 ));
-                entity.signature_linkedit_end_offset = Some(format_integer(
+                entity.linkedit_signature_end_offset = Some(format_integer(
                     sig_info.signature_segment_start_offset + sig.length as usize,
                 ));
 

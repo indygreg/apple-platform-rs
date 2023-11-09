@@ -38,12 +38,13 @@ $ rcodesign print-signature-info Shallow.framework.signed
   file_sha256: 6b0a00ccc659f875896592dd0974113fcff7d5bf588ac9cc43a8598083fc6639
   entity:
     mach_o:
-      linkedit_segment_file_start_offset: 16384 / 0x4000
-      signature_file_start_offset: 16400 / 0x4010
-      signature_file_end_offset: 16776 / 0x4188
-      linkedit_segment_file_end_offset: 22544 / 0x5810
-      signature_linkedit_start_offset: 16 / 0x10
-      signature_linkedit_end_offset: 392 / 0x188
+      macho_linkedit_start_offset: 16384 / 0x4000
+      macho_signature_start_offset: 16400 / 0x4010
+      macho_signature_end_offset: 16776 / 0x4188
+      macho_linkedit_end_offset: 22544 / 0x5810
+      macho_end_offset: 22544 / 0x5810
+      linkedit_signature_start_offset: 16 / 0x10
+      linkedit_signature_end_offset: 392 / 0x188
       linkedit_bytes_after_signature: 5768 / 0x1688
       signature:
         superblob_length: 376 / 0x178
