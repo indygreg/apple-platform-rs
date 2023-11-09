@@ -37,6 +37,10 @@ Released on ReleaseDate.
 * `print-signature-info` now prints some integer values as strings containing
   both the integer and hex forms. Additional fields are added to help debug
   signature writing.
+* Conflicting binary identifiers within a universal Mach-O are now reconciled
+  to the initially seen value. This matches the behavior of Apple's tooling
+  and fixes a bug where drift between the values could cause bundle validation
+  to fail. (#103)
 * cryptographic-message-syntax 0.25 -> 0.26.
 * x509-certificate 0.22 -> 0.23.
 

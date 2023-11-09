@@ -33,7 +33,7 @@ signing exe as a Mach-O binary
 inferring default signing settings from Mach-O binary
 preserving existing binary identifier in Mach-O
 preserving code signature flags in existing Mach-O signature
-preserving existing binary identifier in Mach-O
+identifiers within Mach-O do not agree (initial: identifier-0, subsequent: identifier-1); reconciling to identifier-0
 preserving code signature flags in existing Mach-O signature
 setting binary identifier to exe
 parsing Mach-O
@@ -54,7 +54,7 @@ writing Mach-O to exe.signed
 $ rcodesign print-signature-info exe.signed
 - path: exe.signed
   file_size: 55312
-  file_sha256: 1da13389e9c1b3c17eecffda607691e769b1b5a113fa600e19c380ccc35b5ca5
+  file_sha256: ef5ec5345b8b70820cf5f207dcf57a6e59e26067098416a93feba927aaf71402
   sub_path: macho-index:0
   entity:
     mach_o:
@@ -100,7 +100,7 @@ $ rcodesign print-signature-info exe.signed
         cms: null
 - path: exe.signed
   file_size: 55312
-  file_sha256: 1da13389e9c1b3c17eecffda607691e769b1b5a113fa600e19c380ccc35b5ca5
+  file_sha256: ef5ec5345b8b70820cf5f207dcf57a6e59e26067098416a93feba927aaf71402
   sub_path: macho-index:1
   entity:
     mach_o:
@@ -119,8 +119,8 @@ $ rcodesign print-signature-info exe.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 325
-          sha1: 030e89c3c24bd752e0b8036643067caa5a583176
-          sha256: ddbc656f74f4073112ce4867671963c51fbef7b6f3a9b71e6e0e97453a9efb36
+          sha1: c51f0d3272967beff74e25d1f0caedc9b6ed8229
+          sha256: 5f7b84f4ce42b6237680fb5a15b7f6a58afe21a5ff73b6e1f1c826835d220d53
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -134,7 +134,7 @@ $ rcodesign print-signature-info exe.signed
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)
-          identifier: identifier-1
+          identifier: identifier-0
           digest_type: sha256
           platform: 0
           signed_entity_size: 16400

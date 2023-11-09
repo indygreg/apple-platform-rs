@@ -772,6 +772,8 @@ impl<'key> SigningSettings<'key> {
     pub fn import_settings_from_macho(&mut self, data: &[u8]) -> Result<(), AppleCodesignError> {
         info!("inferring default signing settings from Mach-O binary");
 
+        let mut seen_identifier = None;
+
         for macho in MachFile::parse(data)?.into_iter() {
             let index = macho.index.unwrap_or(0);
 
@@ -835,9 +837,19 @@ impl<'key> SigningSettings<'key> {
                         || self.binary_identifier(&scope_arch).is_some()
                     {
                         info!("using binary identifier from settings");
+                    } else if let Some(initial_identifier) = &seen_identifier {
+                        // The binary identifier should agree between all Mach-O within a
+                        // universal binary. If we've already seen an identifier, use it
+                        // implicitly.
+                        if initial_identifier != cd.ident.as_ref() {
+                            info!("identifiers within Mach-O do not agree (initial: {initial_identifier}, subsequent: {}); reconciling to {initial_identifier}",
+                            cd.ident);
+                            self.set_binary_identifier(scope_index.clone(), initial_identifier);
+                        }
                     } else {
                         info!("preserving existing binary identifier in Mach-O");
-                        self.set_binary_identifier(scope_index.clone(), cd.ident);
+                        self.set_binary_identifier(scope_index.clone(), cd.ident.to_string());
+                        seen_identifier = Some(cd.ident.to_string());
                     }
 
                     if self.team_id.contains_key(&scope_main)
