@@ -6,6 +6,12 @@
 
 Released on ReleaseDate.
 
+* Added the `signing` feature which controls whether Cryptographic
+  Message Syntax based signing support is available. The feature -
+  enabled by default - can be disabled to disable the `bcder`,
+  `cryptographic-message-syntax`, `rand`, `reqwest`, and `signature`
+  crates to significantly slim down the dependency tree. (#15)
+
 ## 0.15.0
 
 Released on 2023-11-09.

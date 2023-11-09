@@ -8,7 +8,6 @@ use {
         table_of_contents::{ChecksumType, File, FileType, SignatureStyle, TableOfContents},
         Error, XarResult,
     },
-    cryptographic_message_syntax::SignedData,
     scroll::IOread,
     std::{
         cmp::min,
@@ -18,6 +17,9 @@ use {
     },
     x509_certificate::CapturedX509Certificate,
 };
+
+#[cfg(feature = "signing")]
+use cryptographic_message_syntax::SignedData;
 
 /// Read-only interface to a single XAR archive.
 #[derive(Debug)]
@@ -364,6 +366,7 @@ impl<R: Read + Seek + Sized + Debug> XarReader<R> {
     /// Attempt to resolve a cryptographic message syntax (CMS) signature.
     ///
     /// The data signed by the CMS signature is the raw data returned by [Self::checksum].
+    #[cfg(feature = "signing")]
     pub fn cms_signature(&mut self) -> XarResult<Option<SignedData>> {
         if let Some(sig) = self.toc.find_signature(SignatureStyle::Cms).cloned() {
             let mut data = Vec::<u8>::with_capacity(sig.size as _);
@@ -376,6 +379,7 @@ impl<R: Read + Seek + Sized + Debug> XarReader<R> {
     }
 
     /// Verifies the cryptographic message syntax (CMS) signature, if present.
+    #[cfg(feature = "signing")]
     pub fn verify_cms_signature(&mut self) -> XarResult<bool> {
         let checksum = self.checksum()?.1;
         let mut checked = false;

@@ -6,6 +6,7 @@
 
 pub mod format;
 pub mod reader;
+#[cfg(feature = "signing")]
 pub mod signing;
 pub mod table_of_contents;
 
@@ -47,12 +48,15 @@ pub enum Error {
     #[error("x509 certificate error: {0}")]
     X509Certificate(#[from] x509_certificate::X509CertificateError),
 
+    #[cfg(feature = "signing")]
     #[error("signing error: {0}")]
     SignatureCreation(#[from] signature::Error),
 
+    #[cfg(feature = "signing")]
     #[error("CMS error: {0}")]
     Cms(#[from] cryptographic_message_syntax::CmsError),
 
+    #[cfg(feature = "signing")]
     #[error("HTTP error: {0}")]
     Reqwest(#[from] reqwest::Error),
 }
