@@ -32,6 +32,7 @@ use {
         borrow::Cow,
         cmp::Ordering,
         fmt::{Display, Formatter},
+        path::Path,
     },
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     x509_certificate::{
@@ -669,6 +670,48 @@ impl<'a> std::fmt::Debug for Digest<'a> {
 impl<'a> From<Vec<u8>> for Digest<'a> {
     fn from(v: Vec<u8>) -> Self {
         Self { data: v.into() }
+    }
+}
+
+/// Holds multiple computed digests for content.
+pub struct MultiDigest {
+    pub sha1: Digest<'static>,
+    pub sha256: Digest<'static>,
+}
+
+impl MultiDigest {
+    /// Compute the multi digests for any stream reader.
+    ///
+    /// This will read the stream until EOF.
+    pub fn from_reader(mut reader: impl std::io::Read) -> Result<Self, AppleCodesignError> {
+        let mut sha1 = DigestType::Sha1.as_hasher()?;
+        let mut sha256 = DigestType::Sha256.as_hasher()?;
+
+        let mut buffer = [0u8; 16384];
+
+        loop {
+            let read = reader.read(&mut buffer)?;
+            if read == 0 {
+                break;
+            }
+
+            sha1.update(&buffer[0..read]);
+            sha256.update(&buffer[0..read]);
+        }
+
+        let sha1 = sha1.finish().as_ref().to_vec();
+        let sha256 = sha256.finish().as_ref().to_vec();
+
+        Ok(Self {
+            sha1: sha1.into(),
+            sha256: sha256.into(),
+        })
+    }
+
+    /// Compute the multi digest of a filesystem path.
+    pub fn from_path(path: impl AsRef<Path>) -> Result<Self, AppleCodesignError> {
+        let fh = std::fs::File::open(path.as_ref())?;
+        Self::from_reader(fh)
     }
 }
 

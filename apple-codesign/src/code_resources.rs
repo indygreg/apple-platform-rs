@@ -18,7 +18,7 @@
 use {
     crate::{
         bundle_signing::{BundleSigningContext, SignedMachOInfo},
-        cryptography::DigestType,
+        cryptography::{DigestType, MultiDigest},
         error::AppleCodesignError,
     },
     apple_bundles::DirectoryBundle,
@@ -767,25 +767,24 @@ impl CodeResources {
         &mut self,
         files_flavor: FilesFlavor,
         path: impl ToString,
-        content: impl AsRef<[u8]>,
+        digests: MultiDigest,
         optional: bool,
     ) -> Result<(), AppleCodesignError> {
         match files_flavor {
             FilesFlavor::Rules => {
-                let digest = DigestType::Sha1.digest_data(content.as_ref())?;
                 self.files.insert(
                     path.to_string(),
                     if optional {
-                        FilesValue::Optional(digest)
+                        FilesValue::Optional(digests.sha1.to_vec())
                     } else {
-                        FilesValue::Required(digest)
+                        FilesValue::Required(digests.sha1.to_vec())
                     },
                 );
 
                 Ok(())
             }
             FilesFlavor::Rules2 => {
-                let hash2 = Some(DigestType::Sha256.digest_data(content.as_ref())?);
+                let hash2 = Some(digests.sha256.to_vec());
 
                 self.files2.insert(
                     path.to_string(),
@@ -802,8 +801,8 @@ impl CodeResources {
                 Ok(())
             }
             FilesFlavor::Rules2WithSha1 => {
-                let hash = Some(DigestType::Sha1.digest_data(content.as_ref())?);
-                let hash2 = Some(DigestType::Sha256.digest_data(content.as_ref())?);
+                let hash = Some(digests.sha1.to_vec());
+                let hash2 = Some(digests.sha256.to_vec());
 
                 self.files2.insert(
                     path.to_string(),
@@ -1383,7 +1382,7 @@ impl CodeResourcesBuilder {
                 full_path.to_path_buf()
             };
 
-            let data = std::fs::read(&read_path)?;
+            let digests = MultiDigest::from_path(&read_path)?;
 
             let flavor = if self.digests.contains(&DigestType::Sha1) {
                 FilesFlavor::Rules2WithSha1
@@ -1392,7 +1391,7 @@ impl CodeResourcesBuilder {
             };
 
             self.resources
-                .seal_regular_file(flavor, rel_path_normalized, data, optional)?;
+                .seal_regular_file(flavor, rel_path_normalized, digests, optional)?;
         }
 
         if need_install {
@@ -1435,12 +1434,12 @@ impl CodeResourcesBuilder {
         // And version 2's handler installed files. So all we have to do here
         // is record SHA-1 digests in `<files>`.
 
-        let data = std::fs::read(full_path)?;
+        let digests = MultiDigest::from_path(full_path)?;
 
         self.resources.seal_regular_file(
             FilesFlavor::Rules,
             rel_path_normalized,
-            data,
+            digests,
             rule.optional,
         )?;
 
