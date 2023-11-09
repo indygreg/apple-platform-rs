@@ -14,7 +14,7 @@ use {
 ///
 /// This includes authentication requirements, behavior after installation, etc.
 /// See the fields for more descriptions.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct PackageInfo {
     /// Authentication requirements for the package install.
@@ -108,7 +108,7 @@ pub struct PackageInfo {
 
     /// Scripts to run before and after install.
     #[serde(default)]
-    pub scripts: Vec<Script>,
+    pub scripts: Scripts,
 
     #[serde(default)]
     pub strict_identifiers: Vec<BundleRef>,
@@ -145,7 +145,7 @@ impl Default for PackageInfo {
             patch: vec![],
             payload: None,
             relocate: vec![],
-            scripts: vec![],
+            scripts: Default::default(),
             strict_identifiers: vec![],
             update_bundle: vec![],
             upgrade_bundle: vec![],
@@ -171,7 +171,7 @@ impl PackageInfo {
 }
 
 /// File record.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct File {
     /// File path.
@@ -184,7 +184,7 @@ pub struct File {
     pub sha1: Option<String>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Payload {
     #[serde(rename = "numberOfFiles")]
     pub number_of_files: u64,
@@ -192,13 +192,20 @@ pub struct Payload {
     pub install_kbytes: u64,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct BundleRef {
     pub id: Option<String>,
 }
 
+/// Wrapper type to represent <scripts>.
+#[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize, Serialize)]
+pub struct Scripts {
+    #[serde(rename = "$value")]
+    pub scripts: Vec<Script>,
+}
+
 /// An entry in <scripts>.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum Script {
     #[serde(rename = "preinstall")]
     PreInstall(PreInstall),
@@ -208,7 +215,7 @@ pub enum Script {
 }
 
 /// A script to run before install.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct PreInstall {
     /// Name of script to run.
     pub file: String,
@@ -218,7 +225,7 @@ pub struct PreInstall {
 }
 
 /// A script to run after install.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct PostInstall {
     /// Name of script to run.
     pub file: String,
@@ -250,7 +257,20 @@ mod test {
             </pkg-info>
         "#;
 
-        // TODO this is a bug.
-        assert!(PackageInfo::from_xml(INPUT.trim()).is_err());
+        let info = PackageInfo::from_xml(INPUT.trim()).unwrap();
+
+        assert_eq!(
+            info.scripts.scripts,
+            vec![
+                Script::PreInstall(PreInstall {
+                    file: "./preinstall".into(),
+                    component_id: None,
+                }),
+                Script::PostInstall(PostInstall {
+                    file: "./postinstall".into(),
+                    component_id: None,
+                })
+            ]
+        );
     }
 }

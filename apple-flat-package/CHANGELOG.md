@@ -6,6 +6,11 @@
 
 Released on ReleaseDate.
 
+* Types implementing `Serialize` and `Deserialize` all now derive `Eq` and
+  `PartialEq`.
+* The `PackageInfo` struct changed its storage of the `scripts` field
+  so it can now properly decode `<scripts>` in XML files. (#9)
+
 ## 0.15.0
 
 Released on 2023-11-09.
