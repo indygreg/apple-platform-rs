@@ -6,6 +6,12 @@
 
 Released on ReleaseDate.
 
+* Detection of nested bundles now looks for `CFBundlePackageType` or
+  `CFBundleIdentifier` in bundle `Info.plist` and ignores *bundles*
+  lacking these. As a result, we no longer attempt signing of storybook
+  *bundles* and other non-signable bundle-looking directories and no
+  longer likely encounter errors in the process. (#38)
+
 ## 0.24.0
 
 Released on 2023-11-09.

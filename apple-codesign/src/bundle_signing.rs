@@ -17,7 +17,7 @@ use {
         signing_settings::{SettingsScope, SigningSettings},
     },
     apple_bundles::{BundlePackageType, DirectoryBundle},
-    log::{info, warn},
+    log::{debug, info, warn},
     simple_file_manifest::create_symlink,
     std::{
         borrow::Cow,
@@ -75,6 +75,40 @@ impl BundleSigner {
             .nested_bundles(true)
             .map_err(AppleCodesignError::DirectoryBundle)?
             .into_iter()
+            .filter(|(k, bundle)| {
+                // Our bundle classifier is very aggressive about annotating directories
+                // as bundles. Pretty much anything with an Info.plist can get through.
+                // We apply additional filtering here so we only emit bundles that can
+                // be signed.
+                //
+                // Arguably a better solution here is to use the CodeResources rule
+                // based file walker to look for directories with the "nested" flag.
+                // If a bundle-looking directory exists outside of a "nested" rule,
+                // it probably shouldn't be signed.
+
+                let has_package_type = matches!(bundle.info_plist_key_string("CFBundlePackageType"), Ok(Some(_)));
+                let has_bundle_identifier = matches!(bundle.info_plist_key_string("CFBundleIdentifier"), Ok(Some(_)));
+
+                match (has_package_type, has_bundle_identifier)  {
+                    (true, true) => {
+                        // It quacks like a bundle.
+                        true
+                    }
+                    (false, false) => {
+                        // This looks like a naked Info.plist.
+                        debug!("{k} discarded as a signable bundle because its Info.plist lacks CFBundlePackageType and CFBundleIdentifier");
+                        false
+                    }
+                    (true, false) => {
+                        info!("{k} has an Info.plist with a CFBundlePackageType but not a CFBundleIdentifier; we'll try to sign it but we recommend adding a CFBundleIdentifier");
+                        true
+                    }
+                    (false, true) => {
+                        info!("{k} has an Info.plist with a CFBundleIdentifier but without a CFBundlePackageType; we'll try to sign it but we recommend adding a CFBundlePackageType");
+                        true
+                    }
+                }
+            })
             .map(|(k, bundle)| {
                 (
                     Some(k),
