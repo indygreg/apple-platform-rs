@@ -9,7 +9,9 @@ use {
         remote_signing::{session_negotiation::PublicKeyPeerDecrypt, RemoteSignError},
         AppleCodesignError,
     },
+    apple_xar::table_of_contents::ChecksumType as XarChecksumType,
     bytes::Bytes,
+    clap::ValueEnum,
     der::{asn1, Decode, Document, Encode, SecretDocument},
     digest::DynDigest,
     elliptic_curve::{
@@ -26,10 +28,15 @@ use {
     rsa::{pkcs1::DecodeRsaPrivateKey, BigUint, Oaep, RsaPrivateKey as RsaConstructedKey},
     signature::Signer,
     spki::AlgorithmIdentifier,
+    std::{
+        borrow::Cow,
+        cmp::Ordering,
+        fmt::{Display, Formatter},
+    },
     subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption},
     x509_certificate::{
-        CapturedX509Certificate, EcdsaCurve, InMemorySigningKeyPair, KeyAlgorithm, KeyInfoSigner,
-        Sign, Signature, SignatureAlgorithm, X509CertificateError,
+        CapturedX509Certificate, DigestAlgorithm, EcdsaCurve, InMemorySigningKeyPair, KeyAlgorithm,
+        KeyInfoSigner, Sign, Signature, SignatureAlgorithm, X509CertificateError,
     },
     zeroize::Zeroizing,
 };
@@ -469,6 +476,199 @@ impl InMemoryPrivateKey {
                 "when converting parsed PKCS#8 to a private key: {e}"
             ))
         })
+    }
+}
+
+/// Represents a digest type encountered in code signature data structures.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
+pub enum DigestType {
+    None,
+    Sha1,
+    Sha256,
+    Sha256Truncated,
+    Sha384,
+    Sha512,
+    #[value(skip)]
+    Unknown(u8),
+}
+
+impl Default for DigestType {
+    fn default() -> Self {
+        Self::Sha256
+    }
+}
+
+impl From<u8> for DigestType {
+    fn from(v: u8) -> Self {
+        match v {
+            0 => Self::None,
+            1 => Self::Sha1,
+            2 => Self::Sha256,
+            3 => Self::Sha256Truncated,
+            4 => Self::Sha384,
+            5 => Self::Sha512,
+            _ => Self::Unknown(v),
+        }
+    }
+}
+
+impl From<DigestType> for u8 {
+    fn from(v: DigestType) -> u8 {
+        match v {
+            DigestType::None => 0,
+            DigestType::Sha1 => 1,
+            DigestType::Sha256 => 2,
+            DigestType::Sha256Truncated => 3,
+            DigestType::Sha384 => 4,
+            DigestType::Sha512 => 5,
+            DigestType::Unknown(v) => v,
+        }
+    }
+}
+
+impl TryFrom<DigestType> for DigestAlgorithm {
+    type Error = AppleCodesignError;
+
+    fn try_from(value: DigestType) -> Result<DigestAlgorithm, Self::Error> {
+        match value {
+            DigestType::Sha1 => Ok(DigestAlgorithm::Sha1),
+            DigestType::Sha256 => Ok(DigestAlgorithm::Sha256),
+            DigestType::Sha256Truncated => Ok(DigestAlgorithm::Sha256),
+            DigestType::Sha384 => Ok(DigestAlgorithm::Sha384),
+            DigestType::Sha512 => Ok(DigestAlgorithm::Sha512),
+            DigestType::Unknown(_) => Err(AppleCodesignError::DigestUnknownAlgorithm),
+            DigestType::None => Err(AppleCodesignError::DigestUnsupportedAlgorithm),
+        }
+    }
+}
+
+impl PartialOrd for DigestType {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for DigestType {
+    fn cmp(&self, other: &Self) -> Ordering {
+        u8::from(*self).cmp(&u8::from(*other))
+    }
+}
+
+impl Display for DigestType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DigestType::None => f.write_str("none"),
+            DigestType::Sha1 => f.write_str("sha1"),
+            DigestType::Sha256 => f.write_str("sha256"),
+            DigestType::Sha256Truncated => f.write_str("sha256-truncated"),
+            DigestType::Sha384 => f.write_str("sha384"),
+            DigestType::Sha512 => f.write_str("sha512"),
+            DigestType::Unknown(v) => f.write_fmt(format_args!("unknown: {v}")),
+        }
+    }
+}
+
+impl TryFrom<&str> for DigestType {
+    type Error = AppleCodesignError;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        match s {
+            "none" => Ok(Self::None),
+            "sha1" => Ok(Self::Sha1),
+            "sha256" => Ok(Self::Sha256),
+            "sha256-truncated" => Ok(Self::Sha256Truncated),
+            "sha384" => Ok(Self::Sha384),
+            "sha512" => Ok(Self::Sha512),
+            _ => Err(AppleCodesignError::DigestUnknownAlgorithm),
+        }
+    }
+}
+
+impl TryFrom<XarChecksumType> for DigestType {
+    type Error = AppleCodesignError;
+
+    fn try_from(c: XarChecksumType) -> Result<Self, Self::Error> {
+        match c {
+            XarChecksumType::None => Ok(Self::None),
+            XarChecksumType::Sha1 => Ok(Self::Sha1),
+            XarChecksumType::Sha256 => Ok(Self::Sha256),
+            XarChecksumType::Sha512 => Ok(Self::Sha512),
+            XarChecksumType::Md5 => Err(AppleCodesignError::DigestUnsupportedAlgorithm),
+        }
+    }
+}
+
+impl DigestType {
+    /// Obtain the size of hashes for this hash type.
+    pub fn hash_len(&self) -> Result<usize, AppleCodesignError> {
+        Ok(self.digest_data(&[])?.len())
+    }
+
+    /// Obtain a hasher for this digest type.
+    pub fn as_hasher(&self) -> Result<ring::digest::Context, AppleCodesignError> {
+        match self {
+            Self::None => Err(AppleCodesignError::DigestUnknownAlgorithm),
+            Self::Sha1 => Ok(ring::digest::Context::new(
+                &ring::digest::SHA1_FOR_LEGACY_USE_ONLY,
+            )),
+            Self::Sha256 | Self::Sha256Truncated => {
+                Ok(ring::digest::Context::new(&ring::digest::SHA256))
+            }
+            Self::Sha384 => Ok(ring::digest::Context::new(&ring::digest::SHA384)),
+            Self::Sha512 => Ok(ring::digest::Context::new(&ring::digest::SHA512)),
+            Self::Unknown(_) => Err(AppleCodesignError::DigestUnknownAlgorithm),
+        }
+    }
+
+    /// Digest data given the configured hasher.
+    pub fn digest_data(&self, data: &[u8]) -> Result<Vec<u8>, AppleCodesignError> {
+        let mut hasher = self.as_hasher()?;
+
+        hasher.update(data);
+        let mut hash = hasher.finish().as_ref().to_vec();
+
+        if matches!(self, Self::Sha256Truncated) {
+            hash.truncate(20);
+        }
+
+        Ok(hash)
+    }
+}
+
+pub struct Digest<'a> {
+    pub data: Cow<'a, [u8]>,
+}
+
+impl<'a> Digest<'a> {
+    /// Whether this is the null hash (all 0s).
+    pub fn is_null(&self) -> bool {
+        self.data.iter().all(|b| *b == 0)
+    }
+
+    pub fn to_vec(&self) -> Vec<u8> {
+        self.data.to_vec()
+    }
+
+    pub fn to_owned(&self) -> Digest<'static> {
+        Digest {
+            data: Cow::Owned(self.data.clone().into_owned()),
+        }
+    }
+
+    pub fn as_hex(&self) -> String {
+        hex::encode(&self.data)
+    }
+}
+
+impl<'a> std::fmt::Debug for Digest<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&hex::encode(&self.data))
+    }
+}
+
+impl<'a> From<Vec<u8>> for Digest<'a> {
+    fn from(v: Vec<u8>) -> Self {
+        Self { data: v.into() }
     }
 }
 

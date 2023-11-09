@@ -46,9 +46,8 @@ and invalidate prior signatures.
 use {
     crate::{
         code_directory::{CodeDirectoryBlob, CodeSignatureFlags},
-        embedded_signature::{
-            BlobData, CodeSigningSlot, Digest, DigestType, EmbeddedSignature, RequirementSetBlob,
-        },
+        cryptography::{Digest, DigestType},
+        embedded_signature::{BlobData, CodeSigningSlot, EmbeddedSignature, RequirementSetBlob},
         embedded_signature_builder::EmbeddedSignatureBuilder,
         AppleCodesignError, SettingsScope, SigningSettings,
     },

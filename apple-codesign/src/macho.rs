@@ -14,7 +14,8 @@ data.
 
 use {
     crate::{
-        embedded_signature::{DigestType, EmbeddedSignature},
+        cryptography::DigestType,
+        embedded_signature::EmbeddedSignature,
         error::AppleCodesignError,
         signing_settings::{SettingsScope, SigningSettings},
     },

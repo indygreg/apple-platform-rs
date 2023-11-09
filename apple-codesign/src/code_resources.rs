@@ -18,7 +18,7 @@
 use {
     crate::{
         bundle_signing::{BundleSigningContext, SignedMachOInfo},
-        embedded_signature::DigestType,
+        cryptography::DigestType,
         error::AppleCodesignError,
     },
     apple_bundles::DirectoryBundle,

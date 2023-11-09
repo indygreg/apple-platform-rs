@@ -8,8 +8,9 @@ use {
     crate::{
         certificate::AppleCertificate,
         code_directory::CodeDirectoryBlob,
+        cryptography::DigestType,
         dmg::{path_is_dmg, DmgReader},
-        embedded_signature::{BlobEntry, DigestType, EmbeddedSignature},
+        embedded_signature::{BlobEntry, EmbeddedSignature},
         embedded_signature_builder::{CD_DIGESTS_OID, CD_DIGESTS_PLIST_OID},
         error::AppleCodesignError,
         macho::{MachFile, MachOBinary},

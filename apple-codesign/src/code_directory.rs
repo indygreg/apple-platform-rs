@@ -6,9 +6,9 @@
 
 use {
     crate::{
+        cryptography::{Digest, DigestType},
         embedded_signature::{
-            read_and_validate_blob_header, Blob, CodeSigningMagic, CodeSigningSlot, Digest,
-            DigestType,
+            read_and_validate_blob_header, Blob, CodeSigningMagic, CodeSigningSlot,
         },
         error::AppleCodesignError,
         macho::{MachoTarget, Platform},

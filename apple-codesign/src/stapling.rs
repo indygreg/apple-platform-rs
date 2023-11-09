@@ -14,8 +14,9 @@ from Apple and attaching it to something else.
 use {
     crate::{
         bundle_signing::SignedMachOInfo,
+        cryptography::DigestType,
         dmg::{DmgReader, DmgSigner},
-        embedded_signature::{Blob, DigestType},
+        embedded_signature::Blob,
         reader::PathType,
         ticket_lookup::{default_client, lookup_notarization_ticket},
         AppleCodesignError,

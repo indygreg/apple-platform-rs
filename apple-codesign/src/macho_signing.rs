@@ -10,9 +10,9 @@ use {
     crate::{
         code_directory::{CodeDirectoryBlob, CodeSignatureFlags, ExecutableSegmentFlags},
         code_requirement::{CodeRequirementExpression, CodeRequirements, RequirementType},
+        cryptography::Digest,
         embedded_signature::{
-            BlobData, CodeSigningSlot, Digest, EntitlementsBlob, EntitlementsDerBlob,
-            RequirementSetBlob,
+            BlobData, CodeSigningSlot, EntitlementsBlob, EntitlementsDerBlob, RequirementSetBlob,
         },
         embedded_signature_builder::EmbeddedSignatureBuilder,
         entitlements::plist_to_executable_segment_flags,

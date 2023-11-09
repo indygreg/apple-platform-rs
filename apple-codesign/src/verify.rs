@@ -24,7 +24,8 @@
 use {
     crate::{
         code_directory::CodeDirectoryBlob,
-        embedded_signature::{CodeSigningSlot, DigestType, EmbeddedSignature},
+        cryptography::DigestType,
+        embedded_signature::{CodeSigningSlot, EmbeddedSignature},
         error::AppleCodesignError,
         macho::{MachFile, MachOBinary},
     },
