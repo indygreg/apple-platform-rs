@@ -79,9 +79,12 @@ impl<R: Read + Seek + Sized + Debug> PkgReader<R> {
     /// If a component is found under a given path, `Some` is returned. Otherwise
     /// `None` is returned.
     ///
+    /// Pass in `""` to resolve the root component.
+    ///
     /// A *found* component is defined by the presence of 1 or more well-known files
     /// in components (`Bom`, `PackageInfo`, `Payload`, etc).
-    fn resolve_component(
+    ///
+    pub fn resolve_component(
         &mut self,
         path_prefix: &str,
     ) -> PkgResult<Option<ComponentPackageReader>> {
@@ -143,19 +146,24 @@ impl<R: Read + Seek + Sized + Debug> PkgReader<R> {
 
     /// Obtain the *root* component in this installer.
     ///
-    /// This will only return a component of this is a single component installer, not
-    /// a product installer.
+    /// The *root component* is defined as a a collection of `Bom`, `PackageInfo`,
+    /// `Payload`, and `Scripts` files at the root directory of the XAR archive
+    /// this instance was constructed from.
+    ///
+    /// This will likely resolve to `None` for *product packages` and `Some`
+    /// for *component packages*.
     pub fn root_component(&mut self) -> PkgResult<Option<ComponentPackageReader>> {
         self.resolve_component("")
     }
 
     /// Obtain *component package* instances in this flat package.
     ///
-    /// *Component packages* are the individual installable packages contained
-    /// in a flat package archive.
+    /// This looks for `.pkg` directories in the root directory of the XAR archive
+    /// and resolves a [ComponentPackageReader] for each. If there are no `.pkg`
+    /// directories, this will return an empty vec.
     ///
-    /// If this is a single component installer, only a single instance will be
-    /// returned. For product installers, all components are returned.
+    /// Generally, this function will return something for *product packages*
+    /// whereas [root_component()] will return something for *component packages*.
     pub fn component_packages(&mut self) -> PkgResult<Vec<ComponentPackageReader>> {
         // TODO obtain instances from Distribution XML instead of scanning filenames.
         let components = self

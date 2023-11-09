@@ -10,6 +10,8 @@ Released on ReleaseDate.
   `PartialEq`.
 * The `PackageInfo` struct changed its storage of the `scripts` field
   so it can now properly decode `<scripts>` in XML files. (#9)
+* `PkgReader::resolve_component()` is now public.
+* The documentation for `PkgReader` has been clarified. (#14)
 
 ## 0.15.0
 

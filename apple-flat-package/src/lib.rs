@@ -18,7 +18,7 @@
 //! installers can contain multiple *components* as well as additional
 //! metadata describing the installer. End-user `.pkg` files are typically
 //! *product* packages. Using Apple tooling, *component* packages are built
-//! `pkgbuild` and *product* packages using `productbuild`.
+//! using `pkgbuild` and *product* packages using `productbuild`.
 //!
 //! ## Components
 //!
