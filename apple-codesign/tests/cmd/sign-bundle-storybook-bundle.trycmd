@@ -1,0 +1,45 @@
+When signing a shallow bundle with storybook "bundles," the storybook
+bundles should not be signed.
+
+```
+$ rcodesign debug-create-macho MyApp.app/MyApp
+assuming default minimum version 11.0.0
+writing Mach-O to MyApp.app/MyApp
+
+$ rcodesign debug-create-info-plist --bundle-name MyApp MyApp.app/Info.plist
+writing MyApp.app/Info.plist
+
+$ mkdir -p MyApp.app/Base.lproj/Main.storyboardc
+$ touch MyApp.app/Base.lproj/Main.storyboardc/test.nib
+
+$ rcodesign debug-create-info-plist --empty --bundle-name ignored MyApp.app/Base.lproj/Main.storyboardc/Info.plist
+writing MyApp.app/Base.lproj/Main.storyboardc/Info.plist
+
+$ cat MyApp.app/Base.lproj/Main.storyboardc/Info.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict/>
+</plist>
+$ touch MyApp.app/PkgInfo
+$ touch MyApp.app/embedded.mobileprovision
+
+$ rcodesign sign MyApp.app MyApp.app.signed
+? 1
+signing MyApp.app to MyApp.app.signed
+signing bundle at MyApp.app
+signing 1 nested bundles in the following order:
+Base.lproj/Main.storyboardc
+entering nested bundle Base.lproj/Main.storyboardc
+signing bundle at MyApp.app/Base.lproj/Main.storyboardc into MyApp.app.signed/Base.lproj/Main.storyboardc
+Error: bundle Info.plist does not define CFBundleIdentifier: MyApp.app/Base.lproj/Main.storyboardc/Info.plist
+
+$ rcodesign debug-file-tree MyApp.app.signed
+? 1
+Error: walkdir error: IO error for operation on MyApp.app.signed: No such file or directory (os error 2)
+
+$ rcodesign print-signature-info MyApp.app.signed
+? 1
+Error: specified path is not of a recognized type
+
+```
