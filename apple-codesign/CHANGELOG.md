@@ -41,6 +41,9 @@ Released on ReleaseDate.
   to the initially seen value. This matches the behavior of Apple's tooling
   and fixes a bug where drift between the values could cause bundle validation
   to fail. (#103)
+* Fixed a bug where bundle signing would fail to overwrite preexisting state
+  in Mach-O binaries, leading to failed signature verification. This likely
+  only occurred when attempting to re-sign already signed binaries. (#104)
 * cryptographic-message-syntax 0.25 -> 0.26.
 * x509-certificate 0.22 -> 0.23.
 

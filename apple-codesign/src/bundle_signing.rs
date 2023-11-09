@@ -600,11 +600,14 @@ impl SingleBundleSigner {
                 info!("unable to determine binary identifier from bundle's Info.plist (CFBundleIdentifier not set?)");
             }
 
-            settings.import_settings_from_macho(&macho_data)?;
-
             settings.set_code_resources_data(SettingsScope::Main, resources_data);
-
             settings.set_info_plist_data(SettingsScope::Main, info_plist_data);
+
+            // Important: manually override all settings before calling this so that
+            // explicitly set settings are always used and we don't get misleading logs.
+            // If we set settings after the fact, we may fail to define settings on a
+            // sub-scope, leading the overwrite to not being used.
+            settings.import_settings_from_macho(&macho_data)?;
 
             let mut new_data = Vec::<u8>::with_capacity(macho_data.len() + 2_usize.pow(17));
             signer.write_signed_binary(&settings, &mut new_data)?;
