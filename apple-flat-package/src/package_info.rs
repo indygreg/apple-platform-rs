@@ -226,3 +226,31 @@ pub struct PostInstall {
     /// ID of bundle element to run after.
     pub component_id: Option<String>,
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn scripts_decode() {
+        const INPUT: &str = r#"
+            <?xml version="1.0" encoding="utf-8"?>
+            <pkg-info overwrite-permissions="true" relocatable="false" identifier="my-app" postinstall-action="none" version="1" format-version="2" generator-version="InstallCmds-807 (21D62)" install-location="/usr/bin/my-app" auth="root">
+                <payload numberOfFiles="123" installKBytes="123"/>
+                <bundle-version/>
+                <upgrade-bundle/>
+                <update-bundle/>
+                <atomic-update-bundle/>
+                <strict-identifier/>
+                <relocate/>
+                <scripts>
+                    <preinstall file="./preinstall"/>
+                    <postinstall file="./postinstall"/>
+                </scripts>
+            </pkg-info>
+        "#;
+
+        // TODO this is a bug.
+        assert!(PackageInfo::from_xml(INPUT.trim()).is_err());
+    }
+}
