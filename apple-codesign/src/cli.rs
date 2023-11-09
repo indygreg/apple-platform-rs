@@ -1266,7 +1266,7 @@ impl DebugFileTree {
                 let data = std::fs::read(path)?;
                 hex::encode(DigestType::Sha256.digest_data(&data)?)[0..20].to_string()
             } else {
-                std::iter::repeat(' ').take(20).collect::<String>()
+                " ".repeat(20)
             };
 
             let link_target = if entry_type == 'l' {
@@ -2186,7 +2186,7 @@ impl GenerateSelfSignedCertificate {
             }
 
             println!("writing unified PEM to {}", path.display());
-            std::fs::write(&path, content.as_bytes())?;
+            std::fs::write(path, content.as_bytes())?;
 
             wrote_file = true;
         }
@@ -2210,7 +2210,7 @@ impl GenerateSelfSignedCertificate {
             if let Some(parent) = path.parent() {
                 std::fs::create_dir_all(parent)?;
             }
-            std::fs::write(path, &pfx.to_der())?;
+            std::fs::write(path, pfx.to_der())?;
 
             wrote_file = true;
         }

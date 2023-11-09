@@ -1100,11 +1100,11 @@ impl CodeResourcesBuilder {
     ///
     /// As a side-effect, files are copied/installed into the destination
     /// directory as part of sealing.
-    pub fn walk_and_seal_directory<'ctx, 'key>(
+    pub fn walk_and_seal_directory(
         &mut self,
         root_bundle_path: &Path,
         bundle_root: &Path,
-        context: &BundleSigningContext<'ctx, 'key>,
+        context: &BundleSigningContext,
     ) -> Result<(), AppleCodesignError> {
         let mut skipping_rel_dirs = BTreeSet::new();
 
@@ -1311,13 +1311,13 @@ impl CodeResourcesBuilder {
     }
 
     /// Seal a Mach-O binary matching a nested rule.
-    fn seal_rules2_nested_macho<'ctx, 'key>(
+    fn seal_rules2_nested_macho(
         &mut self,
         full_path: &Path,
         rel_path: &Path,
         rel_path_normalized: &str,
         root_rel_path: &str,
-        context: &BundleSigningContext<'ctx, 'key>,
+        context: &BundleSigningContext,
         optional: bool,
     ) -> Result<(), AppleCodesignError> {
         let macho_info = if context
@@ -1332,7 +1332,7 @@ impl CodeResourcesBuilder {
             warn!("(if you see an error, sign that Mach-O explicitly or remove it from the exclusion settings)");
 
             let dest_path = context.install_file(full_path, rel_path)?;
-            let data = std::fs::read(&dest_path)?;
+            let data = std::fs::read(dest_path)?;
 
             SignedMachOInfo::parse_data(&data)?
         } else {
@@ -1344,7 +1344,7 @@ impl CodeResourcesBuilder {
     }
 
     /// Seal a file for version 2 rules.
-    fn seal_rules2_file<'ctx, 'key>(
+    fn seal_rules2_file(
         &mut self,
         full_path: &Path,
         rel_path: &Path,
@@ -1352,7 +1352,7 @@ impl CodeResourcesBuilder {
         root_rel_path: &str,
         omit: bool,
         optional: bool,
-        context: &BundleSigningContext<'ctx, 'key>,
+        context: &BundleSigningContext,
     ) -> Result<(), AppleCodesignError> {
         let mut need_install = true;
 
@@ -1382,7 +1382,7 @@ impl CodeResourcesBuilder {
                 full_path.to_path_buf()
             };
 
-            let digests = MultiDigest::from_path(&read_path)?;
+            let digests = MultiDigest::from_path(read_path)?;
 
             let flavor = if self.digests.contains(&DigestType::Sha1) {
                 FilesFlavor::Rules2WithSha1
@@ -1401,13 +1401,13 @@ impl CodeResourcesBuilder {
         Ok(())
     }
 
-    fn seal_rules2_symlink<'ctx, 'key>(
+    fn seal_rules2_symlink(
         &mut self,
         full_path: &Path,
         rel_path: &Path,
         rel_path_normalized: &str,
         omit: bool,
-        context: &BundleSigningContext<'ctx, 'key>,
+        context: &BundleSigningContext,
     ) -> Result<(), AppleCodesignError> {
         let link_target = std::fs::read_link(full_path)?
             .to_string_lossy()
