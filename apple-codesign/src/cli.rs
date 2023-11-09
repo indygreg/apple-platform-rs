@@ -1085,31 +1085,37 @@ struct DebugCreateInfoPlist {
 
     /// Path to write Info.plist to.
     output_path: PathBuf,
+
+    /// Write an empty Info.plist file. Other arguments ignored.
+    #[arg(long)]
+    empty: bool,
 }
 
 impl DebugCreateInfoPlist {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let mut d = plist::Dictionary::default();
 
-        d.insert("CFBundleName".into(), self.bundle_name.clone().into());
-        d.insert(
-            "CFBundlePackageType".into(),
-            self.package_type.clone().into(),
-        );
-        d.insert(
-            "CFBundleDisplayName".into(),
-            self.bundle_name.clone().into(),
-        );
-        if let Some(exe) = &self.bundle_executable {
-            d.insert("CFBundleExecutable".into(), exe.clone().into());
+        if !self.empty {
+            d.insert("CFBundleName".into(), self.bundle_name.clone().into());
+            d.insert(
+                "CFBundlePackageType".into(),
+                self.package_type.clone().into(),
+            );
+            d.insert(
+                "CFBundleDisplayName".into(),
+                self.bundle_name.clone().into(),
+            );
+            if let Some(exe) = &self.bundle_executable {
+                d.insert("CFBundleExecutable".into(), exe.clone().into());
+            }
+            d.insert(
+                "CFBundleIdentifier".into(),
+                self.bundle_identifier.clone().into(),
+            );
+            d.insert("CFBundleVersion".into(), self.bundle_version.clone().into());
+            d.insert("CFBundleSignature".into(), "sig".into());
+            d.insert("CFBundleExecutable".into(), self.bundle_name.clone().into());
         }
-        d.insert(
-            "CFBundleIdentifier".into(),
-            self.bundle_identifier.clone().into(),
-        );
-        d.insert("CFBundleVersion".into(), self.bundle_version.clone().into());
-        d.insert("CFBundleSignature".into(), "sig".into());
-        d.insert("CFBundleExecutable".into(), self.bundle_name.clone().into());
 
         let value = plist::Value::from(d);
 
