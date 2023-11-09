@@ -48,6 +48,9 @@ Released on ReleaseDate.
   in memory to compute their content digests. This can drastically cut down
   on memory usage when signing large resources files. Mach-O binaries are
   still fully buffered in memory. (#45)
+* Removed `verify` warning about insecure code digests. The warning was spurious
+  and didn't take into account the nuanced logic for emitting SHA-1 digests.
+  (#50)
 * cryptographic-message-syntax 0.25 -> 0.26.
 * x509-certificate 0.22 -> 0.23.
 

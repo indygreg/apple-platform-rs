@@ -58,7 +58,6 @@ pub enum VerificationProblemType {
     CmsOldDigestAlgorithm(DigestAlgorithm),
     CmsOldSignatureAlgorithm(SignatureAlgorithm),
     NoCodeDirectory,
-    CodeDirectoryOldDigestAlgorithm(DigestType),
     CodeDigestError(AppleCodesignError),
     CodeDigestMissingEntry(usize, Vec<u8>),
     CodeDigestExtraEntry(usize, Vec<u8>),
@@ -110,9 +109,6 @@ impl std::fmt::Display for VerificationProblem {
                 format!("insecure signature algorithm used: {alg:?}")
             }
             VerificationProblemType::NoCodeDirectory => "no code directory".to_string(),
-            VerificationProblemType::CodeDirectoryOldDigestAlgorithm(hash_type) => {
-                format!("insecure digest algorithm used in code directory: {hash_type:?}")
-            }
             VerificationProblemType::CodeDigestError(e) => {
                 format!("error computing code digests: {e:?}")
             }
@@ -383,14 +379,6 @@ fn verify_code_directory(
     context: VerificationContext,
 ) -> Vec<VerificationProblem> {
     let mut problems = vec![];
-
-    match cd.digest_type {
-        DigestType::Sha256 | DigestType::Sha384 => {}
-        hash_type => problems.push(VerificationProblem {
-            context: context.clone(),
-            problem: VerificationProblemType::CodeDirectoryOldDigestAlgorithm(hash_type),
-        }),
-    }
 
     match macho.code_digests(cd.digest_type, cd.page_size as _) {
         Ok(digests) => {
