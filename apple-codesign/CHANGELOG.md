@@ -14,12 +14,12 @@ Released on ReleaseDate.
   a Mach-O contained both SHA-1 and SHA-256 code directories, only the
   SHA-256 hash would be emitted. The new behavior matches Apple's tooling.
   (#95)
-* The `general-self-signed-certificate` command has gained the `--p12-file`
+* The `generate-self-signed-certificate` command has gained the `--p12-file`
   and `--p12-password` arguments to write a self-signed certificate to a
   PKCS#12 / p12 / PFX file.
 * The `generate-self-signed-certificate` command now supports generating
   RSA certificates. RSA certificates are now the default, to match what
-  Apple tooling generates by default.
+  Apple uses by default.
 * Reworked how code requirements expressions are automatically derived.
   This should result in self-signed certificates having correct requirements
   expressions that no longer imply they were signed by Apple's CAs. In
