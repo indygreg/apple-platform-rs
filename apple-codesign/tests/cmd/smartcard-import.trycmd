@@ -15,7 +15,7 @@ Options:
           Smartcard slot number of signing certificate to use (9c is common)
       --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
-      --keychain-domain <KEYCHAIN_DOMAIN>
+      --keychain-domain <DOMAIN>
           (macOS only) Keychain domain to operate on [possible values: user, system, common, dynamic]
       --keychain-fingerprint <SHA256 FINGERPRINT>
           (macOS only) SHA-256 fingerprint of certificate in Keychain to use

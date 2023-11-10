@@ -18,7 +18,7 @@ Options:
       --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
 
-      --keychain-domain <KEYCHAIN_DOMAIN>
+      --keychain-domain <DOMAIN>
           (macOS only) Keychain domain to operate on
           
           [possible values: user, system, common, dynamic]
@@ -69,9 +69,9 @@ Options:
 ```
 $ rcodesign analyze-certificate --keychain-domain user --keychain-fingerprint fingerprint
 ? 2
-error: the argument '--keychain-domain <KEYCHAIN_DOMAIN>' cannot be used with '--keychain-fingerprint <SHA256 FINGERPRINT>'
+error: the argument '--keychain-domain <DOMAIN>' cannot be used with '--keychain-fingerprint <SHA256 FINGERPRINT>'
 
-Usage: rcodesign[EXE] analyze-certificate --keychain-domain <KEYCHAIN_DOMAIN>
+Usage: rcodesign[EXE] analyze-certificate --keychain-domain <DOMAIN>
 
 For more information, try '--help'.
 

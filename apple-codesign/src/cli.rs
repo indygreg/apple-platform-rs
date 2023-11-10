@@ -341,43 +341,111 @@ fn get_pkcs12_password(
 }
 
 #[derive(Args, Clone)]
-struct CertificateSource {
+struct SmartcardSigningKey {
     /// Smartcard slot number of signing certificate to use (9c is common)
-    #[arg(long, value_name = "SLOT")]
-    smartcard_slot: Option<String>,
+    #[arg(long = "smartcard-slot", value_name = "SLOT")]
+    slot: Option<String>,
 
     /// Environment variable holding the smartcard PIN
-    #[arg(long, value_name = "STRING")]
-    smartcard_pin_env: Option<String>,
+    #[arg(long = "smartcard-pin-env", value_name = "STRING")]
+    pin_env: Option<String>,
+}
 
+#[derive(Args, Clone)]
+struct MacosKeychainSigningKey {
     /// (macOS only) Keychain domain to operate on
-    #[arg(long, group = "keychain", value_parser = KEYCHAIN_DOMAINS)]
-    keychain_domain: Vec<String>,
+    #[arg(long = "keychain-domain", group = "keychain", value_parser = KEYCHAIN_DOMAINS)]
+    domain: Vec<String>,
 
     /// (macOS only) SHA-256 fingerprint of certificate in Keychain to use
-    #[arg(long, group = "keychain", value_name = "SHA256 FINGERPRINT")]
-    keychain_fingerprint: Option<String>,
+    #[arg(
+        long = "keychain-fingerprint",
+        group = "keychain",
+        value_name = "SHA256 FINGERPRINT"
+    )]
+    fingerprint: Option<String>,
+}
 
-    /// Path to file containing PEM encoded certificate/key data
-    #[arg(long = "pem-file", alias = "pem-source", value_name = "PATH")]
-    pem_path: Vec<PathBuf>,
+impl MacosKeychainSigningKey {
+    #[cfg(target_os = "macos")]
+    fn find_certificates_in_keychain(
+        &self,
+        private_keys: &mut Vec<Box<dyn PrivateKey>>,
+        public_certificates: &mut Vec<CapturedX509Certificate>,
+    ) -> Result<(), AppleCodesignError> {
+        // No arguments pertinent to keychains. Don't even speak to the
+        // keychain API since this could only error.
+        if self.domain.is_empty() && self.fingerprint.is_none() {
+            return Ok(());
+        }
 
-    /// Path to file containing DER encoded certificate data
-    #[arg(long = "der-file", alias = "der-source", value_name = "PATH")]
-    certificate_der_path: Vec<PathBuf>,
+        // Collect all the keychain domains to search.
+        let domains = if self.domain.is_empty() {
+            vec!["user".to_string()]
+        } else {
+            self.domain.clone()
+        };
 
+        let domains = domains
+            .into_iter()
+            .map(|domain| {
+                KeychainDomain::try_from(domain.as_str())
+                    .expect("clap should have validated domain values")
+            })
+            .collect::<Vec<_>>();
+
+        // Now iterate all the keychains and try to find requested certificates.
+
+        for domain in domains {
+            for cert in keychain_find_code_signing_certificates(domain, None)? {
+                let matches = if let Some(wanted_fingerprint) = &self.fingerprint {
+                    let got_fingerprint = hex::encode(cert.sha256_fingerprint()?.as_ref());
+
+                    wanted_fingerprint.to_ascii_lowercase() == got_fingerprint.to_ascii_lowercase()
+                } else {
+                    false
+                };
+
+                if matches {
+                    public_certificates.push(cert.as_captured_x509_certificate());
+                    private_keys.push(Box::new(cert));
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    fn find_certificates_in_keychain(
+        &self,
+        _private_keys: &mut [Box<dyn PrivateKey>],
+        _public_certificates: &mut [CapturedX509Certificate],
+    ) -> Result<(), AppleCodesignError> {
+        if !self.domain.is_empty() || self.fingerprint.is_some() {
+            error!(
+                "--keychain* arguments only supported on macOS and will be ignored on this platform"
+            );
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Args, Clone)]
+struct P12SigningKey {
     /// Path to a .p12/PFX file containing a certificate key pair
     #[arg(long = "p12-file", alias = "pfx-file", value_name = "PATH")]
-    p12_path: Option<PathBuf>,
+    path: Option<PathBuf>,
 
     /// The password to use to open the --p12-file file
     #[arg(
-        long,
+        long = "p12-password",
         alias = "pfx-password",
         group = "p12-password",
         value_name = "SECRET"
     )]
-    p12_password: Option<String>,
+    password: Option<String>,
 
     // TODO conflicts with p12_password
     /// Path to file containing password for opening --p12-file file
@@ -387,19 +455,29 @@ struct CertificateSource {
         group = "p12-password",
         value_name = "PATH"
     )]
-    p12_password_path: Option<PathBuf>,
+    password_path: Option<PathBuf>,
+}
 
+#[derive(Args, Clone)]
+struct PemSigningKey {
+    /// Path to file containing PEM encoded certificate/key data
+    #[arg(long = "pem-file", alias = "pem-source", value_name = "PATH")]
+    paths: Vec<PathBuf>,
+}
+
+#[derive(Args, Clone)]
+struct RemoteSigningKey {
     /// Send signing requests to a remote signer
-    #[arg(long)]
-    remote_signer: bool,
+    #[arg(long = "remote-signer")]
+    enabled: bool,
 
     /// Base64 encoded public key data describing the signer
     #[arg(
-        long,
+        long = "remote-public-key",
         group = "remote-initialization",
         value_name = "BASE64 ENCODED PUBLIC KEY"
     )]
-    remote_public_key: Option<String>,
+    public_key: Option<String>,
 
     /// PEM encoded public key data describing the signer
     #[arg(
@@ -408,19 +486,109 @@ struct CertificateSource {
         group = "remote-initialization",
         value_name = "PATH"
     )]
-    remote_public_key_pem_path: Option<PathBuf>,
+    public_key_pem_path: Option<PathBuf>,
 
     /// Shared secret used for remote signing
-    #[arg(long, group = "remote-initialization", value_name = "SECRET")]
-    remote_shared_secret: Option<String>,
+    #[arg(
+        long = "remote-shared-secret",
+        group = "remote-initialization",
+        value_name = "SECRET"
+    )]
+    shared_secret: Option<String>,
 
     /// Environment variable holding the shared secret used for remote signing
-    #[arg(long, group = "remote-initialization", value_name = "ENV VAR NAME")]
-    remote_shared_secret_env: Option<String>,
+    #[arg(
+        long = "remote-shared-secret-env",
+        group = "remote-initialization",
+        value_name = "ENV VAR NAME"
+    )]
+    shared_secret_env: Option<String>,
 
     /// URL of a remote code signing server
-    #[arg(long, default_value = crate::remote_signing::DEFAULT_SERVER_URL, value_name = "URL")]
-    remote_signing_url: String,
+    #[arg(long = "remote-signing-url", default_value = crate::remote_signing::DEFAULT_SERVER_URL, value_name = "URL")]
+    url: String,
+}
+
+impl RemoteSigningKey {
+    fn remote_signing_initiator(&self) -> Result<Box<dyn SessionInitiatePeer>, RemoteSignError> {
+        let server_url = self.url.clone();
+
+        if let Some(public_key_data) = &self.public_key {
+            let public_key_data = STANDARD_ENGINE.decode(public_key_data)?;
+
+            Ok(Box::new(PublicKeyInitiator::new(
+                public_key_data,
+                Some(server_url),
+            )?))
+        } else if let Some(path) = &self.public_key_pem_path {
+            let pem_data = std::fs::read(path)?;
+            let doc = pem::parse(pem_data)?;
+
+            let spki_der = match doc.tag() {
+                "PUBLIC KEY" => doc.contents().to_vec(),
+                "CERTIFICATE" => {
+                    let cert = CapturedX509Certificate::from_der(doc.contents())?;
+                    cert.to_public_key_der()?.as_ref().to_vec()
+                }
+                tag => {
+                    error!(
+                        "unknown PEM format: {}; only `PUBLIC KEY` and `CERTIFICATE` are parsed",
+                        tag
+                    );
+                    return Err(RemoteSignError::Crypto("invalid public key data".into()));
+                }
+            };
+
+            Ok(Box::new(PublicKeyInitiator::new(
+                spki_der,
+                Some(server_url),
+            )?))
+        } else if let Some(env) = &self.shared_secret_env {
+            let secret = std::env::var(env).map_err(|_| {
+                RemoteSignError::ClientState(
+                    "failed reading from shared secret environment variable",
+                )
+            })?;
+
+            Ok(Box::new(SharedSecretInitiator::new(
+                secret.as_bytes().to_vec(),
+            )?))
+        } else if let Some(value) = &self.shared_secret {
+            Ok(Box::new(SharedSecretInitiator::new(
+                value.as_bytes().to_vec(),
+            )?))
+        } else {
+            error!("no arguments provided to establish session with remote signer");
+            error!(
+            "specify --remote-public-key, --remote-shared-secret-env, or --remote-shared-secret"
+        );
+            Err(RemoteSignError::ClientState(
+                "unable to initiate remote signing",
+            ))
+        }
+    }
+}
+
+#[derive(Args, Clone)]
+struct CertificateSource {
+    #[command(flatten)]
+    smartcard_key: SmartcardSigningKey,
+
+    #[command(flatten)]
+    macos_keychain_key: MacosKeychainSigningKey,
+
+    #[command(flatten)]
+    pem_path_key: PemSigningKey,
+
+    /// Path to file containing DER encoded certificate data
+    #[arg(long = "der-file", alias = "der-source", value_name = "PATH")]
+    certificate_der_path: Vec<PathBuf>,
+
+    #[command(flatten)]
+    p12_key: P12SigningKey,
+
+    #[command(flatten)]
+    remote_signing_key: RemoteSigningKey,
 }
 
 impl CertificateSource {
@@ -431,11 +599,13 @@ impl CertificateSource {
         let mut keys: Vec<Box<dyn PrivateKey>> = vec![];
         let mut certs = vec![];
 
-        if let Some(p12_path) = &self.p12_path {
-            let p12_data = std::fs::read(p12_path)?;
+        if let Some(path) = &self.p12_key.path {
+            let p12_data = std::fs::read(path)?;
 
-            let p12_password =
-                get_pkcs12_password(self.p12_password.clone(), self.p12_password_path.clone())?;
+            let p12_password = get_pkcs12_password(
+                self.p12_key.password.clone(),
+                self.p12_key.password_path.clone(),
+            )?;
 
             let (cert, key) = parse_pfx_data(&p12_data, &p12_password)?;
 
@@ -443,7 +613,7 @@ impl CertificateSource {
             certs.push(cert);
         }
 
-        for pem_source in &self.pem_path {
+        for pem_source in &self.pem_path_key.paths {
             warn!("reading PEM data from {}", pem_source.display());
             let pem_data = std::fs::read(pem_source)?;
 
@@ -474,30 +644,25 @@ impl CertificateSource {
             certs.push(CapturedX509Certificate::from_der(der_data)?);
         }
 
-        self.find_certificates_in_keychain(&mut keys, &mut certs)?;
+        self.macos_keychain_key
+            .find_certificates_in_keychain(&mut keys, &mut certs)?;
 
         if scan_smartcard {
-            if let Some(slot) = &self.smartcard_slot {
+            if let Some(slot) = &self.smartcard_key.slot {
                 handle_smartcard_sign_slot(
                     slot,
-                    self.smartcard_pin_env.as_deref(),
+                    self.smartcard_key.pin_env.as_deref(),
                     &mut keys,
                     &mut certs,
                 )?;
             }
         }
 
-        let remote_signing_url = if self.remote_signer {
-            Some(self.remote_signing_url.clone())
-        } else {
-            None
-        };
-
-        if let Some(remote_signing_url) = remote_signing_url {
-            let initiator = self.get_remote_signing_initiator()?;
+        if self.remote_signing_key.enabled {
+            let initiator = self.remote_signing_key.remote_signing_initiator()?;
 
             let client = UnjoinedSigningClient::new_initiator(
-                remote_signing_url,
+                self.remote_signing_key.url.clone(),
                 initiator,
                 Some(print_session_join),
             )?;
@@ -519,130 +684,6 @@ impl CertificateSource {
         }
 
         Ok((keys, certs))
-    }
-
-    #[cfg(target_os = "macos")]
-    fn find_certificates_in_keychain(
-        &self,
-        private_keys: &mut Vec<Box<dyn PrivateKey>>,
-        public_certificates: &mut Vec<CapturedX509Certificate>,
-    ) -> Result<(), AppleCodesignError> {
-        // No arguments pertinent to keychains. Don't even speak to the
-        // keychain API since this could only error.
-        if self.keychain_domain.is_empty() && self.keychain_fingerprint.is_none() {
-            return Ok(());
-        }
-
-        // Collect all the keychain domains to search.
-        let domains = if self.keychain_domain.is_empty() {
-            vec!["user".to_string()]
-        } else {
-            self.keychain_domain.clone()
-        };
-
-        let domains = domains
-            .into_iter()
-            .map(|domain| {
-                KeychainDomain::try_from(domain.as_str())
-                    .expect("clap should have validated domain values")
-            })
-            .collect::<Vec<_>>();
-
-        // Now iterate all the keychains and try to find requested certificates.
-
-        for domain in domains {
-            for cert in keychain_find_code_signing_certificates(domain, None)? {
-                let matches = if let Some(wanted_fingerprint) = &self.keychain_fingerprint {
-                    let got_fingerprint = hex::encode(cert.sha256_fingerprint()?.as_ref());
-
-                    wanted_fingerprint.to_ascii_lowercase() == got_fingerprint.to_ascii_lowercase()
-                } else {
-                    false
-                };
-
-                if matches {
-                    public_certificates.push(cert.as_captured_x509_certificate());
-                    private_keys.push(Box::new(cert));
-                }
-            }
-        }
-
-        Ok(())
-    }
-
-    #[cfg(not(target_os = "macos"))]
-    fn find_certificates_in_keychain(
-        &self,
-        _private_keys: &mut [Box<dyn PrivateKey>],
-        _public_certificates: &mut [CapturedX509Certificate],
-    ) -> Result<(), AppleCodesignError> {
-        if !self.keychain_domain.is_empty() || self.keychain_fingerprint.is_some() {
-            error!(
-                "--keychain* arguments only supported on macOS and will be ignored on this platform"
-            );
-        }
-
-        Ok(())
-    }
-
-    fn get_remote_signing_initiator(
-        &self,
-    ) -> Result<Box<dyn SessionInitiatePeer>, RemoteSignError> {
-        let server_url = self.remote_signing_url.clone();
-
-        if let Some(public_key_data) = &self.remote_public_key {
-            let public_key_data = STANDARD_ENGINE.decode(public_key_data)?;
-
-            Ok(Box::new(PublicKeyInitiator::new(
-                public_key_data,
-                Some(server_url),
-            )?))
-        } else if let Some(path) = &self.remote_public_key_pem_path {
-            let pem_data = std::fs::read(path)?;
-            let doc = pem::parse(pem_data)?;
-
-            let spki_der = match doc.tag() {
-                "PUBLIC KEY" => doc.contents().to_vec(),
-                "CERTIFICATE" => {
-                    let cert = CapturedX509Certificate::from_der(doc.contents())?;
-                    cert.to_public_key_der()?.as_ref().to_vec()
-                }
-                tag => {
-                    error!(
-                        "unknown PEM format: {}; only `PUBLIC KEY` and `CERTIFICATE` are parsed",
-                        tag
-                    );
-                    return Err(RemoteSignError::Crypto("invalid public key data".into()));
-                }
-            };
-
-            Ok(Box::new(PublicKeyInitiator::new(
-                spki_der,
-                Some(server_url),
-            )?))
-        } else if let Some(env) = &self.remote_shared_secret_env {
-            let secret = std::env::var(env).map_err(|_| {
-                RemoteSignError::ClientState(
-                    "failed reading from shared secret environment variable",
-                )
-            })?;
-
-            Ok(Box::new(SharedSecretInitiator::new(
-                secret.as_bytes().to_vec(),
-            )?))
-        } else if let Some(value) = &self.remote_shared_secret {
-            Ok(Box::new(SharedSecretInitiator::new(
-                value.as_bytes().to_vec(),
-            )?))
-        } else {
-            error!("no arguments provided to establish session with remote signer");
-            error!(
-            "specify --remote-public-key, --remote-shared-secret-env, or --remote-shared-secret"
-        );
-            Err(RemoteSignError::ClientState(
-                "unable to initiate remote signing",
-            ))
-        }
     }
 }
 
@@ -2632,10 +2673,10 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
 
     let mut joiner = create_session_joiner(session_join_string)?;
 
-    if let Some(env) = &args.certificate.remote_shared_secret_env {
+    if let Some(env) = &args.certificate.remote_signing_key.shared_secret_env {
         let secret = std::env::var(env).map_err(|_| AppleCodesignError::CliBadArgument)?;
         joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
-    } else if let Some(secret) = &args.certificate.remote_shared_secret {
+    } else if let Some(secret) = &args.certificate.remote_signing_key.shared_secret {
         joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
     }
 
@@ -2664,7 +2705,7 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
         private.as_key_info_signer(),
         cert,
         certificates,
-        args.certificate.remote_signing_url.clone(),
+        args.certificate.remote_signing_key.url.clone(),
     )?;
     client.run()?;
 
@@ -3045,10 +3086,14 @@ fn command_smartcard_import(args: &SmartcardImport) -> Result<(), AppleCodesignE
     let (keys, certs) = args.certificate.resolve_certificates(false)?;
 
     let slot_id = ::yubikey::piv::SlotId::from_str(
-        args.certificate.smartcard_slot.as_ref().ok_or_else(|| {
-            error!("--smartcard-slot is required");
-            AppleCodesignError::CliBadArgument
-        })?,
+        args.certificate
+            .smartcard_key
+            .slot
+            .as_ref()
+            .ok_or_else(|| {
+                error!("--smartcard-slot is required");
+                AppleCodesignError::CliBadArgument
+            })?,
     )?;
     let touch_policy = str_to_touch_policy(args.policy.touch_policy.as_str())?;
     let pin_policy = str_to_pin_policy(args.policy.pin_policy.as_str())?;

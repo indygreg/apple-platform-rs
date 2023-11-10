@@ -290,7 +290,7 @@ Options:
       --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
 
-      --keychain-domain <KEYCHAIN_DOMAIN>
+      --keychain-domain <DOMAIN>
           (macOS only) Keychain domain to operate on
           
           [possible values: user, system, common, dynamic]
