@@ -16,6 +16,8 @@ Options:
           Path to file containing session join string
       --smartcard-slot <SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
+      --smartcard-pin <SECRET>
+          Smartcard PIN used to unlock certificate
       --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
       --keychain-domain <DOMAIN>

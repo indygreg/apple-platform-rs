@@ -361,6 +361,10 @@ struct SmartcardSigningKey {
     #[arg(long = "smartcard-slot", value_name = "SLOT")]
     slot: Option<String>,
 
+    /// Smartcard PIN used to unlock certificate.
+    #[arg(long = "smartcard-pin", value_name = "SECRET")]
+    pin: Option<String>,
+
     /// Environment variable holding the smartcard PIN
     #[arg(long = "smartcard-pin-env", value_name = "STRING")]
     pin_env: Option<String>,
@@ -374,7 +378,10 @@ impl SmartcardSigningKey {
             let formatted = hex::encode([u8::from(slot_id)]);
             let mut yk = YubiKey::new()?;
 
-            if let Some(pin_var) = &self.pin_env {
+            if let Some(pin) = &self.pin {
+                let pin = pin.clone();
+                yk.set_pin_callback(move || Ok(pin.as_bytes().to_vec()));
+            } else if let Some(pin_var) = &self.pin_env {
                 let pin_var = pin_var.to_owned();
 
                 yk.set_pin_callback(move || {
