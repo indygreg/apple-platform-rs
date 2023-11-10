@@ -58,7 +58,7 @@ Options:
           
           [default: wss://ws.codesign.gregoryszorc.com/]
 
-      --der-file <PATH>
+      --certificate-der-file <PATH>
           Path to file containing DER encoded certificate data
 
   -h, --help

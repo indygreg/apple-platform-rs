@@ -155,7 +155,7 @@ CSR file to Apple and obtain a *public certificate*.
 Finally, import the Apple-issued public certificate into the smart card::
 
     rcodesign smartcard-import \
-        --der-file developerID_application.cer \
+        --certificate-der-file developerID_application.cer \
         --existing-key \
         --smartcard-slot 9c
 

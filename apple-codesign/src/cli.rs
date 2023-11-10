@@ -221,7 +221,7 @@ ways:
   when prompted.
 * The --pem-file argument defines paths to files containing PEM encoded
   certificate/key data. (e.g. files with \"===== BEGIN CERTIFICATE =====\").
-* The --der-file argument defines paths to files containiner DER
+* The --certificate-der-file argument defines paths to files containing DER
   encoded certificate/key data.
 * The --keychain-domain and --keychain-fingerprint arguments can be used to
   load code signing certificates from macOS keychains. These arguments are
@@ -729,7 +729,12 @@ struct CertificateSource {
     keys: SigningKeySource,
 
     /// Path to file containing DER encoded certificate data
-    #[arg(long = "der-file", alias = "der-source", value_name = "PATH")]
+    #[arg(
+        long = "certificate-der-file",
+        alias = "der-source",
+        alias = "der-file",
+        value_name = "PATH"
+    )]
     certificate_der_path: Vec<PathBuf>,
 }
 
