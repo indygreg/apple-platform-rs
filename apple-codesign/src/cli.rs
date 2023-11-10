@@ -369,11 +369,11 @@ struct CertificateSource {
 
     /// Path to file containing PEM encoded certificate/key data
     #[arg(long)]
-    pem_source: Vec<String>,
+    pem_source: Vec<PathBuf>,
 
     /// Path to file containing DER encoded certificate data
     #[arg(long)]
-    der_source: Vec<String>,
+    der_source: Vec<PathBuf>,
 
     /// Path to a .p12/PFX file containing a certificate key pair
     #[arg(long = "p12-file", alias = "pfx-file")]
@@ -386,7 +386,7 @@ struct CertificateSource {
     // TODO conflicts with p12_password
     /// Path to file containing password for opening --p12-file file
     #[arg(long, alias = "pfx-password-file", group = "p12-password")]
-    p12_password_file: Option<String>,
+    p12_password_file: Option<PathBuf>,
 
     /// Send signing requests to a remote signer
     #[arg(long)]
@@ -398,7 +398,7 @@ struct CertificateSource {
 
     /// PEM encoded public key data describing the signer
     #[arg(long, group = "remote-initialization", group = "remote-initialization")]
-    remote_public_key_pem_file: Option<String>,
+    remote_public_key_pem_file: Option<PathBuf>,
 
     /// Shared secret used for remote signing
     #[arg(long, group = "remote-initialization")]
@@ -434,7 +434,7 @@ impl CertificateSource {
         }
 
         for pem_source in &self.pem_source {
-            warn!("reading PEM data from {}", pem_source);
+            warn!("reading PEM data from {}", pem_source.display());
             let pem_data = std::fs::read(pem_source)?;
 
             for pem in pem::parse_many(pem_data).map_err(AppleCodesignError::CertificatePem)? {
@@ -458,7 +458,7 @@ impl CertificateSource {
         }
 
         for der_source in &self.der_source {
-            warn!("reading DER file {}", der_source);
+            warn!("reading DER file {}", der_source.display());
             let der_data = std::fs::read(der_source)?;
 
             certs.push(CapturedX509Certificate::from_der(der_data)?);
@@ -2569,7 +2569,7 @@ struct SessionJoinString {
 
     /// Path to file containing session join string
     #[arg(long = "sjs-path")]
-    session_join_string_path: Option<String>,
+    session_join_string_path: Option<PathBuf>,
 
     /// Session join string (provided by the signing initiator)
     session_join_string: Option<String>,
