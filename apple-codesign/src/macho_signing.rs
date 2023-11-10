@@ -415,7 +415,7 @@ impl<'data> MachOSigner<'data> {
                 // Since everything consults settings for the digest to use, just make a new settings
                 // with a different digest.
                 let mut alt_settings = settings.clone();
-                alt_settings.set_digest_type(*digest_type);
+                alt_settings.set_digest_type(SettingsScope::Main, *digest_type);
 
                 info!(
                     "adding alternative code directory using digest {:?}",
@@ -560,7 +560,7 @@ impl<'data> MachOSigner<'data> {
             runtime
         };
 
-        let digest_type = *settings.digest_type();
+        let digest_type = settings.digest_type(SettingsScope::Main);
 
         let code_hashes = macho
             .code_digests(digest_type, page_size as _)?

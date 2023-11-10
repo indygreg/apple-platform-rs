@@ -2676,7 +2676,7 @@ struct Sign {
     /// from signed binaries implicitly derives appropriate digests to sign
     /// with.
     #[arg(long)]
-    digest: Option<DigestType>,
+    digest: Option<String>,
 
     /// Extra digests to include in signatures
     ///
@@ -2803,7 +2803,9 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
     }
 
     if let Some(value) = &args.digest {
-        settings.set_digest_type(*value);
+        let (scope, digest_type) = parse_scoped_value(value)?;
+        let digest_type = DigestType::try_from(digest_type)?;
+        settings.set_digest_type(scope, digest_type);
     }
 
     for value in &args.extra_digest {

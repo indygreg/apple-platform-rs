@@ -383,7 +383,7 @@ impl DmgSigner {
 
         warn!("using identifier {}", ident);
 
-        let digest_type = *settings.digest_type();
+        let digest_type = settings.digest_type(SettingsScope::Main);
 
         let code_hashes = vec![reader.digest_content_with(digest_type, fh)?];
 

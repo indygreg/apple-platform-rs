@@ -238,8 +238,6 @@ Options:
           Digest algorithm to use
           
           This typically doesn't need to be set as the OS targeting information from signed binaries implicitly derives appropriate digests to sign with.
-          
-          [possible values: none, sha1, sha256, sha256-truncated, sha384, sha512]
 
       --extra-digest <EXTRA_DIGEST>
           Extra digests to include in signatures

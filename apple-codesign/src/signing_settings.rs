@@ -254,12 +254,12 @@ pub struct SigningSettings<'key> {
     certificates: Vec<CapturedX509Certificate>,
     time_stamp_url: Option<Url>,
     signing_time: Option<chrono::DateTime<chrono::Utc>>,
-    digest_type: DigestType,
     path_exclusion_patterns: Vec<Pattern>,
 
     // Scope-specific settings.
     // These are BTreeMap so when we filter the keys, keys with higher precedence come
     // last and last write wins.
+    digest_type: BTreeMap<SettingsScope, DigestType>,
     team_id: BTreeMap<SettingsScope, String>,
     identifiers: BTreeMap<SettingsScope, String>,
     entitlements: BTreeMap<SettingsScope, plist::Value>,
@@ -272,20 +272,6 @@ pub struct SigningSettings<'key> {
 }
 
 impl<'key> SigningSettings<'key> {
-    /// Obtain the digest type to use.
-    pub fn digest_type(&self) -> &DigestType {
-        &self.digest_type
-    }
-
-    /// Set the content digest to use.
-    ///
-    /// The default is SHA-256. Changing this to SHA-1 can weaken security of digital
-    /// signatures and may prevent the binary from running in environments that enforce
-    /// more modern signatures.
-    pub fn set_digest_type(&mut self, digest_type: DigestType) {
-        self.digest_type = digest_type;
-    }
-
     /// Obtain the signing key to use.
     pub fn signing_key(&self) -> Option<(&'key dyn KeyInfoSigner, &CapturedX509Certificate)> {
         self.signing_key.as_ref().map(|(key, cert)| (*key, cert))
@@ -473,6 +459,23 @@ impl<'key> SigningSettings<'key> {
     pub fn add_path_exclusion(&mut self, v: &str) -> Result<(), AppleCodesignError> {
         self.path_exclusion_patterns.push(Pattern::new(v)?);
         Ok(())
+    }
+
+    /// Obtain the primary digest type to use.
+    pub fn digest_type(&self, scope: impl AsRef<SettingsScope>) -> DigestType {
+        self.digest_type
+            .get(scope.as_ref())
+            .copied()
+            .unwrap_or_default()
+    }
+
+    /// Set the content digest to use.
+    ///
+    /// The default is SHA-256. Changing this to SHA-1 can weaken security of digital
+    /// signatures and may prevent the binary from running in environments that enforce
+    /// more modern signatures.
+    pub fn set_digest_type(&mut self, scope: SettingsScope, digest_type: DigestType) {
+        self.digest_type.insert(scope, digest_type);
     }
 
     /// Obtain the binary identifier string for a given scope.
@@ -755,7 +758,7 @@ impl<'key> SigningSettings<'key> {
 
     /// Obtain all configured digests for a scope.
     pub fn all_digests(&self, scope: SettingsScope) -> Vec<DigestType> {
-        let mut res = vec![self.digest_type];
+        let mut res = vec![self.digest_type(scope.clone())];
 
         if let Some(extra) = self.extra_digests(scope) {
             res.extend(extra.iter());
@@ -811,7 +814,7 @@ impl<'key> SigningSettings<'key> {
                 // within a fat binary. So if we need SHA-1 mode, we set the setting on the
                 // main scope and then clear any overrides on fat binary scopes so our
                 // settings are canonical.
-                self.set_digest_type(DigestType::Sha1);
+                self.set_digest_type(scope_main.clone(), DigestType::Sha1);
                 self.add_extra_digest(scope_main.clone(), DigestType::Sha256);
                 self.extra_digests.remove(&scope_arch);
                 self.extra_digests.remove(&scope_index);
@@ -991,8 +994,13 @@ impl<'key> SigningSettings<'key> {
             time_stamp_url: self.time_stamp_url.clone(),
             signing_time: self.signing_time,
             team_id: self.team_id.clone(),
-            digest_type: self.digest_type,
             path_exclusion_patterns: self.path_exclusion_patterns.clone(),
+            digest_type: self
+                .digest_type
+                .clone()
+                .into_iter()
+                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .collect::<BTreeMap<_, _>>(),
             identifiers: self
                 .identifiers
                 .clone()
