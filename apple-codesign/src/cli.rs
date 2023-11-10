@@ -119,7 +119,6 @@ automatically.
 
 The following signing settings are global and apply to all signed entities:
 
-* --digest
 * --pem-source
 * --team-name
 * --timestamp-url
@@ -127,6 +126,7 @@ The following signing settings are global and apply to all signed entities:
 The following signing settings can be scoped so they only apply to certain
 entities:
 
+* --digest
 * --binary-identifier
 * --code-requirements-path
 * --code-resources-path
@@ -186,7 +186,7 @@ settings ignored include (but may not be limited to):
 * --code-resources-path. The code resources data will be computed automatically
   as part of signing the bundle.
 * --info-plist-path. The `Info.plist` from the bundle will be used instead.
-* --digest and --extra-digest
+* --digest
 
 # Designated Code Requirements
 
@@ -306,15 +306,6 @@ To exclude all nested bundles from being signed and only sign the main bundle
 ";
 
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
-
-const SUPPORTED_HASHES: [&str; 6] = [
-    "none",
-    "sha1",
-    "sha256",
-    "sha256-truncated",
-    "sha384",
-    "sha512",
-];
 
 const KEYCHAIN_DOMAINS: [&str; 4] = ["user", "system", "common", "dynamic"];
 
@@ -2670,21 +2661,30 @@ struct Sign {
     #[arg(long, value_parser = CodeSignatureFlags::all_user_configurable())]
     code_signature_flags: Vec<String>,
 
-    /// Digest algorithm to use
+    /// Digest algorithms to use.
     ///
-    /// This typically doesn't need to be set as the OS targeting information
-    /// from signed binaries implicitly derives appropriate digests to sign
-    /// with.
-    #[arg(long)]
-    digest: Option<String>,
-
-    /// Extra digests to include in signatures
+    /// This typically doesn't need to be set since the OS targeting information
+    /// from signed binaries implicitly derives appropriate digests to sign with.
     ///
-    /// This typically doesn't need to be set as the OS targeting information
-    /// from signed binaries implicitly derives appropriate digests to sign
-    /// with.
-    #[arg(long, value_parser = SUPPORTED_HASHES)]
-    extra_digest: Vec<String>,
+    /// However, there are special cases where you may want to force use of
+    /// specific digests.
+    ///
+    /// The first provided value will become the "primary" digest. Subsequent
+    /// values will become alternative digests. The "primary" digest should be
+    /// "older" to ensure compatibility with older clients.
+    ///
+    /// When targeting older Apple OS versions, SHA-1 should be the primary digest
+    /// and SHA-256 should also be present for compatibility with newer OS versions.
+    ///
+    /// When targeting new OS versions, it is sufficient to only provide SHA-256
+    /// digests.
+    ///
+    /// The following values are accepted: none, sha1, sha256, sha384, sha512.
+    ///
+    /// Important: only "sha1" and "sha256" are widely used and use of other
+    /// algorithms may cause problems.
+    #[arg(long = "digest", value_name = "DIGEST")]
+    digests: Vec<String>,
 
     /// Path to a plist file containing entitlements
     #[arg(short = 'e', long)]
@@ -2802,16 +2802,15 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         settings.set_team_id(team_name);
     }
 
-    if let Some(value) = &args.digest {
-        let (scope, digest_type) = parse_scoped_value(value)?;
-        let digest_type = DigestType::try_from(digest_type)?;
-        settings.set_digest_type(scope, digest_type);
-    }
+    for (i, value) in args.digests.iter().enumerate() {
+        let (scope, value) = parse_scoped_value(value)?;
+        let digest_type = DigestType::try_from(value)?;
 
-    for value in &args.extra_digest {
-        let (scope, digest_type) = parse_scoped_value(value)?;
-        let digest_type = DigestType::try_from(digest_type)?;
-        settings.add_extra_digest(scope, digest_type);
+        if i == 0 {
+            settings.set_digest_type(scope, digest_type);
+        } else {
+            settings.add_extra_digest(scope, digest_type);
+        }
     }
 
     for pattern in &args.exclude {

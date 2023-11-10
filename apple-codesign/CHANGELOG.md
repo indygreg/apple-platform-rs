@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* (Breaking change) The `--extra-digest` argument has been removed.
+  `--digest` can now be specified multiple times. `--digest` is now a
+  scoped value.
 * Detection of nested bundles now looks for `CFBundlePackageType` or
   `CFBundleIdentifier` in bundle `Info.plist` and ignores *bundles*
   lacking these. As a result, we no longer attempt signing of storybook
