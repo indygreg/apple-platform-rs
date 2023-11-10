@@ -29,9 +29,6 @@ Options:
       --pem-file <PATH>
           Path to file containing PEM encoded certificate/key data
 
-      --der-file <PATH>
-          Path to file containing DER encoded certificate data
-
       --p12-file <PATH>
           Path to a .p12/PFX file containing a certificate key pair
 
@@ -60,6 +57,9 @@ Options:
           URL of a remote code signing server
           
           [default: wss://ws.codesign.gregoryszorc.com/]
+
+      --der-file <PATH>
+          Path to file containing DER encoded certificate data
 
   -h, --help
           Print help (see a summary with '-h')

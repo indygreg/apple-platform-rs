@@ -706,7 +706,7 @@ impl RemoteSigningKey {
 }
 
 #[derive(Args, Clone)]
-struct CertificateSource {
+struct SigningKeySource {
     #[command(flatten)]
     smartcard_key: SmartcardSigningKey,
 
@@ -716,15 +716,21 @@ struct CertificateSource {
     #[command(flatten)]
     pem_path_key: PemSigningKey,
 
-    /// Path to file containing DER encoded certificate data
-    #[arg(long = "der-file", alias = "der-source", value_name = "PATH")]
-    certificate_der_path: Vec<PathBuf>,
-
     #[command(flatten)]
     p12_key: P12SigningKey,
 
     #[command(flatten)]
     remote_signing_key: RemoteSigningKey,
+}
+
+#[derive(Args, Clone)]
+struct CertificateSource {
+    #[command(flatten)]
+    keys: SigningKeySource,
+
+    /// Path to file containing DER encoded certificate data
+    #[arg(long = "der-file", alias = "der-source", value_name = "PATH")]
+    certificate_der_path: Vec<PathBuf>,
 }
 
 impl CertificateSource {
@@ -734,9 +740,9 @@ impl CertificateSource {
     ) -> Result<(Vec<Box<dyn PrivateKey>>, Vec<CapturedX509Certificate>), AppleCodesignError> {
         let mut res = SigningCertificates::default();
 
-        let v = self.p12_key.resolve_certificates()?;
-        res.extend(self.p12_key.resolve_certificates()?);
-        res.extend(self.pem_path_key.resolve_certificates()?);
+        let v = self.keys.p12_key.resolve_certificates()?;
+        res.extend(self.keys.p12_key.resolve_certificates()?);
+        res.extend(self.keys.pem_path_key.resolve_certificates()?);
 
         for der_source in &self.certificate_der_path {
             warn!("reading DER file {}", der_source.display());
@@ -745,13 +751,13 @@ impl CertificateSource {
             res.certs.push(CapturedX509Certificate::from_der(der_data)?);
         }
 
-        res.extend(self.macos_keychain_key.resolve_certificates()?);
+        res.extend(self.keys.macos_keychain_key.resolve_certificates()?);
 
         if scan_smartcard {
-            res.extend(self.smartcard_key.resolve_certificates()?);
+            res.extend(self.keys.smartcard_key.resolve_certificates()?);
         }
 
-        let remote = self.remote_signing_key.resolve_certificates()?;
+        let remote = self.keys.remote_signing_key.resolve_certificates()?;
         if !remote.keys.is_empty() {
             // As part of the handshake we obtained the public certificates from the signer.
             // So make them the canonical set.
@@ -2708,10 +2714,10 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
 
     let mut joiner = create_session_joiner(session_join_string)?;
 
-    if let Some(env) = &args.certificate.remote_signing_key.shared_secret_env {
+    if let Some(env) = &args.certificate.keys.remote_signing_key.shared_secret_env {
         let secret = std::env::var(env).map_err(|_| AppleCodesignError::CliBadArgument)?;
         joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
-    } else if let Some(secret) = &args.certificate.remote_signing_key.shared_secret {
+    } else if let Some(secret) = &args.certificate.keys.remote_signing_key.shared_secret {
         joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
     }
 
@@ -2740,7 +2746,7 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
         private.as_key_info_signer(),
         cert,
         certificates,
-        args.certificate.remote_signing_key.url.clone(),
+        args.certificate.keys.remote_signing_key.url.clone(),
     )?;
     client.run()?;
 
@@ -3122,6 +3128,7 @@ fn command_smartcard_import(args: &SmartcardImport) -> Result<(), AppleCodesignE
 
     let slot_id = ::yubikey::piv::SlotId::from_str(
         args.certificate
+            .keys
             .smartcard_key
             .slot
             .as_ref()

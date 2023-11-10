@@ -21,8 +21,6 @@ Options:
           (macOS only) SHA-256 fingerprint of certificate in Keychain to use
       --pem-file <PATH>
           Path to file containing PEM encoded certificate/key data
-      --der-file <PATH>
-          Path to file containing DER encoded certificate data
       --p12-file <PATH>
           Path to a .p12/PFX file containing a certificate key pair
       --p12-password <SECRET>
@@ -41,6 +39,8 @@ Options:
           Environment variable holding the shared secret used for remote signing
       --remote-signing-url <URL>
           URL of a remote code signing server [default: wss://ws.codesign.gregoryszorc.com/]
+      --der-file <PATH>
+          Path to file containing DER encoded certificate data
       --touch-policy <TOUCH_POLICY>
           Smartcard touch policy to protect key access [default: default] [possible values: default, always, never, cached]
       --pin-policy <PIN_POLICY>
