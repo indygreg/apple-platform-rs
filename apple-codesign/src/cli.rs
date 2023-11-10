@@ -351,6 +351,61 @@ struct SmartcardSigningKey {
     pin_env: Option<String>,
 }
 
+impl SmartcardSigningKey {
+    #[cfg(feature = "yubikey")]
+    fn populate_keys(
+        &self,
+        private_keys: &mut Vec<Box<dyn PrivateKey>>,
+        public_certificates: &mut Vec<CapturedX509Certificate>,
+    ) -> Result<(), AppleCodesignError> {
+        if let Some(slot) = &self.slot {
+            let slot_id = ::yubikey::piv::SlotId::from_str(slot)?;
+            let formatted = hex::encode([u8::from(slot_id)]);
+            let mut yk = YubiKey::new()?;
+
+            if let Some(pin_var) = &self.pin_env {
+                let pin_var = pin_var.to_owned();
+
+                yk.set_pin_callback(move || {
+                    if let Ok(pin) = std::env::var(&pin_var) {
+                        eprintln!("using PIN from {} environment variable", &pin_var);
+                        Ok(pin.as_bytes().to_vec())
+                    } else {
+                        prompt_smartcard_pin()
+                    }
+                });
+            } else {
+                yk.set_pin_callback(prompt_smartcard_pin);
+            }
+
+            if let Some(cert) = yk.get_certificate_signer(slot_id)? {
+                warn!("using certificate in smartcard slot {}", formatted);
+                public_certificates.push(cert.certificate().clone());
+                private_keys.push(Box::new(cert));
+
+                Ok(())
+            } else {
+                Err(AppleCodesignError::SmartcardNoCertificate(formatted))
+            }
+        } else {
+            Ok(())
+        }
+    }
+
+    #[cfg(not(feature = "yubikey"))]
+    fn populate_keys(
+        &self,
+        _private_keys: &mut [Box<dyn PrivateKey>],
+        _public_certificates: &mut [CapturedX509Certificate],
+    ) -> Result<(), AppleCodesignError> {
+        if self.slot.is_some() {
+            error!("smartcard support not available; ignoring --smartcard-slot");
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Args, Clone)]
 struct MacosKeychainSigningKey {
     /// (macOS only) Keychain domain to operate on
@@ -648,14 +703,7 @@ impl CertificateSource {
             .find_certificates_in_keychain(&mut keys, &mut certs)?;
 
         if scan_smartcard {
-            if let Some(slot) = &self.smartcard_key.slot {
-                handle_smartcard_sign_slot(
-                    slot,
-                    self.smartcard_key.pin_env.as_deref(),
-                    &mut keys,
-                    &mut certs,
-                )?;
-            }
+            self.smartcard_key.populate_keys(&mut keys, &mut certs)?;
         }
 
         if self.remote_signing_key.enabled {
@@ -882,55 +930,6 @@ fn prompt_smartcard_pin() -> Result<Vec<u8>, AppleCodesignError> {
         .interact()?;
 
     Ok(pin.as_bytes().to_vec())
-}
-
-#[cfg(feature = "yubikey")]
-fn handle_smartcard_sign_slot(
-    slot: &str,
-    pin_env_var: Option<&str>,
-    private_keys: &mut Vec<Box<dyn PrivateKey>>,
-    public_certificates: &mut Vec<CapturedX509Certificate>,
-) -> Result<(), AppleCodesignError> {
-    let slot_id = ::yubikey::piv::SlotId::from_str(slot)?;
-    let formatted = hex::encode([u8::from(slot_id)]);
-    let mut yk = YubiKey::new()?;
-
-    if let Some(pin_var) = pin_env_var {
-        let pin_var = pin_var.to_owned();
-
-        yk.set_pin_callback(move || {
-            if let Ok(pin) = std::env::var(&pin_var) {
-                eprintln!("using PIN from {} environment variable", &pin_var);
-                Ok(pin.as_bytes().to_vec())
-            } else {
-                prompt_smartcard_pin()
-            }
-        });
-    } else {
-        yk.set_pin_callback(prompt_smartcard_pin);
-    }
-
-    if let Some(cert) = yk.get_certificate_signer(slot_id)? {
-        warn!("using certificate in smartcard slot {}", formatted);
-        public_certificates.push(cert.certificate().clone());
-        private_keys.push(Box::new(cert));
-
-        Ok(())
-    } else {
-        Err(AppleCodesignError::SmartcardNoCertificate(formatted))
-    }
-}
-
-#[cfg(not(feature = "yubikey"))]
-fn handle_smartcard_sign_slot(
-    _slot: &str,
-    _pin_env_var: Option<&str>,
-    _private_keys: &mut [Box<dyn PrivateKey>],
-    _public_certificates: &mut [CapturedX509Certificate],
-) -> Result<(), AppleCodesignError> {
-    error!("smartcard support not available; ignoring --smartcard-slot");
-
-    Ok(())
 }
 
 #[derive(Parser)]
