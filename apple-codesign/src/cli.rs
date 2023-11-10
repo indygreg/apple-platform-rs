@@ -587,7 +587,7 @@ impl PemSigningKey {
     }
 }
 
-#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Args, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
 pub struct RemoteSigningSessionInitialization {
     /// Base64 encoded public key data describing the signer
     #[arg(
@@ -635,6 +635,16 @@ pub struct RemoteSigningKey {
 
     #[command(flatten)]
     pub session_init: RemoteSigningSessionInitialization,
+}
+
+impl Default for RemoteSigningKey {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            url: crate::remote_signing::DEFAULT_SERVER_URL.to_string(),
+            session_init: RemoteSigningSessionInitialization::default(),
+        }
+    }
 }
 
 impl RemoteSigningKey {
