@@ -126,9 +126,9 @@ This command will print the CSR to stdout. e.g.::
     IEIp8yA9bSg7bM9XJl8bgFesTjermlSYQI/2JY834/z7
     -----END CERTIFICATE REQUEST-----
 
-You probably want to use ``--csr-pem-path`` to write that to a file automatically::
+You probably want to use ``--csr-pem-file`` to write that to a file automatically::
 
-   rcodesign generate-certificate-signing-request --p12-file cert.p12 --p12-password my-password --csr-pem-path csr.pem
+   rcodesign generate-certificate-signing-request --p12-file cert.p12 --p12-password my-password --csr-pem-file csr.pem
 
 Generating a CSR From a YubiKey or Other SmartCard Device
 ---------------------------------------------------------
@@ -151,9 +151,9 @@ To generate an RSA 2048 private key using OpenSSL::
 
 Then once you have a private key, we can generate a CSR using ``rcodesign``::
 
-    rcodesign generate-certificate-signing-request --pem-source private.pem
+    rcodesign generate-certificate-signing-request --pem-file private.pem
 
-Like the instructions above, you probably want to use ``--csr-pem-path`` to save the
+Like the instructions above, you probably want to use ``--csr-pem-file`` to save the
 CSR data to a file for submission to Apple.
 
 .. _apple_codesign_exchange_csr:

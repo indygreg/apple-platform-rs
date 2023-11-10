@@ -60,10 +60,10 @@ Options:
       --pem-filename <PEM_FILENAME>
           Base name of files to write PEM encoded certificate to
 
-      --pem-unified-filename <PEM_UNIFIED_FILENAME>
+      --pem-unified-file <PATH>
           Filename to write PEM encoded private key and public certificate to
 
-      --p12-file <P12_PATH>
+      --p12-file <PATH>
           Filename to write a PKCS#12 / p12 / PFX encoded certificate to
 
       --p12-password <P12_PASSWORD>

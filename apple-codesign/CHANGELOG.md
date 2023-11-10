@@ -14,6 +14,10 @@ Released on ReleaseDate.
   lacking these. As a result, we no longer attempt signing of storybook
   *bundles* and other non-signable bundle-looking directories and no
   longer likely encounter errors in the process. (#38)
+* CLI arguments for paths are now consistently named `--foo-file`
+  instead of using a mix of `--foo-path`, `--foo-filename`, and
+  potentially other variants. The old names are still recognized as
+  aliases to maintain backwards compatibility.
 
 ## 0.24.0
 

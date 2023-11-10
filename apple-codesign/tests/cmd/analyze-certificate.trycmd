@@ -9,13 +9,13 @@ The output of the command can be useful to learn about X.509 certificate extensi
 Usage: rcodesign[EXE] analyze-certificate [OPTIONS]
 
 Options:
-      --smartcard-slot <SMARTCARD_SLOT>
+      --smartcard-slot <SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
 
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times
 
-      --smartcard-pin-env <SMARTCARD_PIN_ENV>
+      --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
 
       --keychain-domain <KEYCHAIN_DOMAIN>
@@ -23,40 +23,40 @@ Options:
           
           [possible values: user, system, common, dynamic]
 
-      --keychain-fingerprint <KEYCHAIN_FINGERPRINT>
+      --keychain-fingerprint <SHA256 FINGERPRINT>
           (macOS only) SHA-256 fingerprint of certificate in Keychain to use
 
-      --pem-source <PEM_SOURCE>
+      --pem-file <PATH>
           Path to file containing PEM encoded certificate/key data
 
-      --der-source <DER_SOURCE>
+      --der-file <PATH>
           Path to file containing DER encoded certificate data
 
-      --p12-file <P12_PATH>
+      --p12-file <PATH>
           Path to a .p12/PFX file containing a certificate key pair
 
-      --p12-password <P12_PASSWORD>
+      --p12-password <SECRET>
           The password to use to open the --p12-file file
 
-      --p12-password-file <P12_PASSWORD_FILE>
+      --p12-password-file <PATH>
           Path to file containing password for opening --p12-file file
 
       --remote-signer
           Send signing requests to a remote signer
 
-      --remote-public-key <REMOTE_PUBLIC_KEY>
+      --remote-public-key <BASE64 ENCODED PUBLIC KEY>
           Base64 encoded public key data describing the signer
 
-      --remote-public-key-pem-file <REMOTE_PUBLIC_KEY_PEM_FILE>
+      --remote-public-key-pem-file <PATH>
           PEM encoded public key data describing the signer
 
-      --remote-shared-secret <REMOTE_SHARED_SECRET>
+      --remote-shared-secret <SECRET>
           Shared secret used for remote signing
 
-      --remote-shared-secret-env <REMOTE_SHARED_SECRET_ENV>
+      --remote-shared-secret-env <ENV VAR NAME>
           Environment variable holding the shared secret used for remote signing
 
-      --remote-signing-url <REMOTE_SIGNING_URL>
+      --remote-signing-url <URL>
           URL of a remote code signing server
           
           [default: wss://ws.codesign.gregoryszorc.com/]
@@ -69,7 +69,7 @@ Options:
 ```
 $ rcodesign analyze-certificate --keychain-domain user --keychain-fingerprint fingerprint
 ? 2
-error: the argument '--keychain-domain <KEYCHAIN_DOMAIN>' cannot be used with '--keychain-fingerprint <KEYCHAIN_FINGERPRINT>'
+error: the argument '--keychain-domain <KEYCHAIN_DOMAIN>' cannot be used with '--keychain-fingerprint <SHA256 FINGERPRINT>'
 
 Usage: rcodesign[EXE] analyze-certificate --keychain-domain <KEYCHAIN_DOMAIN>
 
@@ -80,9 +80,9 @@ For more information, try '--help'.
 ```
 $ rcodesign analyze-certificate --p12-password foo --p12-password-file path
 ? 2
-error: the argument '--p12-password <P12_PASSWORD>' cannot be used with '--p12-password-file <P12_PASSWORD_FILE>'
+error: the argument '--p12-password <SECRET>' cannot be used with '--p12-password-file <PATH>'
 
-Usage: rcodesign[EXE] analyze-certificate --p12-password <P12_PASSWORD>
+Usage: rcodesign[EXE] analyze-certificate --p12-password <SECRET>
 
 For more information, try '--help'.
 
@@ -91,9 +91,9 @@ For more information, try '--help'.
 ```
 $ rcodesign analyze-certificate --remote-public-key foo --remote-public-key-pem-file path
 ? 2
-error: the argument '--remote-public-key <REMOTE_PUBLIC_KEY>' cannot be used with '--remote-public-key-pem-file <REMOTE_PUBLIC_KEY_PEM_FILE>'
+error: the argument '--remote-public-key <BASE64 ENCODED PUBLIC KEY>' cannot be used with '--remote-public-key-pem-file <PATH>'
 
-Usage: rcodesign[EXE] analyze-certificate --remote-public-key <REMOTE_PUBLIC_KEY>
+Usage: rcodesign[EXE] analyze-certificate --remote-public-key <BASE64 ENCODED PUBLIC KEY>
 
 For more information, try '--help'.
 
@@ -102,9 +102,9 @@ For more information, try '--help'.
 ```
 $ rcodesign analyze-certificate --remote-shared-secret secret --remote-shared-secret-env env
 ? 2
-error: the argument '--remote-shared-secret <REMOTE_SHARED_SECRET>' cannot be used with '--remote-shared-secret-env <REMOTE_SHARED_SECRET_ENV>'
+error: the argument '--remote-shared-secret <SECRET>' cannot be used with '--remote-shared-secret-env <ENV VAR NAME>'
 
-Usage: rcodesign[EXE] analyze-certificate --remote-shared-secret <REMOTE_SHARED_SECRET>
+Usage: rcodesign[EXE] analyze-certificate --remote-shared-secret <SECRET>
 
 For more information, try '--help'.
 

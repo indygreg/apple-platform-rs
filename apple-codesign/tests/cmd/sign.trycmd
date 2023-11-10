@@ -30,11 +30,11 @@ entities:
 
 * --digest
 * --binary-identifier
-* --code-requirements-path
-* --code-resources-path
+* --code-requirements-files
+* --code-resources-file
 * --code-signature-flags
-* --entitlements-xml-path
-* --info-plist-path
+* --entitlements-xml-file
+* --info-plist-file
 
 Scoped settings take the form <value> or <scope>:<value>. If the 2nd form
 is used, the string before the first colon is parsed as a "scoping string".
@@ -121,9 +121,9 @@ ways:
   often .pfx or .p12 files. A password is required to open these files.
   Specify one via --p12-password or --p12-password-file or enter a password
   when prompted.
-* The --pem-source argument defines paths to files containing PEM encoded
+* The --pem-file argument defines paths to files containing PEM encoded
   certificate/key data. (e.g. files with "===== BEGIN CERTIFICATE =====").
-* The --source-source argument defines paths to files containiner DER
+* The --der-file argument defines paths to files containiner DER
   encoded certificate/key data.
 * The --keychain-domain and --keychain-fingerprint arguments can be used to
   load code signing certificates from macOS keychains. These arguments are
@@ -139,11 +139,11 @@ If you export a code signing certificate from the macOS keychain via the
 `Keychain Access` application as a .p12 file, we should be able to read these
 files via --p12-file.
 
-When using --pem-source, certificates and public keys are parsed from
+When using --pem-file, certificates and public keys are parsed from
 `BEGIN CERTIFICATE` and `BEGIN PRIVATE KEY` sections in the files.
 
 The way certificate discovery works is that --p12-file is read followed by
-all values to --pem-source. The seen signing keys and certificates are
+all values to --pem-file. The seen signing keys and certificates are
 collected. After collection, there must be 0 or 1 signing keys present, or
 an error occurs. The first encountered public certificate is assigned
 to be paired with the signing key. All remaining certificates are assumed
@@ -217,16 +217,16 @@ Arguments:
           Path to signed Mach-O binary to write
 
 Options:
-      --binary-identifier <BINARY_IDENTIFIER>
+      --binary-identifier <IDENTIFIER>
           Identifier string for binary. The value normally used by CFBundleIdentifier
 
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times
 
-      --code-requirements-path <CODE_REQUIREMENTS_PATH>
+      --code-requirements-file <PATH>
           Path to a file containing binary code requirements data to be used as designated requirements
 
-      --code-resources <CODE_RESOURCES>
+      --code-resources-file <PATH>
           Path to an XML plist file containing code resources
 
       --code-signature-flags <CODE_SIGNATURE_FLAGS>
@@ -251,16 +251,16 @@ Options:
           
           Important: only "sha1" and "sha256" are widely used and use of other algorithms may cause problems.
 
-  -e, --entitlements-xml-path <ENTITLEMENTS_XML_PATH>
+  -e, --entitlements-xml-file <PATH>
           Path to a plist file containing entitlements
 
-      --runtime-version <RUNTIME_VERSION>
+      --runtime-version <VERSION>
           Hardened runtime version to use (defaults to SDK version used to build binary)
 
-      --info-plist-path <INFO_PLIST_PATH>
+      --info-plist-file <PATH>
           Path to an Info.plist file whose digest to include in Mach-O signature
 
-      --team-name <TEAM_NAME>
+      --team-name <NAME>
           Team name/identifier to include in code signature
 
       --signing-time <SIGNING_TIME>
@@ -284,10 +284,10 @@ Options:
       --exclude <EXCLUDE>
           Glob expression of paths to exclude from signing
 
-      --smartcard-slot <SMARTCARD_SLOT>
+      --smartcard-slot <SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
 
-      --smartcard-pin-env <SMARTCARD_PIN_ENV>
+      --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
 
       --keychain-domain <KEYCHAIN_DOMAIN>
@@ -295,40 +295,40 @@ Options:
           
           [possible values: user, system, common, dynamic]
 
-      --keychain-fingerprint <KEYCHAIN_FINGERPRINT>
+      --keychain-fingerprint <SHA256 FINGERPRINT>
           (macOS only) SHA-256 fingerprint of certificate in Keychain to use
 
-      --pem-source <PEM_SOURCE>
+      --pem-file <PATH>
           Path to file containing PEM encoded certificate/key data
 
-      --der-source <DER_SOURCE>
+      --der-file <PATH>
           Path to file containing DER encoded certificate data
 
-      --p12-file <P12_PATH>
+      --p12-file <PATH>
           Path to a .p12/PFX file containing a certificate key pair
 
-      --p12-password <P12_PASSWORD>
+      --p12-password <SECRET>
           The password to use to open the --p12-file file
 
-      --p12-password-file <P12_PASSWORD_FILE>
+      --p12-password-file <PATH>
           Path to file containing password for opening --p12-file file
 
       --remote-signer
           Send signing requests to a remote signer
 
-      --remote-public-key <REMOTE_PUBLIC_KEY>
+      --remote-public-key <BASE64 ENCODED PUBLIC KEY>
           Base64 encoded public key data describing the signer
 
-      --remote-public-key-pem-file <REMOTE_PUBLIC_KEY_PEM_FILE>
+      --remote-public-key-pem-file <PATH>
           PEM encoded public key data describing the signer
 
-      --remote-shared-secret <REMOTE_SHARED_SECRET>
+      --remote-shared-secret <SECRET>
           Shared secret used for remote signing
 
-      --remote-shared-secret-env <REMOTE_SHARED_SECRET_ENV>
+      --remote-shared-secret-env <ENV VAR NAME>
           Environment variable holding the shared secret used for remote signing
 
-      --remote-signing-url <REMOTE_SIGNING_URL>
+      --remote-signing-url <URL>
           URL of a remote code signing server
           
           [default: wss://ws.codesign.gregoryszorc.com/]

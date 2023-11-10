@@ -80,7 +80,7 @@ digest, this uniquely identifies a certificate.
 You can use ``rcodesign analyze-certificate`` to locate a certificate's
 content digest.::
 
-    rcodesign analyze-certificate --pem-source path/to/cert | grep fingerprint
+    rcodesign analyze-certificate --pem-file path/to/cert | grep fingerprint
     SHA-1 fingerprint:           0b724bcd713c9f3691b0a8b0926ae0ecf9e7edd8
     SHA-256 fingerprint:         ac5c4b5936677942e017bca1570aaa9e763674c4b66709231b15118e5842aeca
 

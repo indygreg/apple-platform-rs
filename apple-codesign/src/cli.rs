@@ -128,11 +128,11 @@ entities:
 
 * --digest
 * --binary-identifier
-* --code-requirements-path
-* --code-resources-path
+* --code-requirements-files
+* --code-resources-file
 * --code-signature-flags
-* --entitlements-xml-path
-* --info-plist-path
+* --entitlements-xml-file
+* --info-plist-file
 
 Scoped settings take the form <value> or <scope>:<value>. If the 2nd form
 is used, the string before the first colon is parsed as a \"scoping string\".
@@ -219,9 +219,9 @@ ways:
   often .pfx or .p12 files. A password is required to open these files.
   Specify one via --p12-password or --p12-password-file or enter a password
   when prompted.
-* The --pem-source argument defines paths to files containing PEM encoded
+* The --pem-file argument defines paths to files containing PEM encoded
   certificate/key data. (e.g. files with \"===== BEGIN CERTIFICATE =====\").
-* The --source-source argument defines paths to files containiner DER
+* The --der-file argument defines paths to files containiner DER
   encoded certificate/key data.
 * The --keychain-domain and --keychain-fingerprint arguments can be used to
   load code signing certificates from macOS keychains. These arguments are
@@ -237,11 +237,11 @@ If you export a code signing certificate from the macOS keychain via the
 `Keychain Access` application as a .p12 file, we should be able to read these
 files via --p12-file.
 
-When using --pem-source, certificates and public keys are parsed from
+When using --pem-file, certificates and public keys are parsed from
 `BEGIN CERTIFICATE` and `BEGIN PRIVATE KEY` sections in the files.
 
 The way certificate discovery works is that --p12-file is read followed by
-all values to --pem-source. The seen signing keys and certificates are
+all values to --pem-file. The seen signing keys and certificates are
 collected. After collection, there must be 0 or 1 signing keys present, or
 an error occurs. The first encountered public certificate is assigned
 to be paired with the signing key. All remaining certificates are assumed
@@ -343,11 +343,11 @@ fn get_pkcs12_password(
 #[derive(Args, Clone)]
 struct CertificateSource {
     /// Smartcard slot number of signing certificate to use (9c is common)
-    #[arg(long)]
+    #[arg(long, value_name = "SLOT")]
     smartcard_slot: Option<String>,
 
     /// Environment variable holding the smartcard PIN
-    #[arg(long)]
+    #[arg(long, value_name = "STRING")]
     smartcard_pin_env: Option<String>,
 
     /// (macOS only) Keychain domain to operate on
@@ -355,52 +355,71 @@ struct CertificateSource {
     keychain_domain: Vec<String>,
 
     /// (macOS only) SHA-256 fingerprint of certificate in Keychain to use
-    #[arg(long, group = "keychain")]
+    #[arg(long, group = "keychain", value_name = "SHA256 FINGERPRINT")]
     keychain_fingerprint: Option<String>,
 
     /// Path to file containing PEM encoded certificate/key data
-    #[arg(long)]
-    pem_source: Vec<PathBuf>,
+    #[arg(long = "pem-file", alias = "pem-source", value_name = "PATH")]
+    pem_path: Vec<PathBuf>,
 
     /// Path to file containing DER encoded certificate data
-    #[arg(long)]
-    der_source: Vec<PathBuf>,
+    #[arg(long = "der-file", alias = "der-source", value_name = "PATH")]
+    certificate_der_path: Vec<PathBuf>,
 
     /// Path to a .p12/PFX file containing a certificate key pair
-    #[arg(long = "p12-file", alias = "pfx-file")]
+    #[arg(long = "p12-file", alias = "pfx-file", value_name = "PATH")]
     p12_path: Option<PathBuf>,
 
     /// The password to use to open the --p12-file file
-    #[arg(long, alias = "pfx-password", group = "p12-password")]
+    #[arg(
+        long,
+        alias = "pfx-password",
+        group = "p12-password",
+        value_name = "SECRET"
+    )]
     p12_password: Option<String>,
 
     // TODO conflicts with p12_password
     /// Path to file containing password for opening --p12-file file
-    #[arg(long, alias = "pfx-password-file", group = "p12-password")]
-    p12_password_file: Option<PathBuf>,
+    #[arg(
+        long = "p12-password-file",
+        alias = "pfx-password-file",
+        group = "p12-password",
+        value_name = "PATH"
+    )]
+    p12_password_path: Option<PathBuf>,
 
     /// Send signing requests to a remote signer
     #[arg(long)]
     remote_signer: bool,
 
     /// Base64 encoded public key data describing the signer
-    #[arg(long, group = "remote-initialization")]
+    #[arg(
+        long,
+        group = "remote-initialization",
+        value_name = "BASE64 ENCODED PUBLIC KEY"
+    )]
     remote_public_key: Option<String>,
 
     /// PEM encoded public key data describing the signer
-    #[arg(long, group = "remote-initialization", group = "remote-initialization")]
-    remote_public_key_pem_file: Option<PathBuf>,
+    #[arg(
+        long = "remote-public-key-pem-file",
+        group = "remote-initialization",
+        group = "remote-initialization",
+        value_name = "PATH"
+    )]
+    remote_public_key_pem_path: Option<PathBuf>,
 
     /// Shared secret used for remote signing
-    #[arg(long, group = "remote-initialization")]
+    #[arg(long, group = "remote-initialization", value_name = "SECRET")]
     remote_shared_secret: Option<String>,
 
     /// Environment variable holding the shared secret used for remote signing
-    #[arg(long, group = "remote-initialization")]
+    #[arg(long, group = "remote-initialization", value_name = "ENV VAR NAME")]
     remote_shared_secret_env: Option<String>,
 
     /// URL of a remote code signing server
-    #[arg(long, default_value = crate::remote_signing::DEFAULT_SERVER_URL)]
+    #[arg(long, default_value = crate::remote_signing::DEFAULT_SERVER_URL, value_name = "URL")]
     remote_signing_url: String,
 }
 
@@ -416,7 +435,7 @@ impl CertificateSource {
             let p12_data = std::fs::read(p12_path)?;
 
             let p12_password =
-                get_pkcs12_password(self.p12_password.clone(), self.p12_password_file.clone())?;
+                get_pkcs12_password(self.p12_password.clone(), self.p12_password_path.clone())?;
 
             let (cert, key) = parse_pfx_data(&p12_data, &p12_password)?;
 
@@ -424,7 +443,7 @@ impl CertificateSource {
             certs.push(cert);
         }
 
-        for pem_source in &self.pem_source {
+        for pem_source in &self.pem_path {
             warn!("reading PEM data from {}", pem_source.display());
             let pem_data = std::fs::read(pem_source)?;
 
@@ -448,7 +467,7 @@ impl CertificateSource {
             }
         }
 
-        for der_source in &self.der_source {
+        for der_source in &self.certificate_der_path {
             warn!("reading DER file {}", der_source.display());
             let der_data = std::fs::read(der_source)?;
 
@@ -578,7 +597,7 @@ impl CertificateSource {
                 public_key_data,
                 Some(server_url),
             )?))
-        } else if let Some(path) = &self.remote_public_key_pem_file {
+        } else if let Some(path) = &self.remote_public_key_pem_path {
             let pem_data = std::fs::read(path)?;
             let doc = pem::parse(pem_data)?;
 
@@ -631,7 +650,12 @@ impl CertificateSource {
 #[derive(Args)]
 struct NotaryApi {
     /// Path to a JSON file containing the API Key
-    #[arg(long, group = "source")]
+    #[arg(
+        long = "api-key-file",
+        alias = "api-key-path",
+        group = "source",
+        value_name = "PATH"
+    )]
     api_key_path: Option<PathBuf>,
 
     /// App Store Connect Issuer ID (likely a UUID)
@@ -2035,7 +2059,7 @@ impl Extract {
 #[derive(Parser)]
 struct GenerateCertificateSigningRequest {
     /// Path to file to write PEM encoded CSR to
-    #[arg(long)]
+    #[arg(long = "csr-pem-file", alias = "csr-pem-path")]
     csr_pem_path: Option<PathBuf>,
 
     #[command(flatten)]
@@ -2115,11 +2139,15 @@ struct GenerateSelfSignedCertificate {
     pem_filename: Option<String>,
 
     /// Filename to write PEM encoded private key and public certificate to.
-    #[arg(long)]
-    pem_unified_filename: Option<PathBuf>,
+    #[arg(
+        long = "pem-unified-file",
+        alias = "pem-unified-filename",
+        value_name = "PATH"
+    )]
+    pem_unified_path: Option<PathBuf>,
 
     /// Filename to write a PKCS#12 / p12 / PFX encoded certificate to.
-    #[arg(long = "p12-file", alias = "pfx-file")]
+    #[arg(long = "p12-file", alias = "pfx-file", value_name = "PATH")]
     p12_path: Option<PathBuf>,
 
     /// Password to use to encrypt --p12-path.
@@ -2175,7 +2203,7 @@ impl GenerateSelfSignedCertificate {
             wrote_file = true;
         }
 
-        if let Some(path) = &self.pem_unified_filename {
+        if let Some(path) = &self.pem_unified_path {
             let content = format!("{}{}", key_pem, cert_pem);
 
             if let Some(parent) = path.parent() {
@@ -2232,8 +2260,8 @@ struct KeychainExportCertificateChain {
     password: Option<String>,
 
     /// File containing password to use to unlock the Keychain
-    #[arg(long, group = "unlock-password")]
-    password_file: Option<PathBuf>,
+    #[arg(long = "password-file", group = "unlock-password")]
+    password_path: Option<PathBuf>,
 
     /// Print only the issuing certificate chain, not the subject certificate
     #[arg(long)]
@@ -2251,7 +2279,7 @@ fn command_keychain_export_certificate_chain(
     let domain = KeychainDomain::try_from(args.domain.as_str())
         .expect("clap should have validated domain values");
 
-    let password = if let Some(path) = &args.password_file {
+    let password = if let Some(path) = &args.password_path {
         let data = std::fs::read_to_string(path)?;
 
         Some(
@@ -2559,7 +2587,7 @@ struct SessionJoinString {
     session_join_string_editor: bool,
 
     /// Path to file containing session join string
-    #[arg(long = "sjs-path")]
+    #[arg(long = "sjs-file", alias = "sjs-path")]
     session_join_string_path: Option<PathBuf>,
 
     /// Session join string (provided by the signing initiator)
@@ -2646,16 +2674,24 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
 #[derive(Parser)]
 struct Sign {
     /// Identifier string for binary. The value normally used by CFBundleIdentifier
-    #[arg(long)]
-    binary_identifier: Vec<String>,
+    #[arg(long = "binary-identifier", value_name = "IDENTIFIER")]
+    binary_identifiers: Vec<String>,
 
     /// Path to a file containing binary code requirements data to be used as designated requirements
-    #[arg(long)]
-    code_requirements_path: Vec<String>,
+    #[arg(
+        long = "code-requirements-file",
+        alias = "code-requirements-path",
+        value_name = "PATH"
+    )]
+    code_requirements_paths: Vec<String>,
 
     /// Path to an XML plist file containing code resources
-    #[arg(long)]
-    code_resources: Vec<String>,
+    #[arg(
+        long = "code-resources-file",
+        alias = "code-resources",
+        value_name = "PATH"
+    )]
+    code_resources_paths: Vec<String>,
 
     /// Code signature flags to set
     #[arg(long, value_parser = CodeSignatureFlags::all_user_configurable())]
@@ -2687,20 +2723,29 @@ struct Sign {
     digests: Vec<String>,
 
     /// Path to a plist file containing entitlements
-    #[arg(short = 'e', long)]
-    entitlements_xml_path: Vec<String>,
+    #[arg(
+        short = 'e',
+        long = "entitlements-xml-file",
+        alias = "entitlements-xml-path",
+        value_name = "PATH"
+    )]
+    entitlements_xml_paths: Vec<String>,
 
     /// Hardened runtime version to use (defaults to SDK version used to build binary)
-    #[arg(long)]
-    runtime_version: Vec<String>,
+    #[arg(long = "runtime-version", value_name = "VERSION")]
+    runtime_versions: Vec<String>,
 
     /// Path to an Info.plist file whose digest to include in Mach-O signature
-    #[arg(long)]
-    info_plist_path: Vec<String>,
+    #[arg(
+        long = "info-plist-file",
+        alias = "info-plist-path",
+        value_name = "PATH"
+    )]
+    info_plist_paths: Vec<String>,
 
     /// Team name/identifier to include in code signature
-    #[arg(long)]
-    team_name: Option<String>,
+    #[arg(long = "team-name", value_name = "NAME")]
+    team_names: Option<String>,
 
     /// An RFC 3339 date and time string to be used in signatures.
     ///
@@ -2798,7 +2843,7 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         settings.chain_certificate(cert);
     }
 
-    if let Some(team_name) = &args.team_name {
+    if let Some(team_name) = &args.team_names {
         settings.set_team_id(team_name);
     }
 
@@ -2817,12 +2862,12 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         settings.add_path_exclusion(pattern)?;
     }
 
-    for value in &args.binary_identifier {
+    for value in &args.binary_identifiers {
         let (scope, identifier) = parse_scoped_value(value)?;
         settings.set_binary_identifier(scope, identifier);
     }
 
-    for value in &args.code_requirements_path {
+    for value in &args.code_requirements_paths {
         let (scope, path) = parse_scoped_value(value)?;
 
         let code_requirements_data = std::fs::read(path)?;
@@ -2836,7 +2881,7 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         }
     }
 
-    for value in &args.code_resources {
+    for value in &args.code_resources_paths {
         let (scope, path) = parse_scoped_value(value)?;
 
         warn!(
@@ -2869,7 +2914,7 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         settings.add_code_signature_flags(scope, flags);
     }
 
-    for value in &args.entitlements_xml_path {
+    for value in &args.entitlements_xml_paths {
         let (scope, path) = parse_scoped_value(value)?;
 
         warn!("setting entitlements XML for {} from path {}", scope, path);
@@ -2877,14 +2922,14 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         settings.set_entitlements_xml(scope, entitlements_data)?;
     }
 
-    for value in &args.runtime_version {
+    for value in &args.runtime_versions {
         let (scope, value) = parse_scoped_value(value)?;
 
         let version = semver::Version::parse(value)?;
         settings.set_runtime_version(scope, version);
     }
 
-    for value in &args.info_plist_path {
+    for value in &args.info_plist_paths {
         let (scope, value) = parse_scoped_value(value)?;
 
         let content = std::fs::read(value)?;

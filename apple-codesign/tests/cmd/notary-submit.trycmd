@@ -69,7 +69,7 @@ Options:
       --staple
           Staple the notarization ticket after successful upload (implies --wait)
 
-      --api-key-path <API_KEY_PATH>
+      --api-key-file <PATH>
           Path to a JSON file containing the API Key
 
       --api-issuer <API_ISSUER>

@@ -12,7 +12,7 @@ Options:
           Maximum time in seconds to wait for the upload result [default: 600]
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times
-      --api-key-path <API_KEY_PATH>
+      --api-key-file <PATH>
           Path to a JSON file containing the API Key
       --api-issuer <API_ISSUER>
           App Store Connect Issuer ID (likely a UUID)

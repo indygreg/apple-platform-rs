@@ -51,27 +51,27 @@ Notarization requires an App Store Connect API Key. See
 to obtain one.
 
 Assuming you used ``rcodesign encode-app-store-connect-api-key`` to produce
-a JSON file with all the API Key information, simply specify ``--api-key-path``
+a JSON file with all the API Key information, simply specify ``--api-key-file``
 to define the path to this JSON file.
 
 To notarize an already signed asset::
 
     rcodesign notary-submit \
-      --api-key-path ~/.appstoreconnect/key.json \
+      --api-key-file ~/.appstoreconnect/key.json \
       path/to/file/to/notarize
 
 By default ``notarize-submit`` just uploads the asset to Apple. To wait
 on its notarization result, add ``--wait``::
 
     rcodesign notary-submit \
-      --api-key-path ~/.appstoreconnect/key.json \
+      --api-key-file ~/.appstoreconnect/key.json \
       --wait \
       path/to/file/to/notarize
 
 Or to wait and automatically staple the file if notarization was successful::
 
     rcodesign notary-submit \
-      --api-key-path ~/.appstoreconnect/key.json \
+      --api-key-file ~/.appstoreconnect/key.json \
       --staple \
       path/to/file/to/notarize
 

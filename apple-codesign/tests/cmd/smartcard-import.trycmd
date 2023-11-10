@@ -11,35 +11,35 @@ Options:
           Increase logging verbosity. Can be specified multiple times
       --dry-run
           Don't actually perform the import
-      --smartcard-slot <SMARTCARD_SLOT>
+      --smartcard-slot <SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
-      --smartcard-pin-env <SMARTCARD_PIN_ENV>
+      --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
       --keychain-domain <KEYCHAIN_DOMAIN>
           (macOS only) Keychain domain to operate on [possible values: user, system, common, dynamic]
-      --keychain-fingerprint <KEYCHAIN_FINGERPRINT>
+      --keychain-fingerprint <SHA256 FINGERPRINT>
           (macOS only) SHA-256 fingerprint of certificate in Keychain to use
-      --pem-source <PEM_SOURCE>
+      --pem-file <PATH>
           Path to file containing PEM encoded certificate/key data
-      --der-source <DER_SOURCE>
+      --der-file <PATH>
           Path to file containing DER encoded certificate data
-      --p12-file <P12_PATH>
+      --p12-file <PATH>
           Path to a .p12/PFX file containing a certificate key pair
-      --p12-password <P12_PASSWORD>
+      --p12-password <SECRET>
           The password to use to open the --p12-file file
-      --p12-password-file <P12_PASSWORD_FILE>
+      --p12-password-file <PATH>
           Path to file containing password for opening --p12-file file
       --remote-signer
           Send signing requests to a remote signer
-      --remote-public-key <REMOTE_PUBLIC_KEY>
+      --remote-public-key <BASE64 ENCODED PUBLIC KEY>
           Base64 encoded public key data describing the signer
-      --remote-public-key-pem-file <REMOTE_PUBLIC_KEY_PEM_FILE>
+      --remote-public-key-pem-file <PATH>
           PEM encoded public key data describing the signer
-      --remote-shared-secret <REMOTE_SHARED_SECRET>
+      --remote-shared-secret <SECRET>
           Shared secret used for remote signing
-      --remote-shared-secret-env <REMOTE_SHARED_SECRET_ENV>
+      --remote-shared-secret-env <ENV VAR NAME>
           Environment variable holding the shared secret used for remote signing
-      --remote-signing-url <REMOTE_SIGNING_URL>
+      --remote-signing-url <URL>
           URL of a remote code signing server [default: wss://ws.codesign.gregoryszorc.com/]
       --touch-policy <TOUCH_POLICY>
           Smartcard touch policy to protect key access [default: default] [possible values: default, always, never, cached]
