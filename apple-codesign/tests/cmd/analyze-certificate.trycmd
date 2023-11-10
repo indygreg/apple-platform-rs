@@ -17,6 +17,8 @@ Options:
 
       --smartcard-pin <SECRET>
           Smartcard PIN used to unlock certificate
+          
+          If not provided, you will be prompted for a PIN as necessary.
 
       --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN

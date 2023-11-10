@@ -7,41 +7,65 @@ Usage: rcodesign[EXE] generate-certificate-signing-request [OPTIONS]
 Options:
       --csr-pem-file <CSR_PEM_PATH>
           Path to file to write PEM encoded CSR to
+
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times
+
       --smartcard-slot <SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
+
       --smartcard-pin <SECRET>
           Smartcard PIN used to unlock certificate
+          
+          If not provided, you will be prompted for a PIN as necessary.
+
       --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
+
       --keychain-domain <DOMAIN>
-          (macOS only) Keychain domain to operate on [possible values: user, system, common, dynamic]
+          (macOS only) Keychain domain to operate on
+          
+          [possible values: user, system, common, dynamic]
+
       --keychain-fingerprint <SHA256 FINGERPRINT>
           (macOS only) SHA-256 fingerprint of certificate in Keychain to use
+
       --pem-file <PATH>
           Path to file containing PEM encoded certificate/key data
+
       --p12-file <PATH>
           Path to a .p12/PFX file containing a certificate key pair
+
       --p12-password <SECRET>
           The password to use to open the --p12-file file
+
       --p12-password-file <PATH>
           Path to file containing password for opening --p12-file file
+
       --remote-signer
           Send signing requests to a remote signer
+
       --remote-signing-url <URL>
-          URL of a remote code signing server [default: wss://ws.codesign.gregoryszorc.com/]
+          URL of a remote code signing server
+          
+          [default: wss://ws.codesign.gregoryszorc.com/]
+
       --remote-public-key <BASE64 ENCODED PUBLIC KEY>
           Base64 encoded public key data describing the signer
+
       --remote-public-key-pem-file <PATH>
           PEM encoded public key data describing the signer
+
       --remote-shared-secret <SECRET>
           Shared secret used for remote signing
+
       --remote-shared-secret-env <ENV VAR NAME>
           Environment variable holding the shared secret used for remote signing
+
       --certificate-der-file <PATH>
           Path to file containing DER encoded certificate data
+
   -h, --help
-          Print help
+          Print help (see a summary with '-h')
 
 ```

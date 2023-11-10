@@ -362,7 +362,9 @@ pub struct SmartcardSigningKey {
     #[arg(long = "smartcard-slot", value_name = "SLOT")]
     pub slot: Option<String>,
 
-    /// Smartcard PIN used to unlock certificate.
+    /// Smartcard PIN used to unlock certificate
+    ///
+    /// If not provided, you will be prompted for a PIN as necessary.
     #[arg(long = "smartcard-pin", value_name = "SECRET")]
     pub pin: Option<String>,
 
