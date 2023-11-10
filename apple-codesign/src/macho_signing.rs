@@ -560,8 +560,10 @@ impl<'data> MachOSigner<'data> {
             runtime
         };
 
+        let digest_type = *settings.digest_type();
+
         let code_hashes = macho
-            .code_digests(*settings.digest_type(), page_size as _)?
+            .code_digests(digest_type, page_size as _)?
             .into_iter()
             .map(|v| Digest { data: v.into() })
             .collect::<Vec<_>>();
@@ -574,7 +576,7 @@ impl<'data> MachOSigner<'data> {
             special_hashes.insert(
                 CodeSigningSlot::Info,
                 Digest {
-                    data: settings.digest_type().digest_data(data)?.into(),
+                    data: digest_type.digest_data(data)?.into(),
                 },
             );
         }
@@ -585,7 +587,7 @@ impl<'data> MachOSigner<'data> {
             special_hashes.insert(
                 CodeSigningSlot::ResourceDir,
                 Digest {
-                    data: settings.digest_type().digest_data(data)?.into(),
+                    data: digest_type.digest_data(data)?.into(),
                 }
                 .to_owned(),
             );
@@ -610,8 +612,8 @@ impl<'data> MachOSigner<'data> {
         let mut cd = CodeDirectoryBlob {
             flags,
             code_limit,
-            digest_size: settings.digest_type().hash_len()? as u8,
-            digest_type: *settings.digest_type(),
+            digest_size: digest_type.hash_len()? as u8,
+            digest_type,
             platform,
             page_size,
             code_limit_64,

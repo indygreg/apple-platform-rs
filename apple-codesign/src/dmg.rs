@@ -383,18 +383,18 @@ impl DmgSigner {
 
         warn!("using identifier {}", ident);
 
-        let code_hashes = vec![reader.digest_content_with(*settings.digest_type(), fh)?];
+        let digest_type = *settings.digest_type();
 
-        let koly_digest = reader
-            .koly()
-            .digest_for_code_directory(*settings.digest_type())?;
+        let code_hashes = vec![reader.digest_content_with(digest_type, fh)?];
+
+        let koly_digest = reader.koly().digest_for_code_directory(digest_type)?;
 
         let mut cd = CodeDirectoryBlob {
             version: 0x20100,
             flags,
             code_limit: reader.koly().offset_after_plist() as u32,
-            digest_size: settings.digest_type().hash_len()? as u8,
-            digest_type: *settings.digest_type(),
+            digest_size: digest_type.hash_len()? as u8,
+            digest_type,
             page_size: 1,
             ident,
             code_digests: code_hashes,
