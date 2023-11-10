@@ -29,6 +29,8 @@ Options:
           Path to file containing password for opening --p12-file file
       --remote-signer
           Send signing requests to a remote signer
+      --remote-signing-url <URL>
+          URL of a remote code signing server [default: wss://ws.codesign.gregoryszorc.com/]
       --remote-public-key <BASE64 ENCODED PUBLIC KEY>
           Base64 encoded public key data describing the signer
       --remote-public-key-pem-file <PATH>
@@ -37,8 +39,6 @@ Options:
           Shared secret used for remote signing
       --remote-shared-secret-env <ENV VAR NAME>
           Environment variable holding the shared secret used for remote signing
-      --remote-signing-url <URL>
-          URL of a remote code signing server [default: wss://ws.codesign.gregoryszorc.com/]
       --certificate-der-file <PATH>
           Path to file containing DER encoded certificate data
   -h, --help
