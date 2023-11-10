@@ -28,7 +28,7 @@ use {
     clap::{ArgAction, Args, Parser, Subcommand, ValueEnum},
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
-    log::{error, warn, LevelFilter},
+    log::{error, info, warn, LevelFilter},
     spki::EncodePublicKey,
     std::{
         io::Write,
@@ -340,6 +340,21 @@ fn get_pkcs12_password(
     }
 }
 
+/// Represents a set of keys and certificates.
+#[derive(Default)]
+
+struct SigningCertificates {
+    keys: Vec<Box<dyn PrivateKey>>,
+    certs: Vec<CapturedX509Certificate>,
+}
+
+impl SigningCertificates {
+    pub fn extend(&mut self, other: Self) {
+        self.keys.extend(other.keys.into_iter());
+        self.certs.extend(other.certs.into_iter());
+    }
+}
+
 #[derive(Args, Clone)]
 struct SmartcardSigningKey {
     /// Smartcard slot number of signing certificate to use (9c is common)
@@ -353,11 +368,7 @@ struct SmartcardSigningKey {
 
 impl SmartcardSigningKey {
     #[cfg(feature = "yubikey")]
-    fn populate_keys(
-        &self,
-        private_keys: &mut Vec<Box<dyn PrivateKey>>,
-        public_certificates: &mut Vec<CapturedX509Certificate>,
-    ) -> Result<(), AppleCodesignError> {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if let Some(slot) = &self.slot {
             let slot_id = ::yubikey::piv::SlotId::from_str(slot)?;
             let formatted = hex::encode([u8::from(slot_id)]);
@@ -378,31 +389,30 @@ impl SmartcardSigningKey {
                 yk.set_pin_callback(prompt_smartcard_pin);
             }
 
-            if let Some(cert) = yk.get_certificate_signer(slot_id)? {
+            if let Some(signer) = yk.get_certificate_signer(slot_id)? {
                 warn!("using certificate in smartcard slot {}", formatted);
-                public_certificates.push(cert.certificate().clone());
-                private_keys.push(Box::new(cert));
 
-                Ok(())
+                let cert = signer.certificate().clone();
+
+                Ok(SigningCertificates {
+                    keys: vec![Box::new(signer)],
+                    certs: vec![cert],
+                })
             } else {
                 Err(AppleCodesignError::SmartcardNoCertificate(formatted))
             }
         } else {
-            Ok(())
+            Ok(Default::default())
         }
     }
 
     #[cfg(not(feature = "yubikey"))]
-    fn populate_keys(
-        &self,
-        _private_keys: &mut [Box<dyn PrivateKey>],
-        _public_certificates: &mut [CapturedX509Certificate],
-    ) -> Result<(), AppleCodesignError> {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if self.slot.is_some() {
             error!("smartcard support not available; ignoring --smartcard-slot");
         }
 
-        Ok(())
+        Ok(None)
     }
 }
 
@@ -423,15 +433,11 @@ struct MacosKeychainSigningKey {
 
 impl MacosKeychainSigningKey {
     #[cfg(target_os = "macos")]
-    fn find_certificates_in_keychain(
-        &self,
-        private_keys: &mut Vec<Box<dyn PrivateKey>>,
-        public_certificates: &mut Vec<CapturedX509Certificate>,
-    ) -> Result<(), AppleCodesignError> {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         // No arguments pertinent to keychains. Don't even speak to the
         // keychain API since this could only error.
         if self.domain.is_empty() && self.fingerprint.is_none() {
-            return Ok(());
+            return Ok(Default::default());
         }
 
         // Collect all the keychain domains to search.
@@ -450,6 +456,7 @@ impl MacosKeychainSigningKey {
             .collect::<Vec<_>>();
 
         // Now iterate all the keychains and try to find requested certificates.
+        let mut res = SigningCertificates::default();
 
         for domain in domains {
             for cert in keychain_find_code_signing_certificates(domain, None)? {
@@ -462,28 +469,24 @@ impl MacosKeychainSigningKey {
                 };
 
                 if matches {
-                    public_certificates.push(cert.as_captured_x509_certificate());
-                    private_keys.push(Box::new(cert));
+                    res.certs.push(cert.as_captured_x509_certificate());
+                    res.keys.push(Box::new(cert));
                 }
             }
         }
 
-        Ok(())
+        Ok(res)
     }
 
     #[cfg(not(target_os = "macos"))]
-    fn find_certificates_in_keychain(
-        &self,
-        _private_keys: &mut [Box<dyn PrivateKey>],
-        _public_certificates: &mut [CapturedX509Certificate],
-    ) -> Result<(), AppleCodesignError> {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if !self.domain.is_empty() || self.fingerprint.is_some() {
             error!(
                 "--keychain* arguments only supported on macOS and will be ignored on this platform"
             );
         }
 
-        Ok(())
+        Ok(Default::default())
     }
 }
 
@@ -513,11 +516,67 @@ struct P12SigningKey {
     password_path: Option<PathBuf>,
 }
 
+impl P12SigningKey {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        if let Some(path) = &self.path {
+            let p12_data = std::fs::read(path)?;
+
+            let p12_password =
+                get_pkcs12_password(self.password.clone(), self.password_path.clone())?;
+
+            let (cert, key) = parse_pfx_data(&p12_data, &p12_password)?;
+
+            Ok(SigningCertificates {
+                keys: vec![Box::new(key)],
+                certs: vec![cert],
+            })
+        } else {
+            Ok(Default::default())
+        }
+    }
+}
+
 #[derive(Args, Clone)]
 struct PemSigningKey {
     /// Path to file containing PEM encoded certificate/key data
     #[arg(long = "pem-file", alias = "pem-source", value_name = "PATH")]
     paths: Vec<PathBuf>,
+}
+
+impl PemSigningKey {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        let mut res = SigningCertificates::default();
+
+        for path in &self.paths {
+            warn!("reading PEM data from {}", path.display());
+            let pem_data = std::fs::read(path)?;
+
+            for pem in pem::parse_many(pem_data).map_err(AppleCodesignError::CertificatePem)? {
+                match pem.tag() {
+                    "CERTIFICATE" => {
+                        info!("adding certificate from {}", path.display());
+                        res.certs
+                            .push(CapturedX509Certificate::from_der(pem.contents())?);
+                    }
+                    "PRIVATE KEY" => {
+                        info!("adding private key from {}", path.display());
+                        res.keys.push(Box::new(InMemoryPrivateKey::from_pkcs8_der(
+                            pem.contents(),
+                        )?));
+                    }
+                    "RSA PRIVATE KEY" => {
+                        info!("adding RSA private key from {}", path.display());
+                        res.keys.push(Box::new(InMemoryPrivateKey::from_pkcs1_der(
+                            pem.contents(),
+                        )?));
+                    }
+                    tag => warn!("(unhandled PEM tag {}; ignoring)", tag),
+                }
+            }
+        }
+
+        Ok(res)
+    }
 }
 
 #[derive(Args, Clone)]
@@ -565,6 +624,28 @@ struct RemoteSigningKey {
 }
 
 impl RemoteSigningKey {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        if self.enabled {
+            let initiator = self.remote_signing_initiator()?;
+
+            let client = UnjoinedSigningClient::new_initiator(
+                self.url.clone(),
+                initiator,
+                Some(print_session_join),
+            )?;
+
+            let mut certs = vec![client.signing_certificate().clone()];
+            certs.extend(client.certificate_chain().iter().cloned());
+
+            Ok(SigningCertificates {
+                keys: vec![Box::new(client)],
+                certs,
+            })
+        } else {
+            Ok(Default::default())
+        }
+    }
+
     fn remote_signing_initiator(&self) -> Result<Box<dyn SessionInitiatePeer>, RemoteSignError> {
         let server_url = self.url.clone();
 
@@ -651,87 +732,42 @@ impl CertificateSource {
         &self,
         scan_smartcard: bool,
     ) -> Result<(Vec<Box<dyn PrivateKey>>, Vec<CapturedX509Certificate>), AppleCodesignError> {
-        let mut keys: Vec<Box<dyn PrivateKey>> = vec![];
-        let mut certs = vec![];
+        let mut res = SigningCertificates::default();
 
-        if let Some(path) = &self.p12_key.path {
-            let p12_data = std::fs::read(path)?;
-
-            let p12_password = get_pkcs12_password(
-                self.p12_key.password.clone(),
-                self.p12_key.password_path.clone(),
-            )?;
-
-            let (cert, key) = parse_pfx_data(&p12_data, &p12_password)?;
-
-            keys.push(Box::new(key));
-            certs.push(cert);
-        }
-
-        for pem_source in &self.pem_path_key.paths {
-            warn!("reading PEM data from {}", pem_source.display());
-            let pem_data = std::fs::read(pem_source)?;
-
-            for pem in pem::parse_many(pem_data).map_err(AppleCodesignError::CertificatePem)? {
-                match pem.tag() {
-                    "CERTIFICATE" => {
-                        certs.push(CapturedX509Certificate::from_der(pem.contents())?);
-                    }
-                    "PRIVATE KEY" => {
-                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs8_der(
-                            pem.contents(),
-                        )?));
-                    }
-                    "RSA PRIVATE KEY" => {
-                        keys.push(Box::new(InMemoryPrivateKey::from_pkcs1_der(
-                            pem.contents(),
-                        )?));
-                    }
-                    tag => warn!("(unhandled PEM tag {}; ignoring)", tag),
-                }
-            }
-        }
+        let v = self.p12_key.resolve_certificates()?;
+        res.extend(self.p12_key.resolve_certificates()?);
+        res.extend(self.pem_path_key.resolve_certificates()?);
 
         for der_source in &self.certificate_der_path {
             warn!("reading DER file {}", der_source.display());
             let der_data = std::fs::read(der_source)?;
 
-            certs.push(CapturedX509Certificate::from_der(der_data)?);
+            res.certs.push(CapturedX509Certificate::from_der(der_data)?);
         }
 
-        self.macos_keychain_key
-            .find_certificates_in_keychain(&mut keys, &mut certs)?;
+        res.extend(self.macos_keychain_key.resolve_certificates()?);
 
         if scan_smartcard {
-            self.smartcard_key.populate_keys(&mut keys, &mut certs)?;
+            res.extend(self.smartcard_key.resolve_certificates()?);
         }
 
-        if self.remote_signing_key.enabled {
-            let initiator = self.remote_signing_key.remote_signing_initiator()?;
-
-            let client = UnjoinedSigningClient::new_initiator(
-                self.remote_signing_key.url.clone(),
-                initiator,
-                Some(print_session_join),
-            )?;
-
+        let remote = self.remote_signing_key.resolve_certificates()?;
+        if !remote.keys.is_empty() {
             // As part of the handshake we obtained the public certificates from the signer.
             // So make them the canonical set.
-            if !certs.is_empty() {
+            if !res.certs.is_empty() {
                 warn!(
                     "ignoring {} local certificates and using remote signer's certificate(s)",
-                    certs.len()
+                    res.certs.len()
                 );
             }
 
-            certs = vec![client.signing_certificate().clone()];
-            certs.extend(client.certificate_chain().iter().cloned());
-
             // The client implements Sign, so we just use it as the private key.
-            keys = vec![Box::new(client)];
+            res.keys = v.keys;
+            res.certs = v.certs;
         }
 
-        Ok((keys, certs))
+        Ok((res.keys, res.certs))
     }
 }
 
