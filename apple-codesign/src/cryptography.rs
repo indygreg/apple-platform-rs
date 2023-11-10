@@ -499,34 +499,6 @@ impl Default for DigestType {
     }
 }
 
-impl From<u8> for DigestType {
-    fn from(v: u8) -> Self {
-        match v {
-            0 => Self::None,
-            1 => Self::Sha1,
-            2 => Self::Sha256,
-            3 => Self::Sha256Truncated,
-            4 => Self::Sha384,
-            5 => Self::Sha512,
-            _ => Self::Unknown(v),
-        }
-    }
-}
-
-impl From<DigestType> for u8 {
-    fn from(v: DigestType) -> u8 {
-        match v {
-            DigestType::None => 0,
-            DigestType::Sha1 => 1,
-            DigestType::Sha256 => 2,
-            DigestType::Sha256Truncated => 3,
-            DigestType::Sha384 => 4,
-            DigestType::Sha512 => 5,
-            DigestType::Unknown(v) => v,
-        }
-    }
-}
-
 impl TryFrom<DigestType> for DigestAlgorithm {
     type Error = AppleCodesignError;
 
