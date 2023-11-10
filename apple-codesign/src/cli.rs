@@ -29,6 +29,7 @@ use {
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, info, warn, LevelFilter},
+    serde::Deserialize,
     spki::EncodePublicKey,
     std::{
         io::Write,
@@ -343,9 +344,9 @@ fn get_pkcs12_password(
 /// Represents a set of keys and certificates.
 #[derive(Default)]
 
-struct SigningCertificates {
-    keys: Vec<Box<dyn PrivateKey>>,
-    certs: Vec<CapturedX509Certificate>,
+pub struct SigningCertificates {
+    pub keys: Vec<Box<dyn PrivateKey>>,
+    pub certs: Vec<CapturedX509Certificate>,
 }
 
 impl SigningCertificates {
@@ -355,24 +356,24 @@ impl SigningCertificates {
     }
 }
 
-#[derive(Args, Clone)]
-struct SmartcardSigningKey {
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct SmartcardSigningKey {
     /// Smartcard slot number of signing certificate to use (9c is common)
     #[arg(long = "smartcard-slot", value_name = "SLOT")]
-    slot: Option<String>,
+    pub slot: Option<String>,
 
     /// Smartcard PIN used to unlock certificate.
     #[arg(long = "smartcard-pin", value_name = "SECRET")]
-    pin: Option<String>,
+    pub pin: Option<String>,
 
     /// Environment variable holding the smartcard PIN
     #[arg(long = "smartcard-pin-env", value_name = "STRING")]
-    pin_env: Option<String>,
+    pub pin_env: Option<String>,
 }
 
 impl SmartcardSigningKey {
     #[cfg(feature = "yubikey")]
-    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if let Some(slot) = &self.slot {
             let slot_id = ::yubikey::piv::SlotId::from_str(slot)?;
             let formatted = hex::encode([u8::from(slot_id)]);
@@ -414,7 +415,7 @@ impl SmartcardSigningKey {
     }
 
     #[cfg(not(feature = "yubikey"))]
-    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if self.slot.is_some() {
             error!("smartcard support not available; ignoring --smartcard-slot");
         }
@@ -423,11 +424,11 @@ impl SmartcardSigningKey {
     }
 }
 
-#[derive(Args, Clone)]
-struct MacosKeychainSigningKey {
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct MacosKeychainSigningKey {
     /// (macOS only) Keychain domain to operate on
-    #[arg(long = "keychain-domain", group = "keychain", value_parser = KEYCHAIN_DOMAINS)]
-    domain: Vec<String>,
+    #[arg(long = "keychain-domain", group = "keychain", value_parser = KEYCHAIN_DOMAINS, value_name = "DOMAIN")]
+    pub domains: Vec<String>,
 
     /// (macOS only) SHA-256 fingerprint of certificate in Keychain to use
     #[arg(
@@ -435,23 +436,23 @@ struct MacosKeychainSigningKey {
         group = "keychain",
         value_name = "SHA256 FINGERPRINT"
     )]
-    fingerprint: Option<String>,
+    pub sha256_fingerprint: Option<String>,
 }
 
 impl MacosKeychainSigningKey {
     #[cfg(target_os = "macos")]
-    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         // No arguments pertinent to keychains. Don't even speak to the
         // keychain API since this could only error.
-        if self.domain.is_empty() && self.fingerprint.is_none() {
+        if self.domains.is_empty() && self.sha256_fingerprint.is_none() {
             return Ok(Default::default());
         }
 
         // Collect all the keychain domains to search.
-        let domains = if self.domain.is_empty() {
+        let domains = if self.domains.is_empty() {
             vec!["user".to_string()]
         } else {
-            self.domain.clone()
+            self.domains.clone()
         };
 
         let domains = domains
@@ -467,7 +468,7 @@ impl MacosKeychainSigningKey {
 
         for domain in domains {
             for cert in keychain_find_code_signing_certificates(domain, None)? {
-                let matches = if let Some(wanted_fingerprint) = &self.fingerprint {
+                let matches = if let Some(wanted_fingerprint) = &self.sha256_fingerprint {
                     let got_fingerprint = hex::encode(cert.sha256_fingerprint()?.as_ref());
 
                     wanted_fingerprint.to_ascii_lowercase() == got_fingerprint.to_ascii_lowercase()
@@ -486,8 +487,8 @@ impl MacosKeychainSigningKey {
     }
 
     #[cfg(not(target_os = "macos"))]
-    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
-        if !self.domain.is_empty() || self.fingerprint.is_some() {
+    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        if !self.domains.is_empty() || self.sha256_fingerprint.is_some() {
             error!(
                 "--keychain* arguments only supported on macOS and will be ignored on this platform"
             );
@@ -497,11 +498,11 @@ impl MacosKeychainSigningKey {
     }
 }
 
-#[derive(Args, Clone)]
-struct P12SigningKey {
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct P12SigningKey {
     /// Path to a .p12/PFX file containing a certificate key pair
     #[arg(long = "p12-file", alias = "pfx-file", value_name = "PATH")]
-    path: Option<PathBuf>,
+    pub path: Option<PathBuf>,
 
     /// The password to use to open the --p12-file file
     #[arg(
@@ -510,7 +511,7 @@ struct P12SigningKey {
         group = "p12-password",
         value_name = "SECRET"
     )]
-    password: Option<String>,
+    pub password: Option<String>,
 
     // TODO conflicts with p12_password
     /// Path to file containing password for opening --p12-file file
@@ -520,11 +521,11 @@ struct P12SigningKey {
         group = "p12-password",
         value_name = "PATH"
     )]
-    password_path: Option<PathBuf>,
+    pub password_path: Option<PathBuf>,
 }
 
 impl P12SigningKey {
-    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if let Some(path) = &self.path {
             let p12_data = std::fs::read(path)?;
 
@@ -543,15 +544,15 @@ impl P12SigningKey {
     }
 }
 
-#[derive(Args, Clone)]
-struct PemSigningKey {
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct PemSigningKey {
     /// Path to file containing PEM encoded certificate/key data
     #[arg(long = "pem-file", alias = "pem-source", value_name = "PATH")]
-    paths: Vec<PathBuf>,
+    pub paths: Vec<PathBuf>,
 }
 
 impl PemSigningKey {
-    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         let mut res = SigningCertificates::default();
 
         for path in &self.paths {
@@ -586,11 +587,11 @@ impl PemSigningKey {
     }
 }
 
-#[derive(Args, Clone)]
-struct RemoteSigningKey {
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct RemoteSigningKey {
     /// Send signing requests to a remote signer
     #[arg(long = "remote-signer")]
-    enabled: bool,
+    pub enabled: bool,
 
     /// Base64 encoded public key data describing the signer
     #[arg(
@@ -598,7 +599,7 @@ struct RemoteSigningKey {
         group = "remote-initialization",
         value_name = "BASE64 ENCODED PUBLIC KEY"
     )]
-    public_key: Option<String>,
+    pub public_key: Option<String>,
 
     /// PEM encoded public key data describing the signer
     #[arg(
@@ -607,7 +608,7 @@ struct RemoteSigningKey {
         group = "remote-initialization",
         value_name = "PATH"
     )]
-    public_key_pem_path: Option<PathBuf>,
+    pub public_key_pem_path: Option<PathBuf>,
 
     /// Shared secret used for remote signing
     #[arg(
@@ -615,7 +616,7 @@ struct RemoteSigningKey {
         group = "remote-initialization",
         value_name = "SECRET"
     )]
-    shared_secret: Option<String>,
+    pub shared_secret: Option<String>,
 
     /// Environment variable holding the shared secret used for remote signing
     #[arg(
@@ -623,15 +624,15 @@ struct RemoteSigningKey {
         group = "remote-initialization",
         value_name = "ENV VAR NAME"
     )]
-    shared_secret_env: Option<String>,
+    pub shared_secret_env: Option<String>,
 
     /// URL of a remote code signing server
     #[arg(long = "remote-signing-url", default_value = crate::remote_signing::DEFAULT_SERVER_URL, value_name = "URL")]
-    url: String,
+    pub url: String,
 }
 
 impl RemoteSigningKey {
-    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if self.enabled {
             let initiator = self.remote_signing_initiator()?;
 
@@ -713,27 +714,27 @@ impl RemoteSigningKey {
 }
 
 #[derive(Args, Clone)]
-struct SigningKeySource {
+pub struct SigningKeySource {
     #[command(flatten)]
-    smartcard_key: SmartcardSigningKey,
+    pub smartcard_key: SmartcardSigningKey,
 
     #[command(flatten)]
-    macos_keychain_key: MacosKeychainSigningKey,
+    pub macos_keychain_key: MacosKeychainSigningKey,
 
     #[command(flatten)]
-    pem_path_key: PemSigningKey,
+    pub pem_path_key: PemSigningKey,
 
     #[command(flatten)]
-    p12_key: P12SigningKey,
+    pub p12_key: P12SigningKey,
 
     #[command(flatten)]
-    remote_signing_key: RemoteSigningKey,
+    pub remote_signing_key: RemoteSigningKey,
 }
 
 #[derive(Args, Clone)]
-struct CertificateSource {
+pub struct CertificateSource {
     #[command(flatten)]
-    keys: SigningKeySource,
+    pub keys: SigningKeySource,
 
     /// Path to file containing DER encoded certificate data
     #[arg(
@@ -742,11 +743,11 @@ struct CertificateSource {
         alias = "der-file",
         value_name = "PATH"
     )]
-    certificate_der_path: Vec<PathBuf>,
+    pub certificate_der_paths: Vec<PathBuf>,
 }
 
 impl CertificateSource {
-    fn resolve_certificates(
+    pub fn resolve_certificates(
         &self,
         scan_smartcard: bool,
     ) -> Result<(Vec<Box<dyn PrivateKey>>, Vec<CapturedX509Certificate>), AppleCodesignError> {
@@ -756,7 +757,7 @@ impl CertificateSource {
         res.extend(self.keys.p12_key.resolve_certificates()?);
         res.extend(self.keys.pem_path_key.resolve_certificates()?);
 
-        for der_source in &self.certificate_der_path {
+        for der_source in &self.certificate_der_paths {
             warn!("reading DER file {}", der_source.display());
             let der_data = std::fs::read(der_source)?;
 
