@@ -2062,32 +2062,12 @@ struct Sign {
 fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
     let mut settings = SigningSettings::default();
 
-    let signing_certs = args.certificate.resolve_certificates(true)?;
+    let certs = args.certificate.resolve_certificates(true)?;
+    certs.load_into_signing_settings(&mut settings)?;
 
-    let private = signing_certs.private_key_optional()?;
-
-    let mut public_certificates = signing_certs.certs.clone();
-
-    if let Some(signing_key) = &private {
-        if public_certificates.is_empty() {
-            error!("a PRIVATE KEY requires a corresponding CERTIFICATE to pair with it");
-            return Err(AppleCodesignError::CliBadArgument);
-        }
-
-        let cert = public_certificates.remove(0);
-
-        warn!("registering signing key");
-        settings.set_signing_key(signing_key.as_key_info_signer(), cert);
-        if let Some(certs) = settings.chain_apple_certificates() {
-            for cert in certs {
-                warn!(
-                    "automatically registered Apple CA certificate: {}",
-                    cert.subject_common_name()
-                        .unwrap_or_else(|| "default".into())
-                );
-            }
-        }
-
+    // Doesn't make sense to set a time-stamp server URL unless we're generating
+    // CMS signatures.
+    if settings.signing_key().is_some() {
         if args.timestamp_url != "none" {
             warn!("using time-stamp protocol server {}", args.timestamp_url);
             settings.set_time_stamp_url(&args.timestamp_url)?;
@@ -2107,11 +2087,6 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
             "automatically setting team ID from signing certificate: {}",
             team_id
         );
-    }
-
-    for cert in public_certificates {
-        warn!("registering extra X.509 certificate");
-        settings.chain_certificate(cert);
     }
 
     if let Some(team_name) = &args.team_name {
@@ -2221,7 +2196,7 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         signer.sign_path_in_place(&args.input_path)?;
     }
 
-    if let Some(private) = &private {
+    if let Some(private) = certs.private_key_optional()? {
         private.finish()?;
     }
 

@@ -11,6 +11,7 @@ use {
             session_negotiation::{PublicKeyInitiator, SessionInitiatePeer, SharedSecretInitiator},
             RemoteSignError, UnjoinedSigningClient,
         },
+        signing_settings::SigningSettings,
     },
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
     clap::Args,
@@ -67,6 +68,44 @@ impl SigningCertificates {
                 "at most 1 private keys can be present (found {n})"
             ))),
         }
+    }
+
+    /// Loads the instance into a [SigningSettings].
+    pub fn load_into_signing_settings<'settings, 'slf: 'settings>(
+        &'slf self,
+        settings: &'settings mut SigningSettings<'slf>,
+    ) -> Result<(), AppleCodesignError> {
+        let private = self.private_key_optional()?;
+
+        let mut public_certificates = self.certs.clone();
+
+        if let Some(signing_key) = &private {
+            if public_certificates.is_empty() {
+                error!("a PRIVATE KEY requires a corresponding CERTIFICATE to pair with it");
+                return Err(AppleCodesignError::CliBadArgument);
+            }
+
+            let cert = public_certificates.remove(0);
+
+            warn!("registering signing key");
+            settings.set_signing_key(signing_key.as_key_info_signer(), cert);
+            if let Some(certs) = settings.chain_apple_certificates() {
+                for cert in certs {
+                    warn!(
+                        "automatically registered Apple CA certificate: {}",
+                        cert.subject_common_name()
+                            .unwrap_or_else(|| "default".into())
+                    );
+                }
+            }
+        }
+
+        for cert in public_certificates {
+            warn!("registering extra X.509 certificate");
+            settings.chain_certificate(cert);
+        }
+
+        Ok(())
     }
 }
 
