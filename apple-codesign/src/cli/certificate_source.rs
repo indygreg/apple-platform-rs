@@ -44,6 +44,10 @@ impl SigningCertificates {
         self.certs.extend(other.certs.into_iter());
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.keys.is_empty() && self.certs.is_empty()
+    }
+
     /// Resolve a private key in this collection.
     ///
     /// Errors unless the number of keys is exactly one.
@@ -69,6 +73,11 @@ impl SigningCertificates {
 pub trait KeySource {
     /// Obtain a bag of private keys and certificates from the instance.
     fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError>;
+
+    /// Whether key source is the lone/exclusive source of keys + certs.
+    fn exclusive(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
@@ -386,6 +395,10 @@ impl KeySource for RemoteSigningKey {
             Ok(Default::default())
         }
     }
+
+    fn exclusive(&self) -> bool {
+        true
+    }
 }
 
 impl RemoteSigningKey {
@@ -468,8 +481,6 @@ pub struct SigningKeySource {
 
 impl SigningKeySource {
     /// Obtain a reference to all [KeySource] present.
-    ///
-    /// Does not consider remote key signers.
     pub fn key_sources(&self, scan_smartcard: bool) -> Vec<&dyn KeySource> {
         let mut res = vec![];
 
@@ -488,6 +499,10 @@ impl SigningKeySource {
         }
 
         if let Some(key) = &self.p12_key {
+            res.push(key as &dyn KeySource);
+        }
+
+        if let Some(key) = &self.remote_signing_key {
             res.push(key as &dyn KeySource);
         }
 
@@ -518,7 +533,13 @@ impl CertificateSource {
         let mut res = SigningCertificates::default();
 
         for key in self.keys.key_sources(scan_smartcard) {
-            res.extend(key.resolve_certificates()?);
+            let certs = key.resolve_certificates()?;
+
+            if key.exclusive() && !certs.is_empty() {
+                return Ok(certs);
+            }
+
+            res.extend(certs);
         }
 
         for der_source in &self.certificate_der_paths {
@@ -526,24 +547,6 @@ impl CertificateSource {
             let der_data = std::fs::read(der_source)?;
 
             res.certs.push(CapturedX509Certificate::from_der(der_data)?);
-        }
-
-        if let Some(key) = &self.keys.remote_signing_key {
-            let remote = key.resolve_certificates()?;
-            if !remote.keys.is_empty() {
-                // As part of the handshake we obtained the public certificates from the signer.
-                // So make them the canonical set.
-                if !res.certs.is_empty() {
-                    warn!(
-                        "ignoring {} local certificates and using remote signer's certificate(s)",
-                        res.certs.len()
-                    );
-                }
-
-                // The client implements Sign, so we just use it as the private key.
-                res.keys = remote.keys;
-                res.certs = remote.certs;
-            }
         }
 
         Ok(res)
