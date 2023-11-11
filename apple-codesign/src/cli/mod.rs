@@ -2401,8 +2401,8 @@ struct Sign {
     info_plist_paths: Vec<String>,
 
     /// Team name/identifier to include in code signature
-    #[arg(long = "team-name", value_name = "NAME")]
-    team_names: Option<String>,
+    #[arg(long, value_name = "NAME")]
+    team_name: Option<String>,
 
     /// An RFC 3339 date and time string to be used in signatures.
     ///
@@ -2500,7 +2500,7 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         settings.chain_certificate(cert);
     }
 
-    if let Some(team_name) = &args.team_names {
+    if let Some(team_name) = &args.team_name {
         settings.set_team_id(team_name);
     }
 
