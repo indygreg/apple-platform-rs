@@ -448,7 +448,7 @@ impl RemoteSigningKey {
     }
 }
 
-#[derive(Args, Clone)]
+#[derive(Args, Clone, Debug, Eq, PartialEq)]
 pub struct SigningKeySource {
     #[command(flatten)]
     pub smartcard_key: Option<SmartcardSigningKey>,
@@ -464,6 +464,35 @@ pub struct SigningKeySource {
 
     #[command(flatten)]
     pub remote_signing_key: Option<RemoteSigningKey>,
+}
+
+impl SigningKeySource {
+    /// Obtain a reference to all [KeySource] present.
+    ///
+    /// Does not consider remote key signers.
+    pub fn key_sources(&self, scan_smartcard: bool) -> Vec<&dyn KeySource> {
+        let mut res = vec![];
+
+        if scan_smartcard {
+            if let Some(key) = &self.smartcard_key {
+                res.push(key as &dyn KeySource);
+            }
+        }
+
+        if let Some(key) = &self.macos_keychain_key {
+            res.push(key as &dyn KeySource);
+        }
+
+        if let Some(key) = &self.pem_path_key {
+            res.push(key as &dyn KeySource);
+        }
+
+        if let Some(key) = &self.p12_key {
+            res.push(key as &dyn KeySource);
+        }
+
+        res
+    }
 }
 
 #[derive(Args, Clone)]
@@ -488,12 +517,8 @@ impl CertificateSource {
     ) -> Result<SigningCertificates, AppleCodesignError> {
         let mut res = SigningCertificates::default();
 
-        if let Some(key) = &self.keys.p12_key {
+        for key in self.keys.key_sources(scan_smartcard) {
             res.extend(key.resolve_certificates()?);
-        }
-
-        if let Some(pem) = &self.keys.pem_path_key {
-            res.extend(pem.resolve_certificates()?);
         }
 
         for der_source in &self.certificate_der_paths {
@@ -501,16 +526,6 @@ impl CertificateSource {
             let der_data = std::fs::read(der_source)?;
 
             res.certs.push(CapturedX509Certificate::from_der(der_data)?);
-        }
-
-        if let Some(macos) = &self.keys.macos_keychain_key {
-            res.extend(macos.resolve_certificates()?);
-        }
-
-        if scan_smartcard {
-            if let Some(sc) = &self.keys.smartcard_key {
-                res.extend(sc.resolve_certificates()?);
-            }
         }
 
         if let Some(key) = &self.keys.remote_signing_key {
