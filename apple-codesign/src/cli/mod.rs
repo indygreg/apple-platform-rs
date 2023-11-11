@@ -1906,24 +1906,18 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
 
     let mut joiner = create_session_joiner(session_join_string)?;
 
-    if let Some(env) = &args
-        .certificate
-        .keys
-        .remote_signing_key
-        .session_init
-        .shared_secret_env
-    {
-        let secret = std::env::var(env).map_err(|_| AppleCodesignError::CliBadArgument)?;
-        joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
-    } else if let Some(secret) = &args
-        .certificate
-        .keys
-        .remote_signing_key
-        .session_init
-        .shared_secret
-    {
-        joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
-    }
+    let url = if let Some(key) = &args.certificate.keys.remote_signing_key {
+        if let Some(env) = &key.session_init.shared_secret_env {
+            let secret = std::env::var(env).map_err(|_| AppleCodesignError::CliBadArgument)?;
+            joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
+        } else if let Some(secret) = &key.session_init.shared_secret {
+            joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
+        }
+
+        key.url.clone()
+    } else {
+        crate::remote_signing::DEFAULT_SERVER_URL.to_string()
+    };
 
     let signing_certs = args.certificate.resolve_certificates(true)?;
 
@@ -1948,7 +1942,7 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
         private.as_key_info_signer(),
         cert,
         certificates,
-        args.certificate.keys.remote_signing_key.url.clone(),
+        url,
     )?;
     client.run()?;
 
@@ -2325,6 +2319,8 @@ fn command_smartcard_import(args: &SmartcardImport) -> Result<(), AppleCodesignE
         args.certificate
             .keys
             .smartcard_key
+            .as_ref()
+            .unwrap()
             .slot
             .as_ref()
             .ok_or_else(|| {

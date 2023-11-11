@@ -451,19 +451,19 @@ impl RemoteSigningKey {
 #[derive(Args, Clone)]
 pub struct SigningKeySource {
     #[command(flatten)]
-    pub smartcard_key: SmartcardSigningKey,
+    pub smartcard_key: Option<SmartcardSigningKey>,
 
     #[command(flatten)]
-    pub macos_keychain_key: MacosKeychainSigningKey,
+    pub macos_keychain_key: Option<MacosKeychainSigningKey>,
 
     #[command(flatten)]
-    pub pem_path_key: PemSigningKey,
+    pub pem_path_key: Option<PemSigningKey>,
 
     #[command(flatten)]
-    pub p12_key: P12SigningKey,
+    pub p12_key: Option<P12SigningKey>,
 
     #[command(flatten)]
-    pub remote_signing_key: RemoteSigningKey,
+    pub remote_signing_key: Option<RemoteSigningKey>,
 }
 
 #[derive(Args, Clone)]
@@ -488,9 +488,13 @@ impl CertificateSource {
     ) -> Result<SigningCertificates, AppleCodesignError> {
         let mut res = SigningCertificates::default();
 
-        let v = self.keys.p12_key.resolve_certificates()?;
-        res.extend(self.keys.p12_key.resolve_certificates()?);
-        res.extend(self.keys.pem_path_key.resolve_certificates()?);
+        if let Some(key) = &self.keys.p12_key {
+            res.extend(key.resolve_certificates()?);
+        }
+
+        if let Some(pem) = &self.keys.pem_path_key {
+            res.extend(pem.resolve_certificates()?);
+        }
 
         for der_source in &self.certificate_der_paths {
             warn!("reading DER file {}", der_source.display());
@@ -499,26 +503,32 @@ impl CertificateSource {
             res.certs.push(CapturedX509Certificate::from_der(der_data)?);
         }
 
-        res.extend(self.keys.macos_keychain_key.resolve_certificates()?);
-
-        if scan_smartcard {
-            res.extend(self.keys.smartcard_key.resolve_certificates()?);
+        if let Some(macos) = &self.keys.macos_keychain_key {
+            res.extend(macos.resolve_certificates()?);
         }
 
-        let remote = self.keys.remote_signing_key.resolve_certificates()?;
-        if !remote.keys.is_empty() {
-            // As part of the handshake we obtained the public certificates from the signer.
-            // So make them the canonical set.
-            if !res.certs.is_empty() {
-                warn!(
-                    "ignoring {} local certificates and using remote signer's certificate(s)",
-                    res.certs.len()
-                );
+        if scan_smartcard {
+            if let Some(sc) = &self.keys.smartcard_key {
+                res.extend(sc.resolve_certificates()?);
             }
+        }
 
-            // The client implements Sign, so we just use it as the private key.
-            res.keys = v.keys;
-            res.certs = v.certs;
+        if let Some(key) = &self.keys.remote_signing_key {
+            let remote = key.resolve_certificates()?;
+            if !remote.keys.is_empty() {
+                // As part of the handshake we obtained the public certificates from the signer.
+                // So make them the canonical set.
+                if !res.certs.is_empty() {
+                    warn!(
+                        "ignoring {} local certificates and using remote signer's certificate(s)",
+                        res.certs.len()
+                    );
+                }
+
+                // The client implements Sign, so we just use it as the private key.
+                res.keys = remote.keys;
+                res.certs = remote.certs;
+            }
         }
 
         Ok(res)
