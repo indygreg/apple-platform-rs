@@ -1714,20 +1714,9 @@ struct GenerateCertificateSigningRequest {
 fn command_generate_certificate_signing_request(
     args: &GenerateCertificateSigningRequest,
 ) -> Result<(), AppleCodesignError> {
-    let private_keys = args.certificate.resolve_certificates(true)?.keys;
+    let signing_certs = args.certificate.resolve_certificates(true)?;
 
-    let private_key = if private_keys.is_empty() {
-        error!("no private keys found; a private key is required to sign a certificate signing request");
-        return Err(AppleCodesignError::CliBadArgument);
-    } else if private_keys.len() > 1 {
-        error!(
-            "at most 1 private key can be present (found {}); aborting",
-            private_keys.len()
-        );
-        return Err(AppleCodesignError::CliBadArgument);
-    } else {
-        private_keys.into_iter().next().expect("checked size above")
-    };
+    let private_key = signing_certs.private_key()?;
 
     let mut builder = X509CertificateBuilder::default();
     builder
@@ -2298,13 +2287,9 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
 
     let signing_certs = args.certificate.resolve_certificates(true)?;
 
-    let private = signing_certs
-        .keys
-        .into_iter()
-        .next()
-        .ok_or(AppleCodesignError::NoSigningCertificate)?;
+    let private = signing_certs.private_key()?;
 
-    let mut public_certificates = signing_certs.certs;
+    let mut public_certificates = signing_certs.certs.clone();
     let cert = public_certificates.remove(0);
 
     let certificates = if let Some(chain) = cert.apple_root_certificate_chain() {
@@ -2445,18 +2430,9 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
 
     let signing_certs = args.certificate.resolve_certificates(true)?;
 
-    if signing_certs.keys.len() > 1 {
-        error!("at most 1 PRIVATE KEY can be present; aborting");
-        return Err(AppleCodesignError::CliBadArgument);
-    }
+    let private = signing_certs.private_key_optional()?;
 
-    let private = if signing_certs.keys.is_empty() {
-        None
-    } else {
-        Some(&signing_certs.keys[0])
-    };
-
-    let mut public_certificates = signing_certs.certs;
+    let mut public_certificates = signing_certs.certs.clone();
 
     if let Some(signing_key) = &private {
         if public_certificates.is_empty() {
@@ -2737,16 +2713,18 @@ fn command_smartcard_import(args: &SmartcardImport) -> Result<(), AppleCodesignE
 
         None
     } else {
-        Some(signing_certs.keys.into_iter().next().ok_or_else(|| {
-            println!("no private key found");
-            AppleCodesignError::CliBadArgument
-        })?)
+        Some(signing_certs.private_key()?)
     };
 
-    let cert = signing_certs.certs.into_iter().next().ok_or_else(|| {
-        println!("no public certificates found");
-        AppleCodesignError::CliBadArgument
-    })?;
+    let cert = signing_certs
+        .certs
+        .clone()
+        .into_iter()
+        .next()
+        .ok_or_else(|| {
+            println!("no public certificates found");
+            AppleCodesignError::CliBadArgument
+        })?;
 
     println!(
         "Will import the following certificate into slot {}",

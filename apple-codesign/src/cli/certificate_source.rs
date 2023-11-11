@@ -43,6 +43,27 @@ impl SigningCertificates {
         self.keys.extend(other.keys.into_iter());
         self.certs.extend(other.certs.into_iter());
     }
+
+    /// Resolve a private key in this collection.
+    ///
+    /// Errors unless the number of keys is exactly one.
+    pub fn private_key(&self) -> Result<&Box<dyn PrivateKey>, AppleCodesignError> {
+        self.private_key_optional()?
+            .ok_or_else(|| AppleCodesignError::CliGeneralError("no private key found".into()))
+    }
+
+    /// Resolve an optional private key in this collection.
+    ///
+    /// Errors if there are more than 1 key.
+    pub fn private_key_optional(&self) -> Result<Option<&Box<dyn PrivateKey>>, AppleCodesignError> {
+        match self.keys.len() {
+            0 => Ok(None),
+            1 => Ok(Some(&self.keys[0])),
+            n => Err(AppleCodesignError::CliGeneralError(format!(
+                "at most 1 private keys can be present (found {n})"
+            ))),
+        }
+    }
 }
 
 #[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
