@@ -1906,7 +1906,7 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
 
     let mut joiner = create_session_joiner(session_join_string)?;
 
-    let url = if let Some(key) = &args.certificate.keys.remote_signing_key {
+    let url = if let Some(key) = &args.certificate.remote_signing_key {
         if let Some(env) = &key.session_init.shared_secret_env {
             let secret = std::env::var(env).map_err(|_| AppleCodesignError::CliBadArgument)?;
             joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
@@ -2317,7 +2317,6 @@ fn command_smartcard_import(args: &SmartcardImport) -> Result<(), AppleCodesignE
 
     let slot_id = ::yubikey::piv::SlotId::from_str(
         args.certificate
-            .keys
             .smartcard_key
             .as_ref()
             .unwrap()

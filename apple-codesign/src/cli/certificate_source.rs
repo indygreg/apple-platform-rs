@@ -489,8 +489,8 @@ impl KeySource for CertificateDerSigningKey {
     }
 }
 
-#[derive(Args, Clone, Debug, Eq, PartialEq)]
-pub struct SigningKeySource {
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct CertificateSource {
     #[command(flatten)]
     pub smartcard_key: Option<SmartcardSigningKey>,
 
@@ -510,7 +510,7 @@ pub struct SigningKeySource {
     pub certificate_der_key: Option<CertificateDerSigningKey>,
 }
 
-impl SigningKeySource {
+impl CertificateSource {
     /// Obtain a reference to all [KeySource] present.
     pub fn key_sources(&self, scan_smartcard: bool) -> Vec<&dyn KeySource> {
         let mut res = vec![];
@@ -543,22 +543,14 @@ impl SigningKeySource {
 
         res
     }
-}
 
-#[derive(Args, Clone)]
-pub struct CertificateSource {
-    #[command(flatten)]
-    pub keys: SigningKeySource,
-}
-
-impl CertificateSource {
     pub fn resolve_certificates(
         &self,
         scan_smartcard: bool,
     ) -> Result<SigningCertificates, AppleCodesignError> {
         let mut res = SigningCertificates::default();
 
-        for key in self.keys.key_sources(scan_smartcard) {
+        for key in self.key_sources(scan_smartcard) {
             let certs = key.resolve_certificates()?;
 
             if key.exclusive() && !certs.is_empty() {
