@@ -30,8 +30,10 @@ use {
     cryptographic_message_syntax::SignedData,
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
+    serde::Deserialize,
     spki::EncodePublicKey,
     std::{
+        collections::BTreeMap,
         io::Write,
         path::{Path, PathBuf},
         str::FromStr,
@@ -308,16 +310,6 @@ To exclude all nested bundles from being signed and only sign the main bundle
 ";
 
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
-
-fn parse_scoped_value(s: &str) -> Result<(SettingsScope, &str), AppleCodesignError> {
-    let parts = s.splitn(2, ':').collect::<Vec<_>>();
-
-    match parts.len() {
-        1 => Ok((SettingsScope::Main, s)),
-        2 => Ok((SettingsScope::try_from(parts[0])?, parts[1])),
-        _ => Err(AppleCodesignError::CliBadArgument),
-    }
-}
 
 #[allow(unused)]
 pub fn prompt_smartcard_pin() -> Result<Vec<u8>, AppleCodesignError> {
@@ -2023,91 +2015,174 @@ pub struct ScopedSigningArgs {
     info_plist_paths: Vec<String>,
 }
 
-impl ScopedSigningArgs {
-    fn load_into_settings(&self, settings: &mut SigningSettings) -> Result<(), AppleCodesignError> {
-        for (i, value) in self.digests.iter().enumerate() {
-            let (scope, value) = parse_scoped_value(value)?;
-            let digest_type = DigestType::try_from(value)?;
+/// Represents the set of scopable signing settings for a given scope.
+#[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize)]
+pub struct ScopedSigningSettingsValues {
+    pub identifier: Option<String>,
+    pub code_requirements_file: Option<PathBuf>,
+    pub code_resources_file: Option<PathBuf>,
+    pub code_signature_flags: Vec<String>,
+    pub digests: Vec<String>,
+    pub entitlements_xml_file: Option<PathBuf>,
+    pub runtime_version: Option<String>,
+    pub info_plist_file: Option<PathBuf>,
+}
 
-            if i == 0 {
-                settings.set_digest_type(scope, digest_type);
-            } else {
-                settings.add_extra_digest(scope, digest_type);
+pub fn split_scoped_value(s: &str) -> (String, &str) {
+    let parts = s.splitn(2, ':').collect::<Vec<_>>();
+
+    match parts.len() {
+        1 => ("@main".into(), s),
+        2 => (parts[0].to_string(), parts[1]),
+        _ => {
+            panic!("error splitting scoped value; this should not occur");
+        }
+    }
+}
+
+/// A mapping of scopes to collections of signing settings.
+///
+/// This abstraction exists to make it easier to load config files.
+pub struct ScopedSigningSettings(BTreeMap<String, ScopedSigningSettingsValues>);
+
+impl TryFrom<&ScopedSigningArgs> for ScopedSigningSettings {
+    type Error = AppleCodesignError;
+
+    fn try_from(args: &ScopedSigningArgs) -> Result<Self, Self::Error> {
+        let mut res = BTreeMap::<String, ScopedSigningSettingsValues>::default();
+
+        for value in &args.binary_identifiers {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().identifier = Some(value.into());
+        }
+
+        for value in &args.code_requirements_paths {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().code_requirements_file = Some(value.into());
+        }
+
+        for value in &args.code_resources_paths {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().code_resources_file = Some(value.into());
+        }
+
+        for value in &args.code_signature_flags {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope)
+                .or_default()
+                .code_signature_flags
+                .push(value.into());
+        }
+
+        for value in &args.digests {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().digests.push(value.into());
+        }
+
+        for value in &args.entitlements_xml_paths {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().entitlements_xml_file = Some(value.into());
+        }
+
+        for value in &args.runtime_versions {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().runtime_version = Some(value.into());
+        }
+
+        for value in &args.info_plist_paths {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().info_plist_file = Some(value.into());
+        }
+
+        Ok(Self(res))
+    }
+}
+
+impl ScopedSigningSettings {
+    pub fn load_into_settings(
+        self,
+        settings: &mut SigningSettings,
+    ) -> Result<(), AppleCodesignError> {
+        for (scope, values) in self.0 {
+            let scope = SettingsScope::try_from(scope.as_str())?;
+
+            if let Some(v) = values.identifier {
+                settings.set_binary_identifier(scope.clone(), v);
             }
-        }
 
-        for value in &self.binary_identifiers {
-            let (scope, identifier) = parse_scoped_value(value)?;
-            settings.set_binary_identifier(scope, identifier);
-        }
-
-        for value in &self.code_requirements_paths {
-            let (scope, path) = parse_scoped_value(value)?;
-
-            let code_requirements_data = std::fs::read(path)?;
-            let reqs = CodeRequirements::parse_blob(&code_requirements_data)?.0;
-            for expr in reqs.iter() {
-                warn!(
-                    "setting designated code requirements for {}: {}",
-                    scope, expr
-                );
-                settings.set_designated_requirement_expression(scope.clone(), expr)?;
-            }
-        }
-
-        for value in &self.code_resources_paths {
-            let (scope, path) = parse_scoped_value(value)?;
-
-            warn!(
-                "setting code resources data for {} from path {}",
-                scope, path
-            );
-            let code_resources_data = std::fs::read(path)?;
-            settings.set_code_resources_data(scope, code_resources_data);
-        }
-
-        // If code signature flags are specified, they overwrite defaults. Do
-        // a pass over scopes to reset all flags then re-add the flags.
-        for value in &self.code_signature_flags {
-            let scope = parse_scoped_value(value)?.0;
-            if let Some(existing) = settings.code_signature_flags(&scope) {
-                if existing != CodeSignatureFlags::empty() {
+            if let Some(v) = values.code_requirements_file {
+                let code_requirements_data = std::fs::read(v)?;
+                let reqs = CodeRequirements::parse_blob(&code_requirements_data)?.0;
+                for expr in reqs.iter() {
                     warn!(
-                        "removing code signature flags {:?} from {}",
-                        existing, scope
+                        "setting designated code requirements for {}: {}",
+                        scope, expr
                     );
+
+                    settings.set_designated_requirement_expression(scope.clone(), expr)?;
                 }
             }
-            settings.set_code_signature_flags(scope, CodeSignatureFlags::empty());
-        }
 
-        for value in &self.code_signature_flags {
-            let (scope, value) = parse_scoped_value(value)?;
-            let flags = CodeSignatureFlags::from_str(value)?;
-            warn!("adding code signature flag {:?} to {}", flags, scope);
-            settings.add_code_signature_flags(scope, flags);
-        }
+            if let Some(path) = values.code_resources_file {
+                warn!(
+                    "setting code resources data for {} from path {}",
+                    scope,
+                    path.display()
+                );
+                let code_resources_data = std::fs::read(path)?;
+                settings.set_code_resources_data(scope.clone(), code_resources_data);
+            }
 
-        for value in &self.entitlements_xml_paths {
-            let (scope, path) = parse_scoped_value(value)?;
+            // If code signature flags are specified, they overwrite defaults. So reset
+            // current values on the scope before setting anything.
+            if !values.code_signature_flags.is_empty() {
+                if let Some(existing) = settings.code_signature_flags(&scope) {
+                    if existing != CodeSignatureFlags::empty() {
+                        warn!(
+                            "removing code signature flags {:?} from {}",
+                            existing, scope
+                        );
+                    }
+                }
 
-            warn!("setting entitlements XML for {} from path {}", scope, path);
-            let entitlements_data = std::fs::read_to_string(path)?;
-            settings.set_entitlements_xml(scope, entitlements_data)?;
-        }
+                settings.set_code_signature_flags(scope.clone(), CodeSignatureFlags::empty());
+            }
 
-        for value in &self.runtime_versions {
-            let (scope, value) = parse_scoped_value(value)?;
+            for value in values.code_signature_flags {
+                let flags = CodeSignatureFlags::from_str(&value)?;
+                warn!("adding code signature flag {:?} to {}", flags, scope);
+                settings.add_code_signature_flags(scope.clone(), flags);
+            }
 
-            let version = semver::Version::parse(value)?;
-            settings.set_runtime_version(scope, version);
-        }
+            for (i, value) in values.digests.into_iter().enumerate() {
+                let digest_type = DigestType::try_from(value.as_str())?;
 
-        for value in &self.info_plist_paths {
-            let (scope, value) = parse_scoped_value(value)?;
+                if i == 0 {
+                    settings.set_digest_type(scope.clone(), digest_type);
+                } else {
+                    settings.add_extra_digest(scope.clone(), digest_type);
+                }
+            }
 
-            let content = std::fs::read(value)?;
-            settings.set_info_plist_data(scope, content);
+            if let Some(path) = values.entitlements_xml_file {
+                warn!(
+                    "setting entitlements XML for {} from path {}",
+                    scope,
+                    path.display()
+                );
+                let entitlements_data = std::fs::read_to_string(path)?;
+                settings.set_entitlements_xml(scope.clone(), entitlements_data)?;
+            }
+
+            if let Some(value) = values.runtime_version {
+                let version = semver::Version::parse(&value)?;
+                settings.set_runtime_version(scope.clone(), version);
+            }
+
+            if let Some(path) = values.info_plist_file {
+                let data = std::fs::read(path)?;
+                settings.set_info_plist_data(scope, data);
+            }
         }
 
         Ok(())
@@ -2195,7 +2270,7 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
         settings.add_path_exclusion(pattern)?;
     }
 
-    args.scoped.load_into_settings(&mut settings)?;
+    ScopedSigningSettings::try_from(&args.scoped)?.load_into_settings(&mut settings)?;
 
     // Settings are locked in. Proceed to sign.
 
