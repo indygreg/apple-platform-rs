@@ -66,6 +66,11 @@ impl SigningCertificates {
     }
 }
 
+pub trait KeySource {
+    /// Obtain a bag of private keys and certificates from the instance.
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError>;
+}
+
 #[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
 pub struct SmartcardSigningKey {
     /// Smartcard slot number of signing certificate to use (9c is common)
@@ -83,9 +88,9 @@ pub struct SmartcardSigningKey {
     pub pin_env: Option<String>,
 }
 
-impl SmartcardSigningKey {
+impl KeySource for SmartcardSigningKey {
     #[cfg(feature = "yubikey")]
-    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if let Some(slot) = &self.slot {
             let slot_id = ::yubikey::piv::SlotId::from_str(slot)?;
             let formatted = hex::encode([u8::from(slot_id)]);
@@ -127,7 +132,7 @@ impl SmartcardSigningKey {
     }
 
     #[cfg(not(feature = "yubikey"))]
-    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if self.slot.is_some() {
             error!("smartcard support not available; ignoring --smartcard-slot");
         }
@@ -151,9 +156,9 @@ pub struct MacosKeychainSigningKey {
     pub sha256_fingerprint: Option<String>,
 }
 
-impl MacosKeychainSigningKey {
+impl KeySource for MacosKeychainSigningKey {
     #[cfg(target_os = "macos")]
-    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         // No arguments pertinent to keychains. Don't even speak to the
         // keychain API since this could only error.
         if self.domains.is_empty() && self.sha256_fingerprint.is_none() {
@@ -199,7 +204,7 @@ impl MacosKeychainSigningKey {
     }
 
     #[cfg(not(target_os = "macos"))]
-    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if !self.domains.is_empty() || self.sha256_fingerprint.is_some() {
             error!(
                 "--keychain* arguments only supported on macOS and will be ignored on this platform"
@@ -236,8 +241,8 @@ pub struct P12SigningKey {
     pub password_path: Option<PathBuf>,
 }
 
-impl P12SigningKey {
-    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+impl KeySource for P12SigningKey {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if let Some(path) = &self.path {
             let p12_data = std::fs::read(path)?;
 
@@ -263,8 +268,8 @@ pub struct PemSigningKey {
     pub paths: Vec<PathBuf>,
 }
 
-impl PemSigningKey {
-    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+impl KeySource for PemSigningKey {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         let mut res = SigningCertificates::default();
 
         for path in &self.paths {
@@ -359,8 +364,8 @@ impl Default for RemoteSigningKey {
     }
 }
 
-impl RemoteSigningKey {
-    pub fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+impl KeySource for RemoteSigningKey {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if self.enabled {
             let initiator = self.remote_signing_initiator()?;
 
@@ -381,7 +386,9 @@ impl RemoteSigningKey {
             Ok(Default::default())
         }
     }
+}
 
+impl RemoteSigningKey {
     fn remote_signing_initiator(&self) -> Result<Box<dyn SessionInitiatePeer>, RemoteSignError> {
         let server_url = self.url.clone();
 
