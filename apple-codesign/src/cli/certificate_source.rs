@@ -457,7 +457,7 @@ impl CertificateSource {
     pub fn resolve_certificates(
         &self,
         scan_smartcard: bool,
-    ) -> Result<(Vec<Box<dyn PrivateKey>>, Vec<CapturedX509Certificate>), AppleCodesignError> {
+    ) -> Result<SigningCertificates, AppleCodesignError> {
         let mut res = SigningCertificates::default();
 
         let v = self.keys.p12_key.resolve_certificates()?;
@@ -493,6 +493,6 @@ impl CertificateSource {
             res.certs = v.certs;
         }
 
-        Ok((res.keys, res.certs))
+        Ok(res)
     }
 }

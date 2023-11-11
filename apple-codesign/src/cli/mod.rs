@@ -544,7 +544,7 @@ struct AnalyzeCertificate {
 }
 
 fn command_analyze_certificate(args: &AnalyzeCertificate) -> Result<(), AppleCodesignError> {
-    let certs = args.certificate.resolve_certificates(true)?.1;
+    let certs = args.certificate.resolve_certificates(true)?.certs;
 
     for (i, cert) in certs.into_iter().enumerate() {
         println!("# Certificate {i}");
@@ -1714,7 +1714,7 @@ struct GenerateCertificateSigningRequest {
 fn command_generate_certificate_signing_request(
     args: &GenerateCertificateSigningRequest,
 ) -> Result<(), AppleCodesignError> {
-    let private_keys = args.certificate.resolve_certificates(true)?.0;
+    let private_keys = args.certificate.resolve_certificates(true)?.keys;
 
     let private_key = if private_keys.is_empty() {
         error!("no private keys found; a private key is required to sign a certificate signing request");
@@ -2296,13 +2296,15 @@ fn command_remote_sign(args: &RemoteSign) -> Result<(), AppleCodesignError> {
         joiner.register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
     }
 
-    let (private_keys, mut public_certificates) = args.certificate.resolve_certificates(true)?;
+    let signing_certs = args.certificate.resolve_certificates(true)?;
 
-    let private = private_keys
+    let private = signing_certs
+        .keys
         .into_iter()
         .next()
         .ok_or(AppleCodesignError::NoSigningCertificate)?;
 
+    let mut public_certificates = signing_certs.certs;
     let cert = public_certificates.remove(0);
 
     let certificates = if let Some(chain) = cert.apple_root_certificate_chain() {
@@ -2441,18 +2443,20 @@ struct Sign {
 fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
     let mut settings = SigningSettings::default();
 
-    let (private_keys, mut public_certificates) = args.certificate.resolve_certificates(true)?;
+    let signing_certs = args.certificate.resolve_certificates(true)?;
 
-    if private_keys.len() > 1 {
+    if signing_certs.keys.len() > 1 {
         error!("at most 1 PRIVATE KEY can be present; aborting");
         return Err(AppleCodesignError::CliBadArgument);
     }
 
-    let private = if private_keys.is_empty() {
+    let private = if signing_certs.keys.is_empty() {
         None
     } else {
-        Some(&private_keys[0])
+        Some(&signing_certs.keys[0])
     };
+
+    let mut public_certificates = signing_certs.certs;
 
     if let Some(signing_key) = &private {
         if public_certificates.is_empty() {
@@ -2699,7 +2703,7 @@ struct SmartcardImport {
 
 #[cfg(feature = "yubikey")]
 fn command_smartcard_import(args: &SmartcardImport) -> Result<(), AppleCodesignError> {
-    let (keys, certs) = args.certificate.resolve_certificates(false)?;
+    let signing_certs = args.certificate.resolve_certificates(false)?;
 
     let slot_id = ::yubikey::piv::SlotId::from_str(
         args.certificate
@@ -2717,29 +2721,29 @@ fn command_smartcard_import(args: &SmartcardImport) -> Result<(), AppleCodesignE
 
     println!(
         "found {} private keys and {} public certificates",
-        keys.len(),
-        certs.len()
+        signing_certs.keys.len(),
+        signing_certs.certs.len()
     );
 
     let key = if args.existing_key {
         println!("using existing private key in smartcard");
 
-        if !keys.is_empty() {
+        if !signing_certs.keys.is_empty() {
             println!(
                 "ignoring {} private keys specified via arguments",
-                keys.len()
+                signing_certs.keys.len()
             );
         }
 
         None
     } else {
-        Some(keys.into_iter().next().ok_or_else(|| {
+        Some(signing_certs.keys.into_iter().next().ok_or_else(|| {
             println!("no private key found");
             AppleCodesignError::CliBadArgument
         })?)
     };
 
-    let cert = certs.into_iter().next().ok_or_else(|| {
+    let cert = signing_certs.certs.into_iter().next().ok_or_else(|| {
         println!("no public certificates found");
         AppleCodesignError::CliBadArgument
     })?;
