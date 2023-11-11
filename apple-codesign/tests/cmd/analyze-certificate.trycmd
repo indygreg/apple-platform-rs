@@ -9,11 +9,22 @@ The output of the command can be useful to learn about X.509 certificate extensi
 Usage: rcodesign[EXE] analyze-certificate [OPTIONS]
 
 Options:
+  -C, --config-file <CONFIG_PATH>
+          Explicit configuration file to load.
+          
+          If provided, the default configuration files are not loaded, even if they exist.
+          
+          Can be specified multiple times. Files are loaded/merged in the order given.
+          
+          The special value `/dev/null` can be used to specify an empty/null config file. It can be used to short-circuit loading of default config files.
+
       --smartcard-slot <SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
 
-  -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times
+  -P, --profile <PROFILE>
+          Configuration profile to load.
+          
+          If not specified, the implicit "default" profile is loaded.
 
       --smartcard-pin <SECRET>
           Smartcard PIN used to unlock certificate
@@ -22,6 +33,9 @@ Options:
 
       --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
 
       --keychain-domain <DOMAIN>
           (macOS only) Keychain domain to operate on

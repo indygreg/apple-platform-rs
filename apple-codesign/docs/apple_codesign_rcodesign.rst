@@ -12,4 +12,5 @@ mechanism to interact with Apple code signing.
 
    apple_codesign_rcodesign_signing
    apple_codesign_rcodesign_notarizing
+   apple_codesign_rcodesign_config_files
    apple_codesign_settings_scope

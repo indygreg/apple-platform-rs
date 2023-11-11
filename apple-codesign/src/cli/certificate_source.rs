@@ -16,7 +16,7 @@ use {
     base64::{engine::general_purpose::STANDARD as STANDARD_ENGINE, Engine},
     clap::Args,
     log::{error, info, warn},
-    serde::Deserialize,
+    serde::{Deserialize, Serialize},
     spki::EncodePublicKey,
     std::path::PathBuf,
     x509_certificate::CapturedX509Certificate,
@@ -119,7 +119,8 @@ pub trait KeySource {
     }
 }
 
-#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct SmartcardSigningKey {
     /// Smartcard slot number of signing certificate to use (9c is common)
     #[arg(long = "smartcard-slot", value_name = "SLOT")]
@@ -133,6 +134,7 @@ pub struct SmartcardSigningKey {
 
     /// Environment variable holding the smartcard PIN
     #[arg(long = "smartcard-pin-env", value_name = "STRING")]
+    #[serde(skip)]
     pub pin_env: Option<String>,
 }
 
@@ -189,10 +191,12 @@ impl KeySource for SmartcardSigningKey {
     }
 }
 
-#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct MacosKeychainSigningKey {
     /// (macOS only) Keychain domain to operate on
     #[arg(long = "keychain-domain", group = "keychain", value_parser = crate::cli::KEYCHAIN_DOMAINS, value_name = "DOMAIN")]
+    #[serde(default)]
     pub domains: Vec<String>,
 
     /// (macOS only) SHA-256 fingerprint of certificate in Keychain to use
@@ -263,7 +267,8 @@ impl KeySource for MacosKeychainSigningKey {
     }
 }
 
-#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct P12SigningKey {
     /// Path to a .p12/PFX file containing a certificate key pair
     #[arg(long = "p12-file", alias = "pfx-file", value_name = "PATH")]
@@ -309,10 +314,12 @@ impl KeySource for P12SigningKey {
     }
 }
 
-#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct PemSigningKey {
     /// Path to file containing PEM encoded certificate/key data
     #[arg(long = "pem-file", alias = "pem-source", value_name = "PATH")]
+    #[serde(rename = "files")]
     pub paths: Vec<PathBuf>,
 }
 
@@ -352,7 +359,8 @@ impl KeySource for PemSigningKey {
     }
 }
 
-#[derive(Args, Clone, Debug, Default, Deserialize, Eq, PartialEq)]
+#[derive(Args, Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct RemoteSigningSessionInitialization {
     /// Base64 encoded public key data describing the signer
     #[arg(
@@ -388,14 +396,21 @@ pub struct RemoteSigningSessionInitialization {
     pub shared_secret_env: Option<String>,
 }
 
-#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+fn default_remote_signing_url() -> String {
+    crate::remote_signing::DEFAULT_SERVER_URL.to_string()
+}
+
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct RemoteSigningKey {
     /// Send signing requests to a remote signer
     #[arg(long = "remote-signer")]
+    #[serde(default, skip)]
     pub enabled: bool,
 
     /// URL of a remote code signing server
     #[arg(long = "remote-signing-url", default_value = crate::remote_signing::DEFAULT_SERVER_URL, value_name = "URL")]
+    #[serde(default = "default_remote_signing_url")]
     pub url: String,
 
     #[command(flatten)]
@@ -500,7 +515,8 @@ impl RemoteSigningKey {
     }
 }
 
-#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct CertificateDerSigningKey {
     /// Path to file containing DER encoded certificate data
     #[arg(
@@ -528,24 +544,39 @@ impl KeySource for CertificateDerSigningKey {
     }
 }
 
-#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Args, Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct CertificateSource {
     #[command(flatten)]
+    #[serde(default, rename = "smartcard", skip_serializing_if = "Option::is_none")]
     pub smartcard_key: Option<SmartcardSigningKey>,
 
     #[command(flatten)]
+    #[serde(
+        default,
+        rename = "macos_keychain",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub macos_keychain_key: Option<MacosKeychainSigningKey>,
 
     #[command(flatten)]
+    #[serde(default, rename = "pem", skip_serializing_if = "Option::is_none")]
     pub pem_path_key: Option<PemSigningKey>,
 
     #[command(flatten)]
+    #[serde(default, rename = "p12", skip_serializing_if = "Option::is_none")]
     pub p12_key: Option<P12SigningKey>,
 
     #[command(flatten)]
+    #[serde(default, rename = "remote", skip_serializing_if = "Option::is_none")]
     pub remote_signing_key: Option<RemoteSigningKey>,
 
     #[command(flatten)]
+    #[serde(
+        default,
+        rename = "certificate_der",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub certificate_der_key: Option<CertificateDerSigningKey>,
 }
 

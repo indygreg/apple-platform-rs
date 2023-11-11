@@ -5,25 +5,53 @@ Create a Mach-O binary from parameters
 Usage: rcodesign[EXE] debug-create-macho [OPTIONS] <OUTPUT_PATH>
 
 Arguments:
-  <OUTPUT_PATH>  Filename of Mach-O binary to write
+  <OUTPUT_PATH>
+          Filename of Mach-O binary to write
 
 Options:
       --architecture <ARCHITECTURE>
-          Architecture of Mach-O binary [default: aarch64] [possible values: aarch64, x86-64]
-  -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times
+          Architecture of Mach-O binary
+          
+          [default: aarch64]
+          [possible values: aarch64, x86-64]
+
+  -C, --config-file <CONFIG_PATH>
+          Explicit configuration file to load.
+          
+          If provided, the default configuration files are not loaded, even if they exist.
+          
+          Can be specified multiple times. Files are loaded/merged in the order given.
+          
+          The special value `/dev/null` can be used to specify an empty/null config file. It can be used to short-circuit loading of default config files.
+
       --file-type <FILE_TYPE>
-          The Mach-O file type [default: executable] [possible values: executable, dylib]
+          The Mach-O file type
+          
+          [default: executable]
+          [possible values: executable, dylib]
+
+  -P, --profile <PROFILE>
+          Configuration profile to load.
+          
+          If not specified, the implicit "default" profile is loaded.
+
       --no-targeting
           Do not write platform targeting to Mach-O binary
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
+
       --minimum-os-version <MINIMUM_OS_VERSION>
           The minimum operating system version the binary will run on
+
       --sdk-version <SDK_VERSION>
           The platform SDK version used to build the binary
+
       --text-segment-start-offset <TEXT_SEGMENT_START_OFFSET>
           Set the file start offset of the __TEXT segment
+
   -h, --help
-          Print help
+          Print help (see a summary with '-h')
 
 ```
 

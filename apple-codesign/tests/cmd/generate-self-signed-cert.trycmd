@@ -21,8 +21,14 @@ Options:
           [default: rsa]
           [possible values: ecdsa, ed25519, rsa]
 
-  -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times
+  -C, --config-file <CONFIG_PATH>
+          Explicit configuration file to load.
+          
+          If provided, the default configuration files are not loaded, even if they exist.
+          
+          Can be specified multiple times. Files are loaded/merged in the order given.
+          
+          The special value `/dev/null` can be used to specify an empty/null config file. It can be used to short-circuit loading of default config files.
 
       --profile <PROFILE>
           [default: apple-development]
@@ -32,6 +38,9 @@ Options:
           Team ID (this is a short string attached to your Apple Developer account)
           
           [default: unset]
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
 
       --person-name <PERSON_NAME>
           The name of the person this certificate is for

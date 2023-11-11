@@ -35,6 +35,7 @@ digest = "0.10.7"
 dirs = "5.0.1"
 elliptic-curve = { version = "0.13.6", features = ["arithmetic", "pkcs8"] }
 env_logger = "0.10.0"
+figment = { version = "0.10.12", features = ["env", "toml"] }
 filetime = "0.2.22"
 glob = "0.3.1"
 goblin = "0.7.1"

@@ -9,6 +9,10 @@ Released on ReleaseDate.
 * (Breaking change) The `--extra-digest` argument has been removed.
   `--digest` can now be specified multiple times. `--digest` is now a
   scoped value.
+* (New feature) Configuration file support added. TOML based configuration
+  files can now define signers and signing settings in named *profiles*,
+  allowing for automatic and near effortless reuse of common configurations.
+  See the documentation for more.
 * Detection of nested bundles now looks for `CFBundlePackageType` or
   `CFBundleIdentifier` in bundle `Info.plist` and ignores *bundles*
   lacking these. As a result, we no longer attempt signing of storybook

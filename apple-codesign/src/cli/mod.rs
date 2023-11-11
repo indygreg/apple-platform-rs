@@ -3,6 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 pub mod certificate_source;
+pub mod config;
 pub mod debug_commands;
 pub mod extract_commands;
 
@@ -11,7 +12,10 @@ use {
         certificate::{
             create_self_signed_code_signing_certificate, AppleCertificate, CertificateProfile,
         },
-        cli::certificate_source::CertificateSource,
+        cli::{
+            certificate_source::CertificateSource,
+            config::{Config, ConfigBuilder},
+        },
         code_directory::CodeSignatureFlags,
         code_requirement::CodeRequirements,
         cryptography::DigestType,
@@ -29,7 +33,7 @@ use {
     clap::{ArgAction, Args, Parser, Subcommand},
     difference::{Changeset, Difference},
     log::{error, warn, LevelFilter},
-    serde::Deserialize,
+    serde::{Deserialize, Serialize},
     spki::EncodePublicKey,
     std::{
         collections::BTreeMap,
@@ -58,9 +62,16 @@ pub const KEYCHAIN_DOMAINS: [&str; 4] = ["user", "system", "common", "dynamic"];
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
 
 /// Holds state to pass to CLI commands.
-pub struct Context {}
+pub struct Context {
+    pub config: Config,
+}
 
 pub trait CliCommand {
+    /// Obtain the current command arguments normalized to a [Config] instance.
+    fn as_config(&self) -> Result<Option<Config>, AppleCodesignError> {
+        Ok(None)
+    }
+
     /// Runs the command.
     fn run(&self, context: &Context) -> Result<(), AppleCodesignError>;
 }
@@ -1069,15 +1080,24 @@ pub struct ScopedSigningArgs {
 }
 
 /// Represents the set of scopable signing settings for a given scope.
-#[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct ScopedSigningSettingsValues {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub binary_identifier: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub code_requirements_file: Option<PathBuf>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub code_resources_file: Option<PathBuf>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub code_signature_flags: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub digests: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entitlements_xml_file: Option<PathBuf>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub runtime_version: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub info_plist_file: Option<PathBuf>,
 }
 
@@ -1096,7 +1116,7 @@ pub fn split_scoped_value(s: &str) -> (String, &str) {
 /// A mapping of scopes to collections of signing settings.
 ///
 /// This abstraction exists to make it easier to load config files.
-pub struct ScopedSigningSettings(BTreeMap<String, ScopedSigningSettingsValues>);
+pub struct ScopedSigningSettings(pub BTreeMap<String, ScopedSigningSettingsValues>);
 
 impl TryFrom<&ScopedSigningArgs> for ScopedSigningSettings {
     type Error = AppleCodesignError;
@@ -1286,10 +1306,23 @@ struct Sign {
 }
 
 impl CliCommand for Sign {
-    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+    fn as_config(&self) -> Result<Option<Config>, AppleCodesignError> {
+        let paths = ScopedSigningSettings::try_from(&self.scoped)?;
+
+        Ok(Some(Config {
+            sign: config::SignConfig {
+                signer: self.certificate.clone(),
+                paths: paths.0,
+            },
+        }))
+    }
+
+    fn run(&self, context: &Context) -> Result<(), AppleCodesignError> {
+        let c = &context.config.sign;
+
         let mut settings = SigningSettings::default();
 
-        let certs = self.certificate.resolve_certificates(true)?;
+        let certs = c.signer.resolve_certificates(true)?;
         certs.load_into_signing_settings(&mut settings)?;
 
         // Doesn't make sense to set a time-stamp server URL unless we're generating
@@ -1322,7 +1355,7 @@ impl CliCommand for Sign {
             settings.add_path_exclusion(pattern)?;
         }
 
-        ScopedSigningSettings::try_from(&self.scoped)?.load_into_settings(&mut settings)?;
+        ScopedSigningSettings(c.paths.clone()).load_into_settings(&mut settings)?;
 
         // Settings are locked in. Proceed to sign.
 
@@ -2075,12 +2108,61 @@ impl Subcommands {
 #[derive(Parser)]
 #[command(author, version, arg_required_else_help = true)]
 struct Cli {
+    /// Explicit configuration file to load.
+    ///
+    /// If provided, the default configuration files are not loaded, even
+    /// if they exist.
+    ///
+    /// Can be specified multiple times. Files are loaded/merged in the order
+    /// given.
+    ///
+    /// The special value `/dev/null` can be used to specify an empty/null
+    /// config file. It can be used to short-circuit loading of default config
+    /// files.
+    #[arg(short = 'C', long = "config-file", global = true)]
+    config_path: Vec<PathBuf>,
+
+    /// Configuration profile to load.
+    ///
+    /// If not specified, the implicit "default" profile is loaded.
+    #[arg(short = 'P', long, global = true)]
+    profile: Option<String>,
+
     /// Increase logging verbosity. Can be specified multiple times
     #[arg(short = 'v', long, global = true, action = ArgAction::Count)]
     verbose: u8,
 
     #[command(subcommand)]
     command: Subcommands,
+}
+
+impl Cli {
+    pub fn config_builder(&self) -> ConfigBuilder {
+        let mut config = ConfigBuilder::default();
+
+        config = if self.config_path.is_empty() {
+            config.with_user_config_file().with_cwd_config_file()
+        } else {
+            for path in &self.config_path {
+                if path.display().to_string() == "/dev/null" {
+                    break;
+                }
+
+                config = config.toml_file(path);
+            }
+
+            config
+        };
+
+        if let Some(profile) = &self.profile {
+            config = config.profile(profile.to_string());
+        }
+
+        // Environment variables override everything.
+        config = config.with_env_prefix();
+
+        config
+    }
 }
 
 pub fn main_impl() -> Result<(), AppleCodesignError> {
@@ -2112,9 +2194,19 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
 
     builder.init();
 
-    let context = Context {};
+    let mut config_builder = cli.config_builder();
 
-    cli.command.as_cli_command().run(&context)
+    let command = cli.command.as_cli_command();
+
+    if let Some(config) = command.as_config()? {
+        config_builder = config_builder.with_config_struct(config);
+    }
+
+    let config = config_builder.config()?;
+
+    let context = Context { config };
+
+    command.run(&context)
 }
 
 #[cfg(test)]

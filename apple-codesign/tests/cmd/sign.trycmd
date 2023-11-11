@@ -219,14 +219,28 @@ Options:
       --binary-identifier <IDENTIFIER>
           Identifier string for binary. The value normally used by CFBundleIdentifier
 
-  -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times
+  -C, --config-file <CONFIG_PATH>
+          Explicit configuration file to load.
+          
+          If provided, the default configuration files are not loaded, even if they exist.
+          
+          Can be specified multiple times. Files are loaded/merged in the order given.
+          
+          The special value `/dev/null` can be used to specify an empty/null config file. It can be used to short-circuit loading of default config files.
 
       --code-requirements-file <PATH>
           Path to a file containing binary code requirements data to be used as designated requirements
 
+  -P, --profile <PROFILE>
+          Configuration profile to load.
+          
+          If not specified, the implicit "default" profile is loaded.
+
       --code-resources-file <PATH>
           Path to an XML plist file containing code resources
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
 
       --code-signature-flags <CODE_SIGNATURE_FLAGS>
           Code signature flags to set

@@ -5,11 +5,22 @@ Generates a certificate signing request that can be sent to Apple and exchanged 
 Usage: rcodesign[EXE] generate-certificate-signing-request [OPTIONS]
 
 Options:
+  -C, --config-file <CONFIG_PATH>
+          Explicit configuration file to load.
+          
+          If provided, the default configuration files are not loaded, even if they exist.
+          
+          Can be specified multiple times. Files are loaded/merged in the order given.
+          
+          The special value `/dev/null` can be used to specify an empty/null config file. It can be used to short-circuit loading of default config files.
+
       --csr-pem-file <CSR_PEM_PATH>
           Path to file to write PEM encoded CSR to
 
-  -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times
+  -P, --profile <PROFILE>
+          Configuration profile to load.
+          
+          If not specified, the implicit "default" profile is loaded.
 
       --smartcard-slot <SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
@@ -18,6 +29,9 @@ Options:
           Smartcard PIN used to unlock certificate
           
           If not provided, you will be prompted for a PIN as necessary.
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
 
       --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN

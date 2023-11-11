@@ -32,9 +32,11 @@ Commands:
   help                                  Print this message or the help of the given subcommand(s)
 
 Options:
-  -v, --verbose...  Increase logging verbosity. Can be specified multiple times
-  -h, --help        Print help
-  -V, --version     Print version
+  -C, --config-file <CONFIG_PATH>  Explicit configuration file to load
+  -P, --profile <PROFILE>          Configuration profile to load
+  -v, --verbose...                 Increase logging verbosity. Can be specified multiple times
+  -h, --help                       Print help (see more with '--help')
+  -V, --version                    Print version
 
 ```
 
@@ -71,8 +73,27 @@ Commands:
   help                                  Print this message or the help of the given subcommand(s)
 
 Options:
-  -v, --verbose...  Increase logging verbosity. Can be specified multiple times
-  -h, --help        Print help
-  -V, --version     Print version
+  -C, --config-file <CONFIG_PATH>
+          Explicit configuration file to load.
+          
+          If provided, the default configuration files are not loaded, even if they exist.
+          
+          Can be specified multiple times. Files are loaded/merged in the order given.
+          
+          The special value `/dev/null` can be used to specify an empty/null config file. It can be used to short-circuit loading of default config files.
+
+  -P, --profile <PROFILE>
+          Configuration profile to load.
+          
+          If not specified, the implicit "default" profile is loaded.
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
 
 ```
