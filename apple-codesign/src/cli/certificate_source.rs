@@ -461,6 +461,34 @@ impl RemoteSigningKey {
     }
 }
 
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq)]
+pub struct CertificateDerSigningKey {
+    /// Path to file containing DER encoded certificate data
+    #[arg(
+        id = "certificate_der_paths",
+        long = "certificate-der-file",
+        alias = "der-source",
+        alias = "der-file",
+        value_name = "PATH"
+    )]
+    pub paths: Vec<PathBuf>,
+}
+
+impl KeySource for CertificateDerSigningKey {
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        let mut res = SigningCertificates::default();
+
+        for path in &self.paths {
+            warn!("reading DER file {}", path.display());
+            let der_data = std::fs::read(path)?;
+
+            res.certs.push(CapturedX509Certificate::from_der(der_data)?);
+        }
+
+        Ok(res)
+    }
+}
+
 #[derive(Args, Clone, Debug, Eq, PartialEq)]
 pub struct SigningKeySource {
     #[command(flatten)]
@@ -477,6 +505,9 @@ pub struct SigningKeySource {
 
     #[command(flatten)]
     pub remote_signing_key: Option<RemoteSigningKey>,
+
+    #[command(flatten)]
+    pub certificate_der_key: Option<CertificateDerSigningKey>,
 }
 
 impl SigningKeySource {
@@ -506,6 +537,10 @@ impl SigningKeySource {
             res.push(key as &dyn KeySource);
         }
 
+        if let Some(key) = &self.certificate_der_key {
+            res.push(key as &dyn KeySource);
+        }
+
         res
     }
 }
@@ -514,15 +549,6 @@ impl SigningKeySource {
 pub struct CertificateSource {
     #[command(flatten)]
     pub keys: SigningKeySource,
-
-    /// Path to file containing DER encoded certificate data
-    #[arg(
-        long = "certificate-der-file",
-        alias = "der-source",
-        alias = "der-file",
-        value_name = "PATH"
-    )]
-    pub certificate_der_paths: Vec<PathBuf>,
 }
 
 impl CertificateSource {
@@ -540,13 +566,6 @@ impl CertificateSource {
             }
 
             res.extend(certs);
-        }
-
-        for der_source in &self.certificate_der_paths {
-            warn!("reading DER file {}", der_source.display());
-            let der_data = std::fs::read(der_source)?;
-
-            res.certs.push(CapturedX509Certificate::from_der(der_data)?);
         }
 
         Ok(res)
