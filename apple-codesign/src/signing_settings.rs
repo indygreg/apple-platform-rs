@@ -851,7 +851,10 @@ impl<'key> SigningSettings<'key> {
                             self.set_binary_identifier(scope_index.clone(), initial_identifier);
                         }
                     } else {
-                        info!("preserving existing binary identifier in Mach-O");
+                        info!(
+                            "preserving existing binary identifier in Mach-O ({})",
+                            cd.ident.to_string()
+                        );
                         self.set_binary_identifier(scope_index.clone(), cd.ident.to_string());
                         seen_identifier = Some(cd.ident.to_string());
                     }
@@ -865,7 +868,10 @@ impl<'key> SigningSettings<'key> {
                         // Team ID is only included when signing with an Apple signed
                         // certificate.
                         if self.signing_certificate_apple_signed() {
-                            info!("preserving team ID in existing Mach-O signature");
+                            info!(
+                                "preserving team ID in existing Mach-O signature ({})",
+                                team_id
+                            );
                             self.team_id
                                 .insert(scope_index.clone(), team_id.to_string());
                         } else {
@@ -879,7 +885,10 @@ impl<'key> SigningSettings<'key> {
                     {
                         info!("using code signature flags from settings");
                     } else if !cd.flags.is_empty() {
-                        info!("preserving code signature flags in existing Mach-O signature");
+                        info!(
+                            "preserving code signature flags in existing Mach-O signature ({:?})",
+                            cd.flags
+                        );
                         self.set_code_signature_flags(scope_index.clone(), cd.flags);
                     }
 
@@ -889,11 +898,13 @@ impl<'key> SigningSettings<'key> {
                     {
                         info!("using runtime version from settings");
                     } else if let Some(version) = cd.runtime {
-                        info!("preserving runtime version in existing Mach-O signature");
-                        self.set_runtime_version(
-                            scope_index.clone(),
-                            parse_version_nibbles(version),
+                        let version = parse_version_nibbles(version);
+
+                        info!(
+                            "preserving runtime version in existing Mach-O signature ({})",
+                            version
                         );
+                        self.set_runtime_version(scope_index.clone(), version);
                     }
                 }
 

@@ -31,10 +31,10 @@ $ rcodesign -v sign exe exe.signed
 signing exe to exe.signed
 signing exe as a Mach-O binary
 inferring default signing settings from Mach-O binary
-preserving existing binary identifier in Mach-O
-preserving code signature flags in existing Mach-O signature
+preserving existing binary identifier in Mach-O (identifier-0)
+preserving code signature flags in existing Mach-O signature (CodeSignatureFlags(ADHOC))
 identifiers within Mach-O do not agree (initial: identifier-0, subsequent: identifier-1); reconciling to identifier-0
-preserving code signature flags in existing Mach-O signature
+preserving code signature flags in existing Mach-O signature (CodeSignatureFlags(ADHOC))
 setting binary identifier to exe
 parsing Mach-O
 signing Mach-O binary at index 0
