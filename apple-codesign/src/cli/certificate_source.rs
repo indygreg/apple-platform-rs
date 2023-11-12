@@ -41,8 +41,8 @@ pub struct SigningCertificates {
 
 impl SigningCertificates {
     pub fn extend(&mut self, other: Self) {
-        self.keys.extend(other.keys.into_iter());
-        self.certs.extend(other.certs.into_iter());
+        self.keys.extend(other.keys);
+        self.certs.extend(other.certs);
     }
 
     pub fn is_empty(&self) -> bool {
@@ -52,7 +52,7 @@ impl SigningCertificates {
     /// Resolve a private key in this collection.
     ///
     /// Errors unless the number of keys is exactly one.
-    pub fn private_key(&self) -> Result<&Box<dyn PrivateKey>, AppleCodesignError> {
+    pub fn private_key(&self) -> Result<&dyn PrivateKey, AppleCodesignError> {
         self.private_key_optional()?
             .ok_or_else(|| AppleCodesignError::CliGeneralError("no private key found".into()))
     }
@@ -60,10 +60,10 @@ impl SigningCertificates {
     /// Resolve an optional private key in this collection.
     ///
     /// Errors if there are more than 1 key.
-    pub fn private_key_optional(&self) -> Result<Option<&Box<dyn PrivateKey>>, AppleCodesignError> {
+    pub fn private_key_optional(&self) -> Result<Option<&dyn PrivateKey>, AppleCodesignError> {
         match self.keys.len() {
             0 => Ok(None),
-            1 => Ok(Some(&self.keys[0])),
+            1 => Ok(Some(self.keys[0].as_ref())),
             n => Err(AppleCodesignError::CliGeneralError(format!(
                 "at most 1 private keys can be present (found {n})"
             ))),

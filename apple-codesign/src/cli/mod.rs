@@ -2240,11 +2240,9 @@ fn command_sign(args: &Sign) -> Result<(), AppleCodesignError> {
 
     // Doesn't make sense to set a time-stamp server URL unless we're generating
     // CMS signatures.
-    if settings.signing_key().is_some() {
-        if args.timestamp_url != "none" {
-            warn!("using time-stamp protocol server {}", args.timestamp_url);
-            settings.set_time_stamp_url(&args.timestamp_url)?;
-        }
+    if settings.signing_key().is_some() && args.timestamp_url != "none" {
+        warn!("using time-stamp protocol server {}", args.timestamp_url);
+        settings.set_time_stamp_url(&args.timestamp_url)?;
     }
 
     if let Some(time) = &args.signing_time {
