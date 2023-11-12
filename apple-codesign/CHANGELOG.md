@@ -22,6 +22,10 @@ Released on ReleaseDate.
   more similar to Apple's. e.g. `foo1.2.dylib` will now resolve to `foo1`
   instead of `foo1.2`. We still don't use the binary UUID or digest of its
   load commands to compute the binary identifier like Apple does.
+* When signing nested Mach-O binaries in a bundle, we now set the binary
+  identifier from the filename rather than preserving the identifier in an
+  existing signature. This helps ensure identifiers stay in sync and prevents
+  bad signatures. (#109)
 
 ## 0.24.0
 

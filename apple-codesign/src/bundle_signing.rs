@@ -383,20 +383,17 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
             .settings
             .as_bundle_macho_settings(dest_rel_path.to_string_lossy().as_ref());
 
-        settings.import_settings_from_macho(&macho_data)?;
-
-        // If there isn't a defined binary identifier, derive one from the file name so one is set
-        // and we avoid a signing error due to missing identifier.
-        // TODO do we need to check the nested Mach-O settings?
+        // When signing a Mach-O in the context of a bundle, always define the
+        // binary identifier from the filename so everything is consistent.
+        // Unless an existing setting overrides it, of course.
         if settings.binary_identifier(SettingsScope::Main).is_none() {
             let identifier = path_identifier(dest_rel_path)?;
+            info!("setting binary identifier based on path: {}", identifier);
 
-            info!(
-                "Mach-O is missing binary identifier; setting to {} based on file name",
-                identifier
-            );
-            settings.set_binary_identifier(SettingsScope::Main, identifier);
+            settings.set_binary_identifier(SettingsScope::Main, &identifier);
         }
+
+        settings.import_settings_from_macho(&macho_data)?;
 
         let mut new_data = Vec::<u8>::with_capacity(macho_data.len() + 2_usize.pow(17));
         signer.write_signed_binary(&settings, &mut new_data)?;
