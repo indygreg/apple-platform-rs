@@ -19,6 +19,7 @@ use {
         code_directory::CodeSignatureFlags,
         code_requirement::CodeRequirements,
         cryptography::DigestType,
+        environment_constraints::EncodedEnvironmentConstraints,
         error::AppleCodesignError,
         macho::MachFile,
         reader::SignatureReader,
@@ -1077,6 +1078,30 @@ pub struct ScopedSigningArgs {
     )]
     entitlements_xml_paths: Vec<String>,
 
+    /// Launch constraints on the current executable.
+    ///
+    /// Specify the path to a plist XML file defining launch constraints.
+    #[arg(long = "launch-constraints-self-file", value_name = "PATH")]
+    launch_constraints_self_paths: Vec<String>,
+
+    /// Launch constraints on the parent process.
+    ///
+    /// Specify the path to a plist XML file defining launch constraints.
+    #[arg(long = "launch-constraints-parent-file", value_name = "PATH")]
+    launch_constraints_parent_paths: Vec<String>,
+
+    /// Launch constraints on the responsible process.
+    ///
+    /// Specify the path to a plist XML file defining launch constraints.
+    #[arg(long = "launch-constraints-responsible-file", value_name = "PATH")]
+    launch_constraints_responsible_paths: Vec<String>,
+
+    /// Constraints on loaded libraries.
+    ///
+    /// Specify the path to a plist XML file defining launch constraints.
+    #[arg(long = "library-constraints-file", value_name = "PATH")]
+    library_constraints_paths: Vec<String>,
+
     /// Hardened runtime version to use (defaults to SDK version used to build binary)
     #[arg(long = "runtime-version", value_name = "VERSION")]
     runtime_versions: Vec<String>,
@@ -1106,6 +1131,14 @@ pub struct ScopedSigningSettingsValues {
     pub digests: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub entitlements_xml_file: Option<PathBuf>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub launch_constraints_self_file: Option<PathBuf>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub launch_constraints_parent_file: Option<PathBuf>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub launch_constraints_responsible_file: Option<PathBuf>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub library_constraints_file: Option<PathBuf>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub runtime_version: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1166,6 +1199,28 @@ impl TryFrom<&ScopedSigningArgs> for ScopedSigningSettings {
         for value in &args.entitlements_xml_paths {
             let (scope, value) = split_scoped_value(value);
             res.entry(scope).or_default().entitlements_xml_file = Some(value.into());
+        }
+
+        for value in &args.launch_constraints_self_paths {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().launch_constraints_self_file = Some(value.into());
+        }
+
+        for value in &args.launch_constraints_parent_paths {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().launch_constraints_parent_file = Some(value.into());
+        }
+
+        for value in &args.launch_constraints_responsible_paths {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope)
+                .or_default()
+                .launch_constraints_responsible_file = Some(value.into());
+        }
+
+        for value in &args.library_constraints_paths {
+            let (scope, value) = split_scoped_value(value);
+            res.entry(scope).or_default().library_constraints_file = Some(value.into());
         }
 
         for value in &args.runtime_versions {
@@ -1256,6 +1311,54 @@ impl ScopedSigningSettings {
                 );
                 let entitlements_data = std::fs::read_to_string(path)?;
                 settings.set_entitlements_xml(scope.clone(), entitlements_data)?;
+            }
+
+            if let Some(path) = values.launch_constraints_self_file {
+                warn!(
+                    "setting self launch constraints for {} from path {}",
+                    scope,
+                    path.display()
+                );
+                settings.set_launch_constraints_self(
+                    scope.clone(),
+                    EncodedEnvironmentConstraints::from_requirements_plist_file(path)?,
+                );
+            }
+
+            if let Some(path) = values.launch_constraints_parent_file {
+                warn!(
+                    "setting parent process launch constraints for {} from path {}",
+                    scope,
+                    path.display()
+                );
+                settings.set_launch_constraints_parent(
+                    scope.clone(),
+                    EncodedEnvironmentConstraints::from_requirements_plist_file(path)?,
+                );
+            }
+
+            if let Some(path) = values.launch_constraints_responsible_file {
+                warn!(
+                    "setting responsible process launch constraints for {} from path {}",
+                    scope,
+                    path.display()
+                );
+                settings.set_launch_constraints_responsible(
+                    scope.clone(),
+                    EncodedEnvironmentConstraints::from_requirements_plist_file(path)?,
+                );
+            }
+
+            if let Some(path) = values.library_constraints_file {
+                warn!(
+                    "setting loaded library constraints for {} from path {}",
+                    scope,
+                    path.display()
+                );
+                settings.set_library_constraints(
+                    scope.clone(),
+                    EncodedEnvironmentConstraints::from_requirements_plist_file(path)?,
+                );
             }
 
             if let Some(value) = values.runtime_version {
@@ -1671,6 +1774,10 @@ enum Subcommands {
     /// Create a binary code requirements file.
     #[command(hide = true)]
     DebugCreateCodeRequirements(debug_commands::DebugCreateCodeRequirements),
+
+    /// Create a (launch or library) constraints file.
+    #[command(hide = true)]
+    DebugCreateConstraints(debug_commands::DebugCreateConstraints),
 
     /// Create an entitlements file.
     #[command(hide = true)]
@@ -2100,6 +2207,7 @@ impl Subcommands {
             Subcommands::AnalyzeCertificate(c) => c,
             Subcommands::ComputeCodeHashes(c) => c,
             Subcommands::DebugCreateCodeRequirements(c) => c,
+            Subcommands::DebugCreateConstraints(c) => c,
             Subcommands::DebugCreateEntitlements(c) => c,
             Subcommands::DebugCreateInfoPlist(c) => c,
             Subcommands::DebugCreateMacho(c) => c,

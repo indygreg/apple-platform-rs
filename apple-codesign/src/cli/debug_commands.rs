@@ -7,7 +7,7 @@ use {
         cli::{CliCommand, Context},
         code_requirement::CodeRequirements,
         cryptography::DigestType,
-        error::AppleCodesignError,
+        error::{AppleCodesignError, Result},
     },
     clap::{Parser, ValueEnum},
     log::warn,
@@ -61,6 +61,37 @@ impl CliCommand for DebugCreateCodeRequirements {
         }
 
         std::fs::write(&self.path, data)?;
+
+        Ok(())
+    }
+}
+
+#[derive(Parser)]
+pub struct DebugCreateConstraints {
+    /// Team identifier constraint.
+    #[arg(long)]
+    team_id: Option<String>,
+
+    /// Path to write plist XML to.
+    path: PathBuf,
+}
+
+impl CliCommand for DebugCreateConstraints {
+    fn run(&self, _context: &Context) -> Result<()> {
+        let mut v = plist::Dictionary::default();
+
+        if let Some(id) = &self.team_id {
+            v.insert("team-identifier".into(), id.to_string().into());
+        }
+
+        let mut reqs = plist::Dictionary::default();
+
+        reqs.insert("$or".into(), v.into());
+
+        let v = plist::Value::Dictionary(reqs);
+
+        println!("writing constraints plist to {}", self.path.display());
+        v.to_file_xml(&self.path)?;
 
         Ok(())
     }

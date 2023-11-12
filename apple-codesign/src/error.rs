@@ -384,6 +384,9 @@ pub enum AppleCodesignError {
 
     #[error("config error: {0:?}")]
     Figment(#[from] figment::Error),
+
+    #[error("environment constraints: {0}")]
+    EnvironmentConstraint(String),
 }
 
 /// Result type for this library.

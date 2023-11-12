@@ -404,6 +404,10 @@ mod test {
             code_signature_flags = ["runtime"]
             digests = ["sha1", "sha256"]
             entitlements_xml_file = "entitlements.plist"
+            launch_constraints_self_file = "lc-self"
+            launch_constraints_parent_file = "lc-parent"
+            launch_constraints_responsible_file = "lc-responsible"
+            library_constraints_file = "lc-library"
             runtime_version = "11.0.0"
             info_plist_file = "Info.plist"
             "#
@@ -421,6 +425,10 @@ mod test {
                     code_signature_flags: vec!["runtime".into()],
                     digests: vec!["sha1".into(), "sha256".into()],
                     entitlements_xml_file: Some("entitlements.plist".into()),
+                    launch_constraints_self_file: Some("lc-self".into()),
+                    launch_constraints_parent_file: Some("lc-parent".into()),
+                    launch_constraints_responsible_file: Some("lc-responsible".into()),
+                    library_constraints_file: Some("lc-library".into()),
                     runtime_version: Some("11.0.0".into()),
                     info_plist_file: Some("Info.plist".into()),
                 }

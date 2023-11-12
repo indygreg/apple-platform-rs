@@ -394,6 +394,22 @@ This table consists of the following keys:
    When signing standalone Mach-O binaries you may need to provide it
    explicitly.
 
+``launch_constraints_self_file``
+   Path to a plist - either XML or binary - containing launch constraints to
+   impose on the current executable.
+
+``launch_constraints_parent_file``
+   Path to a plist - either XML or binary - containing launch constraints to
+   impose on the parent process.
+
+``launch_constraints_responsible_file``
+   Path to a plist - either XML or binary - containing launch constraints to
+   impose on the responsible process.
+
+``library_constraints_file``
+   Path to a plist - either XML or binary - containing constraints to
+   impose on loaded libraries.
+
 ``runtime_version``
    Apple operating system version representing the minimum version this binary
    can run on.

@@ -11,6 +11,7 @@ use {
         code_requirement::CodeRequirementExpression,
         cryptography::DigestType,
         embedded_signature::{Blob, RequirementBlob},
+        environment_constraints::EncodedEnvironmentConstraints,
         error::AppleCodesignError,
         macho::{parse_version_nibbles, MachFile},
     },
@@ -241,6 +242,10 @@ pub enum ScopedSetting {
     InfoPlist,
     CodeResources,
     ExtraDigests,
+    LaunchConstraintsSelf,
+    LaunchConstraintsParent,
+    LaunchConstraintsResponsible,
+    LibraryConstraints,
 }
 
 impl ScopedSetting {
@@ -255,6 +260,10 @@ impl ScopedSetting {
             Self::InfoPlist,
             Self::CodeResources,
             Self::ExtraDigests,
+            Self::LaunchConstraintsSelf,
+            Self::LaunchConstraintsParent,
+            Self::LaunchConstraintsResponsible,
+            Self::LibraryConstraints,
         ]
     }
 
@@ -307,6 +316,10 @@ pub struct SigningSettings<'key> {
     info_plist_data: BTreeMap<SettingsScope, Vec<u8>>,
     code_resources_data: BTreeMap<SettingsScope, Vec<u8>>,
     extra_digests: BTreeMap<SettingsScope, BTreeSet<DigestType>>,
+    launch_constraints_self: BTreeMap<SettingsScope, EncodedEnvironmentConstraints>,
+    launch_constraints_parent: BTreeMap<SettingsScope, EncodedEnvironmentConstraints>,
+    launch_constraints_responsible: BTreeMap<SettingsScope, EncodedEnvironmentConstraints>,
+    library_constraints: BTreeMap<SettingsScope, EncodedEnvironmentConstraints>,
 }
 
 impl<'key> SigningSettings<'key> {
@@ -805,6 +818,75 @@ impl<'key> SigningSettings<'key> {
         res
     }
 
+    /// Obtain the launch constraints on self.
+    pub fn launch_constraints_self(
+        &self,
+        scope: impl AsRef<SettingsScope>,
+    ) -> Option<&EncodedEnvironmentConstraints> {
+        self.launch_constraints_self.get(scope.as_ref())
+    }
+
+    /// Set the launch constraints on the current binary.
+    pub fn set_launch_constraints_self(
+        &mut self,
+        scope: SettingsScope,
+        constraints: EncodedEnvironmentConstraints,
+    ) {
+        self.launch_constraints_self.insert(scope, constraints);
+    }
+
+    /// Obtain the launch constraints on the parent process.
+    pub fn launch_constraints_parent(
+        &self,
+        scope: impl AsRef<SettingsScope>,
+    ) -> Option<&EncodedEnvironmentConstraints> {
+        self.launch_constraints_parent.get(scope.as_ref())
+    }
+
+    /// Set the launch constraints on the parent process.
+    pub fn set_launch_constraints_parent(
+        &mut self,
+        scope: SettingsScope,
+        constraints: EncodedEnvironmentConstraints,
+    ) {
+        self.launch_constraints_parent.insert(scope, constraints);
+    }
+
+    /// Obtain the launch constraints on the responsible process.
+    pub fn launch_constraints_responsible(
+        &self,
+        scope: impl AsRef<SettingsScope>,
+    ) -> Option<&EncodedEnvironmentConstraints> {
+        self.launch_constraints_responsible.get(scope.as_ref())
+    }
+
+    /// Set the launch constraints on the responsible process.
+    pub fn set_launch_constraints_responsible(
+        &mut self,
+        scope: SettingsScope,
+        constraints: EncodedEnvironmentConstraints,
+    ) {
+        self.launch_constraints_responsible
+            .insert(scope, constraints);
+    }
+
+    /// Obtain the constraints on loaded libraries.
+    pub fn library_constraints(
+        &self,
+        scope: impl AsRef<SettingsScope>,
+    ) -> Option<&EncodedEnvironmentConstraints> {
+        self.library_constraints.get(scope.as_ref())
+    }
+
+    /// Set the constraints on loaded libraries.
+    pub fn set_library_constraints(
+        &mut self,
+        scope: SettingsScope,
+        constraints: EncodedEnvironmentConstraints,
+    ) {
+        self.library_constraints.insert(scope, constraints);
+    }
+
     /// Import existing state from Mach-O data.
     ///
     /// This will synchronize the signing settings with the state in the Mach-O file.
@@ -958,6 +1040,68 @@ impl<'key> SigningSettings<'key> {
                             SettingsScope::MultiArchIndex(index),
                             entitlements.as_str(),
                         )?;
+                    }
+                }
+
+                if let Some(constraints) = sig.launch_constraints_self()? {
+                    if self.launch_constraints_self(&scope_main).is_some()
+                        || self.launch_constraints_self(&scope_index).is_some()
+                        || self.launch_constraints_self(&scope_arch).is_some()
+                    {
+                        info!("using self launch constraints from settings");
+                    } else {
+                        info!("preserving existing self launch constraints in Mach-O");
+                        self.set_launch_constraints_self(
+                            SettingsScope::MultiArchIndex(index),
+                            constraints.parse_encoded_constraints()?,
+                        );
+                    }
+                }
+
+                if let Some(constraints) = sig.launch_constraints_parent()? {
+                    if self.launch_constraints_parent(&scope_main).is_some()
+                        || self.launch_constraints_parent(&scope_index).is_some()
+                        || self.launch_constraints_parent(&scope_arch).is_some()
+                    {
+                        info!("using parent launch constraints from settings");
+                    } else {
+                        info!("preserving existing parent launch constraints in Mach-O");
+                        self.set_launch_constraints_parent(
+                            SettingsScope::MultiArchIndex(index),
+                            constraints.parse_encoded_constraints()?,
+                        );
+                    }
+                }
+
+                if let Some(constraints) = sig.launch_constraints_responsible()? {
+                    if self.launch_constraints_responsible(&scope_main).is_some()
+                        || self.launch_constraints_responsible(&scope_index).is_some()
+                        || self.launch_constraints_responsible(&scope_arch).is_some()
+                    {
+                        info!("using responsible process launch constraints from settings");
+                    } else {
+                        info!(
+                            "preserving existing responsible process launch constraints in Mach-O"
+                        );
+                        self.set_launch_constraints_responsible(
+                            SettingsScope::MultiArchIndex(index),
+                            constraints.parse_encoded_constraints()?,
+                        );
+                    }
+                }
+
+                if let Some(constraints) = sig.library_constraints()? {
+                    if self.library_constraints(&scope_main).is_some()
+                        || self.library_constraints(&scope_index).is_some()
+                        || self.library_constraints(&scope_arch).is_some()
+                    {
+                        info!("using library constraints from settings");
+                    } else {
+                        info!("preserving existing library constraints in Mach-O");
+                        self.set_library_constraints(
+                            SettingsScope::MultiArchIndex(index),
+                            constraints.parse_encoded_constraints()?,
+                        );
                     }
                 }
             }
@@ -1156,6 +1300,39 @@ impl<'key> SigningSettings<'key> {
                 .into_iter()
                 .filter_map(|(key, value)| {
                     key_map(ScopedSetting::ExtraDigests, key).map(|key| (key, value))
+                })
+                .collect::<BTreeMap<_, _>>(),
+            launch_constraints_self: self
+                .launch_constraints_self
+                .clone()
+                .into_iter()
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::LaunchConstraintsSelf, key).map(|key| (key, value))
+                })
+                .collect::<BTreeMap<_, _>>(),
+            launch_constraints_parent: self
+                .launch_constraints_parent
+                .clone()
+                .into_iter()
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::LaunchConstraintsParent, key).map(|key| (key, value))
+                })
+                .collect::<BTreeMap<_, _>>(),
+            launch_constraints_responsible: self
+                .launch_constraints_responsible
+                .clone()
+                .into_iter()
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::LaunchConstraintsResponsible, key)
+                        .map(|key| (key, value))
+                })
+                .collect::<BTreeMap<_, _>>(),
+            library_constraints: self
+                .library_constraints
+                .clone()
+                .into_iter()
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::LibraryConstraints, key).map(|key| (key, value))
                 })
                 .collect::<BTreeMap<_, _>>(),
         }

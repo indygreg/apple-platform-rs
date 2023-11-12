@@ -280,6 +280,26 @@ Options:
   -e, --entitlements-xml-file <PATH>
           Path to a plist file containing entitlements
 
+      --launch-constraints-self-file <PATH>
+          Launch constraints on the current executable.
+          
+          Specify the path to a plist XML file defining launch constraints.
+
+      --launch-constraints-parent-file <PATH>
+          Launch constraints on the parent process.
+          
+          Specify the path to a plist XML file defining launch constraints.
+
+      --launch-constraints-responsible-file <PATH>
+          Launch constraints on the responsible process.
+          
+          Specify the path to a plist XML file defining launch constraints.
+
+      --library-constraints-file <PATH>
+          Constraints on loaded libraries.
+          
+          Specify the path to a plist XML file defining launch constraints.
+
       --runtime-version <VERSION>
           Hardened runtime version to use (defaults to SDK version used to build binary)
 

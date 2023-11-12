@@ -24,6 +24,12 @@ Released on ReleaseDate.
   files can now define signers and signing settings in named *profiles*,
   allowing for automatic and near effortless reuse of common configurations.
   See the documentation for more.
+* (New feature) Environment constraints support. We now support defining launch
+  constraints and library constraints. We don't yet fully understand the
+  interactions of constraints and code signing. If using constraints, we
+  highly recommend comparing signature output with Apple's tooling to validate
+  similar behavior. If you notice discrepancies, please file a GitHub issue!
+  (#83)
 * Detection of nested bundles now looks for `CFBundlePackageType` or
   `CFBundleIdentifier` in bundle `Info.plist` and ignores *bundles*
   lacking these. As a result, we no longer attempt signing of storybook

@@ -115,6 +115,18 @@ haven't implemented this throughout the code base yet.
 https://github.com/indygreg/apple-platform-rs/issues/4 and
 https://github.com/indygreg/apple-platform-rs/issues/19 track improvements here.
 
+Launch Constraints and Library Constraints
+==========================================
+
+While we support embedding launch constraints and library constraints in code
+signatures, there's a lot about these constraints we don't yet fully understand.
+For example, there are ``ccat``, ``comp``, and ``vers`` fields in the encoded
+data whose purpose we haven't figured out yet.
+
+We suspect that use of constraints can result in invalid signatures in some
+cases. If using this feature, it would be wise to compare signatures against
+Apple's tooling to ensure things behave similarly.
+
 Long Tail of Random Discrepancies from Apple's Tooling
 ======================================================
 

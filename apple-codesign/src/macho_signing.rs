@@ -12,7 +12,8 @@ use {
         code_requirement::{CodeRequirementExpression, CodeRequirements, RequirementType},
         cryptography::Digest,
         embedded_signature::{
-            BlobData, CodeSigningSlot, EntitlementsBlob, EntitlementsDerBlob, RequirementSetBlob,
+            BlobData, CodeSigningSlot, ConstraintsDerBlob, EntitlementsBlob, EntitlementsDerBlob,
+            RequirementSetBlob,
         },
         embedded_signature_builder::EmbeddedSignatureBuilder,
         entitlements::plist_to_executable_segment_flags,
@@ -712,6 +713,33 @@ impl<'data> MachOSigner<'data> {
 
                 res.push((CodeSigningSlot::EntitlementsDer, blob.into()));
             }
+        }
+
+        if let Some(constraints) = settings.launch_constraints_self(SettingsScope::Main) {
+            info!("adding self launch constraints");
+            let blob = ConstraintsDerBlob::from_encoded_constraints(constraints)?;
+            res.push((CodeSigningSlot::LaunchConstraintsSelf, blob.into()));
+        }
+
+        if let Some(constraints) = settings.launch_constraints_parent(SettingsScope::Main) {
+            info!("adding parent process launch constraints");
+            let blob = ConstraintsDerBlob::from_encoded_constraints(constraints)?;
+            res.push((CodeSigningSlot::LaunchConstraintsParent, blob.into()));
+        }
+
+        if let Some(constraints) = settings.launch_constraints_responsible(SettingsScope::Main) {
+            info!("adding responsible process launch constraints");
+            let blob = ConstraintsDerBlob::from_encoded_constraints(constraints)?;
+            res.push((
+                CodeSigningSlot::LaunchConstraintsResponsibleProcess,
+                blob.into(),
+            ));
+        }
+
+        if let Some(constraints) = settings.library_constraints(SettingsScope::Main) {
+            info!("adding loaded library constraints");
+            let blob = ConstraintsDerBlob::from_encoded_constraints(constraints)?;
+            res.push((CodeSigningSlot::LibraryConstraints, blob.into()));
         }
 
         Ok(res)

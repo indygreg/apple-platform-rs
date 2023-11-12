@@ -487,6 +487,14 @@ pub struct CodeSignature {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub entitlements_der_plist: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub launch_constraints_self: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub launch_constraints_parent: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub launch_constraints_responsible: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub library_constraints: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub code_requirements: Vec<String>,
     pub cms: Option<CmsSignature>,
 }
@@ -497,6 +505,10 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
     fn try_from(sig: EmbeddedSignature<'a>) -> Result<Self, Self::Error> {
         let mut entitlements_plist = vec![];
         let mut entitlements_der_plist = vec![];
+        let mut launch_constraints_self = vec![];
+        let mut launch_constraints_parent = vec![];
+        let mut launch_constraints_responsible = vec![];
+        let mut library_constraints = vec![];
         let mut code_requirements = vec![];
         let mut cms = None;
 
@@ -524,6 +536,22 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
             let xml = blob.plist_xml()?;
 
             entitlements_der_plist = pretty_print_xml_lines(&xml)?;
+        }
+
+        if let Some(blob) = sig.launch_constraints_self()? {
+            launch_constraints_self = pretty_print_xml_lines(&blob.plist_xml()?)?;
+        }
+
+        if let Some(blob) = sig.launch_constraints_parent()? {
+            launch_constraints_parent = pretty_print_xml_lines(&blob.plist_xml()?)?;
+        }
+
+        if let Some(blob) = sig.launch_constraints_responsible()? {
+            launch_constraints_responsible = pretty_print_xml_lines(&blob.plist_xml()?)?;
+        }
+
+        if let Some(blob) = sig.library_constraints()? {
+            library_constraints = pretty_print_xml_lines(&blob.plist_xml()?)?;
         }
 
         if let Some(req) = sig.code_requirements()? {
@@ -558,6 +586,10 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
             alternative_code_directories,
             entitlements_plist,
             entitlements_der_plist,
+            launch_constraints_self,
+            launch_constraints_parent,
+            launch_constraints_responsible,
+            library_constraints,
             code_requirements,
             cms,
         })

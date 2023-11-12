@@ -44,7 +44,8 @@ use {
         code_directory::CodeDirectoryBlob,
         code_requirement::{CodeRequirements, RequirementType},
         cryptography::DigestType,
-        AppleCodesignError,
+        environment_constraints::EncodedEnvironmentConstraints,
+        AppleCodesignError, Result,
     },
     cryptographic_message_syntax::SignedData,
     scroll::{IOwrite, Pread},
@@ -70,6 +71,10 @@ pub enum CodeSigningMagic {
     Entitlements,
     /// DER encoded entitlements blob.
     EntitlementsDer,
+    /// DER encoded environment constraints.
+    ///
+    /// This is how launch constraints and library constraints are encoded.
+    EnvironmentContraintsDer,
     /// Multi-arch collection of embedded signatures.
     DetachedSignature,
     /// Generic blob wrapper.
@@ -90,6 +95,7 @@ impl From<u32> for CodeSigningMagic {
             0xfade0b02 => Self::EmbeddedSignatureOld,
             0xfade7171 => Self::Entitlements,
             0xfade7172 => Self::EntitlementsDer,
+            0xfade8181 => Self::EnvironmentContraintsDer,
             0xfade0cc1 => Self::DetachedSignature,
             0xfade0b01 => Self::BlobWrapper,
             _ => Self::Unknown(v),
@@ -107,6 +113,7 @@ impl From<CodeSigningMagic> for u32 {
             CodeSigningMagic::EmbeddedSignatureOld => 0xfade0b02,
             CodeSigningMagic::Entitlements => 0xfade7171,
             CodeSigningMagic::EntitlementsDer => 0xfade7172,
+            CodeSigningMagic::EnvironmentContraintsDer => 0xfade8181,
             CodeSigningMagic::DetachedSignature => 0xfade0cc1,
             CodeSigningMagic::BlobWrapper => 0xfade0b01,
             CodeSigningMagic::Unknown(v) => v,
@@ -162,6 +169,15 @@ pub enum CodeSigningSlot {
     RepSpecific,
     /// Entitlements DER encoded plist.
     EntitlementsDer,
+    /// DER launch constraints on self.
+    LaunchConstraintsSelf,
+    /// DER launch constraints on parent.
+    LaunchConstraintsParent,
+    /// DER launch constraints on responsible process.
+    LaunchConstraintsResponsibleProcess,
+    /// DER launch constraints on libraries loaded in the process.
+    LibraryConstraints,
+
     // Everything from here is a slot not encoded in the code directory hashes list.
     // REMEMBER TO UPDATE is_code_directory_specials_expressible() if adding a new slot
     // here!
@@ -198,6 +214,22 @@ impl std::fmt::Debug for CodeSigningSlot {
             Self::EntitlementsDer => {
                 f.write_fmt(format_args!("DER Entitlements ({})", u32::from(*self)))
             }
+            Self::LaunchConstraintsSelf => f.write_fmt(format_args!(
+                "DER Launch Constraints on Self ({})",
+                u32::from(*self)
+            )),
+            Self::LaunchConstraintsParent => f.write_fmt(format_args!(
+                "DER Launch Constraints on Parent ({})",
+                u32::from(*self)
+            )),
+            Self::LaunchConstraintsResponsibleProcess => f.write_fmt(format_args!(
+                "DER Launch Constraints on Responsible Process ({})",
+                u32::from(*self)
+            )),
+            Self::LibraryConstraints => f.write_fmt(format_args!(
+                "DER Launch Constraints on Loaded Libraries ({})",
+                u32::from(*self)
+            )),
             Self::AlternateCodeDirectory0 => f.write_fmt(format_args!(
                 "CodeDirectory Alternate #0 ({})",
                 u32::from(*self)
@@ -239,6 +271,10 @@ impl From<u32> for CodeSigningSlot {
             5 => Self::Entitlements,
             6 => Self::RepSpecific,
             7 => Self::EntitlementsDer,
+            8 => Self::LaunchConstraintsSelf,
+            9 => Self::LaunchConstraintsParent,
+            10 => Self::LaunchConstraintsResponsibleProcess,
+            11 => Self::LibraryConstraints,
             0x1000 => Self::AlternateCodeDirectory0,
             0x1001 => Self::AlternateCodeDirectory1,
             0x1002 => Self::AlternateCodeDirectory2,
@@ -263,6 +299,10 @@ impl From<CodeSigningSlot> for u32 {
             CodeSigningSlot::Entitlements => 5,
             CodeSigningSlot::RepSpecific => 6,
             CodeSigningSlot::EntitlementsDer => 7,
+            CodeSigningSlot::LaunchConstraintsSelf => 8,
+            CodeSigningSlot::LaunchConstraintsParent => 9,
+            CodeSigningSlot::LaunchConstraintsResponsibleProcess => 10,
+            CodeSigningSlot::LibraryConstraints => 11,
             CodeSigningSlot::AlternateCodeDirectory0 => 0x1000,
             CodeSigningSlot::AlternateCodeDirectory1 => 0x1001,
             CodeSigningSlot::AlternateCodeDirectory2 => 0x1002,
@@ -308,7 +348,7 @@ impl CodeSigningSlot {
 
     /// Whether this slot's digest is expressed in code directories list of special slot digests.
     pub fn is_code_directory_specials_expressible(&self) -> bool {
-        *self >= Self::Info && *self <= Self::EntitlementsDer
+        *self >= Self::Info && *self <= Self::LibraryConstraints
     }
 }
 
@@ -782,6 +822,61 @@ impl<'a> EntitlementsDerBlob<'a> {
     }
 }
 
+/// A blob holding DER encoded launch/library constraints.
+///
+/// The inner data is a plist.
+#[derive(Debug)]
+pub struct ConstraintsDerBlob<'a> {
+    der: Cow<'a, [u8]>,
+}
+
+impl<'a> Blob<'a> for ConstraintsDerBlob<'a> {
+    fn magic() -> u32 {
+        u32::from(CodeSigningMagic::EnvironmentContraintsDer)
+    }
+
+    fn from_blob_bytes(data: &'a [u8]) -> Result<Self> {
+        let der = read_and_validate_blob_header(
+            data,
+            Self::magic(),
+            "DER encoded environment constraints blob",
+        )?;
+
+        Ok(Self { der: der.into() })
+    }
+
+    fn serialize_payload(&self) -> Result<Vec<u8>> {
+        Ok(self.der.to_vec())
+    }
+}
+
+impl<'a> ConstraintsDerBlob<'a> {
+    /// Construct an instance from a [EncodedEnvironmentConstraints] instance.
+    pub fn from_encoded_constraints(v: &EncodedEnvironmentConstraints) -> Result<Self> {
+        let der = v.der_encode()?;
+
+        Ok(Self { der: der.into() })
+    }
+
+    /// Attempt to parse and resolve the DER data into a plist.
+    pub fn parse_der_plist(&self) -> Result<plist::Value> {
+        crate::plist_der::der_decode_plist(self.der.as_ref())
+    }
+
+    /// Attempt to parse DER into an [EncodedEnvironmentConstraints] instance.
+    pub fn parse_encoded_constraints(&self) -> Result<EncodedEnvironmentConstraints> {
+        EncodedEnvironmentConstraints::from_der(self.der.as_ref())
+    }
+
+    /// Parse the plist from DER and format to XML.
+    pub fn plist_xml(&self) -> Result<Vec<u8>> {
+        let mut buffer = vec![];
+        self.parse_der_plist()?.to_writer_xml(&mut buffer)?;
+
+        Ok(buffer)
+    }
+}
+
 /// A detached signature.
 #[derive(Debug)]
 pub struct DetachedSignatureBlob<'a> {
@@ -896,6 +991,7 @@ pub enum BlobData<'a> {
     EmbeddedSignatureOld(Box<EmbeddedSignatureOldBlob<'a>>),
     Entitlements(Box<EntitlementsBlob<'a>>),
     EntitlementsDer(Box<EntitlementsDerBlob<'a>>),
+    ConstraintsDer(Box<ConstraintsDerBlob<'a>>),
     DetachedSignature(Box<DetachedSignatureBlob<'a>>),
     BlobWrapper(Box<BlobWrapperBlob<'a>>),
     Other(Box<OtherBlob<'a>>),
@@ -938,6 +1034,9 @@ impl<'a> Blob<'a> for BlobData<'a> {
             CodeSigningMagic::EntitlementsDer => {
                 Self::EntitlementsDer(Box::new(EntitlementsDerBlob::from_blob_bytes(data)?))
             }
+            CodeSigningMagic::EnvironmentContraintsDer => {
+                Self::ConstraintsDer(Box::new(ConstraintsDerBlob::from_blob_bytes(data)?))
+            }
             CodeSigningMagic::DetachedSignature => {
                 Self::DetachedSignature(Box::new(DetachedSignatureBlob::from_blob_bytes(data)?))
             }
@@ -957,6 +1056,7 @@ impl<'a> Blob<'a> for BlobData<'a> {
             Self::EmbeddedSignatureOld(b) => b.serialize_payload(),
             Self::Entitlements(b) => b.serialize_payload(),
             Self::EntitlementsDer(b) => b.serialize_payload(),
+            Self::ConstraintsDer(b) => b.serialize_payload(),
             Self::DetachedSignature(b) => b.serialize_payload(),
             Self::BlobWrapper(b) => b.serialize_payload(),
             Self::Other(b) => b.serialize_payload(),
@@ -972,6 +1072,7 @@ impl<'a> Blob<'a> for BlobData<'a> {
             Self::EmbeddedSignatureOld(b) => b.to_blob_bytes(),
             Self::Entitlements(b) => b.to_blob_bytes(),
             Self::EntitlementsDer(b) => b.to_blob_bytes(),
+            Self::ConstraintsDer(b) => b.to_blob_bytes(),
             Self::DetachedSignature(b) => b.to_blob_bytes(),
             Self::BlobWrapper(b) => b.to_blob_bytes(),
             Self::Other(b) => b.to_blob_bytes(),
@@ -1018,6 +1119,12 @@ impl<'a> From<EntitlementsBlob<'a>> for BlobData<'a> {
 impl<'a> From<EntitlementsDerBlob<'a>> for BlobData<'a> {
     fn from(b: EntitlementsDerBlob<'a>) -> Self {
         Self::EntitlementsDer(Box::new(b))
+    }
+}
+
+impl<'a> From<ConstraintsDerBlob<'a>> for BlobData<'a> {
+    fn from(b: ConstraintsDerBlob<'a>) -> Self {
+        Self::ConstraintsDer(Box::new(b))
     }
 }
 
@@ -1332,6 +1439,64 @@ impl<'a> EmbeddedSignature<'a> {
                 Ok(Some(reqs))
             } else {
                 Err(AppleCodesignError::BadMagic("requirements blob"))
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Obtain the launch constraints on self blob.
+    pub fn launch_constraints_self(&self) -> Result<Option<Box<ConstraintsDerBlob<'a>>>> {
+        if let Some(parsed) = self.find_slot_parsed(CodeSigningSlot::LaunchConstraintsSelf)? {
+            if let BlobData::ConstraintsDer(blob) = parsed.blob {
+                Ok(Some(blob))
+            } else {
+                Err(AppleCodesignError::BadMagic("self launch constraints blob"))
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Obtain the launch constraints on parent blob.
+    pub fn launch_constraints_parent(&self) -> Result<Option<Box<ConstraintsDerBlob<'a>>>> {
+        if let Some(parsed) = self.find_slot_parsed(CodeSigningSlot::LaunchConstraintsParent)? {
+            if let BlobData::ConstraintsDer(blob) = parsed.blob {
+                Ok(Some(blob))
+            } else {
+                Err(AppleCodesignError::BadMagic(
+                    "parent launch constraints blob",
+                ))
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Obtain the launch constraints on responsible process blob.
+    pub fn launch_constraints_responsible(&self) -> Result<Option<Box<ConstraintsDerBlob<'a>>>> {
+        if let Some(parsed) =
+            self.find_slot_parsed(CodeSigningSlot::LaunchConstraintsResponsibleProcess)?
+        {
+            if let BlobData::ConstraintsDer(blob) = parsed.blob {
+                Ok(Some(blob))
+            } else {
+                Err(AppleCodesignError::BadMagic(
+                    "responsible process launch constraints blob",
+                ))
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Obtain the library constraints blob.
+    pub fn library_constraints(&self) -> Result<Option<Box<ConstraintsDerBlob<'a>>>> {
+        if let Some(parsed) = self.find_slot_parsed(CodeSigningSlot::LibraryConstraints)? {
+            if let BlobData::ConstraintsDer(blob) = parsed.blob {
+                Ok(Some(blob))
+            } else {
+                Err(AppleCodesignError::BadMagic("library constraints blob"))
             }
         } else {
             Ok(None)

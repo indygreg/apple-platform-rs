@@ -129,6 +129,7 @@ pub use embedded_signature::*;
 pub mod embedded_signature_builder;
 pub use embedded_signature_builder::*;
 pub mod entitlements;
+pub mod environment_constraints;
 mod error;
 pub use error::*;
 mod macho;
