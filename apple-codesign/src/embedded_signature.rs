@@ -763,7 +763,7 @@ impl<'a> EntitlementsDerBlob<'a> {
     ///
     /// The outermost plist value should be a dictionary.
     pub fn from_plist(v: &plist::Value) -> Result<Self, AppleCodesignError> {
-        let der = crate::entitlements::der_encode_entitlements_plist(v)?;
+        let der = crate::plist_der::der_encode_plist(v)?;
 
         Ok(Self { der: der.into() })
     }
