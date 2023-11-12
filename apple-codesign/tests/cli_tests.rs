@@ -14,8 +14,8 @@ use {
 
 const COREUTILS_VERSION: &str = "0.0.22";
 /// List of coreutils binaries to materialize in trycmd test environments.
-const COREUTILS_BINARIES: [&str; 10] = [
-    "cat", "cp", "hashsum", "ln", "ls", "mkdir", "rm", "sort", "test", "touch",
+const COREUTILS_BINARIES: [&str; 11] = [
+    "cat", "cp", "hashsum", "ln", "ls", "mkdir", "mv", "rm", "sort", "test", "touch",
 ];
 
 const COREUTILS_ARTIFACT_URL: &str = "https://github.com/uutils/coreutils/releases/download";
