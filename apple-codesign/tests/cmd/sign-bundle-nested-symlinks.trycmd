@@ -26,38 +26,38 @@ $ rcodesign debug-file-tree MyApp.app.signed
 d                      MyApp.app.signed/
 d                      MyApp.app.signed/Contents
 d                      MyApp.app.signed/Contents/Frameworks
-f 95566b60f24ce6600306 MyApp.app.signed/Contents/Frameworks/libssh.4.8.8.dylib
+f 40a8b05ac0eac09b1186 MyApp.app.signed/Contents/Frameworks/libssh.4.8.8.dylib
 l                      MyApp.app.signed/Contents/Frameworks/libssh.4.dylib -> libssh.4.8.8.dylib
 l                      MyApp.app.signed/Contents/Frameworks/libssh.dylib -> libssh.4.dylib
 f 0a5902dc8e47f490d038 MyApp.app.signed/Contents/Info.plist
 d                      MyApp.app.signed/Contents/MacOS
-f 0b577ed98ce1915f2d29 MyApp.app.signed/Contents/MacOS/MyApp
+f 8f330392b30c9cbd593d MyApp.app.signed/Contents/MacOS/MyApp
 d                      MyApp.app.signed/Contents/_CodeSignature
-f ae26f0a8b94cc8fc6179 MyApp.app.signed/Contents/_CodeSignature/CodeResources
+f 273cd2b4970deda577c2 MyApp.app.signed/Contents/_CodeSignature/CodeResources
 
 $ rcodesign print-signature-info MyApp.app.signed
 - path: Contents/Frameworks/libssh.4.8.8.dylib
   file_size: 22544
-  file_sha256: 95566b60f24ce66003061a0e572d1db2e55ae0e666bba9d13a8af9b959ac2cbe
+  file_sha256: 40a8b05ac0eac09b118678fb3cadd62a364b5b40c0a04db953b9924d891fc3ef
   entity:
     mach_o:
       macho_linkedit_start_offset: 16384 / 0x4000
       macho_signature_start_offset: 16400 / 0x4010
-      macho_signature_end_offset: 16781 / 0x418d
+      macho_signature_end_offset: 16777 / 0x4189
       macho_linkedit_end_offset: 22544 / 0x5810
       macho_end_offset: 22544 / 0x5810
       linkedit_signature_start_offset: 16 / 0x10
-      linkedit_signature_end_offset: 397 / 0x18d
-      linkedit_bytes_after_signature: 5763 / 0x1683
+      linkedit_signature_end_offset: 393 / 0x189
+      linkedit_bytes_after_signature: 5767 / 0x1687
       signature:
-        superblob_length: 381 / 0x17d
+        superblob_length: 377 / 0x179
         blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
-          length: 325
-          sha1: 9bb62d2fdae6551eec5eacceb650ee5181f4d326
-          sha256: 86e287421489643ffb6cbd07c7898b090ae6c6175d8475433d999b1c7dfb2290
+          length: 321
+          sha1: 5b19ce6b4bcd9ad15044c2066216829d95ea7ab0
+          sha256: 870a3508181d52e36783c1bf86010a76ad8f735165f2440f23a7c42119b4be9f
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -71,7 +71,7 @@ $ rcodesign print-signature-info MyApp.app.signed
         code_directory:
           version: '0x20400'
           flags: CodeSignatureFlags(ADHOC)
-          identifier: libssh.4.8.8
+          identifier: libssh.4
           digest_type: sha256
           platform: 0
           signed_entity_size: 16400
@@ -93,7 +93,7 @@ $ rcodesign print-signature-info MyApp.app.signed
   entity: other
 - path: Contents/MacOS/MyApp
   file_size: 22544
-  file_sha256: 0b577ed98ce1915f2d294405daa4b7ae867009234a887d964005ac188b1de3d4
+  file_sha256: 8f330392b30c9cbd593dc332979a2a2dfcc3edfe1b3bcfd1c5e2fecb31aeca00
   entity:
     mach_o:
       macho_linkedit_start_offset: 16384 / 0x4000
@@ -111,8 +111,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 365
-          sha1: f01d0fb20b48da47daf2cbd9737a6677bfc9b1ba
-          sha256: ed915ac10a98c64a8faca4377d1ad5754d495edb4b0192f8653dcb31e1399b88
+          sha1: 98f382966f6efe2b3158f862123c12c57dc167a9
+          sha256: b7256b5560a1bc8c7f1e3f56d1eabc9ed248e4b97fee8e716efd5909681f95be
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -135,11 +135,11 @@ $ rcodesign print-signature-info MyApp.app.signed
           slot_digests:
           - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-          - 'Resources (3): ae26f0a8b94cc8fc6179e9c92c6f705766a4130165208a42e5c44dcc35fd9b73'
+          - 'Resources (3): 273cd2b4970deda577c29fcd05055752e46144fe483371d48754d273bbccbb85'
         cms: null
 - path: Contents/_CodeSignature/CodeResources
   file_size: 2673
-  file_sha256: ae26f0a8b94cc8fc6179e9c92c6f705766a4130165208a42e5c44dcc35fd9b73
+  file_sha256: 273cd2b4970deda577c29fcd05055752e46144fe483371d48754d273bbccbb85
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -154,10 +154,10 @@ $ rcodesign print-signature-info MyApp.app.signed
     - '    <dict>'
     - '      <key>cdhash</key>'
     - '      <data>'
-    - '      huKHQhSJZD/7bL0Hx4mLCQrmxhc='
+    - '      hwo1CBgdUuNng8G/hgEKdq2Pc1E='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H"86e287421489643ffb6cbd07c7898b090ae6c617"</string>'
+    - '      <string>cdhash H"870a3508181d52e36783c1bf86010a76ad8f7351"</string>'
     - '    </dict>'
     - '    <key>Frameworks/libssh.4.dylib</key>'
     - '    <dict>'

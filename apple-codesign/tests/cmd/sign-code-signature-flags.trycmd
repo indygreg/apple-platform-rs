@@ -68,7 +68,7 @@ $ rcodesign sign --code-signature-flags host exe.signed exe.signed.2
 adding code signature flag CodeSignatureFlags(HOST) to main signing target
 signing exe.signed to exe.signed.2
 signing exe.signed as a Mach-O binary
-setting binary identifier to exe.signed
+setting binary identifier to exe
 parsing Mach-O
 writing Mach-O to exe.signed.2
 

@@ -18,6 +18,10 @@ Released on ReleaseDate.
   instead of using a mix of `--foo-path`, `--foo-filename`, and
   potentially other variants. The old names are still recognized as
   aliases to maintain backwards compatibility.
+* Changed heuristic for naming a binary identifier from its path to be
+  more similar to Apple's. e.g. `foo1.2.dylib` will now resolve to `foo1`
+  instead of `foo1.2`. We still don't use the binary UUID or digest of its
+  load commands to compute the binary identifier like Apple does.
 
 ## 0.24.0
 

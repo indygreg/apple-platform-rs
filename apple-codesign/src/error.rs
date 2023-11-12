@@ -199,6 +199,9 @@ pub enum AppleCodesignError {
     #[error("unspecified digest error")]
     DigestUnspecified,
 
+    #[error("deriving identifier from path: {0}")]
+    PathIdentifier(String),
+
     #[error("error interfacing with directory-based bundle: {0}")]
     DirectoryBundle(anyhow::Error),
 

@@ -14,6 +14,7 @@ use {
         error::AppleCodesignError,
         macho::MachFile,
         macho_signing::{write_macho_file, MachOSigner},
+        signing::path_identifier,
         signing_settings::{SettingsScope, SigningSettings},
     },
     apple_bundles::{BundlePackageType, DirectoryBundle},
@@ -388,14 +389,7 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
         // and we avoid a signing error due to missing identifier.
         // TODO do we need to check the nested Mach-O settings?
         if settings.binary_identifier(SettingsScope::Main).is_none() {
-            let identifier = dest_rel_path
-                .file_name()
-                .expect("failure to extract filename (this should never happen)")
-                .to_string_lossy();
-
-            let identifier = identifier
-                .strip_suffix(".dylib")
-                .unwrap_or_else(|| identifier.as_ref());
+            let identifier = path_identifier(dest_rel_path)?;
 
             info!(
                 "Mach-O is missing binary identifier; setting to {} based on file name",

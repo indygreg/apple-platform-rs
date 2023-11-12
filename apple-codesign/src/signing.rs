@@ -73,14 +73,7 @@ impl<'key> UnifiedSigner<'key> {
         settings.import_settings_from_macho(&macho_data)?;
 
         if settings.binary_identifier(SettingsScope::Main).is_none() {
-            let identifier = input_path
-                .file_name()
-                .ok_or_else(|| {
-                    AppleCodesignError::CliGeneralError(
-                        "unable to resolve file name of binary".into(),
-                    )
-                })?
-                .to_string_lossy();
+            let identifier = path_identifier(input_path)?;
 
             warn!("setting binary identifier to {}", identifier);
             settings.set_binary_identifier(SettingsScope::Main, identifier);
@@ -225,5 +218,105 @@ impl<'key> UnifiedSigner<'key> {
         std::fs::rename(&output_path_temp, output_path)?;
 
         Ok(())
+    }
+}
+
+pub fn path_identifier(path: impl AsRef<Path>) -> Result<String, AppleCodesignError> {
+    let path = path.as_ref();
+
+    // We only care about the file name.
+    let file_name = path
+        .file_name()
+        .ok_or_else(|| {
+            AppleCodesignError::PathIdentifier(format!("path {} lacks a file name", path.display()))
+        })?
+        .to_string_lossy()
+        .to_string();
+
+    // Remove the final file extension unless it is numeric.
+    let id = if let Some((prefix, extension)) = file_name.rsplit_once('.') {
+        if extension.chars().all(|c| c.is_ascii_digit()) {
+            file_name.as_str()
+        } else {
+            prefix
+        }
+    } else {
+        file_name.as_str()
+    };
+
+    let is_digit_or_dot = |c: char| c == '.' || c.is_ascii_digit();
+
+    // If begins with digit or dot, use as is, handling empty string special
+    // case.
+    let id = match id.chars().next() {
+        Some(first) => {
+            if is_digit_or_dot(first) {
+                return Ok(id.to_string());
+            } else {
+                id
+            }
+        }
+        None => {
+            return Ok(id.to_string());
+        }
+    };
+
+    // Strip all components having numeric *suffixes* except the first
+    // one. This doesn't strip extension components but *suffixes*. So
+    // e.g. libFoo1.2.3 -> libFoo1. Logically, we strip trailing digits
+    // + dot after the first dot preceded by digits.
+
+    let prefix = id.trim_end_matches(is_digit_or_dot);
+    let stripped = &id[prefix.len()..];
+
+    if stripped.is_empty() {
+        Ok(id.to_string())
+    } else {
+        // If the next character is a dot, add it back in.
+        let (prefix, stripped) = if matches!(stripped.chars().next(), Some('.')) {
+            (&id[0..prefix.len() + 1], &stripped[1..])
+        } else {
+            (prefix, stripped)
+        };
+
+        // Add back in any leading digits.
+
+        let id = prefix
+            .chars()
+            .chain(stripped.chars().take_while(|c| c.is_ascii_digit()))
+            .collect::<String>();
+
+        Ok(id)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn path_identifier_normalization() {
+        assert_eq!(path_identifier("foo").unwrap(), "foo");
+        assert_eq!(path_identifier("foo.dylib").unwrap(), "foo");
+        assert_eq!(path_identifier("/etc/foo.dylib").unwrap(), "foo");
+        assert_eq!(path_identifier("/etc/foo").unwrap(), "foo");
+
+        // Starts with digit or dot is preserved module final extension.
+        assert_eq!(path_identifier(".foo").unwrap(), "");
+        assert_eq!(path_identifier("123").unwrap(), "123");
+        assert_eq!(path_identifier(".foo.dylib").unwrap(), ".foo");
+        assert_eq!(path_identifier("123.dylib").unwrap(), "123");
+        assert_eq!(path_identifier("123.42").unwrap(), "123.42");
+
+        // Digit final extension preserved.
+
+        assert_eq!(path_identifier("foo1").unwrap(), "foo1");
+        assert_eq!(path_identifier("foo1.dylib").unwrap(), "foo1");
+        assert_eq!(path_identifier("foo1.2.dylib").unwrap(), "foo1");
+        assert_eq!(path_identifier("foo1.2").unwrap(), "foo1");
+        assert_eq!(path_identifier("foo1.2.3.4.dylib").unwrap(), "foo1");
+        assert_eq!(path_identifier("foo.1").unwrap(), "foo.1");
+        assert_eq!(path_identifier("foo.1.2.3").unwrap(), "foo.1");
+        assert_eq!(path_identifier("foo.1.2.dylib").unwrap(), "foo.1");
+        assert_eq!(path_identifier("foo.1.dylib").unwrap(), "foo.1");
     }
 }
