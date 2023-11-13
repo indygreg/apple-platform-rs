@@ -253,14 +253,14 @@ pub fn der_encode_plist(value: &Value) -> Result<Vec<u8>, AppleCodesignError> {
         let wrapped = WrappedPlist::try_from(value.clone())?;
         wrapped.encode(encoder)
     })
-    .map_err(|e| AppleCodesignError::EntitlementsDerEncode(format!("{e}")))
+    .map_err(|e| AppleCodesignError::PlistDer(format!("{e}")))
 }
 
 /// Decode DER to a plist [Value].
 pub fn der_decode_plist(data: impl AsRef<[u8]>) -> Result<Value, AppleCodesignError> {
     rasn::der::decode::<WrappedPlist>(data.as_ref())
         .and_then(Value::try_from)
-        .map_err(|e| AppleCodesignError::EntitlementsDerEncode(format!("{e}")))
+        .map_err(|e| AppleCodesignError::PlistDer(format!("{e}")))
 }
 
 #[cfg(test)]
@@ -608,19 +608,19 @@ mod test {
         d.insert("key".into(), Value::Real(0.0f32.into()));
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
 
         d.insert("key".into(), Value::Real((-1.0f32).into()));
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
 
         d.insert("key".into(), Value::Real(1.0f32.into()));
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
 
         d.insert("key".into(), Value::String("".into()));
@@ -646,19 +646,19 @@ mod test {
         d.insert("key".into(), Value::Uid(Uid::new(0)));
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
 
         d.insert("key".into(), Value::Uid(Uid::new(1)));
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
 
         d.insert("key".into(), Value::Uid(Uid::new(42)));
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
 
         d.insert(
@@ -667,7 +667,7 @@ mod test {
         );
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
         d.insert(
             "key".into(),
@@ -677,19 +677,19 @@ mod test {
         );
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
 
         // Data fails to encode to DER with `unknown exception`.
         d.insert("key".into(), Value::Data(vec![]));
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
         d.insert("key".into(), Value::Data(b"foo".to_vec()));
         assert!(matches!(
             der_encode_plist(&Value::Dictionary(d.clone())),
-            Err(AppleCodesignError::EntitlementsDerEncode(_))
+            Err(AppleCodesignError::PlistDer(_))
         ));
 
         d.insert("key".into(), Value::Array(vec![]));
