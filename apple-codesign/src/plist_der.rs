@@ -8,102 +8,159 @@ use {
     crate::error::AppleCodesignError,
     plist::Value,
     rasn::{
-        ber::enc::{EncodeError, Encoder as DerEncoder},
+        ber::enc::EncodeError,
         enc::Error,
-        types::{fields::Fields, Class, Constraints, Constructed, Tag},
-        Codec, Encoder,
+        types::{fields::Fields, Class, Constraints, Constructed, Integer, Tag},
+        AsnType, Codec, Encode, Encoder,
     },
     std::collections::BTreeMap,
 };
 
-struct ValuePlaceholder {}
+/// Represents a plist dictionary in the rasn domain.
+#[derive(Debug)]
+struct Dictionary(plist::Dictionary);
 
-impl Constructed for ValuePlaceholder {
+impl AsnType for Dictionary {
+    const TAG: Tag = Tag {
+        class: Class::Context,
+        value: 16,
+    };
+}
+
+impl Constructed for Dictionary {
     const FIELDS: Fields = Fields::empty();
 }
 
-/// Encode a [Value] to DER, writing to an encoder.
-fn der_encode_value(encoder: &mut DerEncoder, value: &Value) -> Result<(), EncodeError> {
-    match value {
-        Value::Boolean(v) => encoder.encode_bool(Tag::BOOL, *v),
-        Value::Integer(v) => {
-            let integer = rasn::types::Integer::from(v.as_signed().unwrap());
-            encoder.encode_integer(Tag::INTEGER, Constraints::NONE, &integer)
-        }
-        Value::String(string) => {
-            encoder.encode_utf8_string(Tag::UTF8_STRING, Constraints::NONE, string)
-        }
-        Value::Array(array) => {
-            encoder.encode_sequence::<ValuePlaceholder, _>(Tag::SEQUENCE, |encoder| {
-                for v in array {
-                    der_encode_value(encoder, v)?;
-                }
-                Ok(())
-            })
-        }
-        Value::Dictionary(dict) => {
-            // make sure it's sorted alphabetically
-            let map = dict.into_iter().collect::<BTreeMap<_, _>>();
-            encoder.encode_sequence::<ValuePlaceholder, _>(
-                Tag::new(Class::Context, 16),
-                |encoder| {
-                    for (k, v) in map {
-                        encoder.encode_sequence::<ValuePlaceholder, _>(
-                            Tag::SEQUENCE,
-                            |encoder| {
-                                encoder.encode_utf8_string(
-                                    Tag::UTF8_STRING,
-                                    Constraints::NONE,
-                                    k,
-                                )?;
-                                der_encode_value(encoder, v)?;
-                                Ok(())
-                            },
-                        )?;
-                    }
-                    Ok(())
-                },
-            )
-        }
+impl Encode for Dictionary {
+    fn encode_with_tag_and_constraints<E: Encoder>(
+        &self,
+        encoder: &mut E,
+        tag: Tag,
+        _constraints: Constraints,
+    ) -> Result<(), E::Error> {
+        // Sort it alphabetically.
+        let map = self.0.iter().collect::<BTreeMap<_, _>>();
 
-        Value::Data(_) => Err(EncodeError::custom(
-            "encoding of data values not supported",
-            Codec::Der,
-        )),
-        Value::Date(_) => Err(EncodeError::custom(
-            "encoding of date values not supported",
-            Codec::Der,
-        )),
-        Value::Real(_) => Err(EncodeError::custom(
-            "encoding of real values not supported",
-            Codec::Der,
-        )),
-        Value::Uid(_) => Err(EncodeError::custom(
-            "encoding of uid values not supported",
-            Codec::Der,
-        )),
-        _ => Err(EncodeError::custom(
-            "encoding of unknown value type not supported",
-            Codec::Der,
-        )),
+        encoder.encode_sequence::<Self, _>(tag, |encoder| {
+            for (k, v) in map {
+                let wrapped = WrappedValue::try_from(v.clone())?;
+
+                encoder.encode_sequence::<Self, _>(Tag::SEQUENCE, |encoder| {
+                    encoder.encode_utf8_string(Tag::UTF8_STRING, Constraints::NONE, k)?;
+                    wrapped.encode(encoder)?;
+                    Ok(())
+                })?;
+            }
+
+            Ok(())
+        })?;
+
+        Ok(())
+    }
+}
+
+/// Represents a [Value] in the rasn domain.
+#[derive(AsnType, Debug, Encode)]
+#[rasn(choice)]
+enum WrappedValue {
+    Array(Vec<WrappedValue>),
+    Dictionary(Dictionary),
+    #[rasn(tag(universal, 1))]
+    Boolean(bool),
+    #[rasn(tag(universal, 2))]
+    Integer(Integer),
+    #[rasn(tag(universal, 12))]
+    String(String),
+}
+
+impl TryFrom<Value> for WrappedValue {
+    type Error = EncodeError;
+
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        match value {
+            Value::Array(v) => Ok(Self::Array(
+                v.into_iter()
+                    .map(Self::try_from)
+                    .collect::<Result<Vec<_>, _>>()?,
+            )),
+            Value::Dictionary(v) => Ok(Self::Dictionary(Dictionary(v))),
+            Value::Boolean(v) => Ok(Self::Boolean(v)),
+            Value::Integer(v) => {
+                let integer = Integer::from(v.as_signed().ok_or(EncodeError::custom(
+                    "could not obtain integer representation from plist integer",
+                    Codec::Der,
+                ))?);
+
+                Ok(Self::Integer(integer))
+            }
+            Value::String(v) => Ok(Self::String(v)),
+            Value::Data(_) => Err(EncodeError::custom(
+                "encoding of data values not supported",
+                Codec::Der,
+            )),
+            Value::Date(_) => Err(EncodeError::custom(
+                "encoding of date values not supported",
+                Codec::Der,
+            )),
+            Value::Real(_) => Err(EncodeError::custom(
+                "encoding of real values not supported",
+                Codec::Der,
+            )),
+            Value::Uid(_) => Err(EncodeError::custom(
+                "encoding of uid values not supported",
+                Codec::Der,
+            )),
+            _ => Err(EncodeError::custom(
+                "encoding of unknown value type not supported",
+                Codec::Der,
+            )),
+        }
+    }
+}
+
+/// Represents a top-level plist in the rasn domain.
+struct WrappedPlist(WrappedValue);
+
+impl AsnType for WrappedPlist {
+    const TAG: Tag = Tag {
+        class: Class::Application,
+        value: 16,
+    };
+}
+
+impl Constructed for WrappedPlist {
+    const FIELDS: Fields = Fields::empty();
+}
+
+impl TryFrom<Value> for WrappedPlist {
+    type Error = EncodeError;
+
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        Ok(Self(value.try_into()?))
+    }
+}
+
+impl Encode for WrappedPlist {
+    fn encode_with_tag_and_constraints<E: Encoder>(
+        &self,
+        encoder: &mut E,
+        tag: Tag,
+        _constraints: Constraints,
+    ) -> Result<(), E::Error> {
+        encoder.encode_sequence::<Self, _>(tag, |encoder| {
+            encoder.encode_integer(Tag::INTEGER, Constraints::NONE, &Integer::from(1))?;
+            self.0.encode(encoder)
+        })?;
+
+        Ok(())
     }
 }
 
 /// Encode a top-level plist [Value] to DER.
 pub fn der_encode_plist(value: &Value) -> Result<Vec<u8>, AppleCodesignError> {
     rasn::der::encode_scope(|encoder| {
-        encoder.encode_sequence::<ValuePlaceholder, _>(
-            Tag::new(Class::Application, 16),
-            |encoder| {
-                encoder.encode_integer(
-                    Tag::INTEGER,
-                    Constraints::NONE,
-                    &rasn::types::Integer::from(1),
-                )?;
-                der_encode_value(encoder, value)?;
-                Ok(())
-            },
-        )
+        let wrapped = WrappedPlist::try_from(value.clone())?;
+        wrapped.encode(encoder)
     })
     .map_err(|e| AppleCodesignError::EntitlementsDerEncode(format!("{e}")))
 }
