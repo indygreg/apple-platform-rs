@@ -345,6 +345,24 @@ shared secret value.
 
 If using public key encryption, the public key data likely begins with ``MII``.
 
+Windows Store Signer Source
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``signer.windows_store`` key declares key/certificate sources in the Windows
+certificate store.
+
+This key is a table/dict/map with the following keys:
+
+``stores``
+   Array of strings denoting Windows Store names.
+
+   Valid values are ``user``, ``machine``, and ``service``.
+
+   Defaults to ``["user"]``.
+
+``sha1_fingerprint``
+   SHA-1 fingerprint of certificate in store to use.
+
 .. _apple_codesign_rcodesign_config_files_path_settings:
 
 Path Signing Settings

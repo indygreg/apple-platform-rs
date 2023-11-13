@@ -162,7 +162,7 @@ mod test {
     use {
         crate::cli::certificate_source::{
             MacosKeychainSigningKey, P12SigningKey, PemSigningKey, RemoteSigningKey,
-            SmartcardSigningKey,
+            SmartcardSigningKey, WindowsStoreSigningKey,
         },
         std::path::PathBuf,
     };
@@ -373,6 +373,30 @@ mod test {
                 remote_signing_key: Some(RemoteSigningKey {
                     shared_secret: Some("SECRET".into()),
                     ..Default::default()
+                }),
+                ..Default::default()
+            }
+        );
+    }
+
+    #[test]
+    fn windows_store() {
+        assert_eq!(
+            ConfigBuilder::default()
+                .toml_string(
+                    r#"
+                [default.sign]
+                signer.windows_store = { stores = ["user"], sha1_fingerprint = "DEADBEEF" }
+                "#
+                )
+                .config()
+                .unwrap()
+                .sign
+                .signer,
+            CertificateSource {
+                windows_store_key: Some(WindowsStoreSigningKey {
+                    stores: vec!["user".into()],
+                    sha1_fingerprint: Some("DEADBEEF".into()),
                 }),
                 ..Default::default()
             }

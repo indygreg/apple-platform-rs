@@ -235,6 +235,9 @@ pub enum AppleCodesignError {
     #[error("error interfacing with macOS keychain: {0}")]
     KeychainError(String),
 
+    #[error("error interfacing with Windows certificate store: {0}")]
+    WindowsStoreError(String),
+
     #[error("failed to find certificate satisfying requirements: {0}")]
     CertificateNotFound(String),
 

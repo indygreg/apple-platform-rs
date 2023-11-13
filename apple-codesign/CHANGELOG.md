@@ -6,6 +6,15 @@
 
 Released on ReleaseDate.
 
+* (New feature) On Windows, it is now possible to sign with code signing
+  certificates stored in the Windows Certificate Store. The `sign` command
+  (and other commands taking certificate sources) gained `--windows-store-name`
+  and `--windows-store-sha1-fingerprint` arguments to specify a certificate in
+  the Windows Certificate Store to use. New commands
+  `windows-store-print-certificates` and
+  `windows-store-export-certificate-chain` can discover and export certificates
+  in the Windows Certificate Store. Feature contributed by El Mostafa Idrassi
+  in #111.
 * Fixed a bug where a `signing without an Apple signed certificate but signing
   settings contain a team name` warning was printed incorrectly.
 * We now print a warning when signing using an expired certificate.

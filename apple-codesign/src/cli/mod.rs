@@ -58,7 +58,13 @@ use crate::macos::{
     keychain_find_code_signing_certificates, macos_keychain_find_certificate_chain, KeychainDomain,
 };
 
+#[cfg(target_os = "windows")]
+use crate::windows::{
+    windows_store_find_certificate_chain, windows_store_find_code_signing_certificates, StoreName,
+};
+
 pub const KEYCHAIN_DOMAINS: [&str; 4] = ["user", "system", "common", "dynamic"];
+pub const WINDOWS_STORE_NAMES: [&str; 3] = ["user", "machine", "service"];
 
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
 
@@ -1738,6 +1744,81 @@ impl CliCommand for Verify {
 }
 
 #[derive(Parser)]
+struct WindowsStoreExportCertificateChain {
+    /// Windows Store to operate on
+    #[arg(long, value_parser = WINDOWS_STORE_NAMES, default_value = "user", value_name = "STORE")]
+    windows_store_name: String,
+
+    /// Print only the issuing certificate chain, not the subject certificate
+    #[arg(long)]
+    no_print_self: bool,
+
+    /// SHA-1 thumbprint of code signing certificate to find and whose CA chain to export
+    #[arg(long)]
+    thumbprint: String,
+}
+
+impl CliCommand for WindowsStoreExportCertificateChain {
+    #[cfg(target_os = "windows")]
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+        let store_name = StoreName::try_from(self.windows_store_name.as_str())
+            .expect("clap should have validated store name values");
+
+        let certs = windows_store_find_certificate_chain(store_name, &self.thumbprint)?;
+
+        for (i, cert) in certs.iter().enumerate() {
+            if self.no_print_self && i == 0 {
+                continue;
+            }
+
+            print!("{}", cert.encode_pem());
+        }
+
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+        Err(AppleCodesignError::CliGeneralError(
+            "Windows Store export only supported on Windows".to_string(),
+        ))
+    }
+}
+
+#[derive(Parser)]
+struct WindowsStorePrintCertificates {
+    /// Windows Store name to operate on
+    #[arg(long, value_parser = WINDOWS_STORE_NAMES, default_value = "user", value_name = "STORE")]
+    windows_store_name: String,
+}
+
+impl CliCommand for WindowsStorePrintCertificates {
+    #[cfg(target_os = "windows")]
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+        let store_name = StoreName::try_from(self.windows_store_name.as_str())
+            .expect("clap should have validated store name values");
+
+        let certs = windows_store_find_code_signing_certificates(store_name)?;
+
+        for (i, cert) in certs.into_iter().enumerate() {
+            println!("# Certificate {}", i);
+            println!();
+            print_certificate_info(&cert)?;
+            println!();
+        }
+
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+        Err(AppleCodesignError::CliGeneralError(
+            "Windows Store integration only supported on Windows".to_string(),
+        ))
+    }
+}
+
+#[derive(Parser)]
 struct X509Oids {}
 
 impl CliCommand for X509Oids {
@@ -2112,6 +2193,9 @@ enum Subcommands {
     /// * The --keychain-domain and --keychain-fingerprint arguments can be used to
     ///   load code signing certificates from macOS keychains. These arguments are
     ///   ignored on non-macOS platforms.
+    /// * The --windows-store-name and --windows-store-cert-fingerprint arguments can be used to
+    ///   load code signing certificates from the Windows store. These arguments are
+    ///   ignored on non-Windows platforms.
     /// * The --smartcard-slot argument defines the name of a slot in a connected
     ///   smartcard device to read from. `9c` is common.
     /// * Arguments beginning with --remote activate *remote signing mode* and can
@@ -2207,6 +2291,12 @@ enum Subcommands {
     /// Verifies code signature data
     Verify(Verify),
 
+    /// Export CA certificates from the Windows Store
+    WindowsStoreExportCertificateChain(WindowsStoreExportCertificateChain),
+
+    /// Print information about certificates in the Windows Store
+    WindowsStorePrintCertificates(WindowsStorePrintCertificates),
+
     /// Print information about X.509 OIDs related to Apple code signing
     X509Oids(X509Oids),
 }
@@ -2242,6 +2332,8 @@ impl Subcommands {
             Subcommands::SmartcardScan(c) => c,
             Subcommands::Staple(c) => c,
             Subcommands::Verify(c) => c,
+            Subcommands::WindowsStoreExportCertificateChain(c) => c,
+            Subcommands::WindowsStorePrintCertificates(c) => c,
             Subcommands::X509Oids(c) => c,
         }
     }

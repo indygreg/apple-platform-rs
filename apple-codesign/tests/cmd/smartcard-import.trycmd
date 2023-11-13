@@ -47,6 +47,14 @@ Options:
       --keychain-fingerprint <SHA256 FINGERPRINT>
           (macOS only) SHA-256 fingerprint of certificate in Keychain to use
 
+      --windows-store-name <STORE>
+          (Windows only) Windows Store to operate on
+          
+          [possible values: user, machine, service]
+
+      --windows-store-sha1-fingerprint <SHA1 FINGERPRINT>
+          (Windows only) SHA-1 fingerprint of certificate in Windows Store to use
+
       --pem-file <PATH>
           Path to file containing PEM encoded certificate/key data
 

@@ -163,5 +163,7 @@ pub mod stapling;
 pub mod ticket_lookup;
 mod verify;
 pub use verify::*;
+#[cfg(target_os = "windows")]
+pub mod windows;
 #[cfg(feature = "yubikey")]
 pub mod yubikey;
