@@ -165,3 +165,7 @@ mod verify;
 pub use verify::*;
 #[cfg(feature = "yubikey")]
 pub mod yubikey;
+#[cfg(target_os = "windows")]
+mod windows;
+#[cfg(target_os = "windows")]
+pub use windows::*;

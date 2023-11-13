@@ -58,7 +58,14 @@ use crate::macos::{
     keychain_find_code_signing_certificates, macos_keychain_find_certificate_chain, KeychainDomain,
 };
 
+#[cfg(target_os = "windows")]
+use crate::windows::{
+    windows_store_find_code_signing_certificates, windows_store_find_certificate_chain, StoreName, StoreType,
+};
+
 pub const KEYCHAIN_DOMAINS: [&str; 4] = ["user", "system", "common", "dynamic"];
+pub const STORE_NAMES : [&str; 3] = ["user", "machine", "service"];
+pub const STORE_TYPES : [&str; 4] = ["ca", "my", "root", "spc"];
 
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
 
@@ -712,6 +719,88 @@ impl CliCommand for KeychainPrintCertificates {
     fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         Err(AppleCodesignError::CliGeneralError(
             "macOS Keychain integration supported on macOS".to_string(),
+        ))
+    }
+}
+
+#[derive(Parser)]
+struct WindowsStoreExportCertificateChain {
+    /// Windows Store to operate on
+    #[arg(long, value_parser = STORE_NAMES, default_value = "user")]
+    store_name: String,
+
+    /// Print only the issuing certificate chain, not the subject certificate
+    #[arg(long)]
+    no_print_self: bool,
+
+    /// Thumbprint of code signing certificate to find and whose CA chain to export
+    #[arg(long)]
+    thumbprint: String,
+}
+
+impl CliCommand for WindowsStoreExportCertificateChain {
+    #[cfg(target_os = "windows")]
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+        let store_name = StoreName::try_from(self.store_name.as_str())
+            .expect("clap should have validated store name values");
+
+        let certs = windows_store_find_certificate_chain(store_name, &self.thumbprint)?;
+
+        for (i, cert) in certs.iter().enumerate() {
+            if self.no_print_self && i == 0 {
+                continue;
+            }
+
+            print!("{}", cert.encode_pem());
+        }
+
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+        Err(AppleCodesignError::CliGeneralError(
+            "Windows Store export only supported on Windows".to_string(),
+        ))
+    }
+}
+
+#[derive(Parser)]
+struct WindowsStorePrintCertificates {
+    /// Windows Store name to operate on
+    #[arg(long, value_parser = STORE_NAMES, default_value = "user")]
+    store_name: String,
+
+    /// Windows Store type to operate on
+    #[arg(long, value_parser = STORE_TYPES, default_value = "my")]
+    store_type: String,
+}
+
+impl CliCommand for WindowsStorePrintCertificates {
+    #[cfg(target_os = "windows")]
+    fn run(&self, _context: &Context) ->  Result<(), AppleCodesignError> {
+        let store_name = StoreName::try_from(self.store_name.as_str())
+            .expect("clap should have validated store name values");
+
+        let store_type = StoreType::try_from(self.store_type.as_str())
+            .expect("clap should have validated store type values");
+
+        let certs = windows_store_find_code_signing_certificates(store_name, store_type)?;
+
+        for (i, cert) in certs.into_iter().enumerate() {
+            println!("# Certificate {}", i);
+            println!();
+            print_certificate_info(&cert)?;
+            println!();
+        }
+
+        Ok(())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+        Err(AppleCodesignError::CliGeneralError(
+            "Windows Store integration only supported on Windows".to_string(),
         ))
     }
 }
@@ -1871,6 +1960,12 @@ enum Subcommands {
     /// Print information about certificates in the macOS keychain
     KeychainPrintCertificates(KeychainPrintCertificates),
 
+    /// Export CA certificates from the Windows Store
+    WindowsStoreExportCertificateChain(WindowsStoreExportCertificateChain),
+
+    /// Print information about certificates in the Windows Store
+    WindowsStorePrintCertificates(WindowsStorePrintCertificates),
+
     /// Create a universal ("fat") Mach-O binary.
     ///
     /// This is similar to the `lipo -create` command. Use it to stitch
@@ -2102,6 +2197,9 @@ enum Subcommands {
     /// * The --keychain-domain and --keychain-fingerprint arguments can be used to
     ///   load code signing certificates from macOS keychains. These arguments are
     ///   ignored on non-macOS platforms.
+    /// * The --store-name and --store-cert-fingerprint arguments can be used to
+    ///   load code signing certificates from the Windows store. These arguments are
+    ///   ignored on non-Windows platforms.
     /// * The --smartcard-slot argument defines the name of a slot in a connected
     ///   smartcard device to read from. `9c` is common.
     /// * Arguments beginning with --remote activate *remote signing mode* and can
@@ -2219,6 +2317,8 @@ impl Subcommands {
             Subcommands::GenerateSelfSignedCertificate(c) => c,
             Subcommands::KeychainExportCertificateChain(c) => c,
             Subcommands::KeychainPrintCertificates(c) => c,
+            Subcommands::WindowsStoreExportCertificateChain(c) => c,
+            Subcommands::WindowsStorePrintCertificates(c) => c,
             Subcommands::MachoUniversalCreate(c) => c,
             Subcommands::NotaryLog(c) => c,
             Subcommands::NotarySubmit(c) => c,

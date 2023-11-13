@@ -227,6 +227,8 @@ dependencies = [
  "tungstenite",
  "uuid",
  "walkdir",
+ "widestring",
+ "windows-sys 0.48.0",
  "x509",
  "x509-certificate",
  "xml-rs",
@@ -4000,6 +4002,12 @@ name = "webpki-roots"
 version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14247bb57be4f377dfb94c72830b8ce8fc6beac03cf4bf7b9732eadd414123fc"
+
+[[package]]
+name = "widestring"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "653f141f39ec16bba3c5abe400a0c60da7468261cc2cbf36805022876bc721a8"
 
 [[package]]
 name = "winapi"

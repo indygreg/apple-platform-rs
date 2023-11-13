@@ -1,0 +1,40 @@
+```
+$ rcodesign help windows-store-print-certificates
+Print information about certificates in the Windows Store
+
+Usage: rcodesign[EXE] windows-store-print-certificates [OPTIONS]
+
+Options:
+  -C, --config-file <CONFIG_PATH>
+          Explicit configuration file to load.
+          
+          If provided, the default configuration files are not loaded, even if they exist.
+          
+          Can be specified multiple times. Files are loaded/merged in the order given.
+          
+          The special value `/dev/null` can be used to specify an empty/null config file. It can be used to short-circuit loading of default config files.
+
+      --store-name <STORE_NAME>
+          Windows Store name to operate on
+          
+          [default: user]
+          [possible values: user, machine, service]
+
+  -P, --profile <PROFILE>
+          Configuration profile to load.
+          
+          If not specified, the implicit "default" profile is loaded.
+
+      --store-type <STORE_TYPE>
+          Windows Store type to operate on
+          
+          [default: my]
+          [possible values: ca, my, root, spc]
+
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+```

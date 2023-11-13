@@ -31,6 +31,11 @@ use {
 #[cfg(target_os = "macos")]
 use crate::macos::{keychain_find_code_signing_certificates, KeychainDomain};
 
+#[cfg(target_os = "windows")]
+use crate::windows::{
+    windows_store_find_code_signing_certificates, StoreName, StoreType,
+};
+
 /// Represents a set of keys and certificates.
 #[derive(Default)]
 
@@ -260,6 +265,80 @@ impl KeySource for MacosKeychainSigningKey {
         if !self.domains.is_empty() || self.sha256_fingerprint.is_some() {
             error!(
                 "--keychain* arguments only supported on macOS and will be ignored on this platform"
+            );
+        }
+
+        Ok(Default::default())
+    }
+}
+
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct WindowsStoreSigningKey {
+    /// (Windows only) Windows Store to operate on
+    #[arg(long = "store-name", value_parser = crate::cli::STORE_NAMES, value_name = "STORE")]
+    pub stores: Vec<String>,
+
+    /// (Windows only) SHA-1 fingerprint of certificate in Windows Store to use
+    #[arg(
+        long = "store-cert-fingerprint",
+        value_name = "SHA1 FINGERPRINT"
+    )]
+    pub sha1_fingerprint: Option<String>,
+}
+
+impl KeySource for WindowsStoreSigningKey {
+    #[cfg(target_os = "windows")]
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        // No arguments pertinent to store. Don't even speak to the
+        // Windows API since this could only error.
+        if self.stores.is_empty() && self.sha1_fingerprint.is_none() {
+            return Ok(Default::default());
+        }
+
+        // Collect all the store names to search.
+        let stores = if self.stores.is_empty() {
+            vec!["user".to_string()]
+        } else {
+            self.stores.clone()
+        };
+
+        let stores = stores
+            .into_iter()
+            .map(|store| {
+                StoreName::try_from(store.as_str())
+                    .expect("clap should have validated store name values")
+            })
+            .collect::<Vec<_>>();
+
+        // Now iterate all the keychains and try to find requested certificates.
+        let mut res = SigningCertificates::default();
+
+        for store in stores {
+            for cert in windows_store_find_code_signing_certificates(store, StoreType::MY)? {
+                let matches = if let Some(wanted_fingerprint) = &self.sha1_fingerprint {
+                    let got_fingerprint = hex::encode(cert.sha1_fingerprint()?.as_ref());
+
+                    wanted_fingerprint.to_ascii_lowercase() == got_fingerprint.to_ascii_lowercase()
+                } else {
+                    false
+                };
+
+                if matches {
+                    res.certs.push(cert.as_captured_x509_certificate());
+                    res.keys.push(Box::new(cert));
+                }
+            }
+        }
+
+        Ok(res)
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        if !self.stores.is_empty() || self.sha1_fingerprint.is_some() {
+            error!(
+                "--store* arguments only supported on Windows and will be ignored on this platform"
             );
         }
 
@@ -534,6 +613,9 @@ pub struct CertificateSource {
     pub macos_keychain_key: Option<MacosKeychainSigningKey>,
 
     #[command(flatten)]
+    pub windows_store_key: Option<WindowsStoreSigningKey>,
+
+    #[command(flatten)]
     #[serde(default, rename = "pem", skip_serializing_if = "Option::is_none")]
     pub pem_path_key: Option<PemSigningKey>,
 
@@ -566,6 +648,10 @@ impl CertificateSource {
         }
 
         if let Some(key) = &self.macos_keychain_key {
+            res.push(key as &dyn KeySource);
+        }
+
+        if let Some(key) = &self.windows_store_key {
             res.push(key as &dyn KeySource);
         }
 
