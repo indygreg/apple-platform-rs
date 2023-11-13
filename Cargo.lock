@@ -188,6 +188,7 @@ dependencies = [
  "log",
  "md-5",
  "minicbor",
+ "num-traits",
  "object",
  "oid-registry",
  "once_cell",

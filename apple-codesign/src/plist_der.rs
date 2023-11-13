@@ -6,15 +6,25 @@
 
 use {
     crate::error::AppleCodesignError,
+    num_traits::cast::ToPrimitive,
     plist::Value,
     rasn::{
+        ber::de::DecodeError,
         ber::enc::EncodeError,
-        enc::Error,
+        de::Error as DeError,
+        enc::Error as EncError,
         types::{fields::Fields, Class, Constraints, Constructed, Integer, Tag},
-        AsnType, Codec, Encode, Encoder,
+        AsnType, Codec, Decode, Decoder, Encode, Encoder,
     },
     std::collections::BTreeMap,
 };
+
+#[derive(AsnType, Debug, Decode)]
+struct DictionaryEntry {
+    #[rasn(tag(universal, 12))]
+    key: String,
+    value: WrappedValue,
+}
 
 /// Represents a plist dictionary in the rasn domain.
 #[derive(Debug)]
@@ -59,8 +69,34 @@ impl Encode for Dictionary {
     }
 }
 
+impl Decode for Dictionary {
+    fn decode_with_tag_and_constraints<D: Decoder>(
+        decoder: &mut D,
+        tag: Tag,
+        _constraints: Constraints,
+    ) -> Result<Self, D::Error> {
+        decoder.decode_sequence::<Self, _>(tag, |decoder| {
+            let mut dict = plist::Dictionary::new();
+
+            loop {
+                let entry = decoder.decode_optional::<DictionaryEntry>()?;
+
+                if let Some(entry) = entry {
+                    let value = plist::Value::try_from(entry.value)?;
+
+                    dict.insert(entry.key, value);
+                } else {
+                    break;
+                }
+            }
+
+            Ok(Self(dict))
+        })
+    }
+}
+
 /// Represents a [Value] in the rasn domain.
-#[derive(AsnType, Debug, Encode)]
+#[derive(AsnType, Debug, Decode, Encode)]
 #[rasn(choice)]
 enum WrappedValue {
     Array(Vec<WrappedValue>),
@@ -118,6 +154,31 @@ impl TryFrom<Value> for WrappedValue {
     }
 }
 
+impl TryFrom<WrappedValue> for Value {
+    type Error = DecodeError;
+
+    fn try_from(value: WrappedValue) -> Result<Self, Self::Error> {
+        match value {
+            WrappedValue::Array(v) => Ok(Self::Array(
+                v.into_iter()
+                    .map(Self::try_from)
+                    .collect::<Result<Vec<_>, _>>()?,
+            )),
+            WrappedValue::Dictionary(v) => Ok(Self::Dictionary(v.0)),
+            WrappedValue::Boolean(v) => Ok(Self::Boolean(v)),
+            WrappedValue::Integer(v) => {
+                let v = v.to_i64().ok_or(DecodeError::custom(
+                    "could not convert BigInt to i64",
+                    Codec::Der,
+                ))?;
+
+                Ok(Self::Integer(plist::Integer::from(v)))
+            }
+            WrappedValue::String(v) => Ok(Self::String(v)),
+        }
+    }
+}
+
 /// Represents a top-level plist in the rasn domain.
 struct WrappedPlist(WrappedValue);
 
@@ -140,6 +201,21 @@ impl TryFrom<Value> for WrappedPlist {
     }
 }
 
+impl TryFrom<WrappedPlist> for Value {
+    type Error = DecodeError;
+
+    fn try_from(value: WrappedPlist) -> Result<Self, Self::Error> {
+        if let WrappedValue::Dictionary(d) = value.0 {
+            Ok(Self::Dictionary(d.0))
+        } else {
+            Err(DecodeError::custom(
+                "wrapped value not a dictionary",
+                Codec::Der,
+            ))
+        }
+    }
+}
+
 impl Encode for WrappedPlist {
     fn encode_with_tag_and_constraints<E: Encoder>(
         &self,
@@ -156,6 +232,21 @@ impl Encode for WrappedPlist {
     }
 }
 
+impl Decode for WrappedPlist {
+    fn decode_with_tag_and_constraints<D: Decoder>(
+        decoder: &mut D,
+        tag: Tag,
+        _constraints: Constraints,
+    ) -> Result<Self, D::Error> {
+        decoder.decode_sequence::<Self, _>(tag, |decoder| {
+            let _ = decoder.decode_integer(Tag::INTEGER, Constraints::NONE)?;
+            let value = WrappedValue::decode(decoder)?;
+
+            Ok(Self(value))
+        })
+    }
+}
+
 /// Encode a top-level plist [Value] to DER.
 pub fn der_encode_plist(value: &Value) -> Result<Vec<u8>, AppleCodesignError> {
     rasn::der::encode_scope(|encoder| {
@@ -163,6 +254,13 @@ pub fn der_encode_plist(value: &Value) -> Result<Vec<u8>, AppleCodesignError> {
         wrapped.encode(encoder)
     })
     .map_err(|e| AppleCodesignError::EntitlementsDerEncode(format!("{e}")))
+}
+
+/// Decode DER to a plist [Value].
+pub fn der_decode_plist(data: impl AsRef<[u8]>) -> Result<Value, AppleCodesignError> {
+    rasn::der::decode::<WrappedPlist>(data.as_ref())
+        .and_then(Value::try_from)
+        .map_err(|e| AppleCodesignError::EntitlementsDerEncode(format!("{e}")))
 }
 
 #[cfg(test)]
@@ -442,11 +540,19 @@ mod test {
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_EMPTY_DICT
         );
+        assert_eq!(
+            der_decode_plist(DER_EMPTY_DICT)?,
+            Value::Dictionary(d.clone())
+        );
 
         d.insert("key".into(), Value::Boolean(false));
         assert_eq!(
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_BOOL_FALSE
+        );
+        assert_eq!(
+            der_decode_plist(DER_BOOL_FALSE)?,
+            Value::Dictionary(d.clone())
         );
 
         d.insert("key".into(), Value::Boolean(true));
@@ -454,11 +560,19 @@ mod test {
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_BOOL_TRUE
         );
+        assert_eq!(
+            der_decode_plist(DER_BOOL_TRUE)?,
+            Value::Dictionary(d.clone())
+        );
 
         d.insert("key".into(), Value::Integer(0u32.into()));
         assert_eq!(
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_INTEGER_0
+        );
+        assert_eq!(
+            der_decode_plist(DER_INTEGER_0)?,
+            Value::Dictionary(d.clone())
         );
 
         d.insert("key".into(), Value::Integer((-1i32).into()));
@@ -466,17 +580,29 @@ mod test {
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_INTEGER_NEG1
         );
+        assert_eq!(
+            der_decode_plist(DER_INTEGER_NEG1)?,
+            Value::Dictionary(d.clone())
+        );
 
         d.insert("key".into(), Value::Integer(1u32.into()));
         assert_eq!(
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_INTEGER_1
         );
+        assert_eq!(
+            der_decode_plist(DER_INTEGER_1)?,
+            Value::Dictionary(d.clone())
+        );
 
         d.insert("key".into(), Value::Integer(42u32.into()));
         assert_eq!(
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_INTEGER_42
+        );
+        assert_eq!(
+            der_decode_plist(DER_INTEGER_42)?,
+            Value::Dictionary(d.clone())
         );
 
         d.insert("key".into(), Value::Real(0.0f32.into()));
@@ -502,11 +628,19 @@ mod test {
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_STRING_EMPTY
         );
+        assert_eq!(
+            der_decode_plist(DER_STRING_EMPTY)?,
+            Value::Dictionary(d.clone())
+        );
 
         d.insert("key".into(), Value::String("value".into()));
         assert_eq!(
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_STRING_VALUE
+        );
+        assert_eq!(
+            der_decode_plist(DER_STRING_VALUE)?,
+            Value::Dictionary(d.clone())
         );
 
         d.insert("key".into(), Value::Uid(Uid::new(0)));
@@ -563,11 +697,19 @@ mod test {
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_ARRAY_EMPTY
         );
+        assert_eq!(
+            der_decode_plist(DER_ARRAY_EMPTY)?,
+            Value::Dictionary(d.clone())
+        );
 
         d.insert("key".into(), Value::Array(vec![Value::Boolean(false)]));
         assert_eq!(
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_ARRAY_FALSE
+        );
+        assert_eq!(
+            der_decode_plist(DER_ARRAY_FALSE)?,
+            Value::Dictionary(d.clone())
         );
 
         d.insert(
@@ -578,12 +720,20 @@ mod test {
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_ARRAY_TRUE_FOO
         );
+        assert_eq!(
+            der_decode_plist(DER_ARRAY_TRUE_FOO)?,
+            Value::Dictionary(d.clone())
+        );
 
         let mut inner = plist::Dictionary::new();
         d.insert("key".into(), Value::Dictionary(inner.clone()));
         assert_eq!(
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_DICT_EMPTY
+        );
+        assert_eq!(
+            der_decode_plist(DER_DICT_EMPTY)?,
+            Value::Dictionary(d.clone())
         );
 
         inner.insert("inner".into(), Value::Boolean(false));
@@ -592,6 +742,10 @@ mod test {
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_DICT_BOOL
         );
+        assert_eq!(
+            der_decode_plist(DER_DICT_BOOL)?,
+            Value::Dictionary(d.clone())
+        );
 
         d.insert("key".into(), Value::Boolean(false));
         d.insert("key2".into(), Value::Boolean(true));
@@ -599,6 +753,10 @@ mod test {
         assert_eq!(
             der_encode_plist(&Value::Dictionary(d.clone()))?,
             DER_MULTIPLE_KEYS
+        );
+        assert_eq!(
+            der_decode_plist(DER_MULTIPLE_KEYS)?,
+            Value::Dictionary(d.clone())
         );
 
         Ok(())
