@@ -26,6 +26,8 @@ Released on ReleaseDate.
   identifier from the filename rather than preserving the identifier in an
   existing signature. This helps ensure identifiers stay in sync and prevents
   bad signatures. (#109)
+* `print-signature-info` now prints the entitlements plist decoded from DER.
+  (#75)
 
 ## 0.24.0
 

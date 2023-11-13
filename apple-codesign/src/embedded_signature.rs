@@ -767,6 +767,19 @@ impl<'a> EntitlementsDerBlob<'a> {
 
         Ok(Self { der: der.into() })
     }
+
+    /// Attempt to parse and resolve the DER data into a plist.
+    pub fn parse_der(&self) -> Result<plist::Value, AppleCodesignError> {
+        crate::plist_der::der_decode_plist(self.der.as_ref())
+    }
+
+    /// Parse the plist from DER and format to XML.
+    pub fn plist_xml(&self) -> Result<Vec<u8>, AppleCodesignError> {
+        let mut buffer = vec![];
+        self.parse_der()?.to_writer_xml(&mut buffer)?;
+
+        Ok(buffer)
+    }
 }
 
 /// A detached signature.
@@ -1284,6 +1297,21 @@ impl<'a> EmbeddedSignature<'a> {
                 Ok(Some(entitlements))
             } else {
                 Err(AppleCodesignError::BadMagic("entitlements blob"))
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Attempt to resolve a parsed [EntitlementsDerBlob] for this signature.
+    pub fn entitlements_der(
+        &self,
+    ) -> Result<Option<Box<EntitlementsDerBlob<'a>>>, AppleCodesignError> {
+        if let Some(parsed) = self.find_slot_parsed(CodeSigningSlot::EntitlementsDer)? {
+            if let BlobData::EntitlementsDer(entitlements) = parsed.blob {
+                Ok(Some(entitlements))
+            } else {
+                Err(AppleCodesignError::BadMagic("DER entitlements blob"))
             }
         } else {
             Ok(None)

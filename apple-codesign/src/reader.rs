@@ -480,6 +480,8 @@ pub struct CodeSignature {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub entitlements_plist: Vec<String>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub entitlements_der_plist: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub code_requirements: Vec<String>,
     pub cms: Option<CmsSignature>,
 }
@@ -489,6 +491,7 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
 
     fn try_from(sig: EmbeddedSignature<'a>) -> Result<Self, Self::Error> {
         let mut entitlements_plist = vec![];
+        let mut entitlements_der_plist = vec![];
         let mut code_requirements = vec![];
         let mut cms = None;
 
@@ -509,6 +512,15 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
                 .as_str()
                 .lines()
                 .map(|x| x.replace('\t', "  "))
+                .collect::<Vec<_>>();
+        }
+
+        if let Some(blob) = sig.entitlements_der()? {
+            let xml = blob.plist_xml()?;
+
+            entitlements_der_plist = String::from_utf8_lossy(&pretty_print_xml(&xml)?)
+                .lines()
+                .map(|x| x.to_string())
                 .collect::<Vec<_>>();
         }
 
@@ -543,6 +555,7 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
             code_directory,
             alternative_code_directories,
             entitlements_plist,
+            entitlements_der_plist,
             code_requirements,
             cms,
         })
