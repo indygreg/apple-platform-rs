@@ -37,7 +37,7 @@ entities:
 * --info-plist-file
 
 Scoped settings take the form <value> or <scope>:<value>. If the 2nd form
-is used, the string before the first colon is parsed as a "scoping string".
+is used, the string before the first colon is parsed as a /"scoping string/".
 It can have the following values:
 
 * `main` - Applies to the main entity being signed and all nested entities.
@@ -73,7 +73,7 @@ Signing will traverse into nested entities:
 
 * A fat Mach-O binary will traverse into the multiple Mach-O binaries within.
 * A bundle will traverse into nested bundles.
-* A bundle will traverse non-code "resource" files and sign their digests.
+* A bundle will traverse non-code /"resource/" files and sign their digests.
 * A bundle will traverse non-main Mach-O binaries and sign them, adding their
   metadata to the signed resources file.
 
@@ -111,7 +111,7 @@ is well-formed.
 
 By default, the embedded code signature will only contain digests of the
 binary and other important entities (such as entitlements and resources).
-This is often referred to as "ad-hoc" signing.
+This is often referred to as /"ad-hoc/" signing.
 
 To use a code signing key/certificate to derive a cryptographic signature,
 you must specify a source certificate to use. This can be done in the following
@@ -122,7 +122,7 @@ ways:
   Specify one via --p12-password or --p12-password-file or enter a password
   when prompted.
 * The --pem-file argument defines paths to files containing PEM encoded
-  certificate/key data. (e.g. files with "===== BEGIN CERTIFICATE =====").
+  certificate/key data. (e.g. files with /"===== BEGIN CERTIFICATE =====/").
 * The --certificate-der-file argument defines paths to files containing DER
   encoded certificate/key data.
 * The --keychain-domain and --keychain-fingerprint arguments can be used to
@@ -160,7 +160,7 @@ certificates constituting the signing chain in a separate PEM file.
 
 When using a code signing key/certificate, a Time-Stamp Protocol server URL
 can be specified via --timestamp-url. By default, Apple's server is used. The
-special value "none" can disable using a timestamp server.
+special value /"none/" can disable using a timestamp server.
 
 # Selecting What to Sign
 
@@ -205,7 +205,6 @@ disappear, create a new directory without the file(s) and sign that.
 
 To exclude all nested bundles from being signed and only sign the main bundle
 (the default behavior of ``codesign`` without ``--deep``), use `--exclude '**'`.
-
 
 Usage: rcodesign[EXE] sign [OPTIONS] <INPUT_PATH> [OUTPUT_PATH]
 

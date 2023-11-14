@@ -1,6 +1,6 @@
 ```
 $ rcodesign help encode-app-store-connect-api-key
-Encode an App Store Connect API Key to JSON.
+Encode App Store Connect API Key metadata to JSON
 
 App Store Connect API Keys
 (https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api)
@@ -30,7 +30,6 @@ When this command writes JSON files, an attempt is made to limit access
 to the file. However, file access restrictions may not be as secure as you
 want. Security conscious individuals should audit the permissions of the
 file and adjust accordingly.
-
 
 Usage: rcodesign[EXE] encode-app-store-connect-api-key [OPTIONS] <ISSUER_ID> <KEY_ID> <PRIVATE_KEY_PATH>
 

@@ -9,7 +9,7 @@ Commands:
   analyze-certificate                   Analyze an X.509 certificate for Apple code signing properties
   compute-code-hashes                   Compute code hashes for a binary
   diff-signatures                       Print a diff between the signature content of two paths
-  encode-app-store-connect-api-key      Encode App Store Connect API Key metadata to a single file
+  encode-app-store-connect-api-key      Encode App Store Connect API Key metadata to JSON
   extract                               Print/extract various information from a Mach-O binary
   generate-certificate-signing-request  Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
   generate-self-signed-certificate      Generate a self-signed certificate for code signing
@@ -22,7 +22,7 @@ Commands:
   parse-code-signing-requirement        Parse binary Code Signing Requirement data into a human readable string
   print-signature-info                  Print signature information for a filesystem path
   remote-sign                           Create signatures initiated from a remote signing operation
-  sign                                  Sign a Mach-O binary or bundle
+  sign                                  Adds code signatures to a signable entity.
   smartcard-generate-key                Generate a new private key on a smartcard
   smartcard-import                      Import a code signing certificate and key into a smartcard
   smartcard-scan                        Show information about available smartcard (SC) devices
@@ -48,7 +48,7 @@ Commands:
   analyze-certificate                   Analyze an X.509 certificate for Apple code signing properties
   compute-code-hashes                   Compute code hashes for a binary
   diff-signatures                       Print a diff between the signature content of two paths
-  encode-app-store-connect-api-key      Encode App Store Connect API Key metadata to a single file
+  encode-app-store-connect-api-key      Encode App Store Connect API Key metadata to JSON
   extract                               Print/extract various information from a Mach-O binary
   generate-certificate-signing-request  Generates a certificate signing request that can be sent to Apple and exchanged for a signing certificate
   generate-self-signed-certificate      Generate a self-signed certificate for code signing
@@ -61,7 +61,7 @@ Commands:
   parse-code-signing-requirement        Parse binary Code Signing Requirement data into a human readable string
   print-signature-info                  Print signature information for a filesystem path
   remote-sign                           Create signatures initiated from a remote signing operation
-  sign                                  Sign a Mach-O binary or bundle
+  sign                                  Adds code signatures to a signable entity.
   smartcard-generate-key                Generate a new private key on a smartcard
   smartcard-import                      Import a code signing certificate and key into a smartcard
   smartcard-scan                        Show information about available smartcard (SC) devices

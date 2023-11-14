@@ -1,27 +1,16 @@
 ```
 $ rcodesign generate-self-signed-certificate --help
-Generate a self-signed certificate that can be used for code signing.
+Generate a self-signed certificate for code signing
 
-This command will generate a new key pair using the algorithm of choice
-then create an X.509 certificate wrapper for it that is signed with the
-just-generated private key. The created X.509 certificate has extensions
-that mark it as appropriate for code signing.
+This command will generate a new key pair using the algorithm of choice then create an X.509 certificate wrapper for it that is signed with the just-generated private key. The created X.509 certificate has extensions that mark it as appropriate for code signing.
 
-Certificates generated with this command can be useful for local testing.
-However, because it is a self-signed certificate and isn't signed by a
-trusted certificate authority, Apple operating systems may refuse to
-load binaries signed with it.
+Certificates generated with this command can be useful for local testing. However, because it is a self-signed certificate and isn't signed by a trusted certificate authority, Apple operating systems may refuse to load binaries signed with it.
 
-By default the command prints 2 PEM encoded blocks. One block is for the
-X.509 public certificate. The other is for the PKCS#8 private key (which
-can include the public key).
+By default the command prints 2 PEM encoded blocks. One block is for the X.509 public certificate. The other is for the PKCS#8 private key (which can include the public key).
 
-The `--pem-filename` argument can be specified to write the generated
-certificate pair to a pair of files. The destination files will have
-`.crt` and `.key` appended to the value provided.
+The `--pem-filename` argument can be specified to write the generated certificate pair to a pair of files. The destination files will have `.crt` and `.key` appended to the value provided.
 
 When the certificate is written to a file, it isn't printed to stdout.
-
 
 Usage: rcodesign[EXE] generate-self-signed-certificate [OPTIONS] --person-name <PERSON_NAME>
 
