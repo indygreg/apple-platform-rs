@@ -4,7 +4,8 @@
 
 use {
     crate::{
-        code_requirement::CodeRequirements, cryptography::DigestType, error::AppleCodesignError,
+        cli::CliCommand, code_requirement::CodeRequirements, cryptography::DigestType,
+        error::AppleCodesignError,
     },
     clap::{Parser, ValueEnum},
     log::warn,
@@ -42,8 +43,8 @@ pub struct DebugCreateCodeRequirements {
     path: PathBuf,
 }
 
-impl DebugCreateCodeRequirements {
-    pub fn run(&self) -> Result<(), AppleCodesignError> {
+impl CliCommand for DebugCreateCodeRequirements {
+    fn run(&self) -> Result<(), AppleCodesignError> {
         let expression = self.code_requirement.deref();
 
         let mut reqs = CodeRequirements::default();
@@ -97,8 +98,8 @@ pub struct DebugCreateEntitlements {
     output_path: PathBuf,
 }
 
-impl DebugCreateEntitlements {
-    pub fn run(&self) -> Result<(), AppleCodesignError> {
+impl CliCommand for DebugCreateEntitlements {
+    fn run(&self) -> Result<(), AppleCodesignError> {
         let mut d = plist::Dictionary::default();
 
         if self.get_task_allow {
@@ -174,8 +175,8 @@ pub struct DebugCreateInfoPlist {
     empty: bool,
 }
 
-impl DebugCreateInfoPlist {
-    pub fn run(&self) -> Result<(), AppleCodesignError> {
+impl CliCommand for DebugCreateInfoPlist {
+    fn run(&self) -> Result<(), AppleCodesignError> {
         let mut d = plist::Dictionary::default();
 
         if !self.empty {
@@ -246,8 +247,8 @@ pub struct DebugCreateMachO {
     output_path: PathBuf,
 }
 
-impl DebugCreateMachO {
-    pub fn run(&self) -> Result<(), AppleCodesignError> {
+impl CliCommand for DebugCreateMachO {
+    fn run(&self) -> Result<(), AppleCodesignError> {
         let mut builder = match self.architecture {
             MachOArch::Aarch64 => {
                 crate::macho_builder::MachOBuilder::new_aarch64(self.file_type.to_header_filetype())
@@ -317,8 +318,8 @@ pub struct DebugFileTree {
     path: PathBuf,
 }
 
-impl DebugFileTree {
-    pub fn run(&self) -> Result<(), AppleCodesignError> {
+impl CliCommand for DebugFileTree {
+    fn run(&self) -> Result<(), AppleCodesignError> {
         let root = self
             .path
             .components()

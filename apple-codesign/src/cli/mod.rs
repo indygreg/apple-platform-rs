@@ -59,6 +59,11 @@ pub const KEYCHAIN_DOMAINS: [&str; 4] = ["user", "system", "common", "dynamic"];
 
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
 
+pub trait CliCommand {
+    /// Runs the command.
+    fn run(&self) -> Result<(), AppleCodesignError>;
+}
+
 #[allow(unused)]
 pub fn prompt_smartcard_pin() -> Result<Vec<u8>, AppleCodesignError> {
     let pin = dialoguer::Password::new()
@@ -283,7 +288,7 @@ struct AnalyzeCertificate {
     certificate: CertificateSource,
 }
 
-impl AnalyzeCertificate {
+impl CliCommand for AnalyzeCertificate {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let certs = self.certificate.resolve_certificates(true)?.certs;
 
@@ -316,7 +321,7 @@ struct ComputeCodeHashes {
     universal_index: usize,
 }
 
-impl ComputeCodeHashes {
+impl CliCommand for ComputeCodeHashes {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let data = std::fs::read(&self.path)?;
         let mach = MachFile::parse(&data)?;
@@ -341,7 +346,7 @@ struct DiffSignatures {
     path1: PathBuf,
 }
 
-impl DiffSignatures {
+impl CliCommand for DiffSignatures {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let reader = SignatureReader::from_path(&self.path0)?;
 
@@ -397,7 +402,7 @@ struct EncodeAppStoreConnectApiKey {
 }
 
 #[cfg(feature = "notarize")]
-impl EncodeAppStoreConnectApiKey {
+impl CliCommand for EncodeAppStoreConnectApiKey {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let unified = app_store_connect::UnifiedApiKey::from_ecdsa_pem_path(
             &self.issuer_id,
@@ -677,7 +682,7 @@ struct Extract {
     data: ExtractData,
 }
 
-impl Extract {
+impl CliCommand for Extract {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let common = self.data.common_args();
 
@@ -1063,7 +1068,7 @@ struct GenerateCertificateSigningRequest {
     certificate: CertificateSource,
 }
 
-impl GenerateCertificateSigningRequest {
+impl CliCommand for GenerateCertificateSigningRequest {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let signing_certs = self.certificate.resolve_certificates(true)?;
 
@@ -1143,7 +1148,7 @@ struct GenerateSelfSignedCertificate {
     p12_password: Option<String>,
 }
 
-impl GenerateSelfSignedCertificate {
+impl CliCommand for GenerateSelfSignedCertificate {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let algorithm = match self.algorithm.as_str() {
             "ecdsa" => KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1),
@@ -1258,7 +1263,7 @@ struct KeychainExportCertificateChain {
     user_id: String,
 }
 
-impl KeychainExportCertificateChain {
+impl CliCommand for KeychainExportCertificateChain {
     #[cfg(target_os = "macos")]
     fn run(&self) -> Result<(), AppleCodesignError> {
         let domain = KeychainDomain::try_from(self.domain.as_str())
@@ -1306,7 +1311,7 @@ struct KeychainPrintCertificates {
     domain: String,
 }
 
-impl KeychainPrintCertificates {
+impl CliCommand for KeychainPrintCertificates {
     #[cfg(target_os = "macos")]
     fn run(&self) -> Result<(), AppleCodesignError> {
         let domain = KeychainDomain::try_from(self.domain.as_str())
@@ -1342,7 +1347,7 @@ struct MachoUniversalCreate {
     output: PathBuf,
 }
 
-impl MachoUniversalCreate {
+impl CliCommand for MachoUniversalCreate {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let mut builder = crate::macho_universal::UniversalBinaryBuilder::default();
 
@@ -1377,7 +1382,7 @@ struct NotaryLog {
 }
 
 #[cfg(feature = "notarize")]
-impl NotaryLog {
+impl CliCommand for NotaryLog {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let notarizer = self.api.notarizer()?;
 
@@ -1414,7 +1419,7 @@ struct NotarySubmit {
 }
 
 #[cfg(feature = "notarize")]
-impl NotarySubmit {
+impl CliCommand for NotarySubmit {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let wait = self.wait || self.staple;
 
@@ -1460,7 +1465,7 @@ struct NotaryWait {
 }
 
 #[cfg(feature = "notarize")]
-impl NotaryWait {
+impl CliCommand for NotaryWait {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let wait_duration = std::time::Duration::from_secs(self.max_wait_seconds);
         let notarizer = self.api.notarizer()?;
@@ -1481,7 +1486,7 @@ struct ParseCodeSigningRequirement {
     input_path: PathBuf,
 }
 
-impl ParseCodeSigningRequirement {
+impl CliCommand for ParseCodeSigningRequirement {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let data = std::fs::read(&self.input_path)?;
 
@@ -1509,7 +1514,7 @@ struct PrintSignatureInfo {
     path: PathBuf,
 }
 
-impl PrintSignatureInfo {
+impl CliCommand for PrintSignatureInfo {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let reader = SignatureReader::from_path(&self.path)?;
 
@@ -1544,7 +1549,7 @@ struct RemoteSign {
     certificate: CertificateSource,
 }
 
-impl RemoteSign {
+impl CliCommand for RemoteSign {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let session_join_string = if self.session_join_string.session_join_string_editor {
             let mut value = None;
@@ -1913,7 +1918,7 @@ struct Sign {
     certificate: CertificateSource,
 }
 
-impl Sign {
+impl CliCommand for Sign {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let mut settings = SigningSettings::default();
 
@@ -1979,7 +1984,7 @@ impl Sign {
 #[derive(Parser)]
 struct SmartcardScan {}
 
-impl SmartcardScan {
+impl CliCommand for SmartcardScan {
     #[cfg(feature = "yubikey")]
     fn run(&self) -> Result<(), AppleCodesignError> {
         let mut ctx = ::yubikey::reader::Context::open()?;
@@ -2025,7 +2030,7 @@ struct SmartcardGenerateKey {
     policy: YubikeyPolicy,
 }
 
-impl SmartcardGenerateKey {
+impl CliCommand for SmartcardGenerateKey {
     #[cfg(feature = "yubikey")]
     fn run(&self) -> Result<(), AppleCodesignError> {
         let slot_id = ::yubikey::piv::SlotId::from_str(&self.smartcard_slot)?;
@@ -2068,7 +2073,7 @@ struct SmartcardImport {
     policy: YubikeyPolicy,
 }
 
-impl SmartcardImport {
+impl CliCommand for SmartcardImport {
     #[cfg(feature = "yubikey")]
     fn run(&self) -> Result<(), AppleCodesignError> {
         let signing_certs = self.certificate.resolve_certificates(false)?;
@@ -2162,7 +2167,7 @@ struct Staple {
     path: PathBuf,
 }
 
-impl Staple {
+impl CliCommand for Staple {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let stapler = crate::stapling::Stapler::new()?;
         stapler.staple_path(&self.path)?;
@@ -2177,7 +2182,7 @@ struct Verify {
     path: PathBuf,
 }
 
-impl Verify {
+impl CliCommand for Verify {
     fn run(&self) -> Result<(), AppleCodesignError> {
         let path_type = crate::PathType::from_path(&self.path)?;
 
@@ -2210,7 +2215,7 @@ impl Verify {
 #[derive(Parser)]
 struct X509Oids {}
 
-impl X509Oids {
+impl CliCommand for X509Oids {
     fn run(&self) -> Result<(), AppleCodesignError> {
         println!("# Extended Key Usage (EKU) Extension OIDs");
         println!();
@@ -2664,6 +2669,41 @@ enum Subcommands {
     X509Oids(X509Oids),
 }
 
+impl Subcommands {
+    fn as_cli_command(&self) -> &dyn CliCommand {
+        match self {
+            Subcommands::AnalyzeCertificate(c) => c,
+            Subcommands::ComputeCodeHashes(c) => c,
+            Subcommands::DebugCreateCodeRequirements(c) => c,
+            Subcommands::DebugCreateEntitlements(c) => c,
+            Subcommands::DebugCreateInfoPlist(c) => c,
+            Subcommands::DebugCreateMacho(c) => c,
+            Subcommands::DebugFileTree(c) => c,
+            Subcommands::DiffSignatures(c) => c,
+            Subcommands::EncodeAppStoreConnectApiKey(c) => c,
+            Subcommands::Extract(c) => c,
+            Subcommands::GenerateCertificateSigningRequest(c) => c,
+            Subcommands::GenerateSelfSignedCertificate(c) => c,
+            Subcommands::KeychainExportCertificateChain(c) => c,
+            Subcommands::KeychainPrintCertificates(c) => c,
+            Subcommands::MachoUniversalCreate(c) => c,
+            Subcommands::NotaryLog(c) => c,
+            Subcommands::NotarySubmit(c) => c,
+            Subcommands::NotaryWait(c) => c,
+            Subcommands::ParseCodeSigningRequirement(c) => c,
+            Subcommands::PrintSignatureInfo(c) => c,
+            Subcommands::RemoteSign(c) => c,
+            Subcommands::Sign(c) => c,
+            Subcommands::SmartcardGenerateKey(c) => c,
+            Subcommands::SmartcardImport(c) => c,
+            Subcommands::SmartcardScan(c) => c,
+            Subcommands::Staple(c) => c,
+            Subcommands::Verify(c) => c,
+            Subcommands::X509Oids(c) => c,
+        }
+    }
+}
+
 /// Sign and notarize Apple programs. See https://gregoryszorc.com/docs/apple-codesign/main/ for more docs
 #[derive(Parser)]
 #[command(author, version, arg_required_else_help = true)]
@@ -2705,40 +2745,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
 
     builder.init();
 
-    match &cli.command {
-        Subcommands::AnalyzeCertificate(args) => args.run(),
-        Subcommands::ComputeCodeHashes(args) => args.run(),
-        Subcommands::DiffSignatures(args) => args.run(),
-        #[cfg(feature = "notarize")]
-        Subcommands::EncodeAppStoreConnectApiKey(args) => args.run(),
-        Subcommands::DebugCreateCodeRequirements(args) => args.run(),
-        Subcommands::DebugCreateEntitlements(args) => args.run(),
-        Subcommands::DebugCreateInfoPlist(args) => args.run(),
-        Subcommands::DebugCreateMacho(args) => args.run(),
-        Subcommands::DebugFileTree(args) => args.run(),
-        Subcommands::Extract(args) => args.run(),
-        Subcommands::GenerateCertificateSigningRequest(args) => args.run(),
-        Subcommands::GenerateSelfSignedCertificate(args) => args.run(),
-        Subcommands::KeychainExportCertificateChain(args) => args.run(),
-        Subcommands::KeychainPrintCertificates(args) => args.run(),
-        Subcommands::MachoUniversalCreate(args) => args.run(),
-        #[cfg(feature = "notarize")]
-        Subcommands::NotaryLog(args) => args.run(),
-        #[cfg(feature = "notarize")]
-        Subcommands::NotarySubmit(args) => args.run(),
-        #[cfg(feature = "notarize")]
-        Subcommands::NotaryWait(args) => args.run(),
-        Subcommands::ParseCodeSigningRequirement(args) => args.run(),
-        Subcommands::PrintSignatureInfo(args) => args.run(),
-        Subcommands::RemoteSign(args) => args.run(),
-        Subcommands::Sign(args) => args.run(),
-        Subcommands::SmartcardGenerateKey(args) => args.run(),
-        Subcommands::SmartcardImport(args) => args.run(),
-        Subcommands::SmartcardScan(args) => args.run(),
-        Subcommands::Staple(args) => args.run(),
-        Subcommands::Verify(args) => args.run(),
-        Subcommands::X509Oids(args) => args.run(),
-    }
+    cli.command.as_cli_command().run()
 }
 
 #[cfg(test)]
