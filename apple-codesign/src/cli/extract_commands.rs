@@ -4,7 +4,7 @@
 
 use {
     crate::{
-        cli::CliCommand,
+        cli::{CliCommand, Context},
         code_directory::CodeDirectoryBlob,
         cryptography::DigestType,
         embedded_signature::{Blob, CodeSigningSlot, RequirementSetBlob},
@@ -276,7 +276,7 @@ pub struct Extract {
 }
 
 impl CliCommand for Extract {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let common = self.data.common_args();
 
         let data = std::fs::read(&common.path)?;

@@ -4,7 +4,9 @@
 
 use {
     crate::{
-        cli::CliCommand, code_requirement::CodeRequirements, cryptography::DigestType,
+        cli::{CliCommand, Context},
+        code_requirement::CodeRequirements,
+        cryptography::DigestType,
         error::AppleCodesignError,
     },
     clap::{Parser, ValueEnum},
@@ -44,7 +46,7 @@ pub struct DebugCreateCodeRequirements {
 }
 
 impl CliCommand for DebugCreateCodeRequirements {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let expression = self.code_requirement.deref();
 
         let mut reqs = CodeRequirements::default();
@@ -99,7 +101,7 @@ pub struct DebugCreateEntitlements {
 }
 
 impl CliCommand for DebugCreateEntitlements {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let mut d = plist::Dictionary::default();
 
         if self.get_task_allow {
@@ -176,7 +178,7 @@ pub struct DebugCreateInfoPlist {
 }
 
 impl CliCommand for DebugCreateInfoPlist {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let mut d = plist::Dictionary::default();
 
         if !self.empty {
@@ -248,7 +250,7 @@ pub struct DebugCreateMachO {
 }
 
 impl CliCommand for DebugCreateMachO {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let mut builder = match self.architecture {
             MachOArch::Aarch64 => {
                 crate::macho_builder::MachOBuilder::new_aarch64(self.file_type.to_header_filetype())
@@ -319,7 +321,7 @@ pub struct DebugFileTree {
 }
 
 impl CliCommand for DebugFileTree {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let root = self
             .path
             .components()

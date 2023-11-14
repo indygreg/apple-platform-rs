@@ -57,9 +57,12 @@ pub const KEYCHAIN_DOMAINS: [&str; 4] = ["user", "system", "common", "dynamic"];
 
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
 
+/// Holds state to pass to CLI commands.
+pub struct Context {}
+
 pub trait CliCommand {
     /// Runs the command.
-    fn run(&self) -> Result<(), AppleCodesignError>;
+    fn run(&self, context: &Context) -> Result<(), AppleCodesignError>;
 }
 
 #[allow(unused)]
@@ -287,7 +290,7 @@ struct AnalyzeCertificate {
 }
 
 impl CliCommand for AnalyzeCertificate {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let certs = self.certificate.resolve_certificates(true)?.certs;
 
         for (i, cert) in certs.into_iter().enumerate() {
@@ -320,7 +323,7 @@ struct ComputeCodeHashes {
 }
 
 impl CliCommand for ComputeCodeHashes {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let data = std::fs::read(&self.path)?;
         let mach = MachFile::parse(&data)?;
         let macho = mach.nth_macho(self.universal_index)?;
@@ -345,7 +348,7 @@ struct DiffSignatures {
 }
 
 impl CliCommand for DiffSignatures {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let reader = SignatureReader::from_path(&self.path0)?;
 
         let a_entities = reader.entities()?;
@@ -401,7 +404,7 @@ struct EncodeAppStoreConnectApiKey {
 
 #[cfg(feature = "notarize")]
 impl CliCommand for EncodeAppStoreConnectApiKey {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let unified = app_store_connect::UnifiedApiKey::from_ecdsa_pem_path(
             &self.issuer_id,
             &self.key_id,
@@ -433,7 +436,7 @@ struct GenerateCertificateSigningRequest {
 }
 
 impl CliCommand for GenerateCertificateSigningRequest {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let signing_certs = self.certificate.resolve_certificates(true)?;
 
         let private_key = signing_certs.private_key()?;
@@ -513,7 +516,7 @@ struct GenerateSelfSignedCertificate {
 }
 
 impl CliCommand for GenerateSelfSignedCertificate {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let algorithm = match self.algorithm.as_str() {
             "ecdsa" => KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1),
             "ed25519" => KeyAlgorithm::Ed25519,
@@ -629,7 +632,7 @@ struct KeychainExportCertificateChain {
 
 impl CliCommand for KeychainExportCertificateChain {
     #[cfg(target_os = "macos")]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let domain = KeychainDomain::try_from(self.domain.as_str())
             .expect("clap should have validated domain values");
 
@@ -661,7 +664,7 @@ impl CliCommand for KeychainExportCertificateChain {
     }
 
     #[cfg(not(target_os = "macos"))]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         Err(AppleCodesignError::CliGeneralError(
             "macOS Keychain export only supported on macOS".to_string(),
         ))
@@ -677,7 +680,7 @@ struct KeychainPrintCertificates {
 
 impl CliCommand for KeychainPrintCertificates {
     #[cfg(target_os = "macos")]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let domain = KeychainDomain::try_from(self.domain.as_str())
             .expect("clap should have validated domain values");
 
@@ -694,7 +697,7 @@ impl CliCommand for KeychainPrintCertificates {
     }
 
     #[cfg(not(target_os = "macos"))]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         Err(AppleCodesignError::CliGeneralError(
             "macOS Keychain integration supported on macOS".to_string(),
         ))
@@ -712,7 +715,7 @@ struct MachoUniversalCreate {
 }
 
 impl CliCommand for MachoUniversalCreate {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let mut builder = crate::macho_universal::UniversalBinaryBuilder::default();
 
         for path in &self.input {
@@ -747,7 +750,7 @@ struct NotaryLog {
 
 #[cfg(feature = "notarize")]
 impl CliCommand for NotaryLog {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let notarizer = self.api.notarizer()?;
 
         let log = notarizer.fetch_notarization_log(&self.submission_id)?;
@@ -784,7 +787,7 @@ struct NotarySubmit {
 
 #[cfg(feature = "notarize")]
 impl CliCommand for NotarySubmit {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let wait = self.wait || self.staple;
 
         let wait_limit = if wait {
@@ -830,7 +833,7 @@ struct NotaryWait {
 
 #[cfg(feature = "notarize")]
 impl CliCommand for NotaryWait {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let wait_duration = std::time::Duration::from_secs(self.max_wait_seconds);
         let notarizer = self.api.notarizer()?;
 
@@ -851,7 +854,7 @@ struct ParseCodeSigningRequirement {
 }
 
 impl CliCommand for ParseCodeSigningRequirement {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let data = std::fs::read(&self.input_path)?;
 
         let requirements = CodeRequirements::parse_blob(&data)?.0;
@@ -879,7 +882,7 @@ struct PrintSignatureInfo {
 }
 
 impl CliCommand for PrintSignatureInfo {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let reader = SignatureReader::from_path(&self.path)?;
 
         let entities = reader.entities()?;
@@ -914,7 +917,7 @@ struct RemoteSign {
 }
 
 impl CliCommand for RemoteSign {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let session_join_string = if self.session_join_string.session_join_string_editor {
             let mut value = None;
 
@@ -1283,7 +1286,7 @@ struct Sign {
 }
 
 impl CliCommand for Sign {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let mut settings = SigningSettings::default();
 
         let certs = self.certificate.resolve_certificates(true)?;
@@ -1350,7 +1353,7 @@ struct SmartcardScan {}
 
 impl CliCommand for SmartcardScan {
     #[cfg(feature = "yubikey")]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let mut ctx = ::yubikey::reader::Context::open()?;
         for (index, reader) in ctx.iter()?.enumerate() {
             println!("Device {}: {}", index, reader.name());
@@ -1377,7 +1380,7 @@ impl CliCommand for SmartcardScan {
     }
 
     #[cfg(not(feature = "yubikey"))]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         eprintln!("smartcard reading requires the `yubikey` crate feature, which isn't enabled.");
         eprintln!("recompile the crate with `cargo build --features yubikey` to enable support");
         std::process::exit(1);
@@ -1396,7 +1399,7 @@ struct SmartcardGenerateKey {
 
 impl CliCommand for SmartcardGenerateKey {
     #[cfg(feature = "yubikey")]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let slot_id = ::yubikey::piv::SlotId::from_str(&self.smartcard_slot)?;
 
         let touch_policy = str_to_touch_policy(self.policy.touch_policy.as_str())?;
@@ -1411,7 +1414,7 @@ impl CliCommand for SmartcardGenerateKey {
     }
 
     #[cfg(not(feature = "yubikey"))]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         eprintln!(
             "smartcard integration requires the `yubikey` crate feature, which isn't enabled."
         );
@@ -1439,7 +1442,7 @@ struct SmartcardImport {
 
 impl CliCommand for SmartcardImport {
     #[cfg(feature = "yubikey")]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let signing_certs = self.certificate.resolve_certificates(false)?;
 
         let slot_id = ::yubikey::piv::SlotId::from_str(
@@ -1518,7 +1521,7 @@ impl CliCommand for SmartcardImport {
     }
 
     #[cfg(not(feature = "yubikey"))]
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         eprintln!("smartcard import requires `yubikey` crate feature, which isn't enabled.");
         eprintln!("recompile the crate with `cargo build --features yubikey` to enable support");
         std::process::exit(1);
@@ -1532,7 +1535,7 @@ struct Staple {
 }
 
 impl CliCommand for Staple {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let stapler = crate::stapling::Stapler::new()?;
         stapler.staple_path(&self.path)?;
 
@@ -1547,7 +1550,7 @@ struct Verify {
 }
 
 impl CliCommand for Verify {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let path_type = crate::PathType::from_path(&self.path)?;
 
         if path_type != crate::PathType::MachO {
@@ -1580,7 +1583,7 @@ impl CliCommand for Verify {
 struct X509Oids {}
 
 impl CliCommand for X509Oids {
-    fn run(&self) -> Result<(), AppleCodesignError> {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         println!("# Extended Key Usage (EKU) Extension OIDs");
         println!();
         for ekup in crate::certificate::ExtendedKeyUsagePurpose::all() {
@@ -2109,7 +2112,9 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
 
     builder.init();
 
-    cli.command.as_cli_command().run()
+    let context = Context {};
+
+    cli.command.as_cli_command().run(&context)
 }
 
 #[cfg(test)]
