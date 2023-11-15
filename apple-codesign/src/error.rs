@@ -385,3 +385,6 @@ pub enum AppleCodesignError {
     #[error("config error: {0:?}")]
     Figment(#[from] figment::Error),
 }
+
+/// Result type for this library.
+pub type Result<T, E = AppleCodesignError> = std::result::Result<T, E>;
