@@ -12,7 +12,7 @@ use {
         dmg::{path_is_dmg, DmgReader},
         embedded_signature::{BlobEntry, EmbeddedSignature},
         embedded_signature_builder::{CD_DIGESTS_OID, CD_DIGESTS_PLIST_OID},
-        error::AppleCodesignError,
+        error::{AppleCodesignError, Result},
         macho::{MachFile, MachOBinary},
     },
     apple_bundles::{DirectoryBundle, DirectoryBundleFile},
@@ -163,6 +163,14 @@ fn pretty_print_xml(xml: &[u8]) -> Result<Vec<u8>, AppleCodesignError> {
     })?;
 
     Ok(xml)
+}
+
+/// Pretty print XML and turn into a Vec of lines.
+fn pretty_print_xml_lines(xml: &[u8]) -> Result<Vec<String>> {
+    Ok(String::from_utf8_lossy(pretty_print_xml(xml)?.as_ref())
+        .lines()
+        .map(|x| x.to_string())
+        .collect::<Vec<_>>())
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -316,10 +324,7 @@ impl CmsSigner {
                             })
                             .map_err(|e| AppleCodesignError::Cms(e.into()))?;
 
-                        cdhash_plist = String::from_utf8_lossy(&pretty_print_xml(&plist)?)
-                            .lines()
-                            .map(|x| x.to_string())
-                            .collect::<Vec<_>>();
+                        cdhash_plist = pretty_print_xml_lines(&plist)?;
                     }
                 } else if attr.typ == CD_DIGESTS_OID {
                     for value in &attr.values {
@@ -518,10 +523,7 @@ impl<'a> TryFrom<EmbeddedSignature<'a>> for CodeSignature {
         if let Some(blob) = sig.entitlements_der()? {
             let xml = blob.plist_xml()?;
 
-            entitlements_der_plist = String::from_utf8_lossy(&pretty_print_xml(&xml)?)
-                .lines()
-                .map(|x| x.to_string())
-                .collect::<Vec<_>>();
+            entitlements_der_plist = pretty_print_xml_lines(&xml)?;
         }
 
         if let Some(req) = sig.code_requirements()? {
@@ -658,10 +660,7 @@ impl XarTableOfContents {
         let checksum_size = toc.checksum.size;
 
         // This can be useful for debugging.
-        //let xml = String::from_utf8_lossy(&pretty_print_xml(&xml)?)
-        //    .lines()
-        //    .map(|x| x.to_string())
-        //    .collect::<Vec<_>>();
+        //let xml = pretty_print_xml_lines(&xml)?;
         let xml = vec![];
 
         Ok(Self {
