@@ -928,7 +928,18 @@ struct RemoteSign {
 }
 
 impl CliCommand for RemoteSign {
-    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+    fn as_config(&self) -> Result<Option<Config>, AppleCodesignError> {
+        Ok(Some(Config {
+            remote_sign: config::RemoteSignConfig {
+                signer: self.certificate.clone(),
+            },
+            ..Default::default()
+        }))
+    }
+
+    fn run(&self, context: &Context) -> Result<(), AppleCodesignError> {
+        let c = &context.config.remote_sign;
+
         let session_join_string = if self.session_join_string.session_join_string_editor {
             let mut value = None;
 
@@ -959,7 +970,7 @@ impl CliCommand for RemoteSign {
 
         let mut joiner = create_session_joiner(session_join_string)?;
 
-        let url = if let Some(key) = &self.certificate.remote_signing_key {
+        let url = if let Some(key) = &c.signer.remote_signing_key {
             if let Some(env) = &key.session_init.shared_secret_env {
                 let secret = std::env::var(env).map_err(|_| AppleCodesignError::CliBadArgument)?;
                 joiner
@@ -974,7 +985,7 @@ impl CliCommand for RemoteSign {
             crate::remote_signing::DEFAULT_SERVER_URL.to_string()
         };
 
-        let signing_certs = self.certificate.resolve_certificates(true)?;
+        let signing_certs = c.signer.resolve_certificates(true)?;
 
         let private = signing_certs.private_key()?;
 
@@ -1314,6 +1325,7 @@ impl CliCommand for Sign {
                 signer: self.certificate.clone(),
                 paths: paths.0,
             },
+            ..Default::default()
         }))
     }
 

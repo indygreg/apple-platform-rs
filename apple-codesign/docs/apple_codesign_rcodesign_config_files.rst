@@ -135,6 +135,25 @@ This table can have the following keys:
    [default.sign.path."Contents/Frameworks/Electron Framework.framework/**"]
    exclude = true
 
+``remote-sign`` Command Settings
+--------------------------------
+
+The ``remote-sign`` table denotes settings for the ``rcodesign remote-sign``
+command.
+
+This table can have the following keys:
+
+``signer``
+   Denotes the key/certificate used for signing. Is an instance of the
+   :ref:`apple_codesign_rcodesign_config_files_signer` data structure.
+
+.. code-block:: toml
+
+   # Attempt to remote sign using a certificate in the macOS keychain with the
+   # specified SHA-256 digest.
+   [default.remote-sign]
+   signer.macos_keychain = { sha256_fingerprint = "deadbeef..." }
+
 .. _apple_codesign_rcodesign_config_files_data_structures:
 
 Config Data Structures

@@ -22,11 +22,14 @@ use {
 
 /// Configuration file profile definition.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Config {
     /// Configuration for the sign command.
     #[serde(default)]
     pub sign: SignConfig,
+
+    #[serde(default)]
+    pub remote_sign: RemoteSignConfig,
 }
 
 /// Configuration for the sign command.
@@ -40,6 +43,14 @@ pub struct SignConfig {
     /// Keys are scope paths. Values are per-path configs.
     #[serde(default, rename = "path", skip_serializing_if = "BTreeMap::is_empty")]
     pub paths: BTreeMap<String, ScopedSigningSettingsValues>,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct RemoteSignConfig {
+    /// Defines a source for the cryptographic signing key.
+    #[serde(default)]
+    pub signer: CertificateSource,
 }
 
 /// Used to instantiate [Config] instances.
