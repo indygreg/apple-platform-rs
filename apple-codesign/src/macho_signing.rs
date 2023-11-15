@@ -23,7 +23,6 @@ use {
         policy::derive_designated_requirements,
         signing_settings::{DesignatedRequirementMode, SettingsScope, SigningSettings},
     },
-    cryptographic_message_syntax::time_stamp_message_http,
     goblin::mach::{
         constants::{SEG_LINKEDIT, SEG_PAGEZERO},
         load_command::{
@@ -35,7 +34,6 @@ use {
     log::{debug, info, warn},
     scroll::{ctx::SizeWith, IOwrite},
     std::{borrow::Cow, cmp::Ordering, collections::HashMap, io::Write, path::Path},
-    x509_certificate::DigestAlgorithm,
 };
 
 /// Derive a new Mach-O binary with new signature data.
@@ -777,27 +775,16 @@ impl<'data> MachOSigner<'data> {
             size += cert.constructed_data().len();
         }
 
-        // Obtain an actual timestamp token of placeholder data and use its length.
-        // This may be excessive to actually query the time-stamp server and issue
-        // a token. But these operations should be "cheap."
-        if let Some(timestamp_url) = settings.time_stamp_url() {
-            let message = b"deadbeef".repeat(32);
-
-            if let Ok(response) =
-                time_stamp_message_http(timestamp_url.clone(), &message, DigestAlgorithm::Sha256)
-            {
-                if response.is_success() {
-                    if let Some(l) = response.token_content_size() {
-                        size += l;
-                    } else {
-                        size += 8192;
-                    }
-                } else {
-                    size += 8192;
-                }
-            } else {
-                size += 8192;
-            }
+        // Resize space for CMS timestamp token, if being generated.
+        //
+        // We used to actually call out to a remote server here and obtain a
+        // placeholder token. But this seemed excessive, especially since we did
+        // it on every signing operation.
+        //
+        // Apple's TSTs are ~4200 bytes in size. We approximately double that
+        // to give us some buffer.
+        if settings.time_stamp_url().is_some() {
+            size += 8192;
         }
 
         // Align on 1k boundaries just because.

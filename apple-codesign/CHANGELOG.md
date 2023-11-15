@@ -49,6 +49,11 @@ Released on ReleaseDate.
   bad signatures. (#109)
 * `print-signature-info` now prints the entitlements plist decoded from DER.
   (#75)
+* We no longer obtain placeholder time-stamp tokens when estimating the size
+  of embedded signatures. Instead, we statically reserve 8192 bytes for the
+  token. This may cause signatures to increase in size by a few kilobytes,
+  as Apple's TSTs are ~4200 bytes. Signing should now be faster since we avoid
+  an excessive network roundtrip. (#4)
 
 ## 0.24.0
 
