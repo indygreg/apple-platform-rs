@@ -17,15 +17,15 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.75"
-aws-config = { version = "0.57.1", optional = true }
-aws-sdk-s3 = { version = "0.35.0", optional = true }
-aws-smithy-http = {version = "0.57.1", optional = true }
-aws-smithy-types = {version = "0.57.1", optional = true }
+aws-config = { version = "0.57.2", optional = true }
+aws-sdk-s3 = { version = "0.36.0", optional = true }
+aws-smithy-http = {version = "0.57.2", optional = true }
+aws-smithy-types = {version = "0.57.2", optional = true }
 base64 = "0.21.5"
 bcder = "0.7.3"
 bitflags = "2.4.1"
 bytes = "1.5.0"
-clap = { version = "4.4.7", features = ["derive"] }
+clap = { version = "4.4.8", features = ["derive"] }
 chrono = "0.4.31"
 cryptographic-message-syntax = "0.26.0"
 der = {  version = "0.7.8", features = ["alloc"] }
@@ -34,7 +34,7 @@ difference = "2.0.0"
 digest = "0.10.7"
 dirs = "5.0.1"
 elliptic-curve = { version = "0.13.6", features = ["arithmetic", "pkcs8"] }
-env_logger = "0.10.0"
+env_logger = "0.10.1"
 figment = { version = "0.10.12", features = ["env", "toml"] }
 filetime = "0.2.22"
 glob = "0.3.1"
@@ -54,7 +54,7 @@ pkcs1 = { version = "0.7.5", features = ["alloc", "std", "pkcs8"] }
 pkcs8 = { version = "0.10.2", features = ["alloc", "std"] }
 plist = "1.6.0"
 rand = "0.8.5"
-rasn = "0.11.1"
+rasn = "0.12.1"
 rayon = "1.8.0"
 regex = "1.10.2"
 reqwest = { version = "0.11.22", default-features = false, features = ["blocking", "json", "rustls-tls-native-roots"] }
@@ -73,7 +73,7 @@ spki = { version = "0.7.2", features = ["pem"] }
 subtle = "2.5.0"
 tempfile = "3.8.1"
 thiserror = "1.0.50"
-tokio = { version = "1.33.0", features = ["rt"] }
+tokio = { version = "1.34.0", features = ["rt"] }
 tungstenite = { version = "0.20.1", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.5.0", features = ["v4"] }
 walkdir = "2.4.0"

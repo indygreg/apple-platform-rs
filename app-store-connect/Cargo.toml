@@ -13,9 +13,9 @@ readme = "README.md"
 [dependencies]
 anyhow = "1.0.75"
 base64 = "0.21.5"
-clap = { version = "4.4.7", features = ["derive"] }
+clap = { version = "4.4.8", features = ["derive"] }
 dirs = "5.0.1"
-env_logger = "0.10.0"
+env_logger = "0.10.1"
 jsonwebtoken = "9.1.0"
 log = "0.4.20"
 pem = "3.0.2"
