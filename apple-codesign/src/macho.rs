@@ -376,8 +376,6 @@ impl<'a> MachOBinary<'a> {
         let mut size = 1024 * code_directory_count;
 
         // Reserve room for the code digests, which are proportional to binary size.
-        // We could avoid doing the actual digesting work here. But until people
-        // complain, don't worry about it.
         size += self.code_digests_size(settings.digest_type(SettingsScope::Main), 4096)?;
 
         if let Some(digests) = settings.extra_digests(SettingsScope::Main) {
