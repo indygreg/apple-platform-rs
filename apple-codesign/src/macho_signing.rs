@@ -12,8 +12,8 @@ use {
         code_requirement::{CodeRequirementExpression, CodeRequirements, RequirementType},
         cryptography::Digest,
         embedded_signature::{
-            BlobData, CodeSigningSlot, ConstraintsDerBlob, EntitlementsBlob, EntitlementsDerBlob,
-            RequirementSetBlob,
+            Blob, BlobData, CodeSigningSlot, ConstraintsDerBlob, EntitlementsBlob,
+            EntitlementsDerBlob, RequirementSetBlob,
         },
         embedded_signature_builder::EmbeddedSignatureBuilder,
         entitlements::plist_to_executable_segment_flags,
@@ -691,14 +691,12 @@ impl<'data> MachOSigner<'data> {
         let mut blob = RequirementSetBlob::default();
 
         if !requirements.is_empty() {
-            info!("code requirements: {}", requirements);
             requirements.add_to_requirement_set(&mut blob, RequirementType::Designated)?;
         }
 
         res.push((CodeSigningSlot::RequirementSet, blob.into()));
 
         if let Some(entitlements) = settings.entitlements_xml(SettingsScope::Main)? {
-            info!("adding entitlements XML");
             let blob = EntitlementsBlob::from_string(&entitlements);
 
             res.push((CodeSigningSlot::Entitlements, blob.into()));
@@ -711,7 +709,6 @@ impl<'data> MachOSigner<'data> {
         // an executable (.filetype == MH_EXECUTE).
         if is_executable {
             if let Some(value) = settings.entitlements_plist(SettingsScope::Main) {
-                info!("adding entitlements DER");
                 let blob = EntitlementsDerBlob::from_plist(value)?;
 
                 res.push((CodeSigningSlot::EntitlementsDer, blob.into()));
@@ -719,19 +716,16 @@ impl<'data> MachOSigner<'data> {
         }
 
         if let Some(constraints) = settings.launch_constraints_self(SettingsScope::Main) {
-            info!("adding self launch constraints");
             let blob = ConstraintsDerBlob::from_encoded_constraints(constraints)?;
             res.push((CodeSigningSlot::LaunchConstraintsSelf, blob.into()));
         }
 
         if let Some(constraints) = settings.launch_constraints_parent(SettingsScope::Main) {
-            info!("adding parent process launch constraints");
             let blob = ConstraintsDerBlob::from_encoded_constraints(constraints)?;
             res.push((CodeSigningSlot::LaunchConstraintsParent, blob.into()));
         }
 
         if let Some(constraints) = settings.launch_constraints_responsible(SettingsScope::Main) {
-            info!("adding responsible process launch constraints");
             let blob = ConstraintsDerBlob::from_encoded_constraints(constraints)?;
             res.push((
                 CodeSigningSlot::LaunchConstraintsResponsibleProcess,
@@ -740,7 +734,6 @@ impl<'data> MachOSigner<'data> {
         }
 
         if let Some(constraints) = settings.library_constraints(SettingsScope::Main) {
-            info!("adding loaded library constraints");
             let blob = ConstraintsDerBlob::from_encoded_constraints(constraints)?;
             res.push((CodeSigningSlot::LibraryConstraints, blob.into()));
         }
@@ -771,17 +764,17 @@ impl<'data> MachOSigner<'data> {
             }
         }
 
+        // Add in sizes of all encoded blobs, as many blobs are variable size.
+        for (_, blob) in self.create_special_blobs(settings, true)? {
+            size += blob.to_blob_bytes()?.len();
+        }
+
         // Assume the CMS data will take a fixed size.
         size += 4096;
 
         // Long certificate chains could blow up the size. Account for those.
         for cert in settings.certificate_chain() {
             size += cert.constructed_data().len();
-        }
-
-        // Add entitlements xml if needed.
-        if let Some(entitlements) = settings.entitlements_xml(SettingsScope::Main)? {
-            size += entitlements.as_bytes().len()
         }
 
         // Obtain an actual timestamp token of placeholder data and use its length.

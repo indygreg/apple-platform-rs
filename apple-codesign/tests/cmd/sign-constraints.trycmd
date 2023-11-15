@@ -26,10 +26,6 @@ inferring default signing settings from Mach-O binary
 setting binary identifier to exe
 parsing Mach-O
 signing Mach-O binary at index 0
-adding self launch constraints
-adding parent process launch constraints
-adding responsible process launch constraints
-adding loaded library constraints
 binary targets macOS >= 11.0.0 with SDK 11.0.0
 creating ad-hoc signature
 code directory version: 132096
