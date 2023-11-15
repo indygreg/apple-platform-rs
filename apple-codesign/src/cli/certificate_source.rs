@@ -33,7 +33,7 @@ use crate::macos::{keychain_find_code_signing_certificates, KeychainDomain};
 
 #[cfg(target_os = "windows")]
 use crate::windows::{
-    windows_store_find_code_signing_certificates, StoreName, StoreType,
+    windows_store_find_code_signing_certificates, StoreName,
 };
 
 /// Represents a set of keys and certificates.
@@ -276,12 +276,12 @@ impl KeySource for MacosKeychainSigningKey {
 #[serde(deny_unknown_fields)]
 pub struct WindowsStoreSigningKey {
     /// (Windows only) Windows Store to operate on
-    #[arg(long = "store-name", value_parser = crate::cli::STORE_NAMES, value_name = "STORE")]
+    #[arg(long = "windows-store-name", value_parser = crate::cli::WINDOWS_STORE_NAMES, value_name = "STORE")]
     pub stores: Vec<String>,
 
     /// (Windows only) SHA-1 fingerprint of certificate in Windows Store to use
     #[arg(
-        long = "store-cert-fingerprint",
+        long = "windows-store-cert-fingerprint",
         value_name = "SHA1 FINGERPRINT"
     )]
     pub sha1_fingerprint: Option<String>,
@@ -315,7 +315,7 @@ impl KeySource for WindowsStoreSigningKey {
         let mut res = SigningCertificates::default();
 
         for store in stores {
-            for cert in windows_store_find_code_signing_certificates(store, StoreType::MY)? {
+            for cert in windows_store_find_code_signing_certificates(store)? {
                 let matches = if let Some(wanted_fingerprint) = &self.sha1_fingerprint {
                     let got_fingerprint = hex::encode(cert.sha1_fingerprint()?.as_ref());
 
@@ -338,7 +338,7 @@ impl KeySource for WindowsStoreSigningKey {
     fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
         if !self.stores.is_empty() || self.sha1_fingerprint.is_some() {
             error!(
-                "--store* arguments only supported on Windows and will be ignored on this platform"
+                "--windows-store* arguments only supported on Windows and will be ignored on this platform"
             );
         }
 

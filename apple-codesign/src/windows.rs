@@ -12,13 +12,13 @@ use {
         remote_signing::{session_negotiation::PublicKeyPeerDecrypt, RemoteSignError},
     },
     bytes::Bytes,
-    log::warn,
+    log::{error, info, warn},
     signature::Signer,
     std::ops::Deref,
     std::ptr,
     std::slice,
     x509_certificate::{
-        CapturedX509Certificate, KeyAlgorithm, KeyInfoSigner, Sign, Signature, SignatureAlgorithm,
+        CapturedX509Certificate, EcdsaCurve, KeyAlgorithm, KeyInfoSigner, Sign, Signature, SignatureAlgorithm,
         X509CertificateError,
     },
     windows_sys::{
@@ -120,13 +120,21 @@ impl TryFrom<&str> for StoreType {
 #[derive(Clone)]
 pub struct StoreCertificate {
     cert_context: *mut CERT_CONTEXT,
+    cert_thumbprint: String,
     hkey: NCRYPT_KEY_HANDLE,
     must_free_hkey: bool,
     captured: CapturedX509Certificate,
 }
 
 impl StoreCertificate {
-    fn new(cert_context: *mut CERT_CONTEXT) -> Result<StoreCertificate, ()> {
+    fn new(cert_context: *mut CERT_CONTEXT, cert_thumbprint: Vec<u8>) -> Result<StoreCertificate, AppleCodesignError> {
+        if cert_context.is_null() {
+            return Err(AppleCodesignError::WindowsStoreError(
+                "certificate context is null".into(),
+            ));
+        }
+
+        let cert_thumbprint_str = hex::encode(&cert_thumbprint);
         let cert_der = unsafe { 
             slice::from_raw_parts((*cert_context).pbCertEncoded, (*cert_context).cbCertEncoded as usize) 
         }.to_vec();
@@ -151,7 +159,7 @@ impl StoreCertificate {
                 &mut must_free_hprov_ncryptkey_handle,
             )
         } != 0;
-        if result && hprov_ncryptkey_handle != HCRYPTPROV_OR_NCRYPT_KEY_HANDLE::default() {
+        if result {
             if key_spec != CERT_NCRYPT_KEY_SPEC {
                 // The key is linked to a CryptoAPI provider (CSP).
                 // Because the use of CryptoAPI providers is deprecated, and because
@@ -162,7 +170,7 @@ impl StoreCertificate {
                 // provider. If that happens, then the certificate is simply unusable for 
                 // signing / decryption.
 
-                unsafe {
+                let result = unsafe {
                     NCryptTranslateHandle(
                         ptr::null_mut(),
                         &mut hkey,
@@ -172,6 +180,11 @@ impl StoreCertificate {
                         0,
                     )
                 };
+                if result == 0 {
+                    must_free_hkey = true; // Always true if we were able translate the handle.
+                } else {
+                    info!("could not translate the private key for certificate {} (0x{:08X})", cert_thumbprint_str, result);
+                }
 
                 // We can now release the CryptoAPI handle if we are instructed to do so.
                 if must_free_hprov_ncryptkey_handle == 1 {
@@ -179,27 +192,26 @@ impl StoreCertificate {
                         CryptReleaseContext(hprov_ncryptkey_handle, 0);
                     }
                 }
-                must_free_hkey = true; // Always true if we had to translate the handle.
             } else {
                 // The key is linked to a CNG provider (KSP).
                 // We can use the handle as is.
                 hkey = hprov_ncryptkey_handle;
                 must_free_hkey = must_free_hprov_ncryptkey_handle == 1;
             }
+        } else {
+            info!("could not acquire the private key for certificate {} (0x{:08X})", cert_thumbprint_str, get_last_error());
         }
         
-        if let Ok(captured) = CapturedX509Certificate::from_der(cert_der) {
-            Ok(StoreCertificate {
-                cert_context: unsafe {
-                    CertDuplicateCertificateContext(cert_context)
-                },
-                hkey: hkey,
-                must_free_hkey: must_free_hkey,
-                captured,
-            })
-        } else {
-            Err(())
-        }
+        let captured = CapturedX509Certificate::from_der(cert_der)?;
+        Ok(StoreCertificate {
+            cert_context: unsafe {
+                CertDuplicateCertificateContext(cert_context)
+            },
+            cert_thumbprint: cert_thumbprint_str,
+            hkey: hkey,
+            must_free_hkey: must_free_hkey,
+            captured,
+        })
     }
 }
 
@@ -226,161 +238,29 @@ impl Deref for StoreCertificate {
     }
 }
 
-fn try_hash(hash_algorithm: *const u16, message: &[u8]) -> Result<Vec<u8>, signature::Error> {
-    let mut h_algorithm: BCRYPT_ALG_HANDLE = 0;
-    let mut h_hash: BCRYPT_HASH_HANDLE = 0;
-    let mut hash = Vec::new();
-    let mut hash_object = Vec::new();
-    let mut hash_size: u32 = 0;
-    let mut hash_object_size: u32 = 0;
-    let mut output_size = 0;
-
-    let result = unsafe {
-        BCryptOpenAlgorithmProvider(
-            &mut h_algorithm,
-            hash_algorithm,
-            ptr::null_mut(),
-            0,
-        )
-    };
-    if result != 0 {
-        return Err(signature::Error::from_source(format!("error when attempting to create digest (BCryptOpenAlgorithmProvider): 0x{:08X}", result)));
-    }
-
-    let result = unsafe {
-        BCryptGetProperty(
-            h_algorithm ,
-            BCRYPT_OBJECT_LENGTH,
-            &mut hash_object_size as *mut _ as *mut u8,
-            std::mem::size_of::<u32>() as u32,
-            &mut output_size,
-            0,
-        )
-    };
-    if result != 0 {
-        unsafe {
-            BCryptCloseAlgorithmProvider(h_algorithm, 0);
-        };
-        return Err(signature::Error::from_source(format!("error when attempting to create digest (BCryptGetProperty(BCRYPT_OBJECT_LENGTH)): 0x{:08X}", result)));
-    }
-    hash_object.resize(hash_object_size as usize, 0);
-
-    let result = unsafe {
-        BCryptGetProperty(
-            h_algorithm ,
-            BCRYPT_HASH_LENGTH,
-            &mut hash_size as *mut _ as *mut u8,
-            std::mem::size_of::<u32>() as u32,
-            &mut output_size,
-            0,
-        )
-    };
-    if result != 0 {
-        unsafe {
-            BCryptCloseAlgorithmProvider(h_algorithm, 0);
-        };
-        return Err(signature::Error::from_source(format!("error when attempting to create digest (BCryptGetProperty(BCRYPT_HASH_LENGTH)): 0x{:08X}", result)));
-    }
-    hash.resize(hash_size as usize, 0);
-
-    let result = unsafe {
-        BCryptCreateHash(
-            h_algorithm,
-            &mut h_hash,
-            hash_object.as_mut_ptr() as *mut u8,
-            hash_object_size as u32,
-            std::ptr::null_mut(),
-            0,
-            0,
-        )
-    };
-    if result != 0 {
-        unsafe {
-            BCryptCloseAlgorithmProvider(h_algorithm, 0);
-        };
-        return Err(signature::Error::from_source(format!("error when attempting to create digest (BCryptCreateHash): 0x{:08X}", result)));
-    }
-    
-    let result = unsafe {
-        BCryptHashData(
-            h_hash,
-            message.as_ptr() as *mut u8,
-            message.len() as u32,
-            0,
-        )
-    };
-    if result != 0 {
-        unsafe {
-            BCryptDestroyHash(h_hash);
-            BCryptCloseAlgorithmProvider(h_algorithm, 0);
-        }
-        return Err(signature::Error::from_source(format!("error when attempting to create digest (BCryptHashData): 0x{:08X}", result)));
-    }
-    
-    let result = unsafe {
-        BCryptFinishHash(
-            h_hash,
-            &mut hash[0],
-            hash_size as u32,
-            0,
-        )
-    };
-    if result != 0 {
-        unsafe {
-            BCryptDestroyHash(h_hash);
-            BCryptCloseAlgorithmProvider(h_algorithm, 0);
-        }
-        return Err(signature::Error::from_source(format!("error when attempting to create digest (BCryptFinishHash): 0x{:08X}", result)));
-    }
-
-    unsafe {
-        BCryptDestroyHash(h_hash);
-        BCryptCloseAlgorithmProvider(h_algorithm, 0);
-    }
-    
-    Ok(hash)
-}
-
 impl Signer<Signature> for StoreCertificate {
     fn try_sign(&self, message: &[u8]) -> Result<Signature, signature::Error> {
         // First, we need to ensure that the signer has a private key.
         if self.hkey == NCRYPT_KEY_HANDLE::default() {
             return Err(signature::Error::from_source(
-                "certificate does not have a private key",
+                format!("certificate {} does not have a private key", self.cert_thumbprint)
             ));
         }
 
-        let algorithm = self
-            .signature_algorithm()
-            .map_err(signature::Error::from_source)?;
-
         if let Some(cn) = self.captured.subject_common_name() {
-            warn!(
-                "attempting to create signature using Windows store item: {}",
-                cn
-            );
+            warn!("attempting to create signature using Windows store certificate: {} ({})", cn, self.cert_thumbprint);
+        } else {
+            warn!("attempting to create signature using Windows store certificate: {}", self.cert_thumbprint);
         }
 
-        // We need to determine the hash algorithm.
-        let hash_algorithm = match algorithm {
-            SignatureAlgorithm::RsaSha1 => BCRYPT_SHA1_ALGORITHM,
-            SignatureAlgorithm::RsaSha256 => BCRYPT_SHA256_ALGORITHM,
-            SignatureAlgorithm::RsaSha384 => BCRYPT_SHA384_ALGORITHM,
-            SignatureAlgorithm::RsaSha512 => BCRYPT_SHA512_ALGORITHM,
-            SignatureAlgorithm::EcdsaSha256 => BCRYPT_SHA256_ALGORITHM,
-            SignatureAlgorithm::EcdsaSha384 => BCRYPT_SHA384_ALGORITHM,
-            SignatureAlgorithm::Ed25519 => {
-                return Err(signature::Error::from_source("ed25519 not supported on windows"));
-            }
-            SignatureAlgorithm::NoSignature(_) => {
-                return Err(signature::Error::from_source("digest only signature"));
-            }
-        };
+        let signature_algorithm = self
+            .signature_algorithm()
+            .map_err(signature::Error::from_source)?;
 
         // We need to set the padding for NcryptSignHash. 
         // Note that ECDSA signatures do not need
         // padding, so it is fine to set this to null.
-        let (padding_info, flags) = match algorithm {
+        let (padding_info, flags) = match signature_algorithm {
             SignatureAlgorithm::RsaSha1 => {
                 (&mut BCRYPT_PKCS1_PADDING_INFO {
                     pszAlgId: BCRYPT_SHA1_ALGORITHM as *mut u16,
@@ -415,8 +295,29 @@ impl Signer<Signature> for StoreCertificate {
             }
         };
 
-        // We create a digest of the message using the BCrypt API.
-        let hash = try_hash(hash_algorithm, message)?;
+        let key_algorithm = self
+            .key_algorithm()
+            .ok_or(X509CertificateError::UnknownDigestAlgorithm(
+                "failed to resolve key algorithm for certificate".into(),
+            ))
+            .map_err(signature::Error::from_source)?;
+
+        let digest_algorithm = signature_algorithm
+            .digest_algorithm()
+            .ok_or(X509CertificateError::UnknownDigestAlgorithm(
+                "unable to resolve digest algorithm from signature algorithm".into(),
+            ))
+            .map_err(signature::Error::from_source)?;
+
+        // We need to create the hash over the message.
+        let hash = match key_algorithm {
+            KeyAlgorithm::Rsa => digest_algorithm.digest_data(message),
+            KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1) => digest_algorithm.digest_data(message),
+            KeyAlgorithm::Ecdsa(EcdsaCurve::Secp384r1) => digest_algorithm.digest_data(message),
+            KeyAlgorithm::Ed25519 => {
+                return Err(signature::Error::from_source("ed25519 not supported on windows"));
+            },
+        };
 
         // We sign using NCryptSignHash.
         let mut signature: Vec<u8> = Vec::new();
@@ -434,7 +335,7 @@ impl Signer<Signature> for StoreCertificate {
             )
         };
         if result != 0 {
-            return Err(signature::Error::from_source(format!("error when attempting to create signature (NCryptSignHash 1): 0x{:08X}", result)));
+            return Err(signature::Error::from_source(format!("error when attempting to create signature with certificate {} (NCryptSignHash 1): 0x{:08X}", self.cert_thumbprint, result)));
         }
         signature.resize(signature_len as usize, 0);
         let result = unsafe {
@@ -450,7 +351,7 @@ impl Signer<Signature> for StoreCertificate {
             )
         };
         if result != 0 {
-            return Err(signature::Error::from_source(format!("error when attempting to create signature (NCryptSignHash 2): 0x{:08X}", result)));
+            return Err(signature::Error::from_source(format!("error when attempting to create signature with certificate {} (NCryptSignHash 2): 0x{:08X}", self.cert_thumbprint, result)));
         }
         signature.resize(signature_len as usize, 0);
 
@@ -504,6 +405,12 @@ impl PublicKeyPeerDecrypt for StoreCertificate {
             ));
         }
 
+        if let Some(cn) = self.captured.subject_common_name() {
+            warn!("attempting to decrypt using Windows store certificate: {} ({})", cn, self.cert_thumbprint);
+        } else {
+            warn!("attempting to decrypt using Windows store certificate: {}", self.cert_thumbprint);
+        }
+
         // We set the OAEP padding info.
         let padding_info: *mut BCRYPT_OAEP_PADDING_INFO = &mut BCRYPT_OAEP_PADDING_INFO {
             pszAlgId: BCRYPT_SHA256_ALGORITHM as *mut u16,
@@ -527,7 +434,7 @@ impl PublicKeyPeerDecrypt for StoreCertificate {
             )
         };
         if result != 0 {
-            return Err(RemoteSignError::Crypto(format!("error when attempting to decrypt ciphertext (NCryptDecrypt 1): 0x{:08X}", result)));
+            return Err(RemoteSignError::Crypto(format!("error when attempting to decrypt ciphertext with certificate {} (NCryptDecrypt 1): 0x{:08X}", self.cert_thumbprint, result)));
         }
         plaintext.resize(plaintext_len as usize, 0);
         let result = unsafe {
@@ -543,7 +450,7 @@ impl PublicKeyPeerDecrypt for StoreCertificate {
             )
         };
         if result != 0 {
-            return Err(RemoteSignError::Crypto(format!("error when attempting to decrypt ciphertext (NCryptDecrypt 2): 0x{:08X}", result)));
+            return Err(RemoteSignError::Crypto(format!("error when attempting to decrypt ciphertext with certificate {} (NCryptDecrypt 2): 0x{:08X}", self.cert_thumbprint, result)));
         }
         plaintext.resize(plaintext_len as usize, 0);
 
@@ -580,12 +487,12 @@ fn find_certificates(
 ) -> Result<Vec<StoreCertificate>, AppleCodesignError> {
     let mut certs = vec![];
 
-    let store_type_as_str = <StoreType as std::convert::Into<&'static str>>::into(store_type);
-    let store_name_as_str = <StoreName as std::convert::Into<&'static str>>::into(store_name);
+    let store_type_str: &'static str = store_type.into();
+    let store_name_str: &'static str = store_name.into();
 
-    let store_type_as_wstr = U16CString::from_str(store_type_as_str);
-    if store_type_as_wstr.is_err() {
-        return Err(AppleCodesignError::WindowsStoreError(format!("could not convert store type {} to wide string (this should not happen)", store_type_as_str)));
+    let store_type_wstr = U16CString::from_str(store_type_str);
+    if store_type_wstr.is_err() {
+        return Err(AppleCodesignError::WindowsStoreError(format!("could not convert store type {} to wide string (this should not happen)", store_type_str)));
     }
 
     let dwflags = CERT_OPEN_STORE_FLAGS::from(store_name);
@@ -597,11 +504,11 @@ fn find_certificates(
             X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
             HCRYPTPROV_LEGACY::default(),
             dwflags | CERT_STORE_OPEN_EXISTING_FLAG,
-            store_type_as_wstr.unwrap().as_ptr() as _,
+            store_type_wstr.unwrap().as_ptr() as _,
         )
     };
     if store_handle.is_null() {
-        return Err(AppleCodesignError::WindowsStoreError(format!("could not open store {} with store type {} (this should not happen): 0x{:08X}", store_name_as_str, store_type_as_str, get_last_error())));
+        return Err(AppleCodesignError::WindowsStoreError(format!("could not open store {} with store type {} (this should not happen): 0x{:08X}", store_name_str, store_type_str, get_last_error())));
     }
 
     // Enumerate the certificates.
@@ -621,11 +528,30 @@ fn find_certificates(
         if cert_context.is_null() {
             break;
         }
-        let cert = match StoreCertificate::new(cert_context) {
-            Ok(cert) => cert,
-            Err(()) => continue,
+
+        // Get the certificate thumbprint.
+        // If we fail to get the thumbprint, which normally should not happen, 
+        // we just skip this certificate.
+        let mut cert_thumbprint: Vec<u8> = Vec::new();
+        let mut cert_thumbprint_size: u32 = 20;
+        cert_thumbprint.resize(cert_thumbprint_size as usize, 0);
+        let result = unsafe {
+            CertGetCertificateContextProperty(
+                cert_context,
+                CERT_SHA1_HASH_PROP_ID,
+                cert_thumbprint.as_mut_ptr() as _,
+                &mut cert_thumbprint_size,
+            )
         };
-        certs.push(cert);
+        if result == 0 {
+            continue;
+        }
+        match StoreCertificate::new(cert_context, cert_thumbprint.clone()) {
+            Ok(cert) => certs.push(cert),
+            Err(err) => {
+                error!("failed to create Windows store certificate for certificate {} ({})", hex::encode(&cert_thumbprint), err);
+            }
+        };
     }
 
     // Close the store.
@@ -637,15 +563,18 @@ fn find_certificates(
 }
 
 /// Locate code signing certificates in the Windows store.
+/// Since end user certificates are normally located in the `MY` store,
+/// we hard-code the store type to `MY`.
+/// We also only return certificates that have the `Apple Code Signing` extension
+/// and a valid private key.
 pub fn windows_store_find_code_signing_certificates(
     store_name: StoreName,
-    store_type: StoreType,
 ) -> Result<Vec<StoreCertificate>, AppleCodesignError> {
-    let certs = find_certificates(store_name, store_type)?;
+    let certs = find_certificates(store_name, StoreType::MY)?;
 
     Ok(certs
         .into_iter()
-        .filter(|cert| !cert.captured.apple_code_signing_extensions().is_empty())
+        .filter(|cert| !cert.captured.apple_code_signing_extensions().is_empty() && cert.hkey != NCRYPT_KEY_HANDLE::default())
         .collect::<Vec<_>>())
 }
 
@@ -675,14 +604,10 @@ pub fn windows_store_find_certificate_chain(
                 // Convert the Digest into a byte array
                 let digest_bytes = digest.as_ref();
 
-                // Format each byte as a two-character hex string
-                let digest_hex: String = digest_bytes
-                    .iter()
-                    .map(|byte| format!("{:02x}", byte))
-                    .collect::<String>()
-                    .to_lowercase();
+                // Get the hex representation of the digest
+                let digest_hex: String = hex::encode(digest_bytes);
 
-                if digest_hex == thumbprint.to_lowercase() {
+                if digest_hex.to_lowercase() == thumbprint.to_lowercase() {
                     Some(&cert.captured)
                 } else {
                     None
@@ -693,44 +618,20 @@ pub fn windows_store_find_certificate_chain(
         })
         .ok_or_else(|| AppleCodesignError::CertificateNotFound(format!("Thumbprint={}", thumbprint)))?;
 
-    let mut chain = vec![start_cert.clone()];
-    let mut last_issuer_name = start_cert.issuer_name();
-    
-    if start_cert.issuer_name() == start_cert.subject_name() {
-        // Self signed. Stop the chain.
-        return Ok(chain);
-    }
-
     // We look for the certificate chain in the CA and ROOT Stores.
-    let intermediate_ca_certs = find_certificates(store_name, StoreType::CA)?;
-    let root_ca_certs = find_certificates(store_name, StoreType::ROOT)?;
-    let ca_certs = intermediate_ca_certs
+    let mut chain = vec![start_cert.clone()];
+    let intermediate_ca_store_certs = find_certificates(store_name, StoreType::CA)?;
+    let root_ca_store_certs = find_certificates(store_name, StoreType::ROOT)?;
+    let ca_store_certs = intermediate_ca_store_certs
         .into_iter()
-        .chain(root_ca_certs.into_iter())
+        .chain(root_ca_store_certs.into_iter())
         .collect::<Vec<_>>();
-    loop {
-        let issuer = ca_certs.iter().find_map(|cert| {
-            if cert.captured.subject_name() == last_issuer_name {
-                Some(&cert.captured)
-            } else {
-                None
-            }
-        });
-
-        if let Some(issuer) = issuer {
-            chain.push(issuer.clone());
-
-            // Self signed. Stop the chain so we don't infinite loop.
-            if issuer.subject_name() == issuer.issuer_name() {
-                break;
-            } else {
-                last_issuer_name = issuer.issuer_name();
-            }
-        } else {
-            // Couldn't find issuer. Stop the search.
-            break;
-        }
-    }
-
+    let ca_certs = ca_store_certs
+        .iter()
+        .map(|cert| cert.captured.clone())
+        .collect::<Vec<_>>();
+    let ca_chain: Vec<CapturedX509Certificate> = start_cert.resolve_signing_chain(ca_certs.iter()).into_iter().cloned().collect();
+    chain.extend(ca_chain);
+    
     Ok(chain)
 }

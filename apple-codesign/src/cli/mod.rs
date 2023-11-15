@@ -60,12 +60,11 @@ use crate::macos::{
 
 #[cfg(target_os = "windows")]
 use crate::windows::{
-    windows_store_find_code_signing_certificates, windows_store_find_certificate_chain, StoreName, StoreType,
+    windows_store_find_code_signing_certificates, windows_store_find_certificate_chain, StoreName,
 };
 
 pub const KEYCHAIN_DOMAINS: [&str; 4] = ["user", "system", "common", "dynamic"];
-pub const STORE_NAMES : [&str; 3] = ["user", "machine", "service"];
-pub const STORE_TYPES : [&str; 4] = ["ca", "my", "root", "spc"];
+pub const WINDOWS_STORE_NAMES : [&str; 3] = ["user", "machine", "service"];
 
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
 
@@ -726,8 +725,8 @@ impl CliCommand for KeychainPrintCertificates {
 #[derive(Parser)]
 struct WindowsStoreExportCertificateChain {
     /// Windows Store to operate on
-    #[arg(long, value_parser = STORE_NAMES, default_value = "user")]
-    store_name: String,
+    #[arg(long, value_parser = WINDOWS_STORE_NAMES, default_value = "user", value_name = "STORE")]
+    windows_store_name: String,
 
     /// Print only the issuing certificate chain, not the subject certificate
     #[arg(long)]
@@ -741,7 +740,7 @@ struct WindowsStoreExportCertificateChain {
 impl CliCommand for WindowsStoreExportCertificateChain {
     #[cfg(target_os = "windows")]
     fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
-        let store_name = StoreName::try_from(self.store_name.as_str())
+        let store_name = StoreName::try_from(self.windows_store_name.as_str())
             .expect("clap should have validated store name values");
 
         let certs = windows_store_find_certificate_chain(store_name, &self.thumbprint)?;
@@ -768,24 +767,17 @@ impl CliCommand for WindowsStoreExportCertificateChain {
 #[derive(Parser)]
 struct WindowsStorePrintCertificates {
     /// Windows Store name to operate on
-    #[arg(long, value_parser = STORE_NAMES, default_value = "user")]
-    store_name: String,
-
-    /// Windows Store type to operate on
-    #[arg(long, value_parser = STORE_TYPES, default_value = "my")]
-    store_type: String,
+    #[arg(long, value_parser = WINDOWS_STORE_NAMES, default_value = "user", value_name = "STORE")]
+    windows_store_name: String,
 }
 
 impl CliCommand for WindowsStorePrintCertificates {
     #[cfg(target_os = "windows")]
     fn run(&self, _context: &Context) ->  Result<(), AppleCodesignError> {
-        let store_name = StoreName::try_from(self.store_name.as_str())
+        let store_name = StoreName::try_from(self.windows_store_name.as_str())
             .expect("clap should have validated store name values");
 
-        let store_type = StoreType::try_from(self.store_type.as_str())
-            .expect("clap should have validated store type values");
-
-        let certs = windows_store_find_code_signing_certificates(store_name, store_type)?;
+        let certs = windows_store_find_code_signing_certificates(store_name)?;
 
         for (i, cert) in certs.into_iter().enumerate() {
             println!("# Certificate {}", i);
@@ -2197,7 +2189,7 @@ enum Subcommands {
     /// * The --keychain-domain and --keychain-fingerprint arguments can be used to
     ///   load code signing certificates from macOS keychains. These arguments are
     ///   ignored on non-macOS platforms.
-    /// * The --store-name and --store-cert-fingerprint arguments can be used to
+    /// * The --windows-store-name and --windows-store-cert-fingerprint arguments can be used to
     ///   load code signing certificates from the Windows store. These arguments are
     ///   ignored on non-Windows platforms.
     /// * The --smartcard-slot argument defines the name of a slot in a connected

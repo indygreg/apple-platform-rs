@@ -14,7 +14,7 @@ Options:
           
           The special value `/dev/null` can be used to specify an empty/null config file. It can be used to short-circuit loading of default config files.
 
-      --store-name <STORE_NAME>
+      --windows-store-name <STORE>
           Windows Store name to operate on
           
           [default: user]
@@ -24,12 +24,6 @@ Options:
           Configuration profile to load.
           
           If not specified, the implicit "default" profile is loaded.
-
-      --store-type <STORE_TYPE>
-          Windows Store type to operate on
-          
-          [default: my]
-          [possible values: ca, my, root, spc]
 
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times
