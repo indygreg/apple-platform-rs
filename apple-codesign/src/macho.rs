@@ -14,12 +14,8 @@ data.
 
 use {
     crate::{
-        cryptography::DigestType,
-        embedded_signature::EmbeddedSignature,
-        error::AppleCodesignError,
-        signing_settings::{SettingsScope, SigningSettings},
+        cryptography::DigestType, embedded_signature::EmbeddedSignature, error::AppleCodesignError,
     },
-    cryptographic_message_syntax::time_stamp_message_http,
     goblin::mach::{
         constants::{SEG_LINKEDIT, SEG_TEXT},
         header::MH_EXECUTE,
@@ -32,7 +28,6 @@ use {
     },
     rayon::prelude::*,
     scroll::Pread,
-    x509_certificate::DigestAlgorithm,
 };
 
 /// A Mach-O binary.
@@ -360,70 +355,6 @@ impl<'a> MachOBinary<'a> {
                 Err(AppleCodesignError::LoadCommandNoRoom)
             }
         }
-    }
-
-    /// Estimate the size in bytes of an embedded code signature.
-    pub fn estimate_embedded_signature_size(
-        &self,
-        settings: &SigningSettings,
-    ) -> Result<usize, AppleCodesignError> {
-        let code_directory_count = 1 + settings
-            .extra_digests(SettingsScope::Main)
-            .map(|x| x.len())
-            .unwrap_or_default();
-
-        // Assume the common data structures are 1024 bytes.
-        let mut size = 1024 * code_directory_count;
-
-        // Reserve room for the code digests, which are proportional to binary size.
-        size += self.code_digests_size(settings.digest_type(SettingsScope::Main), 4096)?;
-
-        if let Some(digests) = settings.extra_digests(SettingsScope::Main) {
-            for digest in digests {
-                size += self.code_digests_size(*digest, 4096)?;
-            }
-        }
-
-        // Assume the CMS data will take a fixed size.
-        size += 4096;
-
-        // Long certificate chains could blow up the size. Account for those.
-        for cert in settings.certificate_chain() {
-            size += cert.constructed_data().len();
-        }
-
-        // Add entitlements xml if needed.
-        if let Some(entitlements) = settings.entitlements_xml(SettingsScope::Main)? {
-            size += entitlements.as_bytes().len()
-        }
-
-        // Obtain an actual timestamp token of placeholder data and use its length.
-        // This may be excessive to actually query the time-stamp server and issue
-        // a token. But these operations should be "cheap."
-        if let Some(timestamp_url) = settings.time_stamp_url() {
-            let message = b"deadbeef".repeat(32);
-
-            if let Ok(response) =
-                time_stamp_message_http(timestamp_url.clone(), &message, DigestAlgorithm::Sha256)
-            {
-                if response.is_success() {
-                    if let Some(l) = response.token_content_size() {
-                        size += l;
-                    } else {
-                        size += 8192;
-                    }
-                } else {
-                    size += 8192;
-                }
-            } else {
-                size += 8192;
-            }
-        }
-
-        // Align on 1k boundaries just because.
-        size += 1024 - size % 1024;
-
-        Ok(size)
     }
 
     /// Attempt to resolve the mach-o targeting settings.

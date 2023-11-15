@@ -23,6 +23,7 @@ use {
         policy::derive_designated_requirements,
         signing_settings::{DesignatedRequirementMode, SettingsScope, SigningSettings},
     },
+    cryptographic_message_syntax::time_stamp_message_http,
     goblin::mach::{
         constants::{SEG_LINKEDIT, SEG_PAGEZERO},
         load_command::{
@@ -34,6 +35,7 @@ use {
     log::{debug, info, warn},
     scroll::{ctx::SizeWith, IOwrite},
     std::{borrow::Cow, cmp::Ordering, collections::HashMap, io::Write, path::Path},
+    x509_certificate::DigestAlgorithm,
 };
 
 /// Derive a new Mach-O binary with new signature data.
@@ -345,7 +347,8 @@ impl<'data> MachOSigner<'data> {
                 let settings = settings
                     .as_universal_macho_settings(index, original_macho.macho.header.cputype());
 
-                let signature_len = original_macho.estimate_embedded_signature_size(&settings)?;
+                let signature_len =
+                    self.estimate_embedded_signature_size(&original_macho, &settings)?;
 
                 // Derive an intermediate Mach-O with placeholder NULLs for signature
                 // data so Code Directory digests over the load commands are correct.
@@ -743,5 +746,70 @@ impl<'data> MachOSigner<'data> {
         }
 
         Ok(res)
+    }
+
+    /// Estimate the size in bytes of an embedded code signature.
+    pub fn estimate_embedded_signature_size(
+        &self,
+        macho: &MachOBinary,
+        settings: &SigningSettings,
+    ) -> Result<usize, AppleCodesignError> {
+        let code_directory_count = 1 + settings
+            .extra_digests(SettingsScope::Main)
+            .map(|x| x.len())
+            .unwrap_or_default();
+
+        // Assume the common data structures are 1024 bytes.
+        let mut size = 1024 * code_directory_count;
+
+        // Reserve room for the code digests, which are proportional to binary size.
+        size += macho.code_digests_size(settings.digest_type(SettingsScope::Main), 4096)?;
+
+        if let Some(digests) = settings.extra_digests(SettingsScope::Main) {
+            for digest in digests {
+                size += macho.code_digests_size(*digest, 4096)?;
+            }
+        }
+
+        // Assume the CMS data will take a fixed size.
+        size += 4096;
+
+        // Long certificate chains could blow up the size. Account for those.
+        for cert in settings.certificate_chain() {
+            size += cert.constructed_data().len();
+        }
+
+        // Add entitlements xml if needed.
+        if let Some(entitlements) = settings.entitlements_xml(SettingsScope::Main)? {
+            size += entitlements.as_bytes().len()
+        }
+
+        // Obtain an actual timestamp token of placeholder data and use its length.
+        // This may be excessive to actually query the time-stamp server and issue
+        // a token. But these operations should be "cheap."
+        if let Some(timestamp_url) = settings.time_stamp_url() {
+            let message = b"deadbeef".repeat(32);
+
+            if let Ok(response) =
+                time_stamp_message_http(timestamp_url.clone(), &message, DigestAlgorithm::Sha256)
+            {
+                if response.is_success() {
+                    if let Some(l) = response.token_content_size() {
+                        size += l;
+                    } else {
+                        size += 8192;
+                    }
+                } else {
+                    size += 8192;
+                }
+            } else {
+                size += 8192;
+            }
+        }
+
+        // Align on 1k boundaries just because.
+        size += 1024 - size % 1024;
+
+        Ok(size)
     }
 }
