@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.25.0
+
+Released on 2023-11-15.
+
 * (Breaking change) The `--extra-digest` argument has been removed.
   `--digest` can now be specified multiple times. `--digest` is now a
   scoped value.

@@ -109,7 +109,7 @@ checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
 name = "app-store-connect"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "base64",
@@ -154,7 +154,7 @@ dependencies = [
 
 [[package]]
 name = "apple-codesign"
-version = "0.24.0"
+version = "0.25.0"
 dependencies = [
  "anyhow",
  "app-store-connect",
@@ -239,7 +239,7 @@ dependencies = [
 
 [[package]]
 name = "apple-dmg"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -257,7 +257,7 @@ dependencies = [
 
 [[package]]
 name = "apple-flat-package"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "apple-xar",
  "cpio-archive",
@@ -279,7 +279,7 @@ dependencies = [
 
 [[package]]
 name = "apple-xar"
-version = "0.15.0"
+version = "0.16.0"
 dependencies = [
  "base64",
  "bcder",

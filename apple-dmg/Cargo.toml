@@ -1,6 +1,6 @@
 [package]
 name = "apple-dmg"
-version = "0.3.1"
+version = "0.4.0"
 edition = "2021"
 rust-version = "1.70"
 description = "Library for reading and writing dmg images."

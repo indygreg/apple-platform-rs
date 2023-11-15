@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.16.0
+
+Released on 2023-11-15.
+
 * Added the `signing` feature which controls whether Cryptographic
   Message Syntax based signing support is available. The feature -
   enabled by default - can be disabled to disable the `bcder`,

@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.16.0
+
+Released on 2023-11-15.
+
 * Types implementing `Serialize` and `Deserialize` all now derive `Eq` and
   `PartialEq`.
 * The `PackageInfo` struct changed its storage of the `scripts` field
