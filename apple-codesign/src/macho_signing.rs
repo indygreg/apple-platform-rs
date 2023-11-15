@@ -341,8 +341,8 @@ impl<'data> MachOSigner<'data> {
             .enumerate()
             .map(|(index, original_macho)| {
                 info!("signing Mach-O binary at index {}", index);
-                let settings =
-                    settings.as_nested_macho_settings(index, original_macho.macho.header.cputype());
+                let settings = settings
+                    .as_universal_macho_settings(index, original_macho.macho.header.cputype());
 
                 let signature_len = original_macho.estimate_embedded_signature_size(&settings)?;
 

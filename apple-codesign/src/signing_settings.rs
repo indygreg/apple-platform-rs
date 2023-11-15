@@ -940,13 +940,13 @@ impl<'key> SigningSettings<'key> {
         self.clone_strip_prefix(path, path.to_string())
     }
 
-    /// Convert this instance to settings appropriate for a nested Mach-O binary.
+    /// Convert this instance to settings appropriate for a Mach-O within a universal one.
     ///
     /// It is assumed the main scope of these settings is already targeted for
     /// a Mach-O binary. Any scoped settings for the Mach-O binary index and CPU type
     /// will be applied. CPU type settings take precedence over index scoped settings.
     #[must_use]
-    pub fn as_nested_macho_settings(&self, index: usize, cpu_type: CpuType) -> Self {
+    pub fn as_universal_macho_settings(&self, index: usize, cpu_type: CpuType) -> Self {
         self.clone_with_filter_map(|key| {
             if key == SettingsScope::Main
                 || key == SettingsScope::MultiArchCpuType(cpu_type)
@@ -1150,7 +1150,7 @@ mod tests {
             b"cpu_x86_64".to_vec(),
         );
 
-        let macho_settings = main_settings.as_nested_macho_settings(0, CPU_TYPE_ARM64);
+        let macho_settings = main_settings.as_universal_macho_settings(0, CPU_TYPE_ARM64);
         assert_eq!(
             macho_settings.binary_identifier(SettingsScope::Main),
             Some("ident")
@@ -1164,7 +1164,7 @@ mod tests {
             Some(b"index_0".as_ref())
         );
 
-        let macho_settings = main_settings.as_nested_macho_settings(0, CPU_TYPE_X86_64);
+        let macho_settings = main_settings.as_universal_macho_settings(0, CPU_TYPE_X86_64);
         assert_eq!(
             macho_settings.binary_identifier(SettingsScope::Main),
             Some("ident")
