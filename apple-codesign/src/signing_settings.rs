@@ -229,6 +229,19 @@ pub enum DesignatedRequirementMode {
     Explicit(Vec<Vec<u8>>),
 }
 
+/// Describes the type of a scoped setting.
+pub enum ScopedSetting {
+    Digest,
+    BinaryIdentifier,
+    Entitlements,
+    DesignatedRequirements,
+    CodeSignatureFlags,
+    RuntimeVersion,
+    InfoPlist,
+    CodeResources,
+    ExtraDigests,
+}
+
 /// Represents code signing settings.
 ///
 /// This type holds settings related to a single logical signing operation.
@@ -947,7 +960,7 @@ impl<'key> SigningSettings<'key> {
     /// will be applied. CPU type settings take precedence over index scoped settings.
     #[must_use]
     pub fn as_universal_macho_settings(&self, index: usize, cpu_type: CpuType) -> Self {
-        self.clone_with_filter_map(|key| {
+        self.clone_with_filter_map(|_, key| {
             if key == SettingsScope::Main
                 || key == SettingsScope::MultiArchCpuType(cpu_type)
                 || key == SettingsScope::MultiArchIndex(index)
@@ -962,7 +975,7 @@ impl<'key> SigningSettings<'key> {
     // Clones this instance, promoting `main_path` to the main scope and stripping
     // a prefix from other keys.
     fn clone_strip_prefix(&self, main_path: &str, prefix: String) -> Self {
-        self.clone_with_filter_map(|key| match key {
+        self.clone_with_filter_map(|_, key| match key {
             SettingsScope::Main => Some(SettingsScope::Main),
             SettingsScope::Path(path) => {
                 if path == main_path {
@@ -997,7 +1010,7 @@ impl<'key> SigningSettings<'key> {
 
     fn clone_with_filter_map(
         &self,
-        key_map: impl Fn(SettingsScope) -> Option<SettingsScope>,
+        key_map: impl Fn(ScopedSetting, SettingsScope) -> Option<SettingsScope>,
     ) -> Self {
         Self {
             signing_key: self.signing_key.clone(),
@@ -1010,55 +1023,73 @@ impl<'key> SigningSettings<'key> {
                 .digest_type
                 .clone()
                 .into_iter()
-                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::Digest, key).map(|key| (key, value))
+                })
                 .collect::<BTreeMap<_, _>>(),
             identifiers: self
                 .identifiers
                 .clone()
                 .into_iter()
-                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::BinaryIdentifier, key).map(|key| (key, value))
+                })
                 .collect::<BTreeMap<_, _>>(),
             entitlements: self
                 .entitlements
                 .clone()
                 .into_iter()
-                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::Entitlements, key).map(|key| (key, value))
+                })
                 .collect::<BTreeMap<_, _>>(),
             designated_requirement: self
                 .designated_requirement
                 .clone()
                 .into_iter()
-                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::DesignatedRequirements, key).map(|key| (key, value))
+                })
                 .collect::<BTreeMap<_, _>>(),
             code_signature_flags: self
                 .code_signature_flags
                 .clone()
                 .into_iter()
-                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::CodeSignatureFlags, key).map(|key| (key, value))
+                })
                 .collect::<BTreeMap<_, _>>(),
             runtime_version: self
                 .runtime_version
                 .clone()
                 .into_iter()
-                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::RuntimeVersion, key).map(|key| (key, value))
+                })
                 .collect::<BTreeMap<_, _>>(),
             info_plist_data: self
                 .info_plist_data
                 .clone()
                 .into_iter()
-                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::InfoPlist, key).map(|key| (key, value))
+                })
                 .collect::<BTreeMap<_, _>>(),
             code_resources_data: self
                 .code_resources_data
                 .clone()
                 .into_iter()
-                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::CodeResources, key).map(|key| (key, value))
+                })
                 .collect::<BTreeMap<_, _>>(),
             extra_digests: self
                 .extra_digests
                 .clone()
                 .into_iter()
-                .filter_map(|(key, value)| key_map(key).map(|key| (key, value)))
+                .filter_map(|(key, value)| {
+                    key_map(ScopedSetting::ExtraDigests, key).map(|key| (key, value))
+                })
                 .collect::<BTreeMap<_, _>>(),
         }
     }
