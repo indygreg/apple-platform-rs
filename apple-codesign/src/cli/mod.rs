@@ -1071,7 +1071,7 @@ pub struct ScopedSigningArgs {
 /// Represents the set of scopable signing settings for a given scope.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize)]
 pub struct ScopedSigningSettingsValues {
-    pub identifier: Option<String>,
+    pub binary_identifier: Option<String>,
     pub code_requirements_file: Option<PathBuf>,
     pub code_resources_file: Option<PathBuf>,
     pub code_signature_flags: Vec<String>,
@@ -1106,7 +1106,7 @@ impl TryFrom<&ScopedSigningArgs> for ScopedSigningSettings {
 
         for value in &args.binary_identifiers {
             let (scope, value) = split_scoped_value(value);
-            res.entry(scope).or_default().identifier = Some(value.into());
+            res.entry(scope).or_default().binary_identifier = Some(value.into());
         }
 
         for value in &args.code_requirements_paths {
@@ -1159,7 +1159,7 @@ impl ScopedSigningSettings {
         for (scope, values) in self.0 {
             let scope = SettingsScope::try_from(scope.as_str())?;
 
-            if let Some(v) = values.identifier {
+            if let Some(v) = values.binary_identifier {
                 settings.set_binary_identifier(scope.clone(), v);
             }
 
