@@ -103,9 +103,8 @@ _zip_directory source_directory dir_name dest_dir:
 
 _release_universal_binary project tag exe:
   mkdir -p dist/{{project}}-stage/{{project}}-{{tag}}-macos-universal
-  llvm-lipo-14 \
-    -create \
-    -output dist/{{project}}-stage/{{project}}-{{tag}}-macos-universal/{{exe}} \
+  rcodesign macho-universal-create \
+    --output dist/{{project}}-stage/{{project}}-{{tag}}-macos-universal/{{exe}} \
     dist/{{project}}-stage/{{project}}-{{tag}}-aarch64-apple-darwin/{{exe}} \
     dist/{{project}}-stage/{{project}}-{{tag}}-x86_64-apple-darwin/{{exe}}
   cp dist/{{project}}-stage/{{project}}-{{tag}}-aarch64-apple-darwin/COPYING \
