@@ -38,13 +38,13 @@ d                      MyApp.app.signed/
 d                      MyApp.app.signed/Contents
 f 0a5902dc8e47f490d038 MyApp.app.signed/Contents/Info.plist
 d                      MyApp.app.signed/Contents/MacOS
-f ab120a726141251db1cb MyApp.app.signed/Contents/MacOS/MyApp
-f 7714e7695ba1ec0fd44a MyApp.app.signed/Contents/MacOS/bin
-f 4b4232445b695cab6482 MyApp.app.signed/Contents/MacOS/lib.dylib
+f ed9b322079f477b95626 MyApp.app.signed/Contents/MacOS/MyApp
+f 222272e624fadf178495 MyApp.app.signed/Contents/MacOS/bin
+f f5bf39926f898f9d8b10 MyApp.app.signed/Contents/MacOS/lib.dylib
 d                      MyApp.app.signed/Contents/Resources
-f c2683247ea953caa166d MyApp.app.signed/Contents/Resources/non-nested-bin
+f 17ee48591c2b454766b3 MyApp.app.signed/Contents/Resources/non-nested-bin
 d                      MyApp.app.signed/Contents/_CodeSignature
-f 61abffc781f3e15d45ad MyApp.app.signed/Contents/_CodeSignature/CodeResources
+f e9faf2afbb4ab5548d35 MyApp.app.signed/Contents/_CodeSignature/CodeResources
 
 $ rcodesign print-signature-info MyApp.app.signed
 - path: Contents/Info.plist
@@ -53,7 +53,7 @@ $ rcodesign print-signature-info MyApp.app.signed
   entity: other
 - path: Contents/MacOS/MyApp
   file_size: 22544
-  file_sha256: ab120a726141251db1cb8bde767f62de23212fff92cc0d866a44b011e7306b67
+  file_sha256: ed9b322079f477b956269151b7f05966fe4c2522116e2c23b5ab40f518887fe3
   entity:
     mach_o:
       macho_linkedit_start_offset: 16384 / 0x4000
@@ -71,8 +71,8 @@ $ rcodesign print-signature-info MyApp.app.signed
         - slot: CodeDirectory (0)
           magic: fade0c02
           length: 493
-          sha1: b7102f4478fc44c73657143c996db8768ab208d9
-          sha256: 20c8956bf08bbe7baf4630ec626bf25a5da3391d6472d7a693e483c278716361
+          sha1: f342b48c4632318b35759a678a90f606463d44aa
+          sha256: 776f6ff24cb7986e98b41600c6f34ad9ef197b9d28c84531ae2cbdf7b965ac36
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
@@ -105,7 +105,7 @@ $ rcodesign print-signature-info MyApp.app.signed
           slot_digests:
           - 'Info (1): 0a5902dc8e47f490d03889d3593d17bddbf79e6c1f79494e20dd28f9459effa5'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-          - 'Resources (3): 61abffc781f3e15d45adcb78df283f2441c195830435b1588d04a99e43fa393d'
+          - 'Resources (3): e9faf2afbb4ab5548d3531c4b40abdfd59a2d6c2b5834e1980993957ba5bec83'
           - 'Application (4): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'Entitlements (5): adea2675562421d85cc35e2c909ae27f33846eeb3b2b7c68017abd1b4b02f624'
           - 'Rep Specific (6): 0000000000000000000000000000000000000000000000000000000000000000'
@@ -130,41 +130,31 @@ $ rcodesign print-signature-info MyApp.app.signed
         cms: null
 - path: Contents/MacOS/bin
   file_size: 22544
-  file_sha256: 7714e7695ba1ec0fd44ae95728bf71533ff39d484c2bfe5c56cd9092f2273072
+  file_sha256: 222272e624fadf178495f7eeabdac248a951a0fb1e49002f494dde7067e456c8
   entity:
     mach_o:
       macho_linkedit_start_offset: 16384 / 0x4000
       macho_signature_start_offset: 16400 / 0x4010
-      macho_signature_end_offset: 17215 / 0x433f
+      macho_signature_end_offset: 16772 / 0x4184
       macho_linkedit_end_offset: 22544 / 0x5810
       macho_end_offset: 22544 / 0x5810
       linkedit_signature_start_offset: 16 / 0x10
-      linkedit_signature_end_offset: 831 / 0x33f
-      linkedit_bytes_after_signature: 5329 / 0x14d1
+      linkedit_signature_end_offset: 388 / 0x184
+      linkedit_bytes_after_signature: 5772 / 0x168c
       signature:
-        superblob_length: 815 / 0x32f
-        blob_count: 5
+        superblob_length: 372 / 0x174
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
-          length: 476
-          sha1: dec034de0ffbd14462555813150d9664424f9f1a
-          sha256: 261db491dc987260e2ae966aa37cf415c4d5ce45eae2eb7fba24e13f1dfdd538
+          length: 316
+          sha1: c86136679b8fb8b73c260c3f5143eb4787ba7408
+          sha256: 319e12d5056d6b83506f2a51858ddfd99a244ed7b1bb261d9f7a1befa55239db
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
           sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
           sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
-        - slot: Entitlements (5)
-          magic: fade7171
-          length: 231
-          sha1: 609a70a1468d84bef2be0146d1f0a5ea1c839948
-          sha256: adea2675562421d85cc35e2c909ae27f33846eeb3b2b7c68017abd1b4b02f624
-        - slot: DER Entitlements (7)
-          magic: fade7172
-          length: 36
-          sha1: 1018e52606e45993b16da1c621ceec945b9d5226
-          sha256: 4d9925d24f1357a00429379f31f567cedfaa8101d58442e7864f923bfb708794
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 8
@@ -177,66 +167,39 @@ $ rcodesign print-signature-info MyApp.app.signed
           digest_type: sha256
           platform: 0
           signed_entity_size: 16400
-          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY | ALLOW_UNSIGNED)
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
           code_digests_count: 5
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-          - 'Resources (3): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'Application (4): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'Entitlements (5): adea2675562421d85cc35e2c909ae27f33846eeb3b2b7c68017abd1b4b02f624'
-          - 'Rep Specific (6): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'DER Entitlements (7): 4d9925d24f1357a00429379f31f567cedfaa8101d58442e7864f923bfb708794'
-        entitlements_plist:
-        - <?xml version="1.0" encoding="UTF-8"?>
-        - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        - <plist version="1.0">
-        - <dict>
-        - '  <key>get-task-allow</key>'
-        - '  <true/>'
-        - </dict>
-        - </plist>
-        entitlements_der_plist:
-        - <?xml version="1.0" encoding="UTF-8"?>
-        - <plist version="1.0">
-        - '  <dict>'
-        - '    <key>get-task-allow</key>'
-        - '    <true />'
-        - '  </dict>'
-        - </plist>
         cms: null
 - path: Contents/MacOS/lib.dylib
   file_size: 22544
-  file_sha256: 4b4232445b695cab6482be8e9bb08fff1525d56268a37a18459e039d830bf579
+  file_sha256: f5bf39926f898f9d8b10749c2c2e02d89e6ca1ab85e5210df86a711afc35f1bd
   entity:
     mach_o:
       macho_linkedit_start_offset: 16384 / 0x4000
       macho_signature_start_offset: 16400 / 0x4010
-      macho_signature_end_offset: 17107 / 0x42d3
+      macho_signature_end_offset: 16772 / 0x4184
       macho_linkedit_end_offset: 22544 / 0x5810
       macho_end_offset: 22544 / 0x5810
       linkedit_signature_start_offset: 16 / 0x10
-      linkedit_signature_end_offset: 723 / 0x2d3
-      linkedit_bytes_after_signature: 5437 / 0x153d
+      linkedit_signature_end_offset: 388 / 0x184
+      linkedit_bytes_after_signature: 5772 / 0x168c
       signature:
-        superblob_length: 707 / 0x2c3
-        blob_count: 4
+        superblob_length: 372 / 0x174
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
-          length: 412
-          sha1: 084af8a2b1fe18a61dd93b959ab52e861e4c24d0
-          sha256: e8efde56346957283b5644f8b1099acbc1a2b1a909495e7941fd2f1cad83a107
+          length: 316
+          sha1: af401622e3c8ad117ef8e8048542a0f6ce3e0d7c
+          sha256: df488d463c798ba6e7afbb55d1f86959aefc12753467b49d5a984611e11ec8d0
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
           sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
           sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
-        - slot: Entitlements (5)
-          magic: fade7171
-          length: 231
-          sha1: 609a70a1468d84bef2be0146d1f0a5ea1c839948
-          sha256: adea2675562421d85cc35e2c909ae27f33846eeb3b2b7c68017abd1b4b02f624
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 8
@@ -254,56 +217,34 @@ $ rcodesign print-signature-info MyApp.app.signed
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-          - 'Resources (3): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'Application (4): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'Entitlements (5): adea2675562421d85cc35e2c909ae27f33846eeb3b2b7c68017abd1b4b02f624'
-        entitlements_plist:
-        - <?xml version="1.0" encoding="UTF-8"?>
-        - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        - <plist version="1.0">
-        - <dict>
-        - '  <key>get-task-allow</key>'
-        - '  <true/>'
-        - </dict>
-        - </plist>
         cms: null
 - path: Contents/Resources/non-nested-bin
   file_size: 22544
-  file_sha256: c2683247ea953caa166ddc919a8663edadcfef84e88dd8a0189930d4d288d3bc
+  file_sha256: 17ee48591c2b454766b3d38e00ba5b342b3695c635c9114aad839117f45e3b38
   entity:
     mach_o:
       macho_linkedit_start_offset: 16384 / 0x4000
       macho_signature_start_offset: 16400 / 0x4010
-      macho_signature_end_offset: 17226 / 0x434a
+      macho_signature_end_offset: 16783 / 0x418f
       macho_linkedit_end_offset: 22544 / 0x5810
       macho_end_offset: 22544 / 0x5810
       linkedit_signature_start_offset: 16 / 0x10
-      linkedit_signature_end_offset: 842 / 0x34a
-      linkedit_bytes_after_signature: 5318 / 0x14c6
+      linkedit_signature_end_offset: 399 / 0x18f
+      linkedit_bytes_after_signature: 5761 / 0x1681
       signature:
-        superblob_length: 826 / 0x33a
-        blob_count: 5
+        superblob_length: 383 / 0x17f
+        blob_count: 3
         blobs:
         - slot: CodeDirectory (0)
           magic: fade0c02
-          length: 487
-          sha1: bf1ec87928ca5a89ac46faeeceae22ad9f111f0d
-          sha256: d791c7515e8a6de621ea2f3b556211c539fc9671352c4a73bf67ddf3909f6346
+          length: 327
+          sha1: c26826707603fb84e28487b5f936799d4edf6377
+          sha256: 7b46bdc9c357e9a5ce1b15cd255623667b42772b0f42db78c8b630740caecc86
         - slot: RequirementSet (2)
           magic: fade0c01
           length: 12
           sha1: 3a75f6db058529148e14dd7ea1b4729cc09ec973
           sha256: 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986
-        - slot: Entitlements (5)
-          magic: fade7171
-          length: 231
-          sha1: 609a70a1468d84bef2be0146d1f0a5ea1c839948
-          sha256: adea2675562421d85cc35e2c909ae27f33846eeb3b2b7c68017abd1b4b02f624
-        - slot: DER Entitlements (7)
-          magic: fade7172
-          length: 36
-          sha1: 1018e52606e45993b16da1c621ceec945b9d5226
-          sha256: 4d9925d24f1357a00429379f31f567cedfaa8101d58442e7864f923bfb708794
         - slot: CMS Signature (65536)
           magic: fade0b01
           length: 8
@@ -316,37 +257,15 @@ $ rcodesign print-signature-info MyApp.app.signed
           digest_type: sha256
           platform: 0
           signed_entity_size: 16400
-          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY | ALLOW_UNSIGNED)
+          executable_segment_flags: ExecutableSegmentFlags(MAIN_BINARY)
           code_digests_count: 5
           slot_digests:
           - 'Info (1): 0000000000000000000000000000000000000000000000000000000000000000'
           - 'RequirementSet (2): 987920904eab650e75788c054aa0b0524e6a80bfc71aa32df8d237a61743f986'
-          - 'Resources (3): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'Application (4): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'Entitlements (5): adea2675562421d85cc35e2c909ae27f33846eeb3b2b7c68017abd1b4b02f624'
-          - 'Rep Specific (6): 0000000000000000000000000000000000000000000000000000000000000000'
-          - 'DER Entitlements (7): 4d9925d24f1357a00429379f31f567cedfaa8101d58442e7864f923bfb708794'
-        entitlements_plist:
-        - <?xml version="1.0" encoding="UTF-8"?>
-        - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        - <plist version="1.0">
-        - <dict>
-        - '  <key>get-task-allow</key>'
-        - '  <true/>'
-        - </dict>
-        - </plist>
-        entitlements_der_plist:
-        - <?xml version="1.0" encoding="UTF-8"?>
-        - <plist version="1.0">
-        - '  <dict>'
-        - '    <key>get-task-allow</key>'
-        - '    <true />'
-        - '  </dict>'
-        - </plist>
         cms: null
 - path: Contents/_CodeSignature/CodeResources
   file_size: 2882
-  file_sha256: 61abffc781f3e15d45adcb78df283f2441c195830435b1588d04a99e43fa393d
+  file_sha256: e9faf2afbb4ab5548d3531c4b40abdfd59a2d6c2b5834e1980993957ba5bec83
   entity:
     bundle_code_signature_file: !ResourcesXml
     - <?xml version="1.0" encoding="UTF-8"?>
@@ -366,25 +285,25 @@ $ rcodesign print-signature-info MyApp.app.signed
     - '    <dict>'
     - '      <key>cdhash</key>'
     - '      <data>'
-    - '      Jh20kdyYcmDirpZqo3z0FcTVzkU='
+    - '      MZ4S1QVta4NQbypRhY3f2ZokTtc='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H"261db491dc987260e2ae966aa37cf415c4d5ce45"</string>'
+    - '      <string>cdhash H"319e12d5056d6b83506f2a51858ddfd99a244ed7"</string>'
     - '    </dict>'
     - '    <key>MacOS/lib.dylib</key>'
     - '    <dict>'
     - '      <key>cdhash</key>'
     - '      <data>'
-    - '      6O/eVjRpVyg7VkT4sQmay8Gisak='
+    - '      30iNRjx5i6bnr7tV0fhpWa78EnU='
     - '      </data>'
     - '      <key>requirement</key>'
-    - '      <string>cdhash H"e8efde56346957283b5644f8b1099acbc1a2b1a9"</string>'
+    - '      <string>cdhash H"df488d463c798ba6e7afbb55d1f86959aefc1275"</string>'
     - '    </dict>'
     - '    <key>Resources/non-nested-bin</key>'
     - '    <dict>'
     - '      <key>hash2</key>'
     - '      <data>'
-    - '      wmgyR+qVPKoWbdyRmoZj7a3P74TojdigGJkw1NKI07w='
+    - '      F+5IWRwrRUdms9OOALpbNCs2lcY1yRFKrYORF/ReOzg='
     - '      </data>'
     - '    </dict>'
     - '  </dict>'

@@ -230,6 +230,7 @@ pub enum DesignatedRequirementMode {
 }
 
 /// Describes the type of a scoped setting.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ScopedSetting {
     Digest,
     BinaryIdentifier,
@@ -240,6 +241,30 @@ pub enum ScopedSetting {
     InfoPlist,
     CodeResources,
     ExtraDigests,
+}
+
+impl ScopedSetting {
+    pub fn all() -> &'static [Self] {
+        &[
+            Self::Digest,
+            Self::BinaryIdentifier,
+            Self::Entitlements,
+            Self::DesignatedRequirements,
+            Self::CodeSignatureFlags,
+            Self::RuntimeVersion,
+            Self::InfoPlist,
+            Self::CodeResources,
+            Self::ExtraDigests,
+        ]
+    }
+
+    pub fn inherit_nested_bundle() -> &'static [Self] {
+        &[Self::Digest, Self::ExtraDigests, Self::RuntimeVersion]
+    }
+
+    pub fn inherit_nested_macho() -> &'static [Self] {
+        &[Self::Digest, Self::ExtraDigests, Self::RuntimeVersion]
+    }
 }
 
 /// Represents code signing settings.
@@ -944,13 +969,29 @@ impl<'key> SigningSettings<'key> {
     /// Convert this instance to settings appropriate for a nested bundle.
     #[must_use]
     pub fn as_nested_bundle_settings(&self, bundle_path: &str) -> Self {
-        self.clone_strip_prefix(bundle_path, format!("{bundle_path}/"))
+        self.clone_strip_prefix(
+            bundle_path,
+            format!("{bundle_path}/"),
+            ScopedSetting::inherit_nested_bundle(),
+        )
+    }
+
+    /// Obtain the settings for a bundle's main executable.
+    #[must_use]
+    pub fn as_bundle_main_executable_settings(&self, path: &str) -> Self {
+        self.clone_strip_prefix(path, path.to_string(), ScopedSetting::all())
     }
 
     /// Convert this instance to settings appropriate for a Mach-O binary in a bundle.
+    ///
+    /// Only some settings are inherited from the bundle.
     #[must_use]
     pub fn as_bundle_macho_settings(&self, path: &str) -> Self {
-        self.clone_strip_prefix(path, path.to_string())
+        self.clone_strip_prefix(
+            path,
+            path.to_string(),
+            ScopedSetting::inherit_nested_macho(),
+        )
     }
 
     /// Convert this instance to settings appropriate for a Mach-O within a universal one.
@@ -974,9 +1015,20 @@ impl<'key> SigningSettings<'key> {
 
     // Clones this instance, promoting `main_path` to the main scope and stripping
     // a prefix from other keys.
-    fn clone_strip_prefix(&self, main_path: &str, prefix: String) -> Self {
-        self.clone_with_filter_map(|_, key| match key {
-            SettingsScope::Main => Some(SettingsScope::Main),
+    fn clone_strip_prefix(
+        &self,
+        main_path: &str,
+        prefix: String,
+        preserve_settings: &[ScopedSetting],
+    ) -> Self {
+        self.clone_with_filter_map(|setting, key| match key {
+            SettingsScope::Main => {
+                if preserve_settings.contains(&setting) {
+                    Some(SettingsScope::Main)
+                } else {
+                    None
+                }
+            }
             SettingsScope::Path(path) => {
                 if path == main_path {
                     Some(SettingsScope::Main)
@@ -985,10 +1037,25 @@ impl<'key> SigningSettings<'key> {
                         .map(|path| SettingsScope::Path(path.to_string()))
                 }
             }
-            SettingsScope::MultiArchIndex(index) => Some(SettingsScope::MultiArchIndex(index)),
-            SettingsScope::MultiArchCpuType(cpu_type) => {
-                Some(SettingsScope::MultiArchCpuType(cpu_type))
+
+            // Top-level multiarch settings are a bit wonky: it doesn't really
+            // make much sense for them to propagate across binaries. But we do
+            // allow it.
+            SettingsScope::MultiArchIndex(index) => {
+                if preserve_settings.contains(&setting) {
+                    Some(SettingsScope::MultiArchIndex(index))
+                } else {
+                    None
+                }
             }
+            SettingsScope::MultiArchCpuType(cpu_type) => {
+                if preserve_settings.contains(&setting) {
+                    Some(SettingsScope::MultiArchCpuType(cpu_type))
+                } else {
+                    None
+                }
+            }
+
             SettingsScope::PathMultiArchIndex(path, index) => {
                 if path == main_path {
                     Some(SettingsScope::MultiArchIndex(index))

@@ -9,6 +9,17 @@ Released on ReleaseDate.
 * (Breaking change) The `--extra-digest` argument has been removed.
   `--digest` can now be specified multiple times. `--digest` is now a
   scoped value.
+* (Breaking change) Various signing settings no longer inherit to nested
+  entities: `--entitlements-xml-file`, `--code-requirements-file`,
+  `--code-resources-file`, `--code-signature-flags`, and `--info-plist-file`.
+  The new behavior is much more conservative about which signing settings
+  can be inherited and prevents unexpected results, such as all binaries
+  in a bundle sharing the same entitlements or signing flags. Previous signers
+  of bundles may find various signing settings disappearing from nested
+  bundles or the non-main Mach-O binary within a bundle. It is highly encouraged
+  to use the `rcodesign diff-signatures` command to compare results. If settings
+  were dropped, add new scoped CLI arguments or use the new configuration
+  file feature to add settings back in to specific paths.
 * (New feature) Configuration file support added. TOML based configuration
   files can now define signers and signing settings in named *profiles*,
   allowing for automatic and near effortless reuse of common configurations.

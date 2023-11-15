@@ -73,9 +73,22 @@ Signing will traverse into nested entities:
 
 * A fat Mach-O binary will traverse into the multiple Mach-O binaries within.
 * A bundle will traverse into nested bundles.
-* A bundle will traverse non-code /"resource/" files and sign their digests.
+* A bundle will traverse non-code "resource" files and sign their digests.
 * A bundle will traverse non-main Mach-O binaries and sign them, adding their
   metadata to the signed resources file.
+
+When signing nested entities, only some signing settings will be copied
+automatically:
+
+* All settings related to the signing certificate/key.
+* --timestamp-url
+* --signing-time
+* --exclude
+* --digest
+* --runtime-version
+
+All other settings only apply to the main entity being signed or the
+scoped path being annotated.
 
 # Bundle Signing Overrides Settings
 

@@ -612,7 +612,8 @@ impl SingleBundleSigner {
             let macho_data = std::fs::read(exe.absolute_path())?;
             let signer = MachOSigner::new(&macho_data)?;
 
-            let mut settings = settings.clone();
+            let mut settings = settings
+                .as_bundle_main_executable_settings(exe.relative_path().to_string_lossy().as_ref());
 
             // The identifier for the main executable is defined in the bundle's Info.plist.
             if let Some(ident) = self
