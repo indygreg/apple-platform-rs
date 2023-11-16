@@ -1952,12 +1952,6 @@ enum Subcommands {
     /// Print information about certificates in the macOS keychain
     KeychainPrintCertificates(KeychainPrintCertificates),
 
-    /// Export CA certificates from the Windows Store
-    WindowsStoreExportCertificateChain(WindowsStoreExportCertificateChain),
-
-    /// Print information about certificates in the Windows Store
-    WindowsStorePrintCertificates(WindowsStorePrintCertificates),
-
     /// Create a universal ("fat") Mach-O binary.
     ///
     /// This is similar to the `lipo -create` command. Use it to stitch
@@ -2287,6 +2281,12 @@ enum Subcommands {
     /// Verifies code signature data
     Verify(Verify),
 
+    /// Export CA certificates from the Windows Store
+    WindowsStoreExportCertificateChain(WindowsStoreExportCertificateChain),
+
+    /// Print information about certificates in the Windows Store
+    WindowsStorePrintCertificates(WindowsStorePrintCertificates),
+
     /// Print information about X.509 OIDs related to Apple code signing
     X509Oids(X509Oids),
 }
@@ -2309,8 +2309,6 @@ impl Subcommands {
             Subcommands::GenerateSelfSignedCertificate(c) => c,
             Subcommands::KeychainExportCertificateChain(c) => c,
             Subcommands::KeychainPrintCertificates(c) => c,
-            Subcommands::WindowsStoreExportCertificateChain(c) => c,
-            Subcommands::WindowsStorePrintCertificates(c) => c,
             Subcommands::MachoUniversalCreate(c) => c,
             Subcommands::NotaryLog(c) => c,
             Subcommands::NotarySubmit(c) => c,
@@ -2324,6 +2322,8 @@ impl Subcommands {
             Subcommands::SmartcardScan(c) => c,
             Subcommands::Staple(c) => c,
             Subcommands::Verify(c) => c,
+            Subcommands::WindowsStoreExportCertificateChain(c) => c,
+            Subcommands::WindowsStorePrintCertificates(c) => c,
             Subcommands::X509Oids(c) => c,
         }
     }

@@ -24,10 +24,6 @@ Commands:
           Export Apple CA certificates from the macOS Keychain
   keychain-print-certificates
           Print information about certificates in the macOS keychain
-  windows-store-export-certificate-chain
-          Export CA certificates from the Windows Store
-  windows-store-print-certificates
-          Print information about certificates in the Windows Store
   macho-universal-create
           Create a universal ("fat") Mach-O binary
   notary-log
@@ -54,6 +50,10 @@ Commands:
           Staples a notarization ticket to an entity
   verify
           Verifies code signature data
+  windows-store-export-certificate-chain
+          Export CA certificates from the Windows Store
+  windows-store-print-certificates
+          Print information about certificates in the Windows Store
   x509-oids
           Print information about X.509 OIDs related to Apple code signing
   help
@@ -93,10 +93,6 @@ Commands:
           Export Apple CA certificates from the macOS Keychain
   keychain-print-certificates
           Print information about certificates in the macOS keychain
-  windows-store-export-certificate-chain
-          Export CA certificates from the Windows Store
-  windows-store-print-certificates
-          Print information about certificates in the Windows Store
   macho-universal-create
           Create a universal ("fat") Mach-O binary
   notary-log
@@ -123,6 +119,10 @@ Commands:
           Staples a notarization ticket to an entity
   verify
           Verifies code signature data
+  windows-store-export-certificate-chain
+          Export CA certificates from the Windows Store
+  windows-store-print-certificates
+          Print information about certificates in the Windows Store
   x509-oids
           Print information about X.509 OIDs related to Apple code signing
   help
