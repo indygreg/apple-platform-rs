@@ -200,6 +200,14 @@ fn print_certificate_info(cert: &CapturedX509Certificate) -> Result<(), AppleCod
         "SHA-256 fingerprint:         {}",
         hex::encode(cert.sha256_fingerprint()?)
     );
+    println!(
+        "Not Valid Before:            {}",
+        cert.validity_not_before().to_rfc3339()
+    );
+    println!(
+        "Not Valid After:             {}",
+        cert.validity_not_after().to_rfc3339()
+    );
     if let Some(alg) = cert.key_algorithm() {
         println!("Key Algorithm:               {alg}");
     }
