@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* Fixed a bug where a `signing without an Apple signed certificate but signing
+  settings contain a team name` warning was printed incorrectly.
+
 ## 0.25.1
 
 Released on 2023-11-16.

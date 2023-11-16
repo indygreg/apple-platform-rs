@@ -607,7 +607,7 @@ impl<'data> MachOSigner<'data> {
         // a warning if the constraint is violated.
         let team_name = settings.team_id().map(|x| Cow::Owned(x.to_string()));
 
-        if team_name.is_some() && settings.signing_certificate_apple_signed() {
+        if team_name.is_some() && !settings.signing_certificate_apple_signed() {
             warn!("signing without an Apple signed certificate but signing settings contain a team name; signature varies from Apple's tooling");
         }
 
