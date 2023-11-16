@@ -88,6 +88,14 @@ impl SigningCertificates {
             let cert = public_certificates.remove(0);
 
             warn!("registering signing key");
+
+            if !cert.time_constraints_valid(None) {
+                warn!(
+                    "signing certificate expired as of {}; signatures may not be valid",
+                    cert.validity_not_after().to_rfc3339()
+                );
+            }
+
             settings.set_signing_key(signing_key.as_key_info_signer(), cert);
             if let Some(certs) = settings.chain_apple_certificates() {
                 for cert in certs {

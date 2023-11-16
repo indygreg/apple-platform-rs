@@ -8,6 +8,7 @@ Released on ReleaseDate.
 
 * Fixed a bug where a `signing without an Apple signed certificate but signing
   settings contain a team name` warning was printed incorrectly.
+* We now print a warning when signing using an expired certificate.
 
 ## 0.25.1
 
