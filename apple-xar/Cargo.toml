@@ -32,7 +32,7 @@ signature = { version = "2.1.0", features = ["std"], optional = true }
 thiserror = "1.0.50"
 url = "2.4.1"
 xml-rs = "0.8.19"
-x509-certificate = "0.23.0"
+x509-certificate = "0.23.1"
 xz2 = { version = "0.1.7", features = ["static"] }
 
 [features]
