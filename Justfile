@@ -3,6 +3,8 @@ default:
 
 exe_suffix := if os() == "windows" { ".exe" } else { "" }
 
+tar := if os() == "macos" { "gtar" } else { "tar" }
+
 macosx_deployment_target := if os() == "macos" {
   if arch() == "arm" {
     "11.0"
@@ -83,7 +85,7 @@ notarize path:
     {{path}}
 
 _tar_directory source_directory dir_name dest_dir:
-  tar \
+  {{tar}} \
     --sort=name \
     --owner=root:0 \
     --group=root:0 \
