@@ -324,15 +324,15 @@ This key is a table/dict/map with the following keys:
 
    Leave blank to use the default.
 
-``session_init.public_key``
+``public_key``
    Base64 encoded public key data used to encrypt a message to the remote
    signer.
 
-``session_init.public_key_pem_path``
+``public_key_pem_path``
    File containing PEM encoded public key data used to encrypt a message to
    the remote signer.
 
-``session_init.shared_secret``
+``shared_secret``
    A shared secret value (i.e. a password/passphrase) used to encrypt a message
    to the remote signer.
 

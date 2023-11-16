@@ -972,16 +972,16 @@ impl CliCommand for RemoteSign {
         let mut joiner = create_session_joiner(session_join_string)?;
 
         let url = if let Some(key) = &c.signer.remote_signing_key {
-            if let Some(env) = &key.session_init.shared_secret_env {
+            if let Some(env) = &key.shared_secret_env {
                 let secret = std::env::var(env).map_err(|_| AppleCodesignError::CliBadArgument)?;
                 joiner
                     .register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
-            } else if let Some(secret) = &key.session_init.shared_secret {
+            } else if let Some(secret) = &key.shared_secret {
                 joiner
                     .register_state(SessionJoinState::SharedSecret(secret.as_bytes().to_vec()))?;
             }
 
-            key.url.clone()
+            key.url()
         } else {
             crate::remote_signing::DEFAULT_SERVER_URL.to_string()
         };

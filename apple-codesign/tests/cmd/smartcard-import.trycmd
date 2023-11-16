@@ -59,13 +59,8 @@ Options:
       --p12-password-file <PATH>
           Path to file containing password for opening --p12-file file
 
-      --remote-signer
-          Send signing requests to a remote signer
-
       --remote-signing-url <URL>
           URL of a remote code signing server
-          
-          [default: wss://ws.codesign.gregoryszorc.com/]
 
       --remote-public-key <BASE64 ENCODED PUBLIC KEY>
           Base64 encoded public key data describing the signer

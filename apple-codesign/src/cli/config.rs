@@ -162,7 +162,7 @@ mod test {
     use {
         crate::cli::certificate_source::{
             MacosKeychainSigningKey, P12SigningKey, PemSigningKey, RemoteSigningKey,
-            RemoteSigningSessionInitialization, SmartcardSigningKey,
+            SmartcardSigningKey,
         },
         std::path::PathBuf,
     };
@@ -320,7 +320,7 @@ mod test {
                 .toml_string(
                     r#"
                 [default.sign]
-                signer.remote.session_init.public_key = "DEADBEEF"
+                signer.remote.public_key = "DEADBEEF"
                 "#
                 )
                 .config()
@@ -329,12 +329,8 @@ mod test {
                 .signer,
             CertificateSource {
                 remote_signing_key: Some(RemoteSigningKey {
-                    enabled: false,
-                    url: crate::remote_signing::DEFAULT_SERVER_URL.to_string(),
-                    session_init: RemoteSigningSessionInitialization {
-                        public_key: Some("DEADBEEF".into()),
-                        ..Default::default()
-                    },
+                    public_key: Some("DEADBEEF".into()),
+                    ..Default::default()
                 }),
                 ..Default::default()
             }
@@ -345,7 +341,7 @@ mod test {
                 .toml_string(
                     r#"
                 [default.sign]
-                signer.remote.session_init.public_key_pem_path = "path/to/cert.pem"
+                signer.remote.public_key_pem_path = "path/to/cert.pem"
                 "#
                 )
                 .config()
@@ -354,12 +350,8 @@ mod test {
                 .signer,
             CertificateSource {
                 remote_signing_key: Some(RemoteSigningKey {
-                    enabled: false,
-                    url: crate::remote_signing::DEFAULT_SERVER_URL.to_string(),
-                    session_init: RemoteSigningSessionInitialization {
-                        public_key_pem_path: Some("path/to/cert.pem".into()),
-                        ..Default::default()
-                    },
+                    public_key_pem_path: Some("path/to/cert.pem".into()),
+                    ..Default::default()
                 }),
                 ..Default::default()
             }
@@ -370,7 +362,7 @@ mod test {
                 .toml_string(
                     r#"
                 [default.sign]
-                signer.remote.session_init.shared_secret = "SECRET"
+                signer.remote.shared_secret = "SECRET"
                 "#
                 )
                 .config()
@@ -379,12 +371,8 @@ mod test {
                 .signer,
             CertificateSource {
                 remote_signing_key: Some(RemoteSigningKey {
-                    enabled: false,
-                    url: crate::remote_signing::DEFAULT_SERVER_URL.to_string(),
-                    session_init: RemoteSigningSessionInitialization {
-                        shared_secret: Some("SECRET".into()),
-                        ..Default::default()
-                    },
+                    shared_secret: Some("SECRET".into()),
+                    ..Default::default()
                 }),
                 ..Default::default()
             }

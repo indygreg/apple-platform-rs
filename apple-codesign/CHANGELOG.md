@@ -6,9 +6,18 @@
 
 Released on ReleaseDate.
 
+* (Breaking change) The `sign --remote-signer` argument has been removed. It
+  is now implicitly assumed via presence of a remote session initialization
+  argument.
+* Fixed a regression in 0.25.0 where remote signing didn't work due argument
+  parsing errors.
+
 ## 0.25.0
 
 Released on 2023-11-15.
+
+(Binary assets for this release were never formally published due to a
+regression in remote signing CLI argument handling.)
 
 * (Breaking change) The `--extra-digest` argument has been removed.
   `--digest` can now be specified multiple times. `--digest` is now a

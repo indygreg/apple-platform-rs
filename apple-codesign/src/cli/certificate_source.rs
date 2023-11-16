@@ -361,7 +361,11 @@ impl KeySource for PemSigningKey {
 
 #[derive(Args, Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct RemoteSigningSessionInitialization {
+pub struct RemoteSigningKey {
+    /// URL of a remote code signing server
+    #[arg(long = "remote-signing-url", value_name = "URL")]
+    pub url: Option<String>,
+
     /// Base64 encoded public key data describing the signer
     #[arg(
         long = "remote-public-key",
@@ -396,44 +400,11 @@ pub struct RemoteSigningSessionInitialization {
     pub shared_secret_env: Option<String>,
 }
 
-fn default_remote_signing_url() -> String {
-    crate::remote_signing::DEFAULT_SERVER_URL.to_string()
-}
-
-#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct RemoteSigningKey {
-    /// Send signing requests to a remote signer
-    #[arg(long = "remote-signer")]
-    #[serde(default, skip)]
-    pub enabled: bool,
-
-    /// URL of a remote code signing server
-    #[arg(long = "remote-signing-url", default_value = crate::remote_signing::DEFAULT_SERVER_URL, value_name = "URL")]
-    #[serde(default = "default_remote_signing_url")]
-    pub url: String,
-
-    #[command(flatten)]
-    pub session_init: RemoteSigningSessionInitialization,
-}
-
-impl Default for RemoteSigningKey {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            url: crate::remote_signing::DEFAULT_SERVER_URL.to_string(),
-            session_init: RemoteSigningSessionInitialization::default(),
-        }
-    }
-}
-
 impl KeySource for RemoteSigningKey {
     fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
-        if self.enabled {
-            let initiator = self.remote_signing_initiator()?;
-
+        if let Some(initiator) = self.remote_signing_initiator()? {
             let client = UnjoinedSigningClient::new_initiator(
-                self.url.clone(),
+                self.url(),
                 initiator,
                 Some(super::print_session_join),
             )?;
@@ -456,17 +427,26 @@ impl KeySource for RemoteSigningKey {
 }
 
 impl RemoteSigningKey {
-    fn remote_signing_initiator(&self) -> Result<Box<dyn SessionInitiatePeer>, RemoteSignError> {
-        let server_url = self.url.clone();
+    /// Obtain the URL of the relay server.
+    pub fn url(&self) -> String {
+        self.url
+            .clone()
+            .unwrap_or_else(|| crate::remote_signing::DEFAULT_SERVER_URL.to_string())
+    }
 
-        if let Some(public_key_data) = &self.session_init.public_key {
+    fn remote_signing_initiator(
+        &self,
+    ) -> Result<Option<Box<dyn SessionInitiatePeer>>, RemoteSignError> {
+        let server_url = self.url();
+
+        if let Some(public_key_data) = &self.public_key {
             let public_key_data = STANDARD_ENGINE.decode(public_key_data)?;
 
-            Ok(Box::new(PublicKeyInitiator::new(
+            Ok(Some(Box::new(PublicKeyInitiator::new(
                 public_key_data,
                 Some(server_url),
-            )?))
-        } else if let Some(path) = &self.session_init.public_key_pem_path {
+            )?)))
+        } else if let Some(path) = &self.public_key_pem_path {
             let pem_data = std::fs::read(path)?;
             let doc = pem::parse(pem_data)?;
 
@@ -485,32 +465,26 @@ impl RemoteSigningKey {
                 }
             };
 
-            Ok(Box::new(PublicKeyInitiator::new(
+            Ok(Some(Box::new(PublicKeyInitiator::new(
                 spki_der,
                 Some(server_url),
-            )?))
-        } else if let Some(env) = &self.session_init.shared_secret_env {
+            )?)))
+        } else if let Some(env) = &self.shared_secret_env {
             let secret = std::env::var(env).map_err(|_| {
                 RemoteSignError::ClientState(
                     "failed reading from shared secret environment variable",
                 )
             })?;
 
-            Ok(Box::new(SharedSecretInitiator::new(
+            Ok(Some(Box::new(SharedSecretInitiator::new(
                 secret.as_bytes().to_vec(),
-            )?))
-        } else if let Some(value) = &self.session_init.shared_secret {
-            Ok(Box::new(SharedSecretInitiator::new(
+            )?)))
+        } else if let Some(value) = &self.shared_secret {
+            Ok(Some(Box::new(SharedSecretInitiator::new(
                 value.as_bytes().to_vec(),
-            )?))
+            )?)))
         } else {
-            error!("no arguments provided to establish session with remote signer");
-            error!(
-            "specify --remote-public-key, --remote-shared-secret-env, or --remote-shared-secret"
-        );
-            Err(RemoteSignError::ClientState(
-                "unable to initiate remote signing",
-            ))
+            Ok(None)
         }
     }
 }

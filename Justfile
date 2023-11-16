@@ -65,14 +65,12 @@ assemble-exe-artifacts exe commit dest:
 
 _codesign-exe in_path:
   rcodesign sign \
-    --remote-signer \
     --remote-public-key-pem-file ci/developer-id-application.pem \
     --code-signature-flags runtime \
     {{in_path}}
 
 _codesign in_path out_path:
   rcodesign sign \
-    --remote-signer \
     --remote-public-key-pem-file ci/developer-id-application.pem \
     {{in_path}} {{out_path}}
 
