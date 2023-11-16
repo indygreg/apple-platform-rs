@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.25.1
+
+Released on 2023-11-16.
+
 * (Breaking change) The `sign --remote-signer` argument has been removed. It
   is now implicitly assumed via presence of a remote session initialization
   argument.
