@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.17.0
+
+Released on 2023-11-17.
+
 ## 0.16.0
 
 Released on 2023-11-15.

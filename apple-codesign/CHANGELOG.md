@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.26.0
+
+Released on 2023-11-17.
+
 * (New feature) On Windows, it is now possible to sign with code signing
   certificates stored in the Windows Certificate Store. The `sign` command
   (and other commands taking certificate sources) gained `--windows-store-name`

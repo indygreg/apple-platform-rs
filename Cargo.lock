@@ -154,7 +154,7 @@ dependencies = [
 
 [[package]]
 name = "apple-codesign"
-version = "0.25.1"
+version = "0.26.0"
 dependencies = [
  "anyhow",
  "app-store-connect",
@@ -259,7 +259,7 @@ dependencies = [
 
 [[package]]
 name = "apple-flat-package"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "apple-xar",
  "cpio-archive",
@@ -281,7 +281,7 @@ dependencies = [
 
 [[package]]
 name = "apple-xar"
-version = "0.16.0"
+version = "0.17.0"
 dependencies = [
  "base64",
  "bcder",
