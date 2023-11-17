@@ -33,7 +33,7 @@ dialoguer = "0.11.0"
 difference = "2.0.0"
 digest = "0.10.7"
 dirs = "5.0.1"
-elliptic-curve = { version = "0.13.6", features = ["arithmetic", "pkcs8"] }
+elliptic-curve = { version = "0.13.7", features = ["arithmetic", "pkcs8"] }
 env_logger = "0.10.1"
 figment = { version = "0.10.12", features = ["env", "toml"] }
 filetime = "0.2.22"
