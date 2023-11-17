@@ -9,6 +9,7 @@ Released on ReleaseDate.
 * Fixed a bug where a `signing without an Apple signed certificate but signing
   settings contain a team name` warning was printed incorrectly.
 * We now print a warning when signing using an expired certificate.
+* Fixed a bug where `sign --code-signature-flags` could not be scoped. (#116)
 
 ## 0.25.1
 

@@ -256,9 +256,9 @@ Options:
           Increase logging verbosity. Can be specified multiple times
 
       --code-signature-flags <CODE_SIGNATURE_FLAGS>
-          Code signature flags to set
+          Code signature flags to set.
           
-          [possible values: host, hard, kill, expires, library, runtime, linker-signed]
+          Valid values: host, hard, kill, expires, library, runtime, linker-signed
 
       --digest <DIGEST>
           Digest algorithms to use.

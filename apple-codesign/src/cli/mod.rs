@@ -1048,8 +1048,10 @@ pub struct ScopedSigningArgs {
     )]
     code_resources_paths: Vec<String>,
 
-    /// Code signature flags to set
-    #[arg(long, value_parser = CodeSignatureFlags::all_user_configurable())]
+    /// Code signature flags to set.
+    ///
+    /// Valid values: host, hard, kill, expires, library, runtime, linker-signed
+    #[arg(long)]
     code_signature_flags: Vec<String>,
 
     /// Digest algorithms to use.
