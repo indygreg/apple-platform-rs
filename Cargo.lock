@@ -214,7 +214,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "sha2",
- "signature 2.1.0",
+ "signature 2.2.0",
  "simple-file-manifest",
  "spake2",
  "spki 0.7.2",
@@ -299,7 +299,7 @@ dependencies = [
  "serde-xml-rs",
  "sha1",
  "sha2",
- "signature 2.1.0",
+ "signature 2.2.0",
  "thiserror",
  "url",
  "x509-certificate",
@@ -1197,7 +1197,7 @@ dependencies = [
  "pem",
  "reqwest",
  "ring",
- "signature 2.1.0",
+ "signature 2.2.0",
  "x509-certificate",
 ]
 
@@ -1375,15 +1375,15 @@ dependencies = [
 
 [[package]]
 name = "ecdsa"
-version = "0.16.8"
+version = "0.16.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4b1e0c257a9e9f25f90ff76d7a68360ed497ee519c8e428d1825ef0000799d4"
+checksum = "ee27f32b5c5292967d2d4a9d7f1e0b0aed2c15daded5a60300e4abb9d8020bca"
 dependencies = [
  "der 0.7.8",
  "digest",
  "elliptic-curve 0.13.7",
  "rfc6979 0.4.0",
- "signature 2.1.0",
+ "signature 2.2.0",
  "spki 0.7.2",
 ]
 
@@ -2370,7 +2370,7 @@ version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9863ad85fa8f4460f9c48cb909d38a0d689dba1f6f6988a5e3e0d31071bcd4b"
 dependencies = [
- "ecdsa 0.16.8",
+ "ecdsa 0.16.9",
  "elliptic-curve 0.13.7",
  "primeorder",
  "sha2",
@@ -2382,7 +2382,7 @@ version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "70786f51bcc69f6a4c0360e063a4cac5419ef7c5cd5b3c99ad70f3be5ba79209"
 dependencies = [
- "ecdsa 0.16.8",
+ "ecdsa 0.16.9",
  "elliptic-curve 0.13.7",
  "primeorder",
  "sha2",
@@ -2853,7 +2853,7 @@ dependencies = [
  "pkcs8 0.10.2",
  "rand_core",
  "sha2",
- "signature 2.1.0",
+ "signature 2.2.0",
  "spki 0.7.2",
  "subtle",
  "zeroize",
@@ -3223,9 +3223,9 @@ dependencies = [
 
 [[package]]
 name = "signature"
-version = "2.1.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e1788eed21689f9cf370582dfc467ef36ed9c707f073528ddafa8d83e3b8500"
+checksum = "77549399552de45a898a580c1b41d445bf730df867cc44e6c0233bbc4b8329de"
 dependencies = [
  "digest",
  "rand_core",
@@ -4228,7 +4228,7 @@ dependencies = [
  "const-oid",
  "der 0.7.8",
  "sha1",
- "signature 2.1.0",
+ "signature 2.2.0",
  "spki 0.7.2",
 ]
 
@@ -4245,7 +4245,7 @@ dependencies = [
  "hex",
  "pem",
  "ring",
- "signature 2.1.0",
+ "signature 2.2.0",
  "spki 0.7.2",
  "thiserror",
  "zeroize",
@@ -4302,7 +4302,7 @@ dependencies = [
  "base16ct 0.2.0",
  "der 0.7.8",
  "des",
- "ecdsa 0.16.8",
+ "ecdsa 0.16.9",
  "elliptic-curve 0.13.7",
  "hmac",
  "log",
@@ -4319,7 +4319,7 @@ dependencies = [
  "secrecy",
  "sha1",
  "sha2",
- "signature 2.1.0",
+ "signature 2.2.0",
  "subtle",
  "uuid",
  "x509-cert",

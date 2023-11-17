@@ -66,7 +66,7 @@ semver = "1.0.20"
 serde = { version = "1.0.192", features = ["derive"] }
 serde_json = "1.0.108"
 serde_yaml = "0.9.27"
-signature = { version = "2.1.0", features = ["std"] }
+signature = { version = "2.2.0", features = ["std"] }
 simple-file-manifest = "0.11.0"
 spake2 = "0.4.0"
 spki = { version = "0.7.2", features = ["pem"] }
