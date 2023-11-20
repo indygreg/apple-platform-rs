@@ -112,6 +112,8 @@ each other and *initiator* will delegate all of its signing operations to
 *signer*, who will issue cryptographic signatures which it sends back to the
 *initiator*.
 
+.. _apple_codesign_remote_signing_session_agreement:
+
 Session Agreement
 =================
 
@@ -237,12 +239,6 @@ It is pretty simple to initiate remote code signing from GitHub Actions! In
 fact, this scenario is one of the primary use cases for the design of the
 feature.
 
-.. note::
-
-   `Issue #6 <https://github.com/indygreg/apple-platform-rs/issues/6>`_ tracks
-   publishing a canonical GitHub Action that formalizes the steps in this
-   documentation. Assistance in building that would be greatly appreciated!
-
 Here are the general steps.
 
 Configuring a Workflow / Actions
@@ -262,12 +258,16 @@ of this project.
    data widely available in the repository.
 
 Next, create a GitHub workflow or action that invokes ``rcodesign sign``.
+
+The `indygreg/apple-code-sign-action <https://github.com/indygreg/apple-code-sign-action/>`_
+action provides a turnkey way to do this. But implementing this action yourself isn't
+too much work either! See
 https://github.com/indygreg/apple-platform-rs/blob/main/.github/workflows/sign-apple-exe.yml
-is an example of such a workflow. This particular workflow is using
+for an example of such a workflow. ()This particular workflow is using
 ``on.workflow_dispatch`` so the workflow is only triggered manually. See
 the `workflow_dispatch documentation <https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch>`_
 and `Manually running a workflow <https://docs.github.com/en/actions/managing-workflow-runs/manually-running-a-workflow>`_
-docs for more.
+docs for more.)
 
 .. important::
 
