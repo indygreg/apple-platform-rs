@@ -72,11 +72,11 @@ Top-level keys/sections in config files correspond to named *profiles*.
 
    # A profile named "default"
    [default]
-   foo = bar
+   foo = "bar"
 
    # A profile named "test"
    [test]
-   foo = baz
+   foo = "baz"
 
 There are two special named profiles with special semantics:
 
