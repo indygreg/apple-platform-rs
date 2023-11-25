@@ -1,6 +1,7 @@
 [workspace]
 members = [
     'apfs-derive',
+    'apfs-core',
     'apfs-types',
     'apple-bom',
     'apple-bundles',
