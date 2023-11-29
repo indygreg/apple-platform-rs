@@ -1,5 +1,7 @@
 [workspace]
 members = [
+    'apfs-derive',
+    'apfs-types',
     'apple-bom',
     'apple-bundles',
     'apple-codesign',
