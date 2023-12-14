@@ -1,0 +1,29 @@
+[package]
+name = "apfs-cli"
+version = "0.1.0"
+edition = "2021"
+authors = ["Gregory Szorc <gregory.szorc@gmail.com>"]
+rust-version = "1.70"
+license = "MPL-2.0"
+description = "CLI tool for interacting with Apple file systems (APFS)"
+keywords = ["apple", "apfs", "filesystem"]
+repository = "https://github.com/indygreg/apple-platform-rs.git"
+readme = "README.md"
+
+[[bin]]
+name = "rapfs"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.92"
+clap = { version = "4.5.20", features = ["derive"] }
+env_logger = "0.11.5"
+log = "0.4.22"
+
+[dependencies.apfs-core]
+path = "../apfs-core"
+version = "0.1.0"
+
+[dependencies.apple-dmg]
+path = "../apple-dmg"
+version = "0.5.0"
