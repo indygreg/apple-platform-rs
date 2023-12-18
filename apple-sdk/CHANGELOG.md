@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* Fixed repository URL in README.md.
+
 ## 0.5.1
 
 Released on 2023-11-09.
