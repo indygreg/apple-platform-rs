@@ -431,4 +431,8 @@ impl Notarizer {
 
         Ok(status)
     }
+
+    pub fn list_submissions(&self) -> Result<notary_api::ListSubmissionResponse, AppleCodesignError> {
+        Ok(self.client()?.list_submissions()?)
+    }
 }

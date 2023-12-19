@@ -26,6 +26,8 @@ Commands:
           Print information about certificates in the macOS keychain
   macho-universal-create
           Create a universal ("fat") Mach-O binary
+  notary-list
+          List notarization submissions
   notary-log
           Fetch the notarization log for a previous submission
   notary-submit
@@ -95,6 +97,8 @@ Commands:
           Print information about certificates in the macOS keychain
   macho-universal-create
           Create a universal ("fat") Mach-O binary
+  notary-list
+          List notarization submissions
   notary-log
           Fetch the notarization log for a previous submission
   notary-submit
