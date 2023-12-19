@@ -2313,6 +2313,7 @@ impl Subcommands {
             Subcommands::DebugCreateMacho(c) => c,
             Subcommands::DebugFileTree(c) => c,
             Subcommands::DiffSignatures(c) => c,
+            #[cfg(feature = "notarize")]
             Subcommands::EncodeAppStoreConnectApiKey(c) => c,
             Subcommands::Extract(c) => c,
             Subcommands::GenerateCertificateSigningRequest(c) => c,
@@ -2320,8 +2321,11 @@ impl Subcommands {
             Subcommands::KeychainExportCertificateChain(c) => c,
             Subcommands::KeychainPrintCertificates(c) => c,
             Subcommands::MachoUniversalCreate(c) => c,
+            #[cfg(feature = "notarize")]
             Subcommands::NotaryLog(c) => c,
+            #[cfg(feature = "notarize")]
             Subcommands::NotarySubmit(c) => c,
+            #[cfg(feature = "notarize")]
             Subcommands::NotaryWait(c) => c,
             Subcommands::ParseCodeSigningRequirement(c) => c,
             Subcommands::PrintSignatureInfo(c) => c,

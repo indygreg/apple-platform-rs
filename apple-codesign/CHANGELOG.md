@@ -9,6 +9,7 @@ Released on ReleaseDate.
 * Published a
   [GitHub Action for code signing and notarization](https://github.com/marketplace/actions/apple-code-signing)
   and wrote project documentation for how to use it. (#6)
+* Fix to restore working builds with `--no-default-features`.
 
 ## 0.26.0
 
