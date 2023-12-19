@@ -127,6 +127,14 @@ impl SubmissionResponse {
     }
 }
 
+/// The notary service’s response to a request for the list of submissions.
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ListSubmissionResponse {
+    pub data: Vec<SubmissionResponseData>,
+    pub meta: Value,
+}
+
 #[derive(Clone, Copy, Debug, Error)]
 #[error("notarization {0}")]
 pub struct NotarizationError(SubmissionResponseStatus);
@@ -189,6 +197,17 @@ impl AppStoreConnectClient {
             .get(format!(
                 "{APPLE_NOTARY_SUBMIT_SOFTWARE_URL}/{submission_id}"
             ))
+            .bearer_auth(token)
+            .header("Accept", "application/json");
+
+        Ok(self.send_request(req)?.json()?)
+    }
+
+    pub fn list_submissions(&self) -> Result<ListSubmissionResponse> {
+        let token = self.get_token()?;
+        let req = self
+            .client
+            .get(APPLE_NOTARY_SUBMIT_SOFTWARE_URL)
             .bearer_auth(token)
             .header("Accept", "application/json");
 

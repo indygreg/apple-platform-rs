@@ -766,6 +766,35 @@ impl CliCommand for MachoUniversalCreate {
 
 #[cfg(feature = "notarize")]
 #[derive(Parser)]
+struct NotaryList {
+    #[command(flatten)]
+    api: NotaryApi,
+}
+
+#[cfg(feature = "notarize")]
+impl CliCommand for NotaryList {
+    fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
+        let notarizer = self.api.notarizer()?;
+
+        let submissions = notarizer.list_submissions()?;
+
+        for entry in &submissions.data {
+            println!(
+                "{} {} {} {} {}",
+                entry.id,
+                entry.attributes.created_date,
+                entry.attributes.name,
+                entry.r#type,
+                entry.attributes.status
+            );
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(feature = "notarize")]
+#[derive(Parser)]
 struct NotaryLog {
     /// The ID of the previous submission to wait on
     submission_id: String,
@@ -1970,6 +1999,10 @@ enum Subcommands {
     MachoUniversalCreate(MachoUniversalCreate),
 
     #[cfg(feature = "notarize")]
+    /// List notarization submissions
+    NotaryList(NotaryList),
+
+    #[cfg(feature = "notarize")]
     /// Fetch the notarization log for a previous submission
     NotaryLog(NotaryLog),
 
@@ -2323,6 +2356,8 @@ impl Subcommands {
             Subcommands::MachoUniversalCreate(c) => c,
             #[cfg(feature = "notarize")]
             Subcommands::NotaryLog(c) => c,
+            #[cfg(feature = "notarize")]
+            Subcommands::NotaryList(c) => c,
             #[cfg(feature = "notarize")]
             Subcommands::NotarySubmit(c) => c,
             #[cfg(feature = "notarize")]

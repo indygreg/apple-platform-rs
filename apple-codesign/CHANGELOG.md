@@ -10,6 +10,8 @@ Released on ReleaseDate.
   [GitHub Action for code signing and notarization](https://github.com/marketplace/actions/apple-code-signing)
   and wrote project documentation for how to use it. (#6)
 * Fix to restore working builds with `--no-default-features`.
+* Added `notary-list` command to print information about recently submitted
+  notarizations to Apple. (#124)
 * aws-config 0.57 -> 1.1.
 * aws-sdk-s3 0.36 -> 1.10.
 * aws-smithy-http 0.57 -> 0.60.
