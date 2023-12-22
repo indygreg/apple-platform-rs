@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
 jobs:
   exes:
-    uses: indygreg/actions/.github/workflows/rust-exe.yml@05d9375dd6ae793586e9ffb4be3f8808da28bbac
+    uses: indygreg/actions/.github/workflows/rust-exe.yml@214a8641784d19c45f4261ed8e5a57db81ae6b4e
     with:
-      actions_ref: "05d9375dd6ae793586e9ffb4be3f8808da28bbac"
+      actions_ref: "214a8641784d19c45f4261ed8e5a57db81ae6b4e"
       bin: rcodesign
       extra_build_args_macos: '--all-features'
       extra_build_args_windows: '--all-features'
