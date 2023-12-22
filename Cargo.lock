@@ -228,7 +228,7 @@ dependencies = [
  "uuid",
  "walkdir",
  "widestring",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
  "x509",
  "x509-certificate",
  "xml-rs",
