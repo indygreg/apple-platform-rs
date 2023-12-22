@@ -74,7 +74,7 @@ subtle = "2.5.0"
 tempfile = "3.8.1"
 thiserror = "1.0.51"
 tokio = { version = "1.35.1", features = ["rt"] }
-tungstenite = { version = "0.20.1", features = ["rustls-tls-native-roots"] }
+tungstenite = { version = "0.21.0", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.6.1", features = ["v4"] }
 walkdir = "2.4.0"
 x509 = "0.2.0"
