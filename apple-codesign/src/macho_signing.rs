@@ -346,7 +346,7 @@ impl<'data> MachOSigner<'data> {
                     .as_universal_macho_settings(index, original_macho.macho.header.cputype());
 
                 let signature_len =
-                    self.estimate_embedded_signature_size(&original_macho, &settings)?;
+                    self.estimate_embedded_signature_size(original_macho, &settings)?;
 
                 // Derive an intermediate Mach-O with placeholder NULLs for signature
                 // data so Code Directory digests over the load commands are correct.

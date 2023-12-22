@@ -104,7 +104,7 @@ fn materialize_coreutils(coreutils_dir: &Path, multicall_bin: &Path) -> anyhow::
                 std::fs::create_dir_all(parent)?;
             }
 
-            std::fs::write(&multicall_bin, &exe_data)?;
+            std::fs::write(&multicall_bin, exe_data)?;
             simple_file_manifest::set_executable(&mut std::fs::File::open(&multicall_bin)?)?;
 
             Ok(multicall_bin)
