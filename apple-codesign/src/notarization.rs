@@ -295,7 +295,7 @@ impl Notarizer {
         // upload using s3 api
         warn!("resolving AWS S3 configuration from Apple-provided credentials");
         let config = rt.block_on(
-            aws_config::from_env()
+            aws_config::defaults(aws_config::BehaviorVersion::latest())
                 .credentials_provider(Credentials::new(
                     submission.data.attributes.aws_access_key_id.clone(),
                     submission.data.attributes.aws_secret_access_key.clone(),
