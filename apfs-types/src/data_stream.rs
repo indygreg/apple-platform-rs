@@ -80,15 +80,15 @@ pub struct PhysicalExtentLengthAndKindRaw(pub u64);
 
 impl Debug for PhysicalExtentLengthAndKindRaw {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("PhysicalExtentLengthAndKind")
-            .field("length", &self.length())
-            .field("kind", &self.object_kind())
+        f.debug_tuple("PhysicalExtentLengthAndKind")
+            .field(&self.length())
+            .field(&self.object_kind())
             .finish()
     }
 }
 
 impl PhysicalExtentLengthAndKindRaw {
-    /// Obtain the length component of this value.
+    /// Length of the physical extent as measured in blocks.
     pub fn length(&self) -> u64 {
         self.0 & 0x0fffffffffffffff
     }
@@ -154,15 +154,15 @@ pub struct FileExtentLengthAndFlagsRaw(pub u64);
 
 impl Debug for FileExtentLengthAndFlagsRaw {
     fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("FileExtentLengthAndFlags")
-            .field("length", &self.length())
-            .field("flags", &self.flags())
+        f.debug_tuple("FileExtentLengthAndFlags")
+            .field(&self.length())
+            .field(&self.flags())
             .finish()
     }
 }
 
 impl FileExtentLengthAndFlagsRaw {
-    /// The length of the extent.
+    /// The length of the extent as measured in bytes.
     pub fn length(&self) -> u64 {
         self.0 & 0x00ffffffffffffff
     }
