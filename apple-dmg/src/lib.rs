@@ -23,6 +23,9 @@ mod xml;
 
 pub use crate::{blkx::*, koly::*, xml::*};
 
+/// Reader interface for a DMG.
+///
+/// Instances are bound to an underlying reader, typically a file.
 pub struct DmgReader<R: Read + Seek> {
     koly: KolyTrailer,
     xml: Plist,
@@ -30,6 +33,7 @@ pub struct DmgReader<R: Read + Seek> {
 }
 
 impl DmgReader<BufReader<File>> {
+    /// Construct an instance from a file.
     pub fn open(path: &Path) -> Result<Self> {
         let r = BufReader::new(File::open(path)?);
         Self::new(r)
@@ -37,6 +41,7 @@ impl DmgReader<BufReader<File>> {
 }
 
 impl<R: Read + Seek> DmgReader<R> {
+    /// Construct an instance from a reader.
     pub fn new(mut r: R) -> Result<Self> {
         let koly = KolyTrailer::read_from(&mut r)?;
         r.seek(SeekFrom::Start(koly.plist_offset))?;
@@ -46,14 +51,33 @@ impl<R: Read + Seek> DmgReader<R> {
         Ok(Self { koly, xml, r })
     }
 
+    /// The main data structure describing the DMG.
     pub fn koly(&self) -> &KolyTrailer {
         &self.koly
     }
 
+    /// The parsed XML plist content.
     pub fn plist(&self) -> &Plist {
         &self.xml
     }
 
+    /// Obtain the raw bytes defining the plist XML.
+    pub fn plist_xml_raw(&mut self) -> Result<Vec<u8>> {
+        let mut xml = Vec::with_capacity(self.koly.plist_length as _);
+        self.r.seek(SeekFrom::Start(self.koly.plist_offset))?;
+        (&mut self.r)
+            .take(self.koly.plist_length)
+            .read_to_end(&mut xml)?;
+
+        Ok(xml)
+    }
+
+    /// Obtain the plist XML converted to a string.
+    pub fn plist_xml_string(&mut self) -> Result<String> {
+        Ok(String::from_utf8(self.plist_xml_raw()?)?)
+    }
+
+    /// Resolve data for a block chunk.
     pub fn sector(&mut self, chunk: &BlkxChunk) -> Result<impl Read + '_> {
         self.r.seek(SeekFrom::Start(chunk.compressed_offset))?;
         let compressed_chunk = (&mut self.r).take(chunk.compressed_length);
@@ -85,6 +109,11 @@ impl<R: Read + Seek> DmgReader<R> {
         &self.plist().partitions()[i].name
     }
 
+    /// Resolve all data for a partition.
+    ///
+    /// This iterates over the partition's chunks and appends the decoded data
+    /// to a buffer. This requires buffering all data in memory, which can be
+    /// inefficient for large partitions.
     pub fn partition_data(&mut self, i: usize) -> Result<Vec<u8>> {
         let table = self.plist().partitions()[i].table()?;
         let mut partition = vec![];

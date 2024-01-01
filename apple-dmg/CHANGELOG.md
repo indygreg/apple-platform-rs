@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* `DmgReader` gained some methods to read the raw XML plist data.
+
 ## 0.5.0
 
 Released on 2024-11-03.
