@@ -82,7 +82,10 @@ impl<R: Read + Seek> DmgReader<R> {
         self.r.seek(SeekFrom::Start(chunk.compressed_offset))?;
         let compressed_chunk = (&mut self.r).take(chunk.compressed_length);
         match chunk.ty().expect("unknown chunk type") {
-            ChunkType::Ignore | ChunkType::Zero | ChunkType::Comment => {
+            ChunkType::Zero | ChunkType::Ignore => {
+                Ok(Box::new(std::io::repeat(0).take(chunk.sector_count * 512)) as Box<dyn Read>)
+            }
+            ChunkType::Comment => {
                 Ok(Box::new(std::io::repeat(0).take(chunk.compressed_length)) as Box<dyn Read>)
             }
             ChunkType::Raw => Ok(Box::new(compressed_chunk)),

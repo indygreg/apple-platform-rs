@@ -7,6 +7,9 @@
 Released on ReleaseDate.
 
 * `DmgReader` gained some methods to read the raw XML plist data.
+* Reading zero and ignore type chunks now emits the proper number of 0
+  bytes. This fixes a bug where these chunks weren't sized properly,
+  resulting in an incorrect extraction of partition data.
 
 ## 0.5.0
 
