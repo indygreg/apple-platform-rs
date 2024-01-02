@@ -24,7 +24,7 @@ use apfs_derive::ApfsData;
 use crate::{common::*, container::*, data_stream::*, filesystem::*, object::*};
 
 /// Information about a program that modified a volume (`apfs_modified_by_t`).
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct ApfsModifiedByRaw {

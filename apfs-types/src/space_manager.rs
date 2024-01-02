@@ -220,7 +220,7 @@ pub enum SpaceManagerFreeQueueType {
 ///
 /// Essentially, the free queue represents a series of physical address
 /// ranges tagged with transaction IDs.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct SpaceManagerFreeQueueRaw {
@@ -325,7 +325,7 @@ pub struct SpaceManagerFreeQueueEntryRaw {
 /// Space manager device (`spaceman_device_t`).
 ///
 /// Describes a physical storage device and hows its blocks are used.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct SpaceManagerDeviceRaw {
@@ -380,7 +380,7 @@ pub struct SpaceManagerDeviceRaw {
 }
 
 /// (`spaceman_allocation_zone_boundaries_t`)
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct SpaceManagerAllocationZoneBoundariesRaw {
@@ -391,7 +391,7 @@ pub struct SpaceManagerAllocationZoneBoundariesRaw {
 }
 
 /// (`spaceman_allocation_zone_info_phys_t`)
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct SpaceManagerAllocationZoneInfoRaw {
@@ -408,7 +408,7 @@ pub struct SpaceManagerAllocationZoneInfoRaw {
 }
 
 /// Type alias for allocation zone matrix.
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 pub struct SpaceManagerAllocationZonesRaw(pub [SpaceManagerAllocationZoneInfoRaw; 8]);
 

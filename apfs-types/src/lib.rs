@@ -172,6 +172,11 @@ pub trait DiskStruct
 where
     Self: Sized,
 {
+    /// Construct an instance of self composed of zeroed bytes.
+    fn new_zeroed() -> Self {
+        unsafe { core::mem::zeroed() }
+    }
+
     /// Parse a slice of bytes into an owned version of a type.
     ///
     /// Implementations may receive slices too small for self. It is up

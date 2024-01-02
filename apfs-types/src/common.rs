@@ -15,7 +15,7 @@ use core::ops::{Add, Deref, Mul, Sub};
 use apfs_derive::ApfsData;
 
 /// A universal unique identifier.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct UuidRaw(pub [u8; 16]);
@@ -33,7 +33,7 @@ impl Deref for UuidRaw {
 /// A more strongly typed version of [ObjectIdentifierRaw].
 ///
 /// Physical object identifiers denote block numbers where an entity resides.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct PhysicalObjectIdentifierRaw(pub u64);
@@ -100,7 +100,7 @@ impl Add<u64> for PhysicalObjectIdentifierRaw {
 ///
 /// Ephemeral objects are loaded into memory from checkpoint data when
 /// loading a container.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct EphemeralObjectIdentifierRaw(pub u64);
@@ -136,7 +136,7 @@ impl From<u64> for EphemeralObjectIdentifierRaw {
 /// A more strongly typed version of [ObjectIdentifierRaw].
 ///
 /// Virtual objects are resolved through object maps.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct VirtualObjectIdentifierRaw(pub u64);
@@ -181,7 +181,7 @@ impl From<u64> for VirtualObjectIdentifierRaw {
 /// Use of a more strongly typed wrapper identifier ([PhysicalObjectIdentifierRaw],
 /// [EphemeralObjectIdentifierRaw], or [VirtualObjectIdentifierRaw]) is strongly
 /// preferred since it yields stronger type safety.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct ObjectIdentifierRaw(pub u64);
@@ -247,7 +247,7 @@ impl From<ObjectIdentifierRaw> for VirtualObjectIdentifierRaw {
 /// Often abbreviated to `xid` in field names.
 ///
 /// Transaction identifiers are monotonically increasing.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct TransactionIdentifierRaw(pub u64);
@@ -395,7 +395,7 @@ pub struct PhysicalAddressRangeRaw {
 /// An APFS filesystem time.
 ///
 /// Nanoseconds since UNIX epoch without leap seconds.
-#[derive(Clone, Copy, Default, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct TimeRaw(pub u64);

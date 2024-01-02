@@ -362,7 +362,7 @@ fn apfs_data_struct_parse_field(field: &Field) -> StructFieldParse {
                     }
                 } else {
                     quote! {
-                        let mut #ident: [#ty_path; #len_ident] = [Default::default(); #len_ident];
+                        let mut #ident: [#ty_path; #len_ident] = [#ty_path::new_zeroed(); #len_ident];
                         for index in 0..#len_ident {
                             let start = __offset + #len_ident * ::core::mem::size_of::<#ty_path>();
                             let end = start + ::core::mem::size_of::<#ty_path>();
@@ -386,7 +386,7 @@ fn apfs_data_struct_parse_field(field: &Field) -> StructFieldParse {
                         }
                     } else {
                         quote! {
-                            let mut #ident: [#ty_path; #lit] = [Default::default(); #lit];
+                            let mut #ident: [#ty_path; #lit] = [#ty_path::new_zeroed(); #lit];
                             for index in 0..#lit {
                                 let start = __offset + #lit * ::core::mem::size_of::<#ty_path>();
                                 let end = start + ::core::mem::size_of::<#ty_path>();
