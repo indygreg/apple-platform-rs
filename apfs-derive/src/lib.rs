@@ -296,7 +296,7 @@ fn apfs_data_struct_impl_disk_struct(strukt: &ApfsStruct) -> TokenStream {
             unit_struct = true;
         }
 
-        let res = apfs_data_struct_parse_field(field);
+        let res = StructFieldParse::from_field(field);
         fields.push(res.code);
         field_names.push(res.ident);
     }
@@ -327,89 +327,92 @@ fn apfs_data_struct_impl_disk_struct(strukt: &ApfsStruct) -> TokenStream {
     }
 }
 
+/// Defines code for parsing a struct's field.
 struct StructFieldParse {
     ident: Ident,
     code: TokenStream,
 }
 
-fn apfs_data_struct_parse_field(field: &Field) -> StructFieldParse {
-    let ident = field
-        .ident
-        .clone()
-        .unwrap_or_else(|| Ident::new("inner", Span::call_site().into()));
+impl StructFieldParse {
+    fn from_field(field: &Field) -> Self {
+        let ident = field
+            .ident
+            .clone()
+            .unwrap_or_else(|| Ident::new("inner", Span::call_site().into()));
 
-    let code = match &field.ty {
-        Type::Path(path) => {
-            let ty = path.path.get_ident().expect("path must have identifier");
+        let code = match &field.ty {
+            Type::Path(path) => {
+                let ty = path.path.get_ident().expect("path must have identifier");
 
-            quote! {
-                let #ident = #ty::parse_bytes(&data[__offset..__offset + ::core::mem::size_of::<#ty>()])?;
-                let __offset = __offset + ::core::mem::size_of::<#ty>();
-            }
-        }
-        Type::Array(arr) => match (arr.elem.as_ref(), &arr.len) {
-            (Type::Path(ty_path), Expr::Path(len_path)) => {
-                let len_ident = len_path
-                    .path
-                    .get_ident()
-                    .expect("array length should have identifier");
-
-                // u8 arrays are simple copies.
-                if ty_path.path.is_ident("u8") {
-                    quote! {
-                        let #ident: [u8; #len_ident] = (&data[__offset..__offset + #len_ident]).try_into().expect("slice and array lengths should have agreed");
-                        let __offset = __offset + #len_ident;
-                    }
-                } else {
-                    quote! {
-                        let mut #ident: [#ty_path; #len_ident] = [#ty_path::new_zeroed(); #len_ident];
-                        for index in 0..#len_ident {
-                            let start = __offset + #len_ident * ::core::mem::size_of::<#ty_path>();
-                            let end = start + ::core::mem::size_of::<#ty_path>();
-
-                            #ident[index] = #ty_path::parse_bytes(&data[start..end])?;
-                        }
-                        let __offset = __offset + #len_ident * ::core::mem::size_of::<#ty_path>();
-                    }
+                quote! {
+                    let #ident = #ty::parse_bytes(&data[__offset..__offset + ::core::mem::size_of::<#ty>()])?;
+                    let __offset = __offset + ::core::mem::size_of::<#ty>();
                 }
             }
-            (Type::Path(ty_path), Expr::Lit(lit)) => {
-                if let Lit::Int(lit) = &lit.lit {
-                    if lit.base10_digits() == "0" {
+            Type::Array(arr) => match (arr.elem.as_ref(), &arr.len) {
+                (Type::Path(ty_path), Expr::Path(len_path)) => {
+                    let len_ident = len_path
+                        .path
+                        .get_ident()
+                        .expect("array length should have identifier");
+
+                    // u8 arrays are simple copies.
+                    if ty_path.path.is_ident("u8") {
                         quote! {
-                            let #ident = [];
-                        }
-                    } else if ty_path.path.is_ident("u8") {
-                        quote! {
-                            let #ident: [u8; #lit] = (&data[__offset..__offset + #lit]).try_into().expect("slice and array lengths should have agreed");
-                            let __offset = __offset + #lit;
+                            let #ident: [u8; #len_ident] = (&data[__offset..__offset + #len_ident]).try_into().expect("slice and array lengths should have agreed");
+                            let __offset = __offset + #len_ident;
                         }
                     } else {
                         quote! {
-                            let mut #ident: [#ty_path; #lit] = [#ty_path::new_zeroed(); #lit];
-                            for index in 0..#lit {
-                                let start = __offset + #lit * ::core::mem::size_of::<#ty_path>();
+                            let mut #ident: [#ty_path; #len_ident] = [#ty_path::new_zeroed(); #len_ident];
+                            for index in 0..#len_ident {
+                                let start = __offset + #len_ident * ::core::mem::size_of::<#ty_path>();
                                 let end = start + ::core::mem::size_of::<#ty_path>();
 
                                 #ident[index] = #ty_path::parse_bytes(&data[start..end])?;
                             }
-                            let __offset = __offset + #lit * ::core::mem::size_of::<#ty_path>();
+                            let __offset = __offset + #len_ident * ::core::mem::size_of::<#ty_path>();
                         }
                     }
-                } else {
-                    panic!("unhandled array literal type: {:?}", lit);
                 }
-            }
-            (elem, expr) => {
-                panic!("unhandled array type: [{:?}; {:?}]", elem, expr);
-            }
-        },
-        _ => {
-            panic!("field type not supported: {:?}", field.ty);
-        }
-    };
+                (Type::Path(ty_path), Expr::Lit(lit)) => {
+                    if let Lit::Int(lit) = &lit.lit {
+                        if lit.base10_digits() == "0" {
+                            quote! {
+                                let #ident = [];
+                            }
+                        } else if ty_path.path.is_ident("u8") {
+                            quote! {
+                                let #ident: [u8; #lit] = (&data[__offset..__offset + #lit]).try_into().expect("slice and array lengths should have agreed");
+                                let __offset = __offset + #lit;
+                            }
+                        } else {
+                            quote! {
+                                let mut #ident: [#ty_path; #lit] = [#ty_path::new_zeroed(); #lit];
+                                for index in 0..#lit {
+                                    let start = __offset + #lit * ::core::mem::size_of::<#ty_path>();
+                                    let end = start + ::core::mem::size_of::<#ty_path>();
 
-    StructFieldParse { ident, code }
+                                    #ident[index] = #ty_path::parse_bytes(&data[start..end])?;
+                                }
+                                let __offset = __offset + #lit * ::core::mem::size_of::<#ty_path>();
+                            }
+                        }
+                    } else {
+                        panic!("unhandled array literal type: {:?}", lit);
+                    }
+                }
+                (elem, expr) => {
+                    panic!("unhandled array type: [{:?}; {:?}]", elem, expr);
+                }
+            },
+            _ => {
+                panic!("field type not supported: {:?}", field.ty);
+            }
+        };
+
+        Self { ident, code }
+    }
 }
 
 /// Emit code for implementing `DiskStruct` for a bitflags struct.
