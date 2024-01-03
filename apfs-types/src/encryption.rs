@@ -9,7 +9,7 @@
 //! Encryption.
 
 use crate::{common::UuidRaw, filesystem::FileSystemKeyRaw, object::ObjectHeaderRaw, DynamicSized};
-use core::ops::{Range, RangeFrom};
+use core::ops::{Deref, Range, RangeFrom};
 use num_enum::{FromPrimitive, IntoPrimitive};
 
 #[cfg(feature = "derive")]
@@ -31,17 +31,86 @@ pub const CRYPTOGRAPHY_ID_RESERVED: u64 = 5;
 pub const UNASSIGNED_CRYPTOGRAPHY_ID: u64 = 0;
 
 /// A protection class.
-pub type KeyClass = u32;
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[cfg_attr(feature = "derive", derive(ApfsData))]
+#[repr(C)]
+pub struct KeyClassRaw(pub u32);
+
+impl Deref for KeyClassRaw {
+    type Target = u32;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl From<KeyClassRaw> for u32 {
+    fn from(value: KeyClassRaw) -> Self {
+        value.0
+    }
+}
+
+impl From<u32> for KeyClassRaw {
+    fn from(value: u32) -> Self {
+        Self(value)
+    }
+}
 
 /// An OS version and build number.
 ///
 /// 2 bytes for the major version number as an unsigned integer.
 /// 2 bytes for the minor version letter as an ASCII character.
 /// 4 bytes for the build number as an unsigned integer.
-pub type KeyOsVersion = u32;
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[cfg_attr(feature = "derive", derive(ApfsData))]
+#[repr(C)]
+pub struct KeyOsVersionRaw(pub u32);
+
+impl Deref for KeyOsVersionRaw {
+    type Target = u32;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl From<KeyOsVersionRaw> for u32 {
+    fn from(value: KeyOsVersionRaw) -> Self {
+        value.0
+    }
+}
+
+impl From<u32> for KeyOsVersionRaw {
+    fn from(value: u32) -> Self {
+        Self(value)
+    }
+}
 
 /// A version number for an encryption key.
-pub type KeyRevision = u16;
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[cfg_attr(feature = "derive", derive(ApfsData))]
+#[repr(C)]
+pub struct KeyRevisionRaw(pub u16);
+
+impl Deref for KeyRevisionRaw {
+    type Target = u16;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl From<KeyRevisionRaw> for u16 {
+    fn from(value: KeyRevisionRaw) -> Self {
+        value.0
+    }
+}
+
+impl From<u16> for KeyRevisionRaw {
+    fn from(value: u16) -> Self {
+        Self(value)
+    }
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd, FromPrimitive, IntoPrimitive)]
 #[repr(u32)]
@@ -126,13 +195,13 @@ pub struct WrappedCryptoStateRaw {
     /// The encryption state's flags (`cpflags`).
     pub flags: u32,
     /// The protection class associated with the key (`persistent_class`)
-    pub persistent_class: KeyClass,
+    pub persistent_class: KeyClassRaw,
     /// The version of the OS that created this structure (`key_os_version`).
-    pub key_os_revision: KeyOsVersion,
+    pub key_os_revision: KeyOsVersionRaw,
     /// The version of the key (`key_revision`).
     ///
     /// Set to 1 when creating. Increment by 1 when rolling keys.
-    pub key_revision: KeyRevision,
+    pub key_revision: KeyRevisionRaw,
     /// The size, in bytes, of the wrapped key data (`key_len`).
     pub key_length: u16,
     /// Wrapped key data (`persistent_key`).
@@ -162,11 +231,11 @@ pub struct WrappedMetaCryptoStateRaw {
     /// The encryption state's flags (`cpflags`).
     pub flags: u32,
     /// The protection class associated with the key (`persistent_class`).
-    pub persistent_class: KeyClass,
+    pub persistent_class: KeyClassRaw,
     /// The version of the OS that created this structure (`key_os_version`).
-    pub key_os_version: KeyOsVersion,
+    pub key_os_version: KeyOsVersionRaw,
     /// The version of the key (`key_revision`).
-    pub key_revision: KeyRevision,
+    pub key_revision: KeyRevisionRaw,
     /// Reserved (`unused`).
     pub unused: u16,
 }
