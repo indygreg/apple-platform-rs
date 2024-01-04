@@ -104,6 +104,7 @@ pub struct IntegrityMetadataRaw {
     version: u32,
 
     /// Flags describing the metadata (`im_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: IntegrityMetadataFlagsRaw,
 
     /// The hash algorithm being used (`im_hash_type`).

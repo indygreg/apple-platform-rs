@@ -512,6 +512,7 @@ pub struct SpaceManagerBlockRaw {
     devices: [SpaceManagerDeviceRaw; SPACE_MANAGER_DEVICE_COUNT],
 
     /// Flags for this data structure (`sm_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: SpaceManagerFlagsRaw,
 
     /// (`sm_ip_bm_tx_multiplier`).

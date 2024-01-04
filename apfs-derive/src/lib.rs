@@ -93,6 +93,11 @@ struct FieldAttributes {
     /// Add this to fields implementing simple structs, like those wrapping integers.
     copied: bool,
 
+    /// Field contains bitflags.
+    ///
+    /// This influences getters and setters since bitflags types need to be handled specially.
+    bitflags: bool,
+
     trailing_data: Option<Type>,
 
     /// Whether we're using bytes::Bytes for trailing data.
@@ -132,7 +137,10 @@ impl FieldAttributes {
                 }
             }
             Meta::Path(path) => {
-                if path.is_ident("copied") {
+                if path.is_ident("bitflags") {
+                    self.bitflags = true;
+                    Ok(())
+                } else if path.is_ident("copied") {
                     self.copied = true;
                     Ok(())
                 } else if path.is_ident("internal") {
@@ -289,6 +297,34 @@ impl ApfsField {
                                 self
                             }
                         }
+                    } else if self.attrs.bitflags {
+                        quote! {
+                            #[cfg(target_endian = "little")]
+                            #[inline(always)]
+                            pub fn #ident(&self) -> #type_ident {
+                                self.#ident
+                            }
+
+                            #[cfg(target_endian = "little")]
+                            #[inline(always)]
+                            pub fn #set_ident(&mut self, value: #type_ident) -> &mut Self {
+                                self.#ident = value;
+                                self
+                            }
+
+                            #[cfg(target_endian = "big")]
+                            #[inline(always)]
+                            pub fn #ident(&self) -> #type_ident {
+                                #type_ident::from_bits_retain(self.#ident.to_be())
+                            }
+
+                            #[cfg(target_endian = "big")]
+                            #[inline(always)]
+                            pub fn #set_ident(&mut self, value: #type_ident) -> &mut Self {
+                                self.#ident = value.to_le();
+                                self
+                            }
+                        }
                     } else if typ.ends_with("Raw") {
                         if strukt.attrs.packed || self.attrs.copied {
                             quote! {
@@ -369,40 +405,9 @@ impl ApfsField {
 
             match &self.ty {
                 Type::Path(path) => {
-                    if let Some(flags_type) = &strukt.attrs.bitflags {
-                        // This API is a bit wonky. We may want to introduce dedicated wrapper types
-                        // for bit flags so someone can't easily get a handle on the flags in the
-                        // wrong byteorder.
-                        quote! {
-                            #[cfg(target_endian = "little")]
-                            #[inline(always)]
-                            pub fn get_native_endian(&self) -> Self {
-                                *self
-                            }
-
-                            #[cfg(target_endian = "little")]
-                            #[inline(always)]
-                            pub fn set_native_endian(&mut self, value: Self) -> &mut Self {
-                                self.toggle(*self);
-                                self.insert(value);
-                                self
-                            }
-
-                            #[cfg(target_endian = "big")]
-                            #[inline(always)]
-                            pub fn get_native_endian(&self) -> Self {
-                                Self::from_bits_retain(#flags_type::from_le(self.bits()))
-                            }
-
-                            #[cfg(target_endian = "big")]
-                            #[inline(always)]
-                            pub fn set_native_endian(&mut self, value: Self) -> &mut Self {
-                                self.toggle(*self);
-                                self.insert(Self::from_bits_retain(value.to_le()));
-                                self
-                            }
-
-                        }
+                    if strukt.attrs.bitflags.is_some() {
+                        // Bitflags have their own behavior.
+                        quote! {}
                     } else {
                         let type_ident = path
                             .path

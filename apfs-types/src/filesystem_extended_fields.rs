@@ -194,6 +194,7 @@ pub struct ExtendedFieldRaw {
     typ: u8,
 
     /// Flags for this field (`x_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: ExtendedFieldFlagsRaw,
 
     /// Size in bytes of the data for this extended field (`x_size`).

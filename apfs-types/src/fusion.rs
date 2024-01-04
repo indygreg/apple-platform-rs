@@ -125,5 +125,6 @@ pub struct FusionMiddleTreeValueRaw {
     /// (`fmv_length`).
     length: u32,
     /// (`fmv_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: FusionMiddleTreeFlagsRaw,
 }

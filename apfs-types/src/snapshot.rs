@@ -77,6 +77,7 @@ pub struct SnapshotMetadataRecordValueRaw {
     extent_reference_tree_type: u32,
 
     /// Bit field containing flags for this metadata (`flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: SnapshotMetadataFlagsRaw,
 
     /// Length of the snapshot's name, including trailing NULL (`name_len`).

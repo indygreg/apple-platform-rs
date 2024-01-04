@@ -66,6 +66,7 @@ pub struct ReaperBlockRaw {
     #[cfg_attr(feature = "derive", apfs(copied))]
     tail: ObjectIdentifierRaw,
     /// (`nr_flags`)
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: ReaperFlagsRaw,
     /// (`nr_rlcount`)
     rlcount: u32,
@@ -127,6 +128,7 @@ pub struct ReapListEntryRaw {
     /// (`nrle_next`)
     next: u32,
     /// (`nrle_flags`)
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: ReaperListEntryFlagsRaw,
     /// (`nrle_type`)
     typ: u32,
@@ -165,6 +167,7 @@ pub struct ReapListBlockRaw {
     #[cfg_attr(feature = "derive", apfs(copied))]
     next: ObjectIdentifierRaw,
     /// (`nrl_flags`)
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: ReapListFLagsRaw,
     /// (`nrl_max`)
     max: u32,

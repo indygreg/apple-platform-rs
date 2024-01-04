@@ -528,6 +528,7 @@ pub struct InodeRecordValueRaw {
     access_time: TimeRaw,
 
     /// The inode's flags (`internal_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     internal_flags: InodeFlagsRaw,
 
     /// The number of directory entries or hard links whose target is this inode (`nchildren`).
@@ -769,6 +770,7 @@ pub struct DirectoryEntryRecordValueRaw {
     #[cfg_attr(feature = "derive", apfs(copied))]
     date_added: TimeRaw,
     /// The directory entry's flags (`flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: DirectoryRecordFlagsRaw,
     /// The directory entry's extended fields (`xfields`).
     ///
@@ -903,6 +905,7 @@ pub struct ExtendedAttributeRecordValueRaw {
     ///
     /// Either [ExtendedAttributeFlagsRaw::DataStream] or [ExtendedAttributeFlagsRaw::DataEmbedded]
     /// must be set.
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: ExtendedAttributeFlagsRaw,
 
     /// The length of the extended attribute data.

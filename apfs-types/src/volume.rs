@@ -289,6 +289,7 @@ pub struct VolumeSuperblockRaw {
     ///
     /// If an implementation does not support a feature in this set, the volume
     /// can continue to be mounted.
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     optional_features: VolumeOptionalFeatureFlagsRaw,
 
     /// A bit field of the read-only compatible features being used by this volume (`apfs_readonly_compatible_features`).
@@ -301,6 +302,7 @@ pub struct VolumeSuperblockRaw {
     ///
     /// If an implementation sees an unknown or unsupported flag in this feature
     /// set, it should refuse to mount the volume.
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     incompatible_features: VolumeIncompatibleFeatureFlagsRaw,
 
     /// The time that this volume was last unmounted (`apfs_unmount_time`).
@@ -420,6 +422,7 @@ pub struct VolumeSuperblockRaw {
     last_modification_time: TimeRaw,
 
     /// The volume's flags (`apfs_fs_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: VolumeFlagsRaw,
 
     /// Information about the software that created this volume (`apfs_formatted_by`).

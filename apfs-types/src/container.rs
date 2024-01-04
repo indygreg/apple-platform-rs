@@ -335,6 +335,7 @@ pub struct ContainerSuperblockRaw {
     evict_mapping_tree_oid: PhysicalObjectIdentifierRaw,
 
     /// Other container flags (`nx_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: ContainerFlagsRaw,
 
     /// The physical object identifier of the object that contains EFI driver data extents (`nx_efi_jumpstart`).
@@ -466,6 +467,7 @@ bitflags! {
 pub struct CheckpointMapBlockRaw {
     object: ObjectHeaderRaw,
     /// A bit field that contains additional information about the list of checkpoint mappings
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: CheckpointFlagsRaw,
     /// The number of checkpoint mappings in the array
     count: u32,

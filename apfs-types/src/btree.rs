@@ -221,6 +221,7 @@ pub struct BTreeNodeRaw {
     object: ObjectHeaderRaw,
 
     /// Node flags (`btn_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: BTreeNodeFlagsRaw,
 
     /// The number of child levels below this node (`btn_level`).
@@ -293,6 +294,7 @@ impl DynamicSized for BTreeNodeRaw {
 #[repr(C)]
 pub struct BTreeInfoFixedRaw {
     /// The B-tree's flags (`bt_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: BTreeFlagsRaw,
 
     /// The on-disk size, in bytes, of a node in this B-tree (`bt_node_size`).

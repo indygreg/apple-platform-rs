@@ -63,6 +63,7 @@ pub struct ObjectMapBlockRaw {
     object: ObjectHeaderRaw,
 
     /// The object map's flags (`om_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: ObjectMapFlagsRaw,
 
     /// The number of snapshots that this object map has (`om_snap_count`).
@@ -166,6 +167,7 @@ bitflags! {
 #[repr(C)]
 pub struct ObjectMapValueRaw {
     /// A bit field of flags (`ov_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: ObjectMapValueFlagsRaw,
 
     /// Size of the object (`ov_size`).
@@ -200,6 +202,7 @@ bitflags! {
 #[repr(C)]
 pub struct ObjectMapSnapshotRaw {
     /// The snapshot's flags (`oms_flags`).
+    #[cfg_attr(feature = "derive", apfs(bitflags))]
     flags: ObjectMapSnapshotFlagsRaw,
 
     /// Reserved (`oms_pad`).
