@@ -46,7 +46,7 @@ pub struct SnapshotMetadataRecordKeyRaw {
     /// Filesystem common header.
     ///
     /// The object ID is the snapshot's transaction identifier.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 }
 
 /// Snapshot metadata record value (`j_snap_metadata_val_t`).
@@ -56,35 +56,35 @@ pub struct SnapshotMetadataRecordKeyRaw {
 pub struct SnapshotMetadataRecordValueRaw {
     /// Physical OID of the b-tree storing extents information (`extentref_tree_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub extent_reference_tree_oid: ObjectIdentifierRaw,
+    extent_reference_tree_oid: ObjectIdentifierRaw,
 
     /// Physical OID of the volume superblock (`sblock_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub volume_superblock_oid: ObjectIdentifierRaw,
+    volume_superblock_oid: ObjectIdentifierRaw,
 
     /// Time this snapshot was created.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub create_time: TimeRaw,
+    create_time: TimeRaw,
 
     /// Time this snapshot was last modified.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub change_time: TimeRaw,
+    change_time: TimeRaw,
 
     /// Unknown (`inum`).
-    pub inum: u64,
+    inum: u64,
 
     /// The type of B-tree that stores extents information (`extentref_tree_type`).
-    pub extent_reference_tree_type: u32,
+    extent_reference_tree_type: u32,
 
     /// Bit field containing flags for this metadata (`flags`).
-    pub flags: SnapshotMetadataFlagsRaw,
+    flags: SnapshotMetadataFlagsRaw,
 
     /// Length of the snapshot's name, including trailing NULL (`name_len`).
-    pub name_length: u16,
+    name_length: u16,
 
     /// Snapshot's name encoded as a NULL-terminated UTF-8 string (`name`).
     #[cfg_attr(feature = "derive", apfs(trailing_data = "crate::pod::ApfsString"))]
-    pub name: [u8; 0],
+    name: [u8; 0],
 }
 
 impl DynamicSized for SnapshotMetadataRecordValueRaw {
@@ -112,14 +112,14 @@ pub struct SnapshotNameRecordKeyRaw {
     /// Common filesystem header (`hdr`).
     ///
     /// Object identifier is always 0.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 
     /// The length of the name field, including trailing NULL (`name_len`).
-    pub name_length: u16,
+    name_length: u16,
 
     /// The snapshot's name as a NULL-terminated UTF-8 string (`name`).
     #[cfg_attr(feature = "derive", apfs(trailing_data = "crate::pod::ApfsString"))]
-    pub name: [u8; 0],
+    name: [u8; 0],
 }
 
 impl DynamicSized for SnapshotNameRecordKeyRaw {
@@ -146,7 +146,7 @@ impl DynamicSizedParse for SnapshotNameRecordKeyRaw {
 pub struct SnapshotNameRecordValueRaw {
     /// The last transaction identifier included in the snapshot (`snap_xid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub last_xid: TransactionIdentifierRaw,
+    last_xid: TransactionIdentifierRaw,
 }
 
 /// Snapshot metadata (`snap_meta_ext_t`).
@@ -157,20 +157,20 @@ pub struct SnapshotNameRecordValueRaw {
 #[repr(C, packed)]
 pub struct SnapshotMetadataRaw {
     /// The version of this data structure (`sme_version`).
-    pub version: u32,
+    version: u32,
 
     /// Flags (`sme_flags`).
-    pub flags: u32,
+    flags: u32,
 
     /// The snapshot's transaction identifier (`sme_snap_xid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub snapshot_xid: TransactionIdentifierRaw,
+    snapshot_xid: TransactionIdentifierRaw,
 
     /// The snapshot's UUID (`sme_uuid`).
-    pub uuid: UuidRaw,
+    uuid: UuidRaw,
 
     /// Opaque metadata (`sme_token`).
-    pub token: u64,
+    token: u64,
 }
 
 /// Snapshot metadata stored in a physical object (`snap_meta_ext_obj_phys_t`).
@@ -179,8 +179,8 @@ pub struct SnapshotMetadataRaw {
 #[repr(C)]
 pub struct SnapshotPhysicalObjectMetadataRaw {
     /// Common object header (`smeop_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
 
     /// The metadata (`smeop_sme`).
-    pub metadata: SnapshotMetadataRaw,
+    metadata: SnapshotMetadataRaw,
 }

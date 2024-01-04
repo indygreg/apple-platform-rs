@@ -333,14 +333,14 @@ bitflags! {
 #[repr(C, packed)]
 pub struct FileSystemKeyRaw {
     /// Common record header (`hdr`).
-    pub obj_id_and_type: u64,
+    obj_id_and_type: u64,
 
     /// Extra key data.
     ///
     /// Not present on every key. Depends on the type decoded from the above
     /// field.
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub extra: [u8; 0],
+    extra: [u8; 0],
 }
 
 impl Debug for FileSystemKeyRaw {
@@ -406,7 +406,7 @@ pub struct InodeRecordKeyRaw {
     /// The object identifier in the header is the file-system object's identifier,
     /// or its inode number. The type in the header is always
     /// [FileSystemObjectType::Inode].
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 }
 
 /// Directory entry file types.
@@ -501,7 +501,7 @@ bitflags! {
 #[repr(C, packed)]
 pub struct InodeRecordValueRaw {
     /// The identifier of the file system record for the parent directory (`parent_id`).
-    pub parent_id: u64,
+    parent_id: u64,
 
     /// The unique identifier used by this file's data stream (`private_id`).
     ///
@@ -509,26 +509,26 @@ pub struct InodeRecordValueRaw {
     ///
     /// For inodes without data, the value of this field in the filesystem's
     /// object identifier.
-    pub private_id: u64,
+    private_id: u64,
 
     /// The time that this record was created (`create_time`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub create_time: TimeRaw,
+    create_time: TimeRaw,
 
     /// The time that this record was last modified (`mod_time`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub modification_time: TimeRaw,
+    modification_time: TimeRaw,
 
     /// The time that this record's attributes were last modified (`change_time`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub change_time: TimeRaw,
+    change_time: TimeRaw,
 
     /// The time that this record was last accessed (`access_time`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub access_time: TimeRaw,
+    access_time: TimeRaw,
 
     /// The inode's flags (`internal_flags`).
-    pub internal_flags: InodeFlagsRaw,
+    internal_flags: InodeFlagsRaw,
 
     /// The number of directory entries or hard links whose target is this inode (`nchildren`).
     ///
@@ -543,44 +543,44 @@ pub struct InodeRecordValueRaw {
     /// * The [InodeExtendedFieldType::Name] extended field contains the
     ///   name of this link.
     /// * The filesystem object includes sibling link records.
-    pub number_children_or_link: i32,
+    number_children_or_link: i32,
 
     /// The default protection class for this inode (`default_protection_class`).
     ///
     /// Files in a directory having [ProtectionClass::None] use the directory's
     /// default protection class.
-    pub default_protection_class: u32,
+    default_protection_class: u32,
 
     /// A monotonically increasing counter incremented each time an inode or its data is modified (`write_generation_counter`).
     ///
     /// Can overflow and wrap to 0.
-    pub write_generation_counter: u32,
+    write_generation_counter: u32,
 
     /// The inode's BSD flags (`bsd_flags`).
     ///
     /// See `chflags(2)` and the `sys/stat.h` header.
-    pub bsd_flags: u32,
+    bsd_flags: u32,
 
     /// The user identifier of the inode's owner (`owner`).
-    pub owner: u32,
+    owner: u32,
 
     /// The group identifier of the inode's group (`group`).
-    pub group: u32,
+    group: u32,
 
     /// The file's mode (`mode`).
-    pub mode: FileModeRaw,
+    mode: FileModeRaw,
 
     /// Reserved (`pad1`).
     ///
     /// Populate with 0 for new and preserve existing.
-    pub pad1: u16,
+    pad1: u16,
 
     /// The size of the file without compression (`uncompressed_size`).
     ///
     /// Only set for inodes with [InodeFlagsRaw::HasUncompressedSize].
     ///
     /// Otherwise set with 0 for new nodes and preserve on modification.
-    pub uncompressed_size: u64,
+    uncompressed_size: u64,
 
     /// Extended fields data (`xfields`).
     ///
@@ -589,7 +589,7 @@ pub struct InodeRecordValueRaw {
         feature = "derive",
         apfs(trailing_data = "crate::filesystem_extended_fields::InodeRecordExtendedFieldsArray")
     )]
-    pub extended_fields: [u8; 0],
+    extended_fields: [u8; 0],
 }
 
 impl DynamicSized for InodeRecordValueRaw {
@@ -621,16 +621,16 @@ pub struct DirectoryEntryRecordKeyRaw {
     /// The record's header (`hdr`).
     ///
     /// The object identifier in the header is the file-system object's identifier.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 
     /// The length of the name, including the final null character (U+0000) (`name_len`).
-    pub name_length: u16,
+    name_length: u16,
 
     /// The name (`name`).
     ///
     /// A null-terminated UTF-8 string.
     #[cfg_attr(feature = "derive", apfs(trailing_data = "crate::pod::ApfsString"))]
-    pub name: [u8; 0],
+    name: [u8; 0],
 }
 
 impl DynamicSized for DirectoryEntryRecordKeyRaw {
@@ -685,7 +685,7 @@ impl DirectoryEntryRecordNameLengthAndHashRaw {
 #[repr(C, packed)]
 pub struct DirectoryEntryRecordHashedKeyRaw {
     /// Common header (`hdr`).
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 
     /// The hash and length of the name (`name_len_and_hash`).
     ///
@@ -703,11 +703,11 @@ pub struct DirectoryEntryRecordHashedKeyRaw {
     ///
     /// Implementations can use their own CRC function.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub name_length_and_hash: DirectoryEntryRecordNameLengthAndHashRaw,
+    name_length_and_hash: DirectoryEntryRecordNameLengthAndHashRaw,
 
     /// The name (`name`).
     #[cfg_attr(feature = "derive", apfs(trailing_data = "crate::pod::ApfsString"))]
-    pub name: [u8; 0],
+    name: [u8; 0],
 }
 
 impl DynamicSized for DirectoryEntryRecordHashedKeyRaw {
@@ -764,12 +764,12 @@ impl DirectoryRecordFlagsRaw {
 #[repr(C, packed)]
 pub struct DirectoryEntryRecordValueRaw {
     /// The identifier of the inode that this directory entry represents (`file_id`).
-    pub file_id: u64,
+    file_id: u64,
     /// The time that this directory entry was added to the directory (`date_added`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub date_added: TimeRaw,
+    date_added: TimeRaw,
     /// The directory entry's flags (`flags`).
-    pub flags: DirectoryRecordFlagsRaw,
+    flags: DirectoryRecordFlagsRaw,
     /// The directory entry's extended fields (`xfields`).
     ///
     /// An [ExtendedAttributesBlobRaw].
@@ -779,7 +779,7 @@ pub struct DirectoryEntryRecordValueRaw {
             trailing_data = "crate::filesystem_extended_fields::DirectoryRecordExtendedFieldsArray"
         )
     )]
-    pub extended_fields: [u8; 0],
+    extended_fields: [u8; 0],
 }
 
 impl DynamicSized for DirectoryEntryRecordValueRaw {
@@ -809,7 +809,7 @@ impl DynamicSizedParse for DirectoryEntryRecordValueRaw {
 #[repr(C, packed)]
 pub struct DirectoryInformationRecordKeyRaw {
     /// Common header.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 }
 
 /// Value for a directory information record (`j_dir_stats_val_t`).
@@ -818,18 +818,18 @@ pub struct DirectoryInformationRecordKeyRaw {
 #[repr(C, packed)]
 pub struct DirectoryInformationRecordValueRaw {
     /// The number of files and directories contained in the directory (`num_children`).
-    pub number_children: u64,
+    number_children: u64,
 
     /// Total size in bytes of all the files stored in this directory and all of its children (`total_size`).
     ///
     /// Hard links contribute to this value.
-    pub total_size: u64,
+    total_size: u64,
 
     /// The parent directory's file system object identifier (`chained_key`).
-    pub chained_key: u64,
+    chained_key: u64,
 
     /// A monotonically incrementing counter tracking how often this inode or its children are modified (`gen_count`).
-    pub generation_count: u64,
+    generation_count: u64,
 }
 
 /// Extended attribute record key (`j_xattr_key_t`).
@@ -838,14 +838,14 @@ pub struct DirectoryInformationRecordValueRaw {
 #[repr(C, packed)]
 pub struct ExtendedAttributeRecordKeyRaw {
     /// Common header.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
     /// Length of the attribute name in bytes.
     ///
     /// Includes NULL terminator.
-    pub name_length: u16,
+    name_length: u16,
     /// Placeholder for NULL-terminated UTF-8 string data.
     #[cfg_attr(feature = "derive", apfs(trailing_data = "crate::pod::ApfsString"))]
-    pub name: [u8; 0],
+    name: [u8; 0],
 }
 
 impl DynamicSized for ExtendedAttributeRecordKeyRaw {
@@ -903,17 +903,17 @@ pub struct ExtendedAttributeRecordValueRaw {
     ///
     /// Either [ExtendedAttributeFlagsRaw::DataStream] or [ExtendedAttributeFlagsRaw::DataEmbedded]
     /// must be set.
-    pub flags: ExtendedAttributeFlagsRaw,
+    flags: ExtendedAttributeFlagsRaw,
 
     /// The length of the extended attribute data.
-    pub data_length: u16,
+    data_length: u16,
 
     /// The inline data or an identifier of a data stream containing it.
     ///
     /// For a linked stream identifier, this should be a u64. Otherwise it
     /// is an embedded blob of data.
     #[cfg_attr(feature = "derive", apfs(trailing_data = "ExtendedAttributeValue"))]
-    pub data: [u8; 0],
+    data: [u8; 0],
 }
 
 impl DynamicSized for ExtendedAttributeRecordValueRaw {

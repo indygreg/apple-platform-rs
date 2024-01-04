@@ -287,13 +287,13 @@ impl ObjectTypeValueRaw {
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
 pub struct ObjectHeaderRaw {
-    pub checksum: u64,
+    checksum: u64,
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub identifier: ObjectIdentifierRaw,
+    identifier: ObjectIdentifierRaw,
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub transaction_identifier: TransactionIdentifierRaw,
+    transaction_identifier: TransactionIdentifierRaw,
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub typ: ObjectTypeValueRaw,
+    typ: ObjectTypeValueRaw,
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub subtype: ObjectTypeValueRaw,
+    subtype: ObjectTypeValueRaw,
 }

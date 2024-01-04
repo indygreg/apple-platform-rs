@@ -34,11 +34,11 @@ pub const ENCRYPTION_ROLLING_MAX_CHECKSUM_COUNT_SHIFT: usize = 16;
 #[repr(C)]
 pub struct EncryptionRollingStateHeaderRaw {
     /// (`ersb_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// (`ersb_magic`).
-    pub magic: u32,
+    magic: u32,
     /// (`ersb_version`).
-    pub version: u32,
+    version: u32,
 }
 
 /// Encryption rolling state block (`er_state_phys_t`).
@@ -47,32 +47,32 @@ pub struct EncryptionRollingStateHeaderRaw {
 #[repr(C)]
 pub struct EncryptionRollingStateBlockRaw {
     /// (`ersb_header`).
-    pub header: EncryptionRollingStateHeaderRaw,
+    header: EncryptionRollingStateHeaderRaw,
     /// (`ersb_flags`).
-    pub flags: u64,
+    flags: u64,
     /// (`ersb_snap_xid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub snapshot_xid: TransactionIdentifierRaw,
+    snapshot_xid: TransactionIdentifierRaw,
     /// (`ersb_current_fext_obj_id`).
-    pub current_file_extent_id: u64,
+    current_file_extent_id: u64,
     /// (`ersb_file_offset`).
-    pub file_offset: u64,
+    file_offset: u64,
     /// (`ersb_progress`).
-    pub progress: u64,
+    progress: u64,
     /// (`ersb_total_blk_to_encrypt`).
-    pub total_block_to_encrypt: u64,
+    total_block_to_encrypt: u64,
     /// (`ersb_blockmap_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub blockmap_oid: ObjectIdentifierRaw,
+    blockmap_oid: ObjectIdentifierRaw,
     /// (`ersb_tidemark_obj_id`).
-    pub tidemark_object_id: u64,
+    tidemark_object_id: u64,
     /// (`ersb_recovery_extents_count`).
-    pub recovery_extents_count: u64,
+    recovery_extents_count: u64,
     /// (`ersb_recovery_list_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub recovery_list_oid: ObjectIdentifierRaw,
+    recovery_list_oid: ObjectIdentifierRaw,
     /// (`ersb_recovery_length`).
-    pub recovery_length: u64,
+    recovery_length: u64,
 }
 
 /// Encryption rolling state version 1 block (`er_state_phys_v1`).
@@ -81,35 +81,35 @@ pub struct EncryptionRollingStateBlockRaw {
 #[repr(C)]
 pub struct EncryptionRollingStateBlockV1Raw {
     /// (`ersb_header`).
-    pub header: EncryptionRollingStateHeaderRaw,
+    header: EncryptionRollingStateHeaderRaw,
     /// (`ersb_flags`).
-    pub flags: u64,
+    flags: u64,
     /// (`ersb_snap_xid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub snapshot_xid: TransactionIdentifierRaw,
+    snapshot_xid: TransactionIdentifierRaw,
     /// (`ersb_current_fext_obj_id`).
-    pub current_file_extent_object_id: u64,
+    current_file_extent_object_id: u64,
     /// (`ersb_file_offset`).
-    pub file_offset: u64,
+    file_offset: u64,
     /// (`ersb_fext_pbn`).
-    pub file_extent_pbn: u64,
+    file_extent_pbn: u64,
     /// (`ersb_paddr`).
-    pub physical_address: u64,
+    physical_address: u64,
     /// (`ersb_progress`).
-    pub progress: u64,
+    progress: u64,
     /// (`ersb_total_blk_to_encrypt`).
-    pub total_block_to_encrypt: u64,
+    total_block_to_encrypt: u64,
     /// (`ersb_blockmap_oid`).
-    pub blockmap_oid: u64,
+    blockmap_oid: u64,
     /// (`ersb_checksum_count`).
-    pub checksum_count: u32,
+    checksum_count: u32,
     /// (`ersb_reserved`).
-    pub reserved: u32,
+    reserved: u32,
     /// (`ersb_fext_cid`).
-    pub file_extent_cid: u64,
+    file_extent_cid: u64,
     /// (`ersb_checksum`).
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub checksum: [u8; 0],
+    checksum: [u8; 0],
 }
 
 impl DynamicSized for EncryptionRollingStateBlockV1Raw {
@@ -127,15 +127,15 @@ impl DynamicSized for EncryptionRollingStateBlockV1Raw {
 #[repr(C)]
 pub struct EncryptionRollingRecoveryBlockRaw {
     /// (`erb_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// (`erb_offset`).
-    pub offset: u64,
+    offset: u64,
     /// (`erb_next_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub next_oid: ObjectIdentifierRaw,
+    next_oid: ObjectIdentifierRaw,
     /// (`erb_data`).
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub data: [u8; 0],
+    data: [u8; 0],
 }
 
 impl DynamicSized for EncryptionRollingRecoveryBlockRaw {
@@ -152,10 +152,10 @@ impl DynamicSized for EncryptionRollingRecoveryBlockRaw {
 #[repr(C)]
 pub struct GeneralPurposeBitmapBlockRaw {
     /// (`bmb_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// (`bmb_field`).
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub field: [u64; 0],
+    field: [u64; 0],
 }
 
 impl DynamicSized for GeneralPurposeBitmapBlockRaw {
@@ -172,14 +172,14 @@ impl DynamicSized for GeneralPurposeBitmapBlockRaw {
 #[repr(C)]
 pub struct GeneralPurposeBitmapRaw {
     /// (`bm_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// (`bm_tree_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub tree_oid: ObjectIdentifierRaw,
+    tree_oid: ObjectIdentifierRaw,
     /// (`bm_bit_count`).
-    pub bit_count: u64,
+    bit_count: u64,
     /// (`bm_flags`).
-    pub flags: u64,
+    flags: u64,
 }
 
 /// (`er_phase_t`).

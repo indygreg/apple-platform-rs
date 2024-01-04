@@ -79,26 +79,26 @@ use crate::{common::*, container::*, object::*};
 #[repr(C)]
 pub struct ChunkInfoRaw {
     /// Transaction identifier instance is associated with (`ci_xid`).
-    pub transaction_id: u64,
+    transaction_id: u64,
 
     /// Starting block address being described (`ci_addr`).
-    pub address: u64,
+    address: u64,
 
     /// The number of blocks / bits in the bitmap (`ci_block_count`).
     ///
     /// This should be 8 * block_size since each bitmap consumes the full block.
-    pub block_count: u32,
+    block_count: u32,
 
     /// The number of available blocks / bits in the bitmap (`ci_free_count`).
     ///
     /// This expresses the count of unset bits.
-    pub free_count: u32,
+    free_count: u32,
 
     /// Block number of a bitmap describing this chunk (`ci_bitmap_addr`).
     ///
     /// 0 value indicates a bitmap is not stored.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub bitmap_address: PhysicalAddressRaw,
+    bitmap_address: PhysicalAddressRaw,
 }
 
 /// A block containing [ChunkInfoRaw] structs (`chunk_info_block_t`).
@@ -110,15 +110,15 @@ pub struct ChunkInfoRaw {
 #[repr(C)]
 pub struct ChunkInfoBlockRaw {
     /// Common object header (`cib_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
 
     /// Index of this info block among all instances (`cib_index`).
     ///
     /// First info block should have index = 0.
-    pub index: u32,
+    index: u32,
 
     /// Number of [ChunkInfoRaw] in the array following this field (`cib_chunk_info_count`).
-    pub chunk_info_count: u32,
+    chunk_info_count: u32,
 
     /// (`cib_chunk_info`).
     ///
@@ -127,7 +127,7 @@ pub struct ChunkInfoBlockRaw {
         feature = "derive",
         apfs(trailing_data = "crate::pod::MemoryBackedArray<ChunkInfoRaw, ChunkInfoParsed>")
     )]
-    pub data: [ChunkInfoRaw; 0],
+    data: [ChunkInfoRaw; 0],
 }
 
 impl DynamicSized for ChunkInfoBlockRaw {
@@ -157,13 +157,13 @@ impl DynamicSizedParse for ChunkInfoBlockRaw {
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 pub struct ChunkInfoAddressesBlockRaw {
     /// Common object header (`cab_o`)
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
 
     /// Index of this block among all others of the same type (`cab_index`).
-    pub index: u32,
+    index: u32,
 
     /// The number of items in the [Self::addresses] array (`cab_cib_count`).
-    pub count: u32,
+    count: u32,
 
     /// Block addresses of [ChunkInfoBlockRaw] (`cab_cib_addr`).
     #[cfg_attr(
@@ -172,7 +172,7 @@ pub struct ChunkInfoAddressesBlockRaw {
             trailing_data = "crate::pod::MemoryBackedArray<PhysicalAddressRaw, crate::common::PhysicalAddressParsed>"
         )
     )]
-    pub addresses: [PhysicalAddressRaw; 0],
+    addresses: [PhysicalAddressRaw; 0],
 }
 
 impl DynamicSized for ChunkInfoAddressesBlockRaw {
@@ -226,26 +226,26 @@ pub enum SpaceManagerFreeQueueType {
 #[repr(C)]
 pub struct SpaceManagerFreeQueueRaw {
     /// Total number of entries in the free queue (`sfq_count`).
-    pub count: u64,
+    count: u64,
 
     /// Ephemeral ID of B-tree root containing free queue entries (`sfq_tree_oid`).
     ///
     /// Sub-type should be [ObjectType::SpaceManagerFreeQueue].
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub tree_oid: EphemeralObjectIdentifierRaw,
+    tree_oid: EphemeralObjectIdentifierRaw,
 
     /// The oldest transaction ID referenced by the free queue (`sfq_oldest_xid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub oldest_xid: TransactionIdentifierRaw,
+    oldest_xid: TransactionIdentifierRaw,
 
     /// (`sfq_tree_node_limit`).
-    pub tree_node_limit: u16,
+    tree_node_limit: u16,
     /// (`sfq_pad16`).
-    pub pad16: u16,
+    pad16: u16,
     /// (`sfq_pad32`).
-    pub pad32: u32,
+    pad32: u32,
     /// (`sfq_reserved`).
-    pub reserved: u64,
+    reserved: u64,
 }
 
 /// Space manager free queue key (`spaceman_free_queue_key_t`).
@@ -257,11 +257,11 @@ pub struct SpaceManagerFreeQueueRaw {
 pub struct SpaceManagerFreeQueueKeyRaw {
     /// Transaction identifier associated with the key (`sfqk_xid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub xid: TransactionIdentifierRaw,
+    xid: TransactionIdentifierRaw,
 
     /// Block represented by the free queue entry (`sfqk_paddr`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub address: PhysicalAddressRaw,
+    address: PhysicalAddressRaw,
 }
 
 // Keys sorted by transaction identifier and then physical address.
@@ -322,10 +322,10 @@ impl From<u64> for SpaceManagerFreeQueueValueRaw {
 #[repr(C)]
 pub struct SpaceManagerFreeQueueEntryRaw {
     /// (`sfqe_key`)
-    pub key: SpaceManagerFreeQueueKeyRaw,
+    key: SpaceManagerFreeQueueKeyRaw,
     /// (`sfqe_count`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub count: SpaceManagerFreeQueueValueRaw,
+    count: SpaceManagerFreeQueueValueRaw,
 }
 
 /// Space manager device (`spaceman_device_t`).
@@ -336,7 +336,7 @@ pub struct SpaceManagerFreeQueueEntryRaw {
 #[repr(C)]
 pub struct SpaceManagerDeviceRaw {
     /// The number of physical blocks provided by this device (`sm_block_count`).
-    pub block_count: u64,
+    block_count: u64,
 
     /// The number of [ChunkInfoRaw] used to express this device's info (`sm_count_count`).
     ///
@@ -344,23 +344,23 @@ pub struct SpaceManagerDeviceRaw {
     /// 32768 for the default of 4096 byte blocks. The number of chunks should
     /// be [Self::block_count] divided by the per-chunk block capacity then
     /// rounded up to the next whole number.
-    pub chunk_count: u64,
+    chunk_count: u64,
 
     /// Total number of [ChunkInfoBlockRaw] addressed in this instance (`sm_cib_count`)
     ///
     /// See documentation for [Self::address_offset].
-    pub chunk_info_block_count: u32,
+    chunk_info_block_count: u32,
 
     /// Total number of [ChunkInfoAddressesBlockRaw] addresses in this instance (`sm_cab_count`).
     ///
     /// See documentation for [Self::address_offset].
-    pub chunk_info_address_block_count: u32,
+    chunk_info_address_block_count: u32,
 
     /// Total number of unallocated / free blocks in this device (`sm_free_count`).
     ///
     /// Should match the sum of free counts from all referenced [ChunkInfoRaw]
     /// instances.
-    pub free_count: u64,
+    free_count: u64,
 
     /// Address offset from start of [SpaceManagerBlockRaw] holding chunk info addresses (`sm_addr_offset`).
     ///
@@ -377,12 +377,12 @@ pub struct SpaceManagerDeviceRaw {
     /// Either way, this effectively resolves to a list of physical addresses
     /// which resolve to [ChunkInfoBlockRaw] instances. The total number of resolved
     /// addresses should be [Self::chunk_info_block_count].
-    pub address_offset: u32,
+    address_offset: u32,
 
     /// (`sm_reserved`)
-    pub reserved: u32,
+    reserved: u32,
     /// (`sm_reserved2`)
-    pub reserved2: u32,
+    reserved2: u32,
 }
 
 /// (`spaceman_allocation_zone_boundaries_t`)
@@ -391,9 +391,9 @@ pub struct SpaceManagerDeviceRaw {
 #[repr(C)]
 pub struct SpaceManagerAllocationZoneBoundariesRaw {
     /// (`saz_zone_start`)
-    pub zone_start: u64,
+    zone_start: u64,
     /// (`saz_zone_end`)
-    pub zone_end: u64,
+    zone_end: u64,
 }
 
 /// (`spaceman_allocation_zone_info_phys_t`)
@@ -402,15 +402,15 @@ pub struct SpaceManagerAllocationZoneBoundariesRaw {
 #[repr(C)]
 pub struct SpaceManagerAllocationZoneInfoRaw {
     /// (`saz_current_boundaries`)
-    pub current_boundaries: SpaceManagerAllocationZoneBoundariesRaw,
+    current_boundaries: SpaceManagerAllocationZoneBoundariesRaw,
     /// (`saz_previous_boundaries`)
-    pub previous_boundaries: [SpaceManagerAllocationZoneBoundariesRaw; 7],
+    previous_boundaries: [SpaceManagerAllocationZoneBoundariesRaw; 7],
     /// (`saz_zone_id`)
-    pub zone_id: u16,
+    zone_id: u16,
     /// (`saz_previous_boundary_index`)
-    pub previous_boundary_index: u16,
+    previous_boundary_index: u16,
     /// (`saz_reserved`)
-    pub reserved: u32,
+    reserved: u32,
 }
 
 /// Type alias for allocation zone matrix.
@@ -447,7 +447,7 @@ pub const SPACE_MANAGER_DEVICE_COUNT: usize = 2;
 #[repr(C)]
 pub struct SpaceManagerDatazoneInfoRaw {
     /// (`sdz_allocation_zones`)
-    pub allocation_zones: [SpaceManagerAllocationZonesRaw; SPACE_MANAGER_DEVICE_COUNT],
+    allocation_zones: [SpaceManagerAllocationZonesRaw; SPACE_MANAGER_DEVICE_COUNT],
 }
 
 bitflags! {
@@ -471,17 +471,17 @@ pub const INTERNAL_POOL_BITMAP_INDEX_INVALID: u16 = 0xffff;
 #[repr(C)]
 pub struct SpaceManagerBlockRaw {
     /// Common object header (`sm_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
 
     /// Size of container blocks, in bytes (`sm_block_size`).
     ///
     /// Should match [ContainerSuperblockRaw::block_size_bytes].
-    pub block_size_bytes: u32,
+    block_size_bytes: u32,
 
     /// The number of blocks described by each chunk info block (`sm_blocks_per_chunk`).
     ///
     /// Should be 8 * [Self::block_size_bytes].
-    pub blocks_per_chunk: u32,
+    blocks_per_chunk: u32,
 
     /// The number of [ChunkInfoRaw] that can be stored in a [ChunkInfoBlockRaw] (`sm_chunks_per_cib`).
     ///
@@ -490,7 +490,7 @@ pub struct SpaceManagerBlockRaw {
     /// size in use.
     ///
     /// For 4096 byte blocks, this is 126.
-    pub chunks_per_info_block: u32,
+    chunks_per_info_block: u32,
 
     /// The maximum number of addresses that can be stored in a [ChunkInfoAddressesBlockRaw] (`sm_cibs_per_cab`).
     ///
@@ -498,7 +498,7 @@ pub struct SpaceManagerBlockRaw {
     /// can fit in the block size.
     ///
     /// For 4096 byte blocks, this is 507.
-    pub info_blocks_per_chunk_address_blocks: u32,
+    info_blocks_per_chunk_address_blocks: u32,
 
     /// Describes space info for each device (`sm_dev`).
     ///
@@ -509,49 +509,49 @@ pub struct SpaceManagerBlockRaw {
     /// Each instance describes blocks allocated for each respective device,
     /// including where to find the bitmaps indicating allocation state of
     /// each block.
-    pub devices: [SpaceManagerDeviceRaw; SPACE_MANAGER_DEVICE_COUNT],
+    devices: [SpaceManagerDeviceRaw; SPACE_MANAGER_DEVICE_COUNT],
 
     /// Flags for this data structure (`sm_flags`).
-    pub flags: SpaceManagerFlagsRaw,
+    flags: SpaceManagerFlagsRaw,
 
     /// (`sm_ip_bm_tx_multiplier`).
     ///
     /// Seems to match the [INTERNAL_POOL_BITMAP_TX_MULTIPLIER] constant.
-    pub internal_pool_bitmap_tx_multipler: u32,
+    internal_pool_bitmap_tx_multipler: u32,
 
     /// Internal pool block count (`sm_ip_block_count`).
     ///
     /// Number of blocks for the internal pool.
-    pub internal_pool_block_count: u64,
+    internal_pool_block_count: u64,
 
     /// Size of internal pool bitmaps in blocks (`sm_ip_bm_size_in_blocks`).
     ///
     /// The IP bitmap can span multiple blocks.
-    pub internal_pool_bitmap_size_in_blocks: u32,
+    internal_pool_bitmap_size_in_blocks: u32,
 
     /// Number of blocks in the internal pool bitmap ring buffer (`sm_ip_bm_block_count`).
-    pub internal_pool_bitmap_block_count: u32,
+    internal_pool_bitmap_block_count: u32,
 
     /// First block of the internal pool bitmap ring buffer (`sm_ip_bm_base`).
     ///
     /// There are [Self::internal_pool_bitmap_block_count] blocks in this range.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub internal_pool_bitmap_base: PhysicalAddressRaw,
+    internal_pool_bitmap_base: PhysicalAddressRaw,
 
     /// First block of the internal pool [ChunkInfoBlockRaw] instances (`sm_ip_base`).
     ///
     /// Blocks are [ChunkInfoBlockRaw] as well as their bitmaps.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub internal_pool_base: PhysicalAddressRaw,
+    internal_pool_base: PhysicalAddressRaw,
 
     /// (`sm_fs_reserve_block_count`)
-    pub fs_reserve_block_count: u64,
+    fs_reserve_block_count: u64,
     /// (`sm_fs_reserve_alloc_count`)
-    pub fs_reserve_alloc_count: u64,
+    fs_reserve_alloc_count: u64,
     /// Free queues (`sm_fq`).
     ///
     /// Indices are represented by [SpaceManagerFreeQueueType].
-    pub free_queue: [SpaceManagerFreeQueueRaw; SPACE_MANAGER_FREE_QUEUE_COUNT],
+    free_queue: [SpaceManagerFreeQueueRaw; SPACE_MANAGER_FREE_QUEUE_COUNT],
 
     /// Next available IP bitmap offset (`sm_ip_bm_free_head`).
     ///
@@ -563,7 +563,7 @@ pub struct SpaceManagerBlockRaw {
     ///
     /// Since the internal pool is a ring buffer, the next available offset
     /// could wrap around to 0 at [Self::internal_pool_bitmap_block_count].
-    pub internal_pool_bitmap_free_head: u16,
+    internal_pool_bitmap_free_head: u16,
 
     /// Last available IP bitmap offset (`sm_ip_bm_free_tail`).
     ///
@@ -572,13 +572,13 @@ pub struct SpaceManagerBlockRaw {
     ///
     /// e.g. if [Self::internal_pool_bitmap_offset] resolves to 3 and
     /// [Self::internal_pool_bitmap_size_in_blocks] is 1, this would be 2.
-    pub internal_pool_bitmap_free_tail: u16,
+    internal_pool_bitmap_free_tail: u16,
 
     /// Offset to transaction identifier for internal pool bitmap (`sm_ip_bm_xid_offset`).
     ///
     /// Value is relative to beginning of this structure. Value is an u64 /
     /// [TransactionIdentifierRaw].
-    pub internal_pool_bitmap_xid_offset: u32,
+    internal_pool_bitmap_xid_offset: u32,
 
     /// Offset to index of internal pool bitmap in the ring buffer (`sm_ip_bitmap_offset`).
     ///
@@ -586,7 +586,7 @@ pub struct SpaceManagerBlockRaw {
     /// structure. The target bytes are a u64 holding the offset relative to
     /// [Self::internal_pool_bitmap_base]. The result of summing these values is the
     /// physical / block address of the internal pool bitmap.
-    pub internal_pool_bitmap_offset: u32,
+    internal_pool_bitmap_offset: u32,
 
     /// Offset to an array holding offsets in the internal pool bitmap ring buffer (`sm_ip_bm_free_next_offset`).
     ///
@@ -600,12 +600,12 @@ pub struct SpaceManagerBlockRaw {
     /// The values recorded for [Self::internal_pool_bitmap_size_in_blocks] == 1
     /// ring buffers is `<index> + 1` for all indices except
     /// [Self::internal_pool_bitmap_offset] and the one before it.
-    pub internal_pool_bitmap_free_next_offset: u32,
+    internal_pool_bitmap_free_next_offset: u32,
 
     /// Version of this data structure (`sm_version`).
     ///
     /// Only version `1` is known.
-    pub version: u32,
+    version: u32,
 
     /// Size of this data structure (`sm_struct_size`).
     ///
@@ -613,16 +613,16 @@ pub struct SpaceManagerBlockRaw {
     ///
     /// Seems to be identical to [Self::internal_pool_bitmap_xid_offset],
     /// implying that IP bitmap XID is stored immediately after this struct.
-    pub struct_size: u32,
+    struct_size: u32,
 
     /// (`sm_datazone`)
-    pub datazone: SpaceManagerDatazoneInfoRaw,
+    datazone: SpaceManagerDatazoneInfoRaw,
 
     /// Extra data.
     ///
     /// Chunk info address references are here.
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub extra: [u8; 0],
+    extra: [u8; 0],
 }
 
 // The chunk info address references follow the data structure. So we need

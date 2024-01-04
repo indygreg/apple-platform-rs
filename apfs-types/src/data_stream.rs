@@ -30,7 +30,7 @@ pub struct PhysicalExtentRecordKeyRaw {
     ///
     /// The oid in the header is the physical block address of the
     /// start of the extent.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 }
 
 /// The kind of a file system record (`j_obj_kinds`).
@@ -117,7 +117,7 @@ pub struct PhysicalExtentRecordValueRaw {
     ///
     /// Volumes without snapshots have kind=NEW.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub length_and_kind: PhysicalExtentLengthAndKindRaw,
+    length_and_kind: PhysicalExtentLengthAndKindRaw,
 
     /// The filesystem object ID owning this extent.
     ///
@@ -126,12 +126,12 @@ pub struct PhysicalExtentRecordValueRaw {
     ///
     /// If the owner is an extended attribute, this field contains the id from
     /// the [ExtendedAttributeRecordKeyRaw]'s header field.
-    pub owning_fs_object_id: u64,
+    owning_fs_object_id: u64,
 
     /// The reference count.
     ///
     /// The extent can be deleted when this reaches 0.
-    pub reference_count: i32,
+    reference_count: i32,
 }
 
 /// File extent record key (`j_file_extent_key_t`).
@@ -142,10 +142,10 @@ pub struct FileExtentRecordKeyRaw {
     /// Common filesystem record header.
     ///
     /// The oid in the header is the file system object's identifier.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 
     /// The offset in the file whose data is provided by this extent.
-    pub logical_address: u64,
+    logical_address: u64,
 }
 
 #[derive(Clone, Copy, Eq, PartialEq, Ord, PartialOrd)]
@@ -188,11 +188,11 @@ pub struct FileExtentRecordValueRaw {
     ///
     /// Flags are the upper 8 bits.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub length_and_flags: FileExtentLengthAndFlagsRaw,
+    length_and_flags: FileExtentLengthAndFlagsRaw,
 
     /// The physical block that the extent starts at.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub physical_block_number: PhysicalObjectIdentifierRaw,
+    physical_block_number: PhysicalObjectIdentifierRaw,
 
     /// The encryption key or settings used in this extent.
     ///
@@ -204,7 +204,7 @@ pub struct FileExtentRecordValueRaw {
     ///
     /// The default value is copied from the `default_cryptography_id` field
     /// of the data stream this extent is part of.
-    pub cryptography_id: u64,
+    cryptography_id: u64,
 }
 
 /// Data stream ID record key (`j_dstream_id_key_t`).
@@ -215,7 +215,7 @@ pub struct DataStreamIdRecordKeyRaw {
     /// Common filesystem header.
     ///
     /// The ID is the fs object ID.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 }
 
 /// Data stream ID record value (`j_dstream_id_val_t`).
@@ -226,7 +226,7 @@ pub struct DataStreamIdRecordValueRaw {
     /// The reference count.
     ///
     /// The data stream record can be deleted when this reached 0.
-    pub reference_count: u32,
+    reference_count: u32,
 }
 
 /// Information about a data stream (`j_dstream_t`).
@@ -235,21 +235,21 @@ pub struct DataStreamIdRecordValueRaw {
 #[repr(C, packed(8))]
 pub struct DataStreamRaw {
     /// Size of the data in bytes (`size`).
-    pub size_bytes: u64,
+    size_bytes: u64,
     /// Total space allocated for the data stream (`alloced_size`).
-    pub allocated_size: u64,
+    allocated_size: u64,
     /// Default encryption key or encryption tweak used in this data stream (`default_crypto_id`).
     ///
     /// Should match the `object_id` field in the [FileSystemKeyRaw] for a [EncryptionStateRecordKeyRaw].
-    pub default_cryptography_id: u64,
+    default_cryptography_id: u64,
     /// Total number of bytes that have been written to this data stream (`total_bytes_written`).
     ///
     /// Incremented whenever a write operation occurs. Can overflow.
-    pub total_bytes_written: u64,
+    total_bytes_written: u64,
     /// Total number of bytes that have been read from this data stream (`total_bytes_read`).
     ///
     /// Incremented whenever a read operation occurs. Can overflow.
-    pub total_bytes_read: u64,
+    total_bytes_read: u64,
 }
 
 /// A data stream holding extended attributes data (`j_xattr_dstream_t`).
@@ -260,7 +260,7 @@ pub struct DataStreamRaw {
 #[repr(C, packed)]
 pub struct ExtendedAttributeDataStreamRaw {
     /// The identifier for the data stream.
-    pub extended_attribute_object_id: u64,
+    extended_attribute_object_id: u64,
     /// The data stream that owns this record.
-    pub data_stream: DataStreamRaw,
+    data_stream: DataStreamRaw,
 }

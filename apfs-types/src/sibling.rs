@@ -30,10 +30,10 @@ pub struct SiblingLinkRecordKeyRaw {
     /// Common filesystem object header.
     ///
     /// Identifier is inode number.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 
     /// The sibling's unique identifier.
-    pub sibling_id: u64,
+    sibling_id: u64,
 }
 
 /// Sibling link record value (`j_sibling_val_t`).
@@ -42,7 +42,7 @@ pub struct SiblingLinkRecordKeyRaw {
 #[repr(C, packed)]
 pub struct SiblingLinkRecordValueRaw {
     /// Filesystem object identifier for the parent directory's inode.
-    pub parent_id: u64,
+    parent_id: u64,
 
     /// Length of the name in bytes, including trailing NULL.
     ///
@@ -51,11 +51,11 @@ pub struct SiblingLinkRecordValueRaw {
     ///
     /// Our [DynamicSized] implementation will panic if this value is
     /// larger than usize.
-    pub name_length: u64,
+    name_length: u64,
 
     /// The name as a NULL terminated UTF-8 string.
     #[cfg_attr(feature = "derive", apfs(trailing_data = "crate::pod::ApfsString"))]
-    pub name: [u8; 0],
+    name: [u8; 0],
 }
 
 impl DynamicSized for SiblingLinkRecordValueRaw {
@@ -88,7 +88,7 @@ pub struct SiblingMapRecordKeyRaw {
     ///
     /// Object ID is the sibling's unique identifier. Should match the
     /// `sibling_id` field on [SiblingLinkRecordKeyRaw].
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 }
 
 /// A sibling map record value (`j_sibling_map_val_t`).
@@ -97,5 +97,5 @@ pub struct SiblingMapRecordKeyRaw {
 #[repr(C, packed)]
 pub struct SiblingMapRecordValueRaw {
     /// The inode number of the underlying file.
-    pub file_id: u64,
+    file_id: u64,
 }

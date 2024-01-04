@@ -27,28 +27,28 @@ pub const EFI_JUMPSTART_VERSION: u32 = 1;
 #[repr(C)]
 pub struct EfiJumpstartBlockRaw {
     /// Common object header (`nej_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
 
     /// Value to confirm reading of EFI jumpstart data (`nej_magic`).
     ///
     /// Value is always [EFI_JUMPSTART_MAGIC].
-    pub magic: u32,
+    magic: u32,
 
     /// The version of this data structure (`nej_version`).
     ///
     /// Value is always [EFI_JUMPSTART_VERSION].
-    pub version: u32,
+    version: u32,
 
     /// Size in bytes of embedded EFI driver (`nej_efi_file_len`).
-    pub efi_file_length: u32,
+    efi_file_length: u32,
 
     /// The number of extents in this record (`nej_num_extents`).
-    pub number_extents: u32,
+    number_extents: u32,
 
     /// Reserved (`nej_reserved`).
     ///
     /// Populate with 0 and preserve value during modification.
-    pub reserved: [u64; 16],
+    reserved: [u64; 16],
 
     /// Locations where the EFI driver is stored (`nej_rec_extents`).
     ///
@@ -59,7 +59,7 @@ pub struct EfiJumpstartBlockRaw {
             trailing_data = "crate::pod::MemoryBackedArray<PhysicalAddressRangeRaw, crate::common::PhysicalAddressRangeParsed>"
         )
     )]
-    pub record_extents: [PhysicalAddressRangeRaw; 0],
+    record_extents: [PhysicalAddressRangeRaw; 0],
 }
 
 impl DynamicSized for EfiJumpstartBlockRaw {

@@ -96,35 +96,35 @@ impl ApfsHashType {
 #[repr(C, packed)]
 pub struct IntegrityMetadataRaw {
     /// Common object header (`im_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
 
     /// Version of this data structure (`im_version`).
     ///
     /// Value are [IntegrityMetadataVersion].
-    pub version: u32,
+    version: u32,
 
     /// Flags describing the metadata (`im_flags`).
-    pub flags: IntegrityMetadataFlagsRaw,
+    flags: IntegrityMetadataFlagsRaw,
 
     /// The hash algorithm being used (`im_hash_type`).
     ///
     /// Values are [ApfsHashType].
-    pub hash_type: u32,
+    hash_type: u32,
 
     /// The offset in bytes of the root hash relative to the start of this struct (`im_root_hash_offset`).
-    pub root_hash_offset: u32,
+    root_hash_offset: u32,
 
     /// The transaction ID that broke the volume's seal (`im_broken_xid`).
     ///
     /// 0 if the seal isn't broken.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub broken_xid: TransactionIdentifierRaw,
+    broken_xid: TransactionIdentifierRaw,
 
     /// Reserved (`im_reserved`).
     ///
     /// Only present in version 2 and later.
     #[cfg_attr(feature = "derive", apfs(internal))]
-    pub reserved: [u64; 9],
+    reserved: [u64; 9],
 }
 
 /// File extent tree record key (`fext_tree_key_t`).
@@ -135,10 +135,10 @@ pub struct FileExtentTreeRecordKeyRaw {
     /// The object identifier of the file (`private_id`).
     ///
     /// Value is the object ID part of the common filesystem record key.
-    pub private_id: u64,
+    private_id: u64,
 
     /// Byte offset within the file's data for the data stored in this extent (`logical_addr`).
-    pub logical_address: u64,
+    logical_address: u64,
 }
 
 /// File extent tree record value (`fext_tree_val_t`).
@@ -154,10 +154,10 @@ pub struct FileExtentTreeRecordValueRaw {
     /// Length must be a multiple of the block size defined in the container superblock.
     ///
     /// No flags are currently defined.
-    pub length_and_flags: u64,
+    length_and_flags: u64,
 
     /// The physical block address that the extent starts at (`phys_block_num`).
-    pub physical_block_number: u64,
+    physical_block_number: u64,
 }
 
 /// The type of a file info record (`j_obj_file_info_type`).
@@ -176,13 +176,13 @@ pub struct FileInfoRecordKeyRaw {
     /// Common filesystem record header (`hdr`).
     ///
     /// Object ID in header is the file system object's ID.
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 
     /// Bit field containing address and other info (`info_and_lba`).
     ///
     /// The lower 56 bits is a [PhysicalAddressRaw].
     /// The upper 8 bits is a [FileInfoRecordType].
-    pub info_and_address: u64,
+    info_and_address: u64,
 }
 
 /// A hash of file data (`j_file_data_hash_val_t`).
@@ -191,19 +191,19 @@ pub struct FileInfoRecordKeyRaw {
 #[repr(C, packed)]
 pub struct FileDataHashValueRaw {
     /// The length in blocks of the data segment that was hashed (`hashed_len`).
-    pub hashed_blocks_count: u16,
+    hashed_blocks_count: u16,
 
     /// Length in bytes of the hash data (`hash_size`).
     ///
     /// This should match the value returned by [ApfsHashType::hash_size()] for
     /// the hash type defined in [IntegrityMetadataRaw::hash_type].
-    pub hash_size: u8,
+    hash_size: u8,
 
     /// The hash data (`hash`).
     ///
     /// Length is `hash_size`.
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub hash: [u8; 0],
+    hash: [u8; 0],
 }
 
 impl DynamicSized for FileDataHashValueRaw {
@@ -224,7 +224,7 @@ pub struct FileInfoRecordValueRaw {
     /// This field is strictly speaking a union keying off the [FileInfoRecordType]
     /// variant for the [FileInfoRecordKeyRaw]. However, since there is only 1
     /// variant, we hard code it.
-    pub hash: FileDataHashValueRaw,
+    hash: FileDataHashValueRaw,
 }
 
 impl DynamicSized for FileInfoRecordValueRaw {

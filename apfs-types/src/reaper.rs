@@ -54,41 +54,41 @@ bitflags! {
 #[repr(C)]
 pub struct ReaperBlockRaw {
     /// Common block object header (`nr_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// (`nr_next_reap_id`)
-    pub next_reap_id: u64,
+    next_reap_id: u64,
     /// (`nr_completed_id`)
-    pub completed_id: u64,
+    completed_id: u64,
     /// (`nr_head`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub head: ObjectIdentifierRaw,
+    head: ObjectIdentifierRaw,
     /// (`nr_tail`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub tail: ObjectIdentifierRaw,
+    tail: ObjectIdentifierRaw,
     /// (`nr_flags`)
-    pub flags: ReaperFlagsRaw,
+    flags: ReaperFlagsRaw,
     /// (`nr_rlcount`)
-    pub rlcount: u32,
+    rlcount: u32,
     /// (`nr_type`)
-    pub typ: u32,
+    typ: u32,
     /// (`nr_size`)
-    pub size: u32,
+    size: u32,
     /// (`nr_fs_oid`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub fs_oid: ObjectIdentifierRaw,
+    fs_oid: ObjectIdentifierRaw,
     /// (`nr_oid`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub oid: ObjectIdentifierRaw,
+    oid: ObjectIdentifierRaw,
     /// (`nr_xid`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub xid: TransactionIdentifierRaw,
+    xid: TransactionIdentifierRaw,
     /// (`nr_nrle_flags`)
-    pub nrle_flags: u32,
+    nrle_flags: u32,
     /// (`nr_state_buffer_size`)
-    pub state_buffer_size: u32,
+    state_buffer_size: u32,
     /// (`nr_state_buffer`)
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub state_buffer: [u8; 0],
+    state_buffer: [u8; 0],
 }
 
 impl DynamicSized for ReaperBlockRaw {
@@ -125,22 +125,22 @@ bitflags! {
 #[repr(C)]
 pub struct ReapListEntryRaw {
     /// (`nrle_next`)
-    pub next: u32,
+    next: u32,
     /// (`nrle_flags`)
-    pub flags: ReaperListEntryFlagsRaw,
+    flags: ReaperListEntryFlagsRaw,
     /// (`nrle_type`)
-    pub typ: u32,
+    typ: u32,
     /// (`nrle_size`)
-    pub size: u32,
+    size: u32,
     /// (`nrle_fs_oid`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub fs_oid: ObjectIdentifierRaw,
+    fs_oid: ObjectIdentifierRaw,
     /// (`nrle_oid`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub oid: ObjectIdentifierRaw,
+    oid: ObjectIdentifierRaw,
     /// (`nrle_xid`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub xid: TransactionIdentifierRaw,
+    xid: TransactionIdentifierRaw,
 }
 
 bitflags! {
@@ -160,25 +160,25 @@ bitflags! {
 #[repr(C)]
 pub struct ReapListBlockRaw {
     /// Common block header (`nrl_o`)
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// (`nrl_next`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub next: ObjectIdentifierRaw,
+    next: ObjectIdentifierRaw,
     /// (`nrl_flags`)
-    pub flags: ReapListFLagsRaw,
+    flags: ReapListFLagsRaw,
     /// (`nrl_max`)
-    pub max: u32,
+    max: u32,
     /// (`nrl_count`)
-    pub count: u32,
+    count: u32,
     /// (`nrl_first`)
-    pub first: u32,
+    first: u32,
     /// (`nrl_last`)
-    pub last: u32,
+    last: u32,
     /// (`nrl_free`)
-    pub free: u32,
+    free: u32,
     /// (`nrl_entries`)
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub entries: [ReapListEntryRaw; 0],
+    entries: [ReapListEntryRaw; 0],
 }
 
 impl DynamicSized for ReapListBlockRaw {
@@ -210,12 +210,12 @@ pub struct ObjectMapReapStateRaw {
     /// Phase the reaper is in (`omr_phase`).
     ///
     /// Value is [ObjectMapReapPhase].
-    pub phase: u32,
+    phase: u32,
 
     /// The key of the most recently freed entry in the object map (`omr_ok`).
     ///
     /// Facilitates resuming when interrupted.
-    pub last_freed_key: ObjectMapKeyRaw,
+    last_freed_key: ObjectMapKeyRaw,
 }
 
 /// State used when reaping deleted snapshots (`omap_cleanup_state_t`).
@@ -226,32 +226,32 @@ pub struct ObjectMapCleanupStateRaw {
     /// Flag indicating whether the structure has valid data in it (`omc_cleaning`).
     ///
     /// 0 means the struct is empty. Otherwise it has data.
-    pub cleaning: u32,
+    cleaning: u32,
 
     /// Flags for the snapshot being deleted (`omc_omsflags`).
     ///
     /// Value is a [ObjectMapSnapshotFlagsRaw] and should match the flags stored in the
     /// [ObjectMapSnapshotRaw] instance.
-    pub snapshot_flags: u32,
+    snapshot_flags: u32,
 
     /// Transaction ID of the snapshot before the snapshots being deleted (`omc_sxidprev`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub previous_snapshot_xid: TransactionIdentifierRaw,
+    previous_snapshot_xid: TransactionIdentifierRaw,
 
     /// Transaction ID of the first snapshot being deleted (`omc_sxidstart`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub first_snapshot_xid: TransactionIdentifierRaw,
+    first_snapshot_xid: TransactionIdentifierRaw,
 
     /// Transaction ID of the last snapshot being deleted (`omc_sxidend`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub last_snapshot_xid: TransactionIdentifierRaw,
+    last_snapshot_xid: TransactionIdentifierRaw,
 
     /// Transaction ID of the snapshot after the snapshots being deleted (`omc_sxidnext`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub next_snapshot_xid: TransactionIdentifierRaw,
+    next_snapshot_xid: TransactionIdentifierRaw,
 
     /// The key of the next object mapping to consider for deletion (`omc_curkey`).
-    pub current_key: ObjectMapKeyRaw,
+    current_key: ObjectMapKeyRaw,
 }
 
 /// Volume reaper states.
@@ -275,12 +275,12 @@ pub enum VolumeReaperState {
 #[repr(C, packed)]
 pub struct VolumeReapStateRaw {
     /// (`last_pbn`)
-    pub last_pbn: u64,
+    last_pbn: u64,
     /// (`cur_snap_xid`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub current_snapshot_xid: TransactionIdentifierRaw,
+    current_snapshot_xid: TransactionIdentifierRaw,
     /// (`phase`)
     ///
     /// Value is a [VolumeReaperState].
-    pub phase: u32,
+    phase: u32,
 }

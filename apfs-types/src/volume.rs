@@ -29,15 +29,15 @@ use crate::{common::*, container::*, data_stream::*, filesystem::*, object::*};
 #[repr(C)]
 pub struct ApfsModifiedByRaw {
     /// A string that identifies the program and its version (`id`).
-    pub id: [u8; 32],
+    id: [u8; 32],
 
     /// The time the program last modified this volume (`id`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub timestamp: TimeRaw,
+    timestamp: TimeRaw,
 
     /// The last transaction ID that's part of this program's modifications (`id`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub last_transaction: TransactionIdentifierRaw,
+    last_transaction: TransactionIdentifierRaw,
 }
 
 bitflags! {
@@ -269,11 +269,11 @@ pub const VOLUME_NAME_LENGTH: usize = 256;
 #[repr(C)]
 pub struct VolumeSuperblockRaw {
     /// The object's header (`apfs_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// Magic value (`apfs_magic`).
     ///
     /// Should be [VOLUME_MAGIC].
-    pub magic: [u8; 4],
+    magic: [u8; 4],
 
     /// The index of this volume in the container's volume array (`apfs_fs_index`).
     ///
@@ -283,76 +283,76 @@ pub struct VolumeSuperblockRaw {
     /// volume array before this object is destroyed. So the index/OID stored in the
     /// container superblock may have already been recycled for another volume
     /// if this one is currently being destroyed.
-    pub fs_index: u32,
+    fs_index: u32,
 
     /// A bit field of the optional features being used by this volume (`apfs_features`).
     ///
     /// If an implementation does not support a feature in this set, the volume
     /// can continue to be mounted.
-    pub optional_features: VolumeOptionalFeatureFlagsRaw,
+    optional_features: VolumeOptionalFeatureFlagsRaw,
 
     /// A bit field of the read-only compatible features being used by this volume (`apfs_readonly_compatible_features`).
     ///
     /// If an implementation sees an unknown flag in this feature set, it should
     /// mount the volume read-only.
-    pub readonly_compatible_features: u64,
+    readonly_compatible_features: u64,
 
     /// A bit field of the backward-incompatible features being used by this volume (`apfs_incompatible_features`).
     ///
     /// If an implementation sees an unknown or unsupported flag in this feature
     /// set, it should refuse to mount the volume.
-    pub incompatible_features: VolumeIncompatibleFeatureFlagsRaw,
+    incompatible_features: VolumeIncompatibleFeatureFlagsRaw,
 
     /// The time that this volume was last unmounted (`apfs_unmount_time`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub unmount_time: TimeRaw,
+    unmount_time: TimeRaw,
 
     /// The number of blocks that have been reserved for this volume to allocate (`apfs_fs_reserve_block_count`).
-    pub reserved_block_count: u64,
+    reserved_block_count: u64,
 
     /// The maximum number of blocks that this volume can allocate (`apfs_fs_quota_block_count`).
-    pub quota_block_count: u64,
+    quota_block_count: u64,
 
     /// The number of blocks currently allocated for this volume's file system (`apfs_fs_alloc_count`).
-    pub allocated_block_count: u64,
+    allocated_block_count: u64,
 
     /// Information about the key used to encrypt metadata for this volume (`apfs_meta_crypto`).
     ///
     /// On macOS, the volume encryption key (VEK) is used to encrypt metadata.
-    pub metadata_encryption_state: WrappedMetaCryptoStateRaw,
+    metadata_encryption_state: WrappedMetaCryptoStateRaw,
 
     /// The type of the root file-system tree (`apfs_root_tree_type`).
     ///
     /// Typically a virtual object pointing to a B-tree root node with a
     /// subtype of [ObjectType::FilesystemTree].
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub root_tree_type: ObjectTypeValueRaw,
+    root_tree_type: ObjectTypeValueRaw,
 
     /// The type of the extent-reference tree (`apfs_extentref_tree_type`).
     ///
     /// Typically a physical object for a B-tree root node with subtype
     /// of [ObjectType::ExtentReferenceTree].
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub extent_reference_tree_type: ObjectTypeValueRaw,
+    extent_reference_tree_type: ObjectTypeValueRaw,
 
     /// The type of the snapshot metadata tree (`apfs_snap_meta_tree_type`).
     ///
     /// Typically a physical object for a B-tree root node with a subtype
     /// of [ObjectType::SnapshotMetadataTree].
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub snapshot_metadata_tree_type: ObjectTypeValueRaw,
+    snapshot_metadata_tree_type: ObjectTypeValueRaw,
 
     /// The object identifier of the volume's object map (`apfs_omap_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub object_map_oid: PhysicalObjectIdentifierRaw,
+    object_map_oid: PhysicalObjectIdentifierRaw,
 
     /// The object identifier of the root file-system tree (`apfs_root_tree_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub root_tree_oid: ObjectIdentifierRaw,
+    root_tree_oid: ObjectIdentifierRaw,
 
     /// The object identifier of the extent-reference tree (`apfs_extentref_tree_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub extent_reference_tree_oid: ObjectIdentifierRaw,
+    extent_reference_tree_oid: ObjectIdentifierRaw,
 
     /// The object identifier of the snapshot metadata tree (`apfs_snap_meta_tree_oid`).
     ///
@@ -360,7 +360,7 @@ pub struct VolumeSuperblockRaw {
     /// the snapshot. A new, empty extent-reference tree becomes the new value
     /// of this field.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub snapshot_metadata_tree_oid: ObjectIdentifierRaw,
+    snapshot_metadata_tree_oid: ObjectIdentifierRaw,
 
     /// The transaction identifier of a snapshot that the volume will revert to (`apfs_revert_to_xid`).
     ///
@@ -368,35 +368,35 @@ pub struct VolumeSuperblockRaw {
     /// snapshot by deleting all snapshots after this transaction ID and then setting
     /// this field to 0.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub revert_to_xid: TransactionIdentifierRaw,
+    revert_to_xid: TransactionIdentifierRaw,
 
     /// The object identifier of a volume superblock that the volume will revert to (`apfs_revert_to_sblock_oid`).
     ///
     /// When mounting a volume and [Self::revert_to_xid] is non-0, ignore the
     /// value of this field. Otherwise revert to the specified volume superblock.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub revert_to_superblock_oid: PhysicalObjectIdentifierRaw,
+    revert_to_superblock_oid: PhysicalObjectIdentifierRaw,
 
     /// The next identifier that will be assigned to a file-system object in this volume (`apfs_next_obj_id`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub next_object_identifier: ObjectIdentifierRaw,
+    next_object_identifier: ObjectIdentifierRaw,
 
     /// The number of regular files in this volume (`apfs_num_files`).
-    pub number_files: u64,
+    number_files: u64,
 
     /// The number of directories in this volume (`apfs_num_directories`).
-    pub number_directories: u64,
+    number_directories: u64,
 
     /// The number of symbolic links in this volume (`apfs_num_symlinks`).
-    pub number_symlinks: u64,
+    number_symlinks: u64,
 
     /// The number of other files in this volume (`apfs_num_other_fsobjects`).
     ///
     /// Includes all files not counted by the above 3 fields.
-    pub number_other: u64,
+    number_other: u64,
 
     /// The number of snapshots in this volume (`apfs_num_snapshots`).
-    pub number_snapshots: u64,
+    number_snapshots: u64,
 
     /// The total number of blocks that have been allocated by this volume (`apfs_total_blocks_alloced`).
     ///
@@ -405,27 +405,27 @@ pub struct VolumeSuperblockRaw {
     ///
     /// If there are no files in the volume, value should match
     /// [Self::total_blocks_freed].
-    pub total_blocks_allocated: u64,
+    total_blocks_allocated: u64,
 
     /// The total number of blocks that have been freed by this volume (`apfs_total_blocks_freed`).
     ///
     /// Not modified when blocks are allocated. Increased when blocks are freed.
-    pub total_blocks_freed: u64,
+    total_blocks_freed: u64,
 
     /// The universally unique identifier for this volume (`apfs_vol_uuid`).
-    pub volume_id: UuidRaw,
+    volume_id: UuidRaw,
 
     /// The time that this volume was last modified (`apfs_last_mod_time`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub last_modification_time: TimeRaw,
+    last_modification_time: TimeRaw,
 
     /// The volume's flags (`apfs_fs_flags`).
-    pub flags: VolumeFlagsRaw,
+    flags: VolumeFlagsRaw,
 
     /// Information about the software that created this volume (`apfs_formatted_by`).
     ///
     /// Only set at volume creation time.
-    pub formatted_by: ApfsModifiedByRaw,
+    formatted_by: ApfsModifiedByRaw,
 
     /// Information about the software that has modified this volume (`apfs_modified_by`).
     ///
@@ -438,37 +438,37 @@ pub struct VolumeSuperblockRaw {
     /// one, it is permitted to either copy the latest entry or do nothing.
     ///
     /// Empty entries should be all 0s.
-    pub modified_by: [ApfsModifiedByRaw; VOLUME_MAX_HISTORY],
+    modified_by: [ApfsModifiedByRaw; VOLUME_MAX_HISTORY],
 
     /// The name of the volume, represented as a null-terminated UTF-8 string (`apfs_volname`).
-    pub volume_name: [u8; VOLUME_NAME_LENGTH],
+    volume_name: [u8; VOLUME_NAME_LENGTH],
 
     /// The next document identifier that will be assigned (`apfs_next_doc_id`).
     ///
     /// Document identifiers cannot be recycled.
-    pub next_document_identifier: u32,
+    next_document_identifier: u32,
 
     /// The role of this volume within the container (`apfs_role`).
     ///
     /// Values are [VolumeRole].
-    pub role: u16,
+    role: u16,
 
     /// Reserved (`reserved`).
     ///
     /// 0s for new volume. Preserved during modifications.
-    pub reserved_after_role: u16,
+    reserved_after_role: u16,
 
     /// The transaction identifier of the snapshot to root from (`apfs_root_to_xid`).
     ///
     /// 0 to root normally.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub root_to_xid: TransactionIdentifierRaw,
+    root_to_xid: TransactionIdentifierRaw,
 
     /// Object holding encryption rolling state of this volume.
     ///
     /// 0 means encryption rolling isn't in progress.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub encryption_rolling_state_oid: ObjectIdentifierRaw,
+    encryption_rolling_state_oid: ObjectIdentifierRaw,
 
     /// The largest object identifier used by this volume (`apfs_cloneinfo_id_epoch`).
     ///
@@ -482,19 +482,19 @@ pub struct VolumeSuperblockRaw {
     ///
     /// Added in macOS 10.13.3.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub cloneinfo_id_epoch: ObjectIdentifierRaw,
+    cloneinfo_id_epoch: ObjectIdentifierRaw,
 
     /// A transaction identifier tracking the was ever cloned epoch (`apfs_cloneinfo_xid`).
     ///
     /// When unmounting a volume, the value of this field is set to the latest
     /// transaction ID, which should match the value in [Self::modified_by].
-    pub cloneinfo_xid: u64,
+    cloneinfo_xid: u64,
 
     /// The object identifier of the extended snapshot metadata object (`apfs_snap_meta_ext_oid`).
     ///
     /// Added in macOS 10.15.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub snapshot_metadata_ext_oid: VirtualObjectIdentifierRaw,
+    snapshot_metadata_ext_oid: VirtualObjectIdentifierRaw,
 
     /// The volume group the volume belongs to (`apfs_volume_group_id`).
     ///
@@ -504,7 +504,7 @@ pub struct VolumeSuperblockRaw {
     /// should be set.
     ///
     /// Added in macOS 10.15.
-    pub volume_group_id: UuidRaw,
+    volume_group_id: UuidRaw,
 
     /// The object identifier of the integrity metadata object (`apfs_integrity_meta_oid`).
     ///
@@ -512,7 +512,7 @@ pub struct VolumeSuperblockRaw {
     ///
     /// Added in macOS 11.0
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub integrity_meta_oid: VirtualObjectIdentifierRaw,
+    integrity_meta_oid: VirtualObjectIdentifierRaw,
 
     /// The object identifier of the file extent tree (`apfs_fext_tree_oid`).
     ///
@@ -520,7 +520,7 @@ pub struct VolumeSuperblockRaw {
     ///
     /// Added in macOS 11.0
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub file_extent_tree_oid: VirtualObjectIdentifierRaw,
+    file_extent_tree_oid: VirtualObjectIdentifierRaw,
 
     /// The type of the file extent tree (`apfs_fext_tree_type`).
     ///
@@ -529,13 +529,13 @@ pub struct VolumeSuperblockRaw {
     ///
     /// Added in macOS 11.0.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub file_extent_tree_type: ObjectTypeValueRaw,
+    file_extent_tree_type: ObjectTypeValueRaw,
 
     /// Reserved (`reserved_type`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub reserved_type: ObjectTypeValueRaw,
+    reserved_type: ObjectTypeValueRaw,
 
     /// Reserved (`reserved_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub reserved_oid: ObjectIdentifierRaw,
+    reserved_oid: ObjectIdentifierRaw,
 }

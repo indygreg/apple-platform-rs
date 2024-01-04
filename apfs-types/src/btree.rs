@@ -28,10 +28,10 @@ pub struct NodeLocationRaw {
     /// The offset, in bytes (`off`).
     ///
     /// For values, the offset is implicitly negative.
-    pub offset: u16,
+    offset: u16,
 
     /// The length, in bytes (`len`).
-    pub length: u16,
+    length: u16,
 }
 
 /// The location of a fixed-size key and value inside a B-tree node (`kvoff_t`).
@@ -40,9 +40,9 @@ pub struct NodeLocationRaw {
 #[repr(C)]
 pub struct KeyValueOffsetRaw {
     /// The offset of the key (`k`).
-    pub key: u16,
+    key: u16,
     /// The offset of the value (`v`).
-    pub value: u16,
+    value: u16,
 }
 
 /// The location of a key and value in a B-tree node (`kvloc_t`).
@@ -51,9 +51,9 @@ pub struct KeyValueOffsetRaw {
 #[repr(C)]
 pub struct KeyValueLocationRaw {
     /// The location of the key (`k`).
-    pub key: NodeLocationRaw,
+    key: NodeLocationRaw,
     /// The location of the value (`v`).
-    pub value: NodeLocationRaw,
+    value: NodeLocationRaw,
 }
 
 /// The maximum length of a hash that can be stored in [BTreeIndexNodeValueRaw].
@@ -69,7 +69,7 @@ pub const BTREE_NODE_HASH_MAX_SIZE: usize = 64;
 pub struct BTreeIndexNodeValueRaw {
     /// Object identifier of the child node (`binv_child_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub child_oid: ObjectIdentifierRaw,
+    child_oid: ObjectIdentifierRaw,
 
     /// The hash of the child node.
     ///
@@ -80,7 +80,7 @@ pub struct BTreeIndexNodeValueRaw {
     ///
     /// Extra bytes after the computed hash and [BTREE_NODE_HASH_MAX_SIZE]
     /// should be set to 0 and preserved when modifying nodes.
-    pub child_hash: [u8; BTREE_NODE_HASH_MAX_SIZE],
+    child_hash: [u8; BTREE_NODE_HASH_MAX_SIZE],
 }
 
 bitflags! {
@@ -218,20 +218,20 @@ bitflags! {
 #[repr(C)]
 pub struct BTreeNodeRaw {
     /// Common object header (`btn_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
 
     /// Node flags (`btn_flags`).
-    pub flags: BTreeNodeFlagsRaw,
+    flags: BTreeNodeFlagsRaw,
 
     /// The number of child levels below this node (`btn_level`).
     ///
     /// Should be 0 for leaf nodes, 1 for the parent of a leaf node.
     ///
     /// Total tree height is this value from the root node + 1.
-    pub level: u16,
+    level: u16,
 
     /// The number of keys stored in this node (`btn_nkeys`).
-    pub number_keys: u32,
+    number_keys: u32,
 
     /// The location of the table of contents (`btn_table_space`).
     ///
@@ -240,13 +240,13 @@ pub struct BTreeNodeRaw {
     ///
     /// If [BTreeNodeFlagsRaw::FixedKeyValueSize] is set, the ToC is an array
     /// of [KeyValueOffsetRaw]. Else it is an array of [NodeLocationRaw].
-    pub table_space: NodeLocationRaw,
+    table_space: NodeLocationRaw,
 
     /// The location of the shared free space for keys and values (`btn_free_space`).
     ///
     /// Counted from the beginning of the key area to the beginning of the
     /// free space.
-    pub free_space: NodeLocationRaw,
+    free_space: NodeLocationRaw,
 
     /// A linked list that tracks free key space (`btn_key_free_list`).
     ///
@@ -257,13 +257,13 @@ pub struct BTreeNodeRaw {
     /// Each free space stores an instance of [NodeLocationRaw]. Each's
     /// `length` field contains the size of that free space and `offset` contains
     /// the next entry in the linked list.
-    pub key_free_list: NodeLocationRaw,
+    key_free_list: NodeLocationRaw,
 
     /// A linked list that tracks free value space (`btn_val_free_list`).
     ///
     /// Semantics are similar to [Self::key_free_list]. However, keep in
     /// mind that values are stored from back to front in the node.
-    pub value_free_list: NodeLocationRaw,
+    value_free_list: NodeLocationRaw,
 
     /// The node's data (`btn_data`).
     ///
@@ -274,7 +274,7 @@ pub struct BTreeNodeRaw {
     /// and values are 64-bit aligned. We choose to model as a byte array for
     /// consistency with other data structures.
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub data: [u8; 0],
+    data: [u8; 0],
 }
 
 impl DynamicSized for BTreeNodeRaw {
@@ -293,16 +293,16 @@ impl DynamicSized for BTreeNodeRaw {
 #[repr(C)]
 pub struct BTreeInfoFixedRaw {
     /// The B-tree's flags (`bt_flags`).
-    pub flags: BTreeFlagsRaw,
+    flags: BTreeFlagsRaw,
 
     /// The on-disk size, in bytes, of a node in this B-tree (`bt_node_size`).
-    pub node_size: u32,
+    node_size: u32,
 
     /// The size of a key, or zero if the keys have variable size (`bt_key_size`).
-    pub key_size: u32,
+    key_size: u32,
 
     /// The size of a value, or zero if the values have variable size (`bt_val_size`).
-    pub value_size: u32,
+    value_size: u32,
 }
 
 impl BTreeInfoFixedRaw {
@@ -324,17 +324,17 @@ impl BTreeInfoFixedRaw {
 #[repr(C)]
 pub struct BTreeInfoRaw {
     /// Information about the B-tree that doesn't change over time (`bt_fixed`).
-    pub fixed: BTreeInfoFixedRaw,
+    fixed: BTreeInfoFixedRaw,
 
     /// The length, in bytes, of the longest key that has ever been stored in the B-tree (`bt_longest_key`).
-    pub longest_key: u32,
+    longest_key: u32,
 
     /// The length, in bytes, of the longest value that has ever been stored in the B-tree (`bt_longest_val`).
-    pub longest_value: u32,
+    longest_value: u32,
 
     /// The number of keys stored in the B-tree (`bt_key_count`).
-    pub key_count: u64,
+    key_count: u64,
 
     /// The number of nodes stored in the B-tree (`bt_node_count`).
-    pub node_count: u64,
+    node_count: u64,
 }

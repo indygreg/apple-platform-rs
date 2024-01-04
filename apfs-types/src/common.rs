@@ -388,9 +388,9 @@ impl From<PhysicalAddressRaw> for usize {
 pub struct PhysicalAddressRangeRaw {
     /// The starting block address (`pr_start_paddr`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub start_address: PhysicalAddressRaw,
+    start_address: PhysicalAddressRaw,
     /// The number of blocks in the span (`pr_block_count`).
-    pub block_count: u64,
+    block_count: u64,
 }
 
 /// An APFS filesystem time.

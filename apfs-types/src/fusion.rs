@@ -28,27 +28,27 @@ use apfs_derive::ApfsData;
 #[repr(C)]
 pub struct FusionWritebackCacheBlockRaw {
     /// (`fwp_objHdr`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// (`fwp_version`).
-    pub version: u64,
+    version: u64,
     /// (`fwp_listHeadOid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub list_head_oid: ObjectIdentifierRaw,
+    list_head_oid: ObjectIdentifierRaw,
     /// (`fwp_listTailOid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub list_tail_oid: ObjectIdentifierRaw,
+    list_tail_oid: ObjectIdentifierRaw,
     /// (`fwp_stableHeadOffset`).
-    pub stable_head_offset: u64,
+    stable_head_offset: u64,
     /// (`fwp_stableTailOffset`).
-    pub stable_tail_offset: u64,
+    stable_tail_offset: u64,
     /// (`fwp_listBlocksCount`).
-    pub list_blocks_count: u32,
+    list_blocks_count: u32,
     /// (`fwp_reserved`).
-    pub reserved: u32,
+    reserved: u32,
     /// (`fwp_usedByRC`).
-    pub used_by_rc: u64,
+    used_by_rc: u64,
     /// (`fwp_rcStash`).
-    pub rc_stash: PhysicalAddressRangeRaw,
+    rc_stash: PhysicalAddressRangeRaw,
 }
 
 /// Fusion writeback cache list entry (`fusion_wbc_list_entry_t`).
@@ -58,12 +58,12 @@ pub struct FusionWritebackCacheBlockRaw {
 pub struct FusionWritebackCacheListEntryRaw {
     /// (`fwle_wbcLba`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub writeback_cache_lba: PhysicalAddressRaw,
+    writeback_cache_lba: PhysicalAddressRaw,
     /// (`fwle_targetLba`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub target_lba: PhysicalAddressRaw,
+    target_lba: PhysicalAddressRaw,
     /// (`fwle_length`).
-    pub length: u64,
+    length: u64,
 }
 
 /// Fusion writeback cache list block (`fusion_wbc_list_phys_t`).
@@ -74,22 +74,22 @@ pub struct FusionWritebackCacheListEntryRaw {
 #[repr(C)]
 pub struct FusionWritebackCacheListBlockRaw {
     /// (`fwlp_objHdr`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// (`fwlp_version`).
-    pub version: u64,
+    version: u64,
     /// (`fwlp_tailOffset`).
-    pub tail_offset: u64,
+    tail_offset: u64,
     /// (`fwlp_indexBegin`).
-    pub index_begin: u32,
+    index_begin: u32,
     /// (`fwlp_indexEnd`).
-    pub index_end: u32,
+    index_end: u32,
     /// (`fwlp_indexMax`).
-    pub index_max: u32,
+    index_max: u32,
     /// (`fwlp_reserved`).
-    pub reserved: u32,
+    reserved: u32,
     /// (`fwlp_listEntries`).
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub entries: [FusionWritebackCacheListEntryRaw; 0],
+    entries: [FusionWritebackCacheListEntryRaw; 0],
 }
 
 impl DynamicSized for FusionWritebackCacheListBlockRaw {
@@ -121,9 +121,9 @@ bitflags! {
 pub struct FusionMiddleTreeValueRaw {
     /// (`fmv_lba`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub lba: PhysicalAddressRaw,
+    lba: PhysicalAddressRaw,
     /// (`fmv_length`).
-    pub length: u32,
+    length: u32,
     /// (`fmv_flags`).
-    pub flags: FusionMiddleTreeFlagsRaw,
+    flags: FusionMiddleTreeFlagsRaw,
 }

@@ -150,7 +150,7 @@ pub enum ProtectionClass {
 #[repr(C, packed)]
 pub struct EncryptionStateRecordKeyRaw {
     /// Common filesystem object header (`hdr`).
-    pub header: FileSystemKeyRaw,
+    header: FileSystemKeyRaw,
 }
 
 /// Encryption state record value (`j_crypto_val_t`).
@@ -159,12 +159,12 @@ pub struct EncryptionStateRecordKeyRaw {
 #[repr(C, packed(4))]
 pub struct EncryptionStateRecordValueRaw {
     /// The reference count (`refcnt`).
-    pub reference_count: u32,
+    reference_count: u32,
     /// The encryption state information (`state`).
     ///
     /// If this record is used by the filesystem tree instead of a file, this is
     /// a [WrappedMetaCryptoStateRaw] and the key used is the Volume Encryption Key.
-    pub state: WrappedCryptoStateRaw,
+    state: WrappedCryptoStateRaw,
 }
 
 // This struct itself is static sized but the state is dynamic. That
@@ -187,29 +187,29 @@ pub struct WrappedCryptoStateRaw {
     /// The major version for this structure's layout (`major_version`).
     ///
     /// 5 is known to be the current value.
-    pub major_version: u16,
+    major_version: u16,
     /// The minor version for this struct's layout (`minor_version`).
     ///
     /// 0 is known to be the current value.
-    pub minor_version: u16,
+    minor_version: u16,
     /// The encryption state's flags (`cpflags`).
-    pub flags: u32,
+    flags: u32,
     /// The protection class associated with the key (`persistent_class`)
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub persistent_class: KeyClassRaw,
+    persistent_class: KeyClassRaw,
     /// The version of the OS that created this structure (`key_os_version`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub key_os_revision: KeyOsVersionRaw,
+    key_os_revision: KeyOsVersionRaw,
     /// The version of the key (`key_revision`).
     ///
     /// Set to 1 when creating. Increment by 1 when rolling keys.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub key_revision: KeyRevisionRaw,
+    key_revision: KeyRevisionRaw,
     /// The size, in bytes, of the wrapped key data (`key_len`).
-    pub key_length: u16,
+    key_length: u16,
     /// Wrapped key data (`persistent_key`).
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub persistent_key: [u8; 0],
+    persistent_key: [u8; 0],
 }
 
 impl DynamicSized for WrappedCryptoStateRaw {
@@ -228,22 +228,22 @@ impl DynamicSized for WrappedCryptoStateRaw {
 #[repr(C, packed(2))]
 pub struct WrappedMetaCryptoStateRaw {
     /// The major version for this structure's layout (`major_version`).
-    pub major_version: u16,
+    major_version: u16,
     /// The minor version for this structure's layout (`minor_version`).
-    pub minor_version: u16,
+    minor_version: u16,
     /// The encryption state's flags (`cpflags`).
-    pub flags: u32,
+    flags: u32,
     /// The protection class associated with the key (`persistent_class`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub persistent_class: KeyClassRaw,
+    persistent_class: KeyClassRaw,
     /// The version of the OS that created this structure (`key_os_version`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub key_os_version: KeyOsVersionRaw,
+    key_os_version: KeyOsVersionRaw,
     /// The version of the key (`key_revision`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub key_revision: KeyRevisionRaw,
+    key_revision: KeyRevisionRaw,
     /// Reserved (`unused`).
-    pub unused: u16,
+    unused: u16,
 }
 
 /// A description of the type of information in a keybag.
@@ -309,27 +309,27 @@ pub struct KeybagEntryRaw {
     /// In a container's keybag, the UUID of a volume.
     ///
     /// In a volume's keybag, the UUID of a user.
-    pub uuid: UuidRaw,
+    uuid: UuidRaw,
 
     /// The type of data stored in this entry (`ke_tag`).
     ///
     /// Value is a [KeybagTag].
-    pub tag: u16,
+    tag: u16,
 
     /// Length in bytes of the keybag's data (`ke_keylen`).
     ///
     /// Must be less than [VOLUME_KEYBAG_ENTRY_MAX_SIZE].
-    pub key_length: u16,
+    key_length: u16,
 
     /// Padding bytes (`padding`).
     ///
     /// Populate with 0s when creating a new entry and preserve value during
     /// modifications.
-    pub padding: [u8; 4],
+    padding: [u8; 4],
 
     /// Keybag entry's data (`ke_keydata`).
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub key_data: [u8; 0],
+    key_data: [u8; 0],
 }
 
 impl DynamicSized for KeybagEntryRaw {
@@ -355,22 +355,22 @@ pub struct KeybagRaw {
     /// The keybag's version (`kl_version`).
     ///
     /// Should be [KEYBAG_VERSION].
-    pub version: u16,
+    version: u16,
 
     /// The number of entries in this keybag (`kl_nkeys`).
-    pub number_entries: u16,
+    number_entries: u16,
 
     /// Size in bytes of data stored in the `entries` field (`kl_nbytes`).
-    pub entries_bytes: u32,
+    entries_bytes: u32,
 
     /// Reserved (`padding`).
     ///
     /// Populate with 0 for new keybags and preserve when modifying.
-    pub padding: [u8; 8],
+    padding: [u8; 8],
 
     /// The keybag's entries (`kl_entries`).
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub entries: [KeybagEntryRaw; 0],
+    entries: [KeybagEntryRaw; 0],
 }
 
 impl DynamicSized for KeybagRaw {
@@ -387,7 +387,7 @@ impl DynamicSized for KeybagRaw {
 #[repr(C)]
 pub struct MediaKeybagRaw {
     /// Block object header (`mk_obj`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
     /// The keybag (`mk_locker`).
-    pub keybag: KeybagRaw,
+    keybag: KeybagRaw,
 }

@@ -60,44 +60,44 @@ bitflags! {
 #[repr(C)]
 pub struct ObjectMapBlockRaw {
     /// The object's header (`om_o`).
-    pub object: ObjectHeaderRaw,
+    object: ObjectHeaderRaw,
 
     /// The object map's flags (`om_flags`).
-    pub flags: ObjectMapFlagsRaw,
+    flags: ObjectMapFlagsRaw,
 
     /// The number of snapshots that this object map has (`om_snap_count`).
-    pub snapshot_count: u32,
+    snapshot_count: u32,
 
     /// The type of tree being used for object mappings (`om_tree_type`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub tree_type: ObjectTypeValueRaw,
+    tree_type: ObjectTypeValueRaw,
 
     /// The type of tree being used for snapshots (`om_snapshot_tree_type`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub snapshot_tree_type: ObjectTypeValueRaw,
+    snapshot_tree_type: ObjectTypeValueRaw,
 
     /// The object identifier of the tree being used for object mappings (`om_tree_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub tree_oid: ObjectIdentifierRaw,
+    tree_oid: ObjectIdentifierRaw,
 
     /// The object identifier of the tree being used to hold snapshot information (`om_snapshot_tree_oid`).
     ///
     /// Tree keys are transaction IDs.
     /// Tree values are [ObjectMapSnapshotRaw].
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub snapshot_tree_oid: ObjectIdentifierRaw,
+    snapshot_tree_oid: ObjectIdentifierRaw,
 
     /// The transaction identifier of the most recent snapshot that's stored in this map (`om_most_recent_snap`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub most_recent_snapshot_identifier: TransactionIdentifierRaw,
+    most_recent_snapshot_identifier: TransactionIdentifierRaw,
 
     /// The smallest transaction identifier for an in-progress revert (`om_pending_revert_min`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub pending_revert_minimum_identifier: TransactionIdentifierRaw,
+    pending_revert_minimum_identifier: TransactionIdentifierRaw,
 
     /// The largest transaction identifier for an in-progress revert (`om_pending_revert_max`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub pending_revert_maximum_identifier: TransactionIdentifierRaw,
+    pending_revert_maximum_identifier: TransactionIdentifierRaw,
 }
 
 /// Key used to access an entry in the object map (`omap_key_t`).
@@ -107,10 +107,10 @@ pub struct ObjectMapBlockRaw {
 pub struct ObjectMapKeyRaw {
     /// The object identifier (`ok_oid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub oid: VirtualObjectIdentifierRaw,
+    oid: VirtualObjectIdentifierRaw,
     /// The transaction identifier (`ok_xid`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub xid: TransactionIdentifierRaw,
+    xid: TransactionIdentifierRaw,
 }
 
 // Sorted by OID first then XID.
@@ -166,7 +166,7 @@ bitflags! {
 #[repr(C)]
 pub struct ObjectMapValueRaw {
     /// A bit field of flags (`ov_flags`).
-    pub flags: ObjectMapValueFlagsRaw,
+    flags: ObjectMapValueFlagsRaw,
 
     /// Size of the object (`ov_size`).
     ///
@@ -174,11 +174,11 @@ pub struct ObjectMapValueRaw {
     ///
     /// If the object is smaller than the container's block size, the
     /// value here is rounded up to that block size.
-    pub size_bytes: u32,
+    size_bytes: u32,
 
     /// The address of the object (`ov_paddr`).
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub address: PhysicalAddressRaw,
+    address: PhysicalAddressRaw,
 }
 
 bitflags! {
@@ -200,16 +200,16 @@ bitflags! {
 #[repr(C)]
 pub struct ObjectMapSnapshotRaw {
     /// The snapshot's flags (`oms_flags`).
-    pub flags: ObjectMapSnapshotFlagsRaw,
+    flags: ObjectMapSnapshotFlagsRaw,
 
     /// Reserved (`oms_pad`).
     ///
     /// Populate with 0s for new snapshots and preserve values when modifying.
-    pub pad: u32,
+    pad: u32,
 
     /// Reserved (`oms_oid`).
     ///
     /// Populate with 0s for new snapshots and preserve values when modifying.
     #[cfg_attr(feature = "derive", apfs(copied))]
-    pub oid: ObjectIdentifierRaw,
+    oid: ObjectIdentifierRaw,
 }

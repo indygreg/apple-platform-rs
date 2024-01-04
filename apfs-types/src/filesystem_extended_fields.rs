@@ -191,13 +191,13 @@ pub struct ExtendedFieldRaw {
     ///
     /// Can be either a [DirectoryRecordExtendedFieldType] or [InodeExtendedFieldType]
     /// depending on the type of entity this record is associated with.
-    pub typ: u8,
+    typ: u8,
 
     /// Flags for this field (`x_flags`).
-    pub flags: ExtendedFieldFlagsRaw,
+    flags: ExtendedFieldFlagsRaw,
 
     /// Size in bytes of the data for this extended field (`x_size`).
-    pub size_bytes: u16,
+    size_bytes: u16,
 }
 
 /// A collection of extended attributes (`xf_blob_t`).
@@ -209,16 +209,16 @@ pub struct ExtendedFieldRaw {
 #[repr(C)]
 pub struct ExtendedAttributesBlobRaw {
     /// The number of extended attributes (`xf_num_exts`).
-    pub count: u16,
+    count: u16,
 
     /// The size in bytes of inline data that follows (`xf_used_data`).
-    pub size_bytes: u16,
+    size_bytes: u16,
 
     /// The extended fields data (`xf_data`).
     ///
     /// An array of [ExtendedFieldRaw] followed by the data for each field.
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
-    pub data: [u8; 0],
+    data: [u8; 0],
 }
 
 impl DynamicSized for ExtendedAttributesBlobRaw {
@@ -243,8 +243,8 @@ impl DynamicSized for ExtendedAttributesBlobRaw {
 #[cfg(feature = "derive")]
 #[derive(Clone)]
 pub struct ExtendedFieldsArray {
-    buf: bytes::Bytes,
-    count: usize,
+    pub buf: bytes::Bytes,
+    pub count: usize,
 }
 
 #[cfg(feature = "derive")]
@@ -369,7 +369,7 @@ impl DirectoryRecordExtendedField {
 #[cfg(feature = "derive")]
 #[derive(Clone)]
 pub struct DirectoryRecordExtendedFieldsArray {
-    inner: ExtendedFieldsArray,
+    pub inner: ExtendedFieldsArray,
 }
 
 #[cfg(feature = "derive")]
@@ -515,7 +515,7 @@ impl InodeExtendedField {
 #[cfg(feature = "derive")]
 #[derive(Clone)]
 pub struct InodeRecordExtendedFieldsArray {
-    inner: ExtendedFieldsArray,
+    pub inner: ExtendedFieldsArray,
 }
 
 #[cfg(feature = "derive")]
