@@ -211,9 +211,11 @@ pub struct ContainerSuperblockRaw {
     pub identifier: UuidRaw,
 
     /// The next object identifier to be used for a new ephemeral or virtual object (`nx_next_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub next_object_identifier: ObjectIdentifierRaw,
 
     /// The next transaction identifier to be used (`nx_next_xid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub next_transaction_identifier: TransactionIdentifierRaw,
 
     /// The number of blocks used by the checkpoint descriptor area (`nx_xp_desc_blocks`).
@@ -238,12 +240,14 @@ pub struct ContainerSuperblockRaw {
     /// The tree's keys are block offsets into the checkpoint descriptor area.
     /// The tree's values are instances of [PhysicalAddressRangeRaw] that contain the
     /// fragment's location and size.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub checkpoint_descriptor_area_block_number: PhysicalAddressRaw,
 
     /// Either the base address of the checkpoint data area or the physical object identifier of a tree that contains the address information (`nx_xp_data_base`).
     ///
     /// Similar behavior to [Self::checkpoint_descriptor_area_block_number] except
     /// the checkpoint data area is being described.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub checkpoint_data_area_block_number: PhysicalAddressRaw,
 
     /// The next index to use in the checkpoint descriptor area (`nx_xp_desc_next`).
@@ -278,12 +282,15 @@ pub struct ContainerSuperblockRaw {
     pub checkpoint_data_area_length: u32,
 
     /// The object identifier for the space manager (`nx_spaceman_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub space_manager_oid: EphemeralObjectIdentifierRaw,
 
     /// The object identifier for the container's object map (`nx_omap_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub object_map_block_number: PhysicalObjectIdentifierRaw,
 
     /// The object identifier for the reaper (`nx_reaper_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub reaper_oid: EphemeralObjectIdentifierRaw,
 
     /// Reserved for testing (`nx_test_type`).
@@ -324,6 +331,7 @@ pub struct ContainerSuperblockRaw {
     /// to.
     ///
     /// This identifier is only valid when shrinking a partition.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub evict_mapping_tree_oid: PhysicalObjectIdentifierRaw,
 
     /// Other container flags (`nx_flags`).
@@ -332,6 +340,7 @@ pub struct ContainerSuperblockRaw {
     /// The physical object identifier of the object that contains EFI driver data extents (`nx_efi_jumpstart`).
     ///
     /// The referenced object is a [EfiJumpstartBlockRaw].
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub efi_jumpstart: PhysicalAddressRaw,
 
     /// The ID of the container's Fusion set (`nx_fusion_uuid`).
@@ -373,6 +382,7 @@ pub struct ContainerSuperblockRaw {
     /// Only set to 0 on disk.
     ///
     /// Not reserved and implementations can store an identifier during testing.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub test_identifier: ObjectIdentifierRaw,
 
     /// The object identifier of the Fusion middle tree (`nx_fusion_mt_oid`).
@@ -382,6 +392,7 @@ pub struct ContainerSuperblockRaw {
     /// Object is a B-tree mapping [FusionMiddleTreeKey] to [FusionMiddleTreeValueRaw].
     ///
     /// (a B-tree mapping fusion_mt_key_t to fusion_mt_val_t), or zero if for non-Fusion drives ().
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub fusion_middle_tree_block_number: PhysicalObjectIdentifierRaw,
 
     /// The object identifier of the Fusion write-back cache state (`nx_fusion_wbc_oid`).
@@ -389,6 +400,7 @@ pub struct ContainerSuperblockRaw {
     /// Object is a [FusionWritebackCacheBlockRaw].
     ///
     /// Value is 0 for a non-Fusion drive.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub fusion_writeback_cache_identifier: EphemeralObjectIdentifierRaw,
 
     /// The blocks used for the Fusion write-back cache area (`nx_fusion_wbc`).
@@ -415,18 +427,23 @@ pub struct ContainerSuperblockRaw {
 #[repr(C)]
 pub struct CheckpointMappingRaw {
     /// The object's type (`cpm_type`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub object_type: ObjectTypeValueRaw,
     /// The object's subtype (`cpm_subtype`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub object_subtype: ObjectTypeValueRaw,
     /// The size, in bytes, of the object (`cpm_size`).
     pub size: u32,
     /// Reserved (`cpm_pad`)
     pub padding: u32,
     /// The object identifier of the volume that the object is associated with (`cpm_fs_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub filesystem_identifier: VirtualObjectIdentifierRaw,
     /// The object identifier (`cpm_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub container_identifier: EphemeralObjectIdentifierRaw,
     /// The address in the checkpoint data area where the object is stored (`cpm_paddr`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub address: PhysicalAddressRaw,
 }
 
@@ -488,6 +505,7 @@ impl DynamicSizedParse for CheckpointMapBlockRaw {
 #[repr(C, packed)]
 pub struct EvictMappingValueRaw {
     /// Address for start of destination (`dst_paddr`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub destination_address: PhysicalAddressRaw,
     /// The number of blocks being moved (`len`).
     pub block_count: u64,

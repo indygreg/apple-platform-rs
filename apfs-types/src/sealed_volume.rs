@@ -117,6 +117,7 @@ pub struct IntegrityMetadataRaw {
     /// The transaction ID that broke the volume's seal (`im_broken_xid`).
     ///
     /// 0 if the seal isn't broken.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub broken_xid: TransactionIdentifierRaw,
 
     /// Reserved (`im_reserved`).

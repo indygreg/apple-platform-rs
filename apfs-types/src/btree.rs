@@ -68,6 +68,7 @@ pub const BTREE_NODE_HASH_MAX_SIZE: usize = 64;
 #[repr(C)]
 pub struct BTreeIndexNodeValueRaw {
     /// Object identifier of the child node (`binv_child_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub child_oid: ObjectIdentifierRaw,
 
     /// The hash of the child node.

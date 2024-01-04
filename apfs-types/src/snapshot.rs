@@ -55,15 +55,19 @@ pub struct SnapshotMetadataRecordKeyRaw {
 #[repr(C, packed)]
 pub struct SnapshotMetadataRecordValueRaw {
     /// Physical OID of the b-tree storing extents information (`extentref_tree_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub extent_reference_tree_oid: ObjectIdentifierRaw,
 
     /// Physical OID of the volume superblock (`sblock_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub volume_superblock_oid: ObjectIdentifierRaw,
 
     /// Time this snapshot was created.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub create_time: TimeRaw,
 
     /// Time this snapshot was last modified.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub change_time: TimeRaw,
 
     /// Unknown (`inum`).
@@ -141,6 +145,7 @@ impl DynamicSizedParse for SnapshotNameRecordKeyRaw {
 #[repr(C, packed)]
 pub struct SnapshotNameRecordValueRaw {
     /// The last transaction identifier included in the snapshot (`snap_xid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub last_xid: TransactionIdentifierRaw,
 }
 
@@ -158,6 +163,7 @@ pub struct SnapshotMetadataRaw {
     pub flags: u32,
 
     /// The snapshot's transaction identifier (`sme_snap_xid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub snapshot_xid: TransactionIdentifierRaw,
 
     /// The snapshot's UUID (`sme_uuid`).

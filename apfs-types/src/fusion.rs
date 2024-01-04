@@ -32,8 +32,10 @@ pub struct FusionWritebackCacheBlockRaw {
     /// (`fwp_version`).
     pub version: u64,
     /// (`fwp_listHeadOid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub list_head_oid: ObjectIdentifierRaw,
     /// (`fwp_listTailOid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub list_tail_oid: ObjectIdentifierRaw,
     /// (`fwp_stableHeadOffset`).
     pub stable_head_offset: u64,
@@ -55,8 +57,10 @@ pub struct FusionWritebackCacheBlockRaw {
 #[repr(C)]
 pub struct FusionWritebackCacheListEntryRaw {
     /// (`fwle_wbcLba`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub writeback_cache_lba: PhysicalAddressRaw,
     /// (`fwle_targetLba`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub target_lba: PhysicalAddressRaw,
     /// (`fwle_length`).
     pub length: u64,
@@ -116,6 +120,7 @@ bitflags! {
 #[repr(C)]
 pub struct FusionMiddleTreeValueRaw {
     /// (`fmv_lba`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub lba: PhysicalAddressRaw,
     /// (`fmv_length`).
     pub length: u32,

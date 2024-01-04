@@ -88,6 +88,11 @@ struct FieldAttributes {
     /// Used for reserved/padding fields always having 0 value.
     internal: bool,
 
+    /// Whether to copy the getter return value instead of return by reference.
+    ///
+    /// Add this to fields implementing simple structs, like those wrapping integers.
+    copied: bool,
+
     trailing_data: Option<Type>,
 
     /// Whether we're using bytes::Bytes for trailing data.
@@ -127,7 +132,10 @@ impl FieldAttributes {
                 }
             }
             Meta::Path(path) => {
-                if path.is_ident("internal") {
+                if path.is_ident("copied") {
+                    self.copied = true;
+                    Ok(())
+                } else if path.is_ident("internal") {
                     self.internal = true;
                     Ok(())
                 } else if path.is_ident("trailing_data") {
@@ -282,7 +290,7 @@ impl ApfsField {
                             }
                         }
                     } else if typ.ends_with("Raw") {
-                        if strukt.attrs.packed {
+                        if strukt.attrs.packed || self.attrs.copied {
                             quote! {
                                 #[doc = #doc_getter_struct_copy]
                                 #[inline(always)]

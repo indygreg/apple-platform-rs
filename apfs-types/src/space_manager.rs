@@ -97,6 +97,7 @@ pub struct ChunkInfoRaw {
     /// Block number of a bitmap describing this chunk (`ci_bitmap_addr`).
     ///
     /// 0 value indicates a bitmap is not stored.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub bitmap_address: PhysicalAddressRaw,
 }
 
@@ -230,9 +231,11 @@ pub struct SpaceManagerFreeQueueRaw {
     /// Ephemeral ID of B-tree root containing free queue entries (`sfq_tree_oid`).
     ///
     /// Sub-type should be [ObjectType::SpaceManagerFreeQueue].
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub tree_oid: EphemeralObjectIdentifierRaw,
 
     /// The oldest transaction ID referenced by the free queue (`sfq_oldest_xid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub oldest_xid: TransactionIdentifierRaw,
 
     /// (`sfq_tree_node_limit`).
@@ -253,9 +256,11 @@ pub struct SpaceManagerFreeQueueRaw {
 #[repr(C)]
 pub struct SpaceManagerFreeQueueKeyRaw {
     /// Transaction identifier associated with the key (`sfqk_xid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub xid: TransactionIdentifierRaw,
 
     /// Block represented by the free queue entry (`sfqk_paddr`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub address: PhysicalAddressRaw,
 }
 
@@ -319,6 +324,7 @@ pub struct SpaceManagerFreeQueueEntryRaw {
     /// (`sfqe_key`)
     pub key: SpaceManagerFreeQueueKeyRaw,
     /// (`sfqe_count`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub count: SpaceManagerFreeQueueValueRaw,
 }
 
@@ -529,11 +535,13 @@ pub struct SpaceManagerBlockRaw {
     /// First block of the internal pool bitmap ring buffer (`sm_ip_bm_base`).
     ///
     /// There are [Self::internal_pool_bitmap_block_count] blocks in this range.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub internal_pool_bitmap_base: PhysicalAddressRaw,
 
     /// First block of the internal pool [ChunkInfoBlockRaw] instances (`sm_ip_base`).
     ///
     /// Blocks are [ChunkInfoBlockRaw] as well as their bitmaps.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub internal_pool_base: PhysicalAddressRaw,
 
     /// (`sm_fs_reserve_block_count`)

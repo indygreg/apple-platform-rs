@@ -195,12 +195,15 @@ pub struct WrappedCryptoStateRaw {
     /// The encryption state's flags (`cpflags`).
     pub flags: u32,
     /// The protection class associated with the key (`persistent_class`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub persistent_class: KeyClassRaw,
     /// The version of the OS that created this structure (`key_os_version`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub key_os_revision: KeyOsVersionRaw,
     /// The version of the key (`key_revision`).
     ///
     /// Set to 1 when creating. Increment by 1 when rolling keys.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub key_revision: KeyRevisionRaw,
     /// The size, in bytes, of the wrapped key data (`key_len`).
     pub key_length: u16,
@@ -231,10 +234,13 @@ pub struct WrappedMetaCryptoStateRaw {
     /// The encryption state's flags (`cpflags`).
     pub flags: u32,
     /// The protection class associated with the key (`persistent_class`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub persistent_class: KeyClassRaw,
     /// The version of the OS that created this structure (`key_os_version`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub key_os_version: KeyOsVersionRaw,
     /// The version of the key (`key_revision`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub key_revision: KeyRevisionRaw,
     /// Reserved (`unused`).
     pub unused: u16,

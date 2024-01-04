@@ -60,8 +60,10 @@ pub struct ReaperBlockRaw {
     /// (`nr_completed_id`)
     pub completed_id: u64,
     /// (`nr_head`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub head: ObjectIdentifierRaw,
     /// (`nr_tail`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub tail: ObjectIdentifierRaw,
     /// (`nr_flags`)
     pub flags: ReaperFlagsRaw,
@@ -72,10 +74,13 @@ pub struct ReaperBlockRaw {
     /// (`nr_size`)
     pub size: u32,
     /// (`nr_fs_oid`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub fs_oid: ObjectIdentifierRaw,
     /// (`nr_oid`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub oid: ObjectIdentifierRaw,
     /// (`nr_xid`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub xid: TransactionIdentifierRaw,
     /// (`nr_nrle_flags`)
     pub nrle_flags: u32,
@@ -128,10 +133,13 @@ pub struct ReapListEntryRaw {
     /// (`nrle_size`)
     pub size: u32,
     /// (`nrle_fs_oid`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub fs_oid: ObjectIdentifierRaw,
     /// (`nrle_oid`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub oid: ObjectIdentifierRaw,
     /// (`nrle_xid`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub xid: TransactionIdentifierRaw,
 }
 
@@ -154,6 +162,7 @@ pub struct ReapListBlockRaw {
     /// Common block header (`nrl_o`)
     pub object: ObjectHeaderRaw,
     /// (`nrl_next`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub next: ObjectIdentifierRaw,
     /// (`nrl_flags`)
     pub flags: ReapListFLagsRaw,
@@ -226,15 +235,19 @@ pub struct ObjectMapCleanupStateRaw {
     pub snapshot_flags: u32,
 
     /// Transaction ID of the snapshot before the snapshots being deleted (`omc_sxidprev`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub previous_snapshot_xid: TransactionIdentifierRaw,
 
     /// Transaction ID of the first snapshot being deleted (`omc_sxidstart`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub first_snapshot_xid: TransactionIdentifierRaw,
 
     /// Transaction ID of the last snapshot being deleted (`omc_sxidend`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub last_snapshot_xid: TransactionIdentifierRaw,
 
     /// Transaction ID of the snapshot after the snapshots being deleted (`omc_sxidnext`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub next_snapshot_xid: TransactionIdentifierRaw,
 
     /// The key of the next object mapping to consider for deletion (`omc_curkey`).
@@ -264,6 +277,7 @@ pub struct VolumeReapStateRaw {
     /// (`last_pbn`)
     pub last_pbn: u64,
     /// (`cur_snap_xid`)
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub current_snapshot_xid: TransactionIdentifierRaw,
     /// (`phase`)
     ///

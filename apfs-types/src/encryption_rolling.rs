@@ -51,6 +51,7 @@ pub struct EncryptionRollingStateBlockRaw {
     /// (`ersb_flags`).
     pub flags: u64,
     /// (`ersb_snap_xid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub snapshot_xid: TransactionIdentifierRaw,
     /// (`ersb_current_fext_obj_id`).
     pub current_file_extent_id: u64,
@@ -61,12 +62,14 @@ pub struct EncryptionRollingStateBlockRaw {
     /// (`ersb_total_blk_to_encrypt`).
     pub total_block_to_encrypt: u64,
     /// (`ersb_blockmap_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub blockmap_oid: ObjectIdentifierRaw,
     /// (`ersb_tidemark_obj_id`).
     pub tidemark_object_id: u64,
     /// (`ersb_recovery_extents_count`).
     pub recovery_extents_count: u64,
     /// (`ersb_recovery_list_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub recovery_list_oid: ObjectIdentifierRaw,
     /// (`ersb_recovery_length`).
     pub recovery_length: u64,
@@ -82,6 +85,7 @@ pub struct EncryptionRollingStateBlockV1Raw {
     /// (`ersb_flags`).
     pub flags: u64,
     /// (`ersb_snap_xid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub snapshot_xid: TransactionIdentifierRaw,
     /// (`ersb_current_fext_obj_id`).
     pub current_file_extent_object_id: u64,
@@ -127,6 +131,7 @@ pub struct EncryptionRollingRecoveryBlockRaw {
     /// (`erb_offset`).
     pub offset: u64,
     /// (`erb_next_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub next_oid: ObjectIdentifierRaw,
     /// (`erb_data`).
     #[cfg_attr(feature = "derive", apfs(trailing_data))]
@@ -169,6 +174,7 @@ pub struct GeneralPurposeBitmapRaw {
     /// (`bm_o`).
     pub object: ObjectHeaderRaw,
     /// (`bm_tree_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub tree_oid: ObjectIdentifierRaw,
     /// (`bm_bit_count`).
     pub bit_count: u64,

@@ -512,15 +512,19 @@ pub struct InodeRecordValueRaw {
     pub private_id: u64,
 
     /// The time that this record was created (`create_time`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub create_time: TimeRaw,
 
     /// The time that this record was last modified (`mod_time`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub modification_time: TimeRaw,
 
     /// The time that this record's attributes were last modified (`change_time`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub change_time: TimeRaw,
 
     /// The time that this record was last accessed (`access_time`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub access_time: TimeRaw,
 
     /// The inode's flags (`internal_flags`).
@@ -698,6 +702,7 @@ pub struct DirectoryEntryRecordHashedKeyRaw {
     /// 6. Retain the lower 22 bits of the hash.
     ///
     /// Implementations can use their own CRC function.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub name_length_and_hash: DirectoryEntryRecordNameLengthAndHashRaw,
 
     /// The name (`name`).
@@ -761,6 +766,7 @@ pub struct DirectoryEntryRecordValueRaw {
     /// The identifier of the inode that this directory entry represents (`file_id`).
     pub file_id: u64,
     /// The time that this directory entry was added to the directory (`date_added`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub date_added: TimeRaw,
     /// The directory entry's flags (`flags`).
     pub flags: DirectoryRecordFlagsRaw,

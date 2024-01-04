@@ -116,6 +116,7 @@ pub struct PhysicalExtentRecordValueRaw {
     /// The kind is represented by [ObjectKind].
     ///
     /// Volumes without snapshots have kind=NEW.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub length_and_kind: PhysicalExtentLengthAndKindRaw,
 
     /// The filesystem object ID owning this extent.
@@ -186,9 +187,11 @@ pub struct FileExtentRecordValueRaw {
     /// block size defined in the container superblock.
     ///
     /// Flags are the upper 8 bits.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub length_and_flags: FileExtentLengthAndFlagsRaw,
 
     /// The physical block that the extent starts at.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub physical_block_number: PhysicalObjectIdentifierRaw,
 
     /// The encryption key or settings used in this extent.

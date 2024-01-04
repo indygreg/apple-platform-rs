@@ -69,27 +69,34 @@ pub struct ObjectMapBlockRaw {
     pub snapshot_count: u32,
 
     /// The type of tree being used for object mappings (`om_tree_type`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub tree_type: ObjectTypeValueRaw,
 
     /// The type of tree being used for snapshots (`om_snapshot_tree_type`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub snapshot_tree_type: ObjectTypeValueRaw,
 
     /// The object identifier of the tree being used for object mappings (`om_tree_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub tree_oid: ObjectIdentifierRaw,
 
     /// The object identifier of the tree being used to hold snapshot information (`om_snapshot_tree_oid`).
     ///
     /// Tree keys are transaction IDs.
     /// Tree values are [ObjectMapSnapshotRaw].
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub snapshot_tree_oid: ObjectIdentifierRaw,
 
     /// The transaction identifier of the most recent snapshot that's stored in this map (`om_most_recent_snap`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub most_recent_snapshot_identifier: TransactionIdentifierRaw,
 
     /// The smallest transaction identifier for an in-progress revert (`om_pending_revert_min`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub pending_revert_minimum_identifier: TransactionIdentifierRaw,
 
     /// The largest transaction identifier for an in-progress revert (`om_pending_revert_max`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub pending_revert_maximum_identifier: TransactionIdentifierRaw,
 }
 
@@ -99,8 +106,10 @@ pub struct ObjectMapBlockRaw {
 #[repr(C)]
 pub struct ObjectMapKeyRaw {
     /// The object identifier (`ok_oid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub oid: VirtualObjectIdentifierRaw,
     /// The transaction identifier (`ok_xid`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub xid: TransactionIdentifierRaw,
 }
 
@@ -168,6 +177,7 @@ pub struct ObjectMapValueRaw {
     pub size_bytes: u32,
 
     /// The address of the object (`ov_paddr`).
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub address: PhysicalAddressRaw,
 }
 
@@ -200,5 +210,6 @@ pub struct ObjectMapSnapshotRaw {
     /// Reserved (`oms_oid`).
     ///
     /// Populate with 0s for new snapshots and preserve values when modifying.
+    #[cfg_attr(feature = "derive", apfs(copied))]
     pub oid: ObjectIdentifierRaw,
 }
