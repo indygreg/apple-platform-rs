@@ -16,7 +16,7 @@ use syn::{
     Data, DataStruct, DeriveInput, Expr, Field, Ident, Lit, LitStr, Meta, Token, Type,
 };
 
-/// Holds parsed `#[apfs]` attributes for a struct.
+/// Holds parsed `#[apfs]` and other attributes for a struct.
 #[derive(Default, Debug)]
 struct StructAttributes {
     /// The type is a bitflags type using the specified identifier as its backing type.
@@ -27,10 +27,14 @@ struct StructAttributes {
 
     /// Indicates the type is used as a filesystem tree record value.
     filesystem_value: bool,
+
+    /// Whether the repr(packed) attribute is set.
+    packed: bool,
 }
 
 impl StructAttributes {
-    fn parse(&mut self, meta: ParseNestedMeta) -> Result<(), syn::Error> {
+    /// Parse the #[apfs()] attribute.
+    fn parse_apfs(&mut self, meta: ParseNestedMeta) -> Result<(), syn::Error> {
         if meta.path.is_ident("bitflags_u8") {
             self.bitflags = Some(Ident::new("u8", meta.path.span()));
             Ok(())
@@ -53,11 +57,37 @@ impl StructAttributes {
             Err(meta.error(format_args!("unknown attribute: {:?}", meta.path)))
         }
     }
+
+    /// Parse the #[repr] attribute.
+    fn parse_repr(&mut self, meta: Meta) -> Result<(), syn::Error> {
+        match meta {
+            Meta::Path(p) if p.is_ident("C") => Ok(()),
+            Meta::Path(p) if p.is_ident("packed") => {
+                self.packed = true;
+                Ok(())
+            }
+            Meta::List(meta) if meta.path.is_ident("packed") => {
+                // There's probably room to store the alignment and behave conditionally.
+                // Avoid the complexity for now.
+                self.packed = true;
+                Ok(())
+            }
+            _ => Err(syn::Error::new(
+                meta.span(),
+                format_args!("unhandled repr attribute: {:?}", meta),
+            )),
+        }
+    }
 }
 
 /// Holds parsed `#[apfs]` attributes for a struct field.
 #[derive(Default, Debug)]
 struct FieldAttributes {
+    /// Field is marked as internal / not exposed via public API.
+    ///
+    /// Used for reserved/padding fields always having 0 value.
+    internal: bool,
+
     trailing_data: Option<Type>,
 
     /// Whether we're using bytes::Bytes for trailing data.
@@ -97,7 +127,10 @@ impl FieldAttributes {
                 }
             }
             Meta::Path(path) => {
-                if path.is_ident("trailing_data") {
+                if path.is_ident("internal") {
+                    self.internal = true;
+                    Ok(())
+                } else if path.is_ident("trailing_data") {
                     let lit = LitStr::new("bytes::Bytes", meta.span());
                     let ty: Type = lit.parse().expect("should have parsed string to type");
 
@@ -151,6 +184,289 @@ impl ApfsField {
 
         Self { field, attrs }
     }
+
+    /// Derive getter/setter methods for this field.
+    fn derive_getter_setter(&self, strukt: &ApfsStruct) -> TokenStream {
+        // Internal fields don't get accessor functions.
+        if self.attrs.internal {
+            quote! {}
+        }
+        // Trailing data is special.
+        else if self.attrs.trailing_data.is_some() {
+            quote! {}
+        } else if let Some(ident) = &self.ident {
+            let set_ident = Ident::new(&format!("set_{}", ident), ident.span());
+            let ident_mut = Ident::new(&format!("{}_mut", ident), ident.span());
+
+            let doc_getter_int = formatdoc! {"
+                Obtain the value of the [`{ident}`](#structfield.{ident}) field.
+
+                Returned value is decoded to native endianness and always reflects the value set
+                by [`set_{ident}()`](Self::set_{ident}).
+                "
+            };
+
+            let doc_setter_int = formatdoc! {"
+                Set the value of the [`{ident}`](#structfield.{ident}) field.
+
+                Value is always specified in its native endianness. Stored will be converted to
+                appropriate on-disk endianness automatically.
+                "
+            };
+
+            let doc_getter_struct = formatdoc! {"
+                Obtain a reference to the [`{ident}`](#structfield.{ident}) field.
+                "
+            };
+
+            let doc_getter_mut_struct = formatdoc! {"
+                Obtain a mutable reference to the [`{ident}`](#structfield.{ident}) field.
+                "
+            };
+
+            let doc_getter_struct_copy = formatdoc! {"
+                Obtain a copy of the [`{ident}`](#structfield.{ident}) field.
+
+                A reference cannot be safely obtained because of the memory alignment of the
+                data.
+                "
+            };
+
+            let doc_setter_struct = formatdoc! {"
+                Set the value of the [`{ident}`](#structfield.{ident}) field.
+                "
+            };
+
+            // We need to be aware of memory alignment when referencing fields.
+            // Unaligned field access can be slow or even UB.
+            // For integer fields, since we return integer values, this isn't a concern since
+            // we don't return a reference. But for struct fields, we need to take the struct's
+            // alignment into account.
+
+            match &self.ty {
+                Type::Path(path) => {
+                    let type_ident = path.path.get_ident().expect("no type identifier");
+
+                    let typ = type_ident.to_string();
+
+                    if matches!(typ.as_str(), "i32" | "u8" | "u16" | "u32" | "u64") {
+                        quote! {
+                            #[doc = #doc_getter_int]
+                            #[cfg(target_endian = "little")]
+                            #[inline(always)]
+                            pub fn #ident(&self) -> #type_ident {
+                                self.#ident
+                            }
+
+                            #[doc = #doc_setter_int]
+                            #[cfg(target_endian = "little")]
+                            #[inline(always)]
+                            pub fn #set_ident(&mut self, value: #type_ident) -> &mut Self {
+                                self.#ident = value;
+                                self
+                            }
+
+                            #[doc = #doc_getter_int]
+                            #[cfg(target_endian = "big")]
+                            #[inline(always)]
+                            pub fn #ident(&self) -> #type_ident {
+                                #type_ident::from_le(self.#ident)
+                            }
+
+                            #[doc = #doc_setter_int]
+                            #[cfg(target_endian = "big")]
+                            #[inline(always)]
+                            pub fn #set_ident(&mut self, value: #type_ident) -> &mut Self {
+                                self.#ident = value.to_le();
+                                self
+                            }
+                        }
+                    } else if typ.ends_with("Raw") {
+                        if strukt.attrs.packed {
+                            quote! {
+                                #[doc = #doc_getter_struct_copy]
+                                #[inline(always)]
+                                pub fn #ident(&self) -> #type_ident {
+                                    self.#ident
+                                }
+
+                                #[doc = #doc_setter_struct]
+                                #[inline(always)]
+                                pub fn #set_ident(&mut self, value: #type_ident) -> &mut Self {
+                                    self.#ident = value;
+                                    self
+                                }
+                            }
+                        } else {
+                            quote! {
+                                #[doc = #doc_getter_struct]
+                                #[inline(always)]
+                                pub fn #ident(&self) -> &#type_ident {
+                                    &self.#ident
+                                }
+
+                                #[doc = #doc_getter_mut_struct]
+                                #[inline(always)]
+                                pub fn #ident_mut(&mut self) -> &mut #type_ident {
+                                    &mut self.#ident
+                                }
+                            }
+                        }
+                    } else {
+                        // Fields should be integers or *Raw structs.
+                        panic!("unhandled field type: {}", typ);
+                    }
+                }
+                Type::Array(arr) => {
+                    // This is an arbitrary restriction to avoid having to deal with unaligned
+                    // memory.
+                    assert!(!strukt.attrs.packed, "unexpected array on packed struct");
+
+                    quote! {
+                        #[doc = #doc_getter_struct]
+                        #[inline(always)]
+                        pub fn #ident(&self) -> &#arr {
+                            &self.#ident
+                        }
+
+                        #[doc = #doc_getter_mut_struct]
+                        #[inline(always)]
+                        pub fn #ident_mut(&mut self) -> &mut #arr {
+                            &mut self.#ident
+                        }
+                    }
+                }
+                typ => {
+                    panic!("unhandled field type: {:?}", typ);
+                }
+            }
+        } else {
+            // Unit struct.
+
+            let doc_getter_int_unit = formatdoc! {"
+                Obtain the value of the inner value.
+
+                Returned value is decoded to native endianness and always reflects the value set
+                by [`set()`](Self::set).
+                "
+            };
+
+            let doc_setter_int_unit = formatdoc! {"
+                Set the value of the inner value.
+
+                Value is always specified in its native endianness. Stored will be converted to
+                appropriate on-disk endianness automatically.
+                "
+            };
+
+            match &self.ty {
+                Type::Path(path) => {
+                    if let Some(flags_type) = &strukt.attrs.bitflags {
+                        // This API is a bit wonky. We may want to introduce dedicated wrapper types
+                        // for bit flags so someone can't easily get a handle on the flags in the
+                        // wrong byteorder.
+                        quote! {
+                            #[cfg(target_endian = "little")]
+                            #[inline(always)]
+                            pub fn get_native_endian(&self) -> Self {
+                                *self
+                            }
+
+                            #[cfg(target_endian = "little")]
+                            #[inline(always)]
+                            pub fn set_native_endian(&mut self, value: Self) -> &mut Self {
+                                self.toggle(*self);
+                                self.insert(value);
+                                self
+                            }
+
+                            #[cfg(target_endian = "big")]
+                            #[inline(always)]
+                            pub fn get_native_endian(&self) -> Self {
+                                Self::from_bits_retain(#flags_type::from_le(self.bits()))
+                            }
+
+                            #[cfg(target_endian = "big")]
+                            #[inline(always)]
+                            pub fn set_native_endian(&mut self, value: Self) -> &mut Self {
+                                self.toggle(*self);
+                                self.insert(Self::from_bits_retain(value.to_le()));
+                                self
+                            }
+
+                        }
+                    } else {
+                        let type_ident = path
+                            .path
+                            .get_ident()
+                            .expect("unhandled missing unit type identifier");
+                        let typ = type_ident.to_string();
+
+                        if matches!(typ.as_str(), "i64" | "u16" | "u32" | "u64") {
+                            quote! {
+                                #[doc = #doc_getter_int_unit]
+                                #[cfg(target_endian = "little")]
+                                #[inline(always)]
+                                pub fn get(&self) -> #type_ident {
+                                    self.0
+                                }
+
+                                #[doc = #doc_setter_int_unit]
+                                #[cfg(target_endian = "little")]
+                                #[inline(always)]
+                                pub fn set(&mut self, value: #type_ident) -> &mut Self {
+                                    self.0 = value;
+                                    self
+                                }
+
+                                #[doc = #doc_getter_int_unit]
+                                #[cfg(target_endian = "big")]
+                                #[inline(always)]
+                                pub fn get(&self) -> #type_ident {
+                                    #type_ident::from_le(self.0)
+                                }
+
+                                #[doc = #doc_setter_int_unit]
+                                #[cfg(target_endian = "big")]
+                                #[inline(always)]
+                                pub fn set(&mut self, value: #type_ident) -> &mut Self {
+                                    self.0 = value.to_le();
+                                    self
+                                }
+                            }
+                        } else {
+                            panic!("unhandled unit struct type: {}", typ);
+                        }
+                    }
+                }
+                Type::Array(arr) => {
+                    quote! {
+                        #[doc = "Obtain a reference to the inner array"]
+                        #[inline(always)]
+                        pub fn get(&self) -> &#arr {
+                            &self.0
+                        }
+
+                        #[doc = "Obtain a mutable reference to the inner array"]
+                        #[inline(always)]
+                        pub fn get_mut(&mut self) -> &mut #arr {
+                            &mut self.0
+                        }
+
+                        #[doc = "Set the value of the inner value"]
+                        #[inline(always)]
+                        pub fn set(&mut self, value: #arr) -> &mut Self {
+                            self.0 = value;
+                            self
+                        }
+                    }
+                }
+                _ => {
+                    panic!("unhandled unit struct type: {:?}", self.ty);
+                }
+            }
+        }
+    }
 }
 
 /// Represents an ApfsData struct.
@@ -175,8 +491,17 @@ impl ApfsStruct {
         let mut attrs = StructAttributes::default();
 
         for attr in attributes {
-            if attr.meta.path().is_ident("apfs") {
-                attr.parse_nested_meta(|meta| attrs.parse(meta)).unwrap();
+            if attr.path().is_ident("apfs") {
+                attr.parse_nested_meta(|meta| attrs.parse_apfs(meta))
+                    .unwrap();
+            } else if attr.path().is_ident("repr") {
+                let nested = attr
+                    .parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)
+                    .unwrap();
+
+                for x in nested {
+                    attrs.parse_repr(x).unwrap();
+                }
             }
         }
 
@@ -220,6 +545,23 @@ impl ApfsStruct {
     fn trailing_data_field(&self) -> Option<&ApfsField> {
         self.fields.iter().find(|f| f.attrs.trailing_data.is_some())
     }
+
+    /// Derive methods to get/set field values.
+    fn derive_field_methods(&self) -> TokenStream {
+        let mut parts = vec![];
+
+        for field in &self.fields {
+            parts.push(field.derive_getter_setter(&self));
+        }
+
+        let ident = &self.raw_ident;
+
+        quote! {
+            impl #ident {
+                #(#parts)*
+            }
+        }
+    }
 }
 
 /// Macro for `#[derive(ApfsData)]`.
@@ -251,6 +593,9 @@ pub fn derive_apfs_data(input: proc_macro::TokenStream) -> proc_macro::TokenStre
 fn apfs_data_struct(strukt: ApfsStruct) -> TokenStream {
     let mut parts = vec![];
 
+    parts.push(strukt.derive_field_methods());
+
+    // impl DiskStruct
     parts.push(if let Some(inner) = &strukt.attrs.bitflags {
         apfs_data_struct_impl_disk_flags(&strukt.raw_ident, inner)
     } else {
@@ -277,6 +622,7 @@ fn apfs_data_struct(strukt: ApfsStruct) -> TokenStream {
         });
     }
 
+    // struct *Parsed { .. }
     parts.push(apfs_data_impl_parsed(&strukt));
 
     quote! {
