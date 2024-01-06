@@ -182,6 +182,19 @@ where
     /// Implementations may receive slices too small for self. It is up
     /// to implementations to detect this and error accordingly.
     fn parse_bytes(data: &[u8]) -> Result<Self, ParseError>;
+
+    /// Get the raw bytes of this value.
+    ///
+    /// For dynamic sized types, the trailing data is NOT included.
+    ///
+    /// This is only safe if this trait is properly applied to types. e.g. the
+    /// underlying type should have repr(C) and only contain plain old data
+    /// values that are safe to copy.
+    fn as_bytes(&self) -> &[u8] {
+        let len = core::mem::size_of_val(self);
+        let slf: *const Self = self;
+        unsafe { core::slice::from_raw_parts(slf.cast::<u8>(), len) }
+    }
 }
 
 impl DiskStruct for u8 {
