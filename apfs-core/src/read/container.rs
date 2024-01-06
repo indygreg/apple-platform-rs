@@ -10,7 +10,9 @@ use crate::object_map::{ObjectMap, ObjectMapBlock};
 use crate::read::volume::VolumeReader;
 use crate::read::FilesystemReader;
 use crate::space_manager::SpaceManagerBlock;
-use apfs_types::common::{EphemeralObjectIdentifierRaw, PhysicalObjectIdentifierRaw};
+use apfs_types::common::{
+    EphemeralObjectIdentifierRaw, PhysicalObjectIdentifierRaw, TransactionIdentifierRaw,
+};
 use apfs_types::container::{
     CheckpointMapBlockParsed, CheckpointMappingParsed, ContainerSuperblockParsed,
     ContainerSuperblockRaw, CONTAINER_SUPERBLOCK_MAGIC,
@@ -149,11 +151,44 @@ impl ContainerReader {
             .ok_or_else(|| ApfsError::NoSuperblock)
     }
 
+    /// Find the superblock for a given transaction identifier.
+    pub fn superblock_transaction(
+        &self,
+        txn: TransactionIdentifierRaw,
+    ) -> Result<Option<ContainerSuperblockParsed>> {
+        for sb in self.iter_superblocks() {
+            match sb {
+                Ok(sb) => {
+                    if sb.object().transaction_identifier() == txn {
+                        return Ok(Some(sb));
+                    }
+                }
+                Err(err) => {
+                    return Err(err);
+                }
+            }
+        }
+
+        Ok(None)
+    }
+
     /// Obtain a reader using the newest superblock.
-    pub fn latest_superblock_reader(&self) -> Result<SuperblockReader> {
+    pub fn superblock_reader_latest(&self) -> Result<SuperblockReader> {
         let sb = self.superblock_latest()?;
 
         SuperblockReader::new(self.clone(), sb)
+    }
+
+    /// Obtain a reader for the superblock bound to a specific transaction.
+    pub fn superblock_reader_transaction(
+        &self,
+        txn: TransactionIdentifierRaw,
+    ) -> Result<Option<SuperblockReader>> {
+        if let Some(sb) = self.superblock_transaction(txn)? {
+            Ok(Some(SuperblockReader::new(self.clone(), sb)?))
+        } else {
+            Ok(None)
+        }
     }
 
     /// Iterate over checkpoint map blocks for a given superblock.
