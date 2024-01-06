@@ -280,6 +280,13 @@ impl ObjectTypeValueRaw {
     pub fn flags(&self) -> ObjectTypeFlags {
         ObjectTypeFlags::from_bits_retain(self.flags_raw())
     }
+
+    /// Construct an instance from an [ObjectType] and [ObjectTypeFlags].
+    pub fn from_type_and_flags(ot: ObjectType, flags: ObjectTypeFlags) -> Self {
+        let v = u32::from(ot) | flags.bits();
+
+        Self(v)
+    }
 }
 
 /// Common object header (`obj_phys_t`).
