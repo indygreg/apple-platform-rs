@@ -518,7 +518,7 @@ pub struct SpaceManagerBlockRaw {
     /// (`sm_ip_bm_tx_multiplier`).
     ///
     /// Seems to match the [INTERNAL_POOL_BITMAP_TX_MULTIPLIER] constant.
-    internal_pool_bitmap_tx_multipler: u32,
+    internal_pool_bitmap_tx_multiplier: u32,
 
     /// Internal pool block count (`sm_ip_block_count`).
     ///
