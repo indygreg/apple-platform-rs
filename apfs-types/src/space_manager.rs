@@ -33,6 +33,37 @@
 //! 1. There must be a bitmap bit for every container block.
 //! 2. There must be a [ChunkInfoBlockRaw] describing each bitmap block.
 //!
+//! For small containers using the default 4096 byte block size, the internal pool
+//! will consist of 1 [ChunkInfoBlockRaw] and 1 bitmap block. (There are typically no
+//! [ChunkInfoAddressesBlockRaw] for smaller containers since addresses are short
+//! enough to be stored inline in the space manager block - see
+//! [SpaceManagerDeviceRaw::address_offset].)
+//!
+//! Apple's implementation appears to treat the internal pool as a ring buffer with
+//! enough storage for 3 copies of the [ChunkInfoBlockRaw] + [ChunkInfoAddressesBlockRaw]
+//! + bitmaps (i.e. 6 blocks for small containers). There are often N>3 superblocks /
+//! space managers in a container and space manager blocks for older transactions can
+//! refer to internal pool blocks that have been overwritten by a newer transaction.
+//! It is unclear if this behavior is a bug or by design. The behavior does result in
+//! older transactions losing container consistency, making rollback to these
+//! transactions difficult (impossible)? Perhaps Apple's implementation only guarantees
+//! at most 3 valid transactions in containers?
+//!
+//! # Internal Pool Bitmap
+//!
+//! The internal pool is sparsely populated and may contain blocks corresponding to
+//! different transactions. The space manager is responsible for managing its own
+//! data in the internal pool.
+//!
+//! In addition to the internal pool, there is a span of blocks holding the *internal
+//! pool bitmap*. These blocks are bitmaps tracking which blocks in the internal pool
+//! are in use.
+//!
+//! The internal pool bitmap is stored as a ring buffer. The offset to the current entry
+//! in this ring buffer is stored via [SpaceManagerBlockRaw::internal_pool_bitmap_offset].
+//! [SpaceManagerBlockRaw] also defines additional metadata, such as how large entries
+//! in the ring buffer are.
+//!
 //! # Free Queue
 //!
 //! The space manager tracks lists of empty block ranges using a *free queue*.
@@ -87,6 +118,10 @@ pub struct ChunkInfoRaw {
     /// The number of blocks / bits in the bitmap (`ci_block_count`).
     ///
     /// This should be 8 * block_size since each bitmap consumes the full block.
+    ///
+    /// For the final chunk in the bitmap, this value will be less than
+    /// 8 * block_size: it will reflect the number of real blocks tracked
+    /// by the bitmap, not the capacity of the bitmap.
     block_count: u32,
 
     /// The number of available blocks / bits in the bitmap (`ci_free_count`).
@@ -466,6 +501,23 @@ pub const INTERNAL_POOL_BITMAP_TX_MULTIPLIER: u32 = 16;
 pub const INTERNAL_POOL_BITMAP_INDEX_INVALID: u16 = 0xffff;
 
 /// Space manager block (`spaceman_phys_t`).
+///
+/// Instances also store various pieces of data after the fixed size header defined by this
+/// struct. Apple's implementation appears to use the following layout:
+///
+/// * 0000-2520 This struct
+/// * 2520-2528 (u64) internal_pool_bitmap_xid_offset value
+/// * 2528-2536 (u64) internal_pool_bitmap_offset value
+/// * 2536-*    (array of u16) internal pool bitmap free next offsets array. For smaller
+///             containers using 4096 byte blocks, this array is 16 elements / 32 bytes, ending
+///             at offset 2568.
+/// * *-*       (array of u64) Chunk info addresses array for the main device. Starting
+///             offset is defined by [SpaceManagerDeviceRaw::address_offset]. Array length
+///             defined by [SpaceManagerDeviceRaw::chunk_info_block_count]. For smaller
+///             containers using 4096 byte blocks, this array is length 1 and ending offset
+///             is 2576. This is also the starting offset of the following array.
+/// * *-*       (array of u64) Chunk info addresses array for the tier2 device. Same as
+///             above. Array can be empty.
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "derive", derive(ApfsData))]
 #[repr(C)]
@@ -610,7 +662,7 @@ pub struct SpaceManagerBlockRaw {
 
     /// Size of this data structure (`sm_struct_size`).
     ///
-    /// Seems to include the contents of [Self::datazone].
+    /// Seems to include the contents of [Self::datazone], which comes out to 2520 bytes.
     ///
     /// Seems to be identical to [Self::internal_pool_bitmap_xid_offset],
     /// implying that IP bitmap XID is stored immediately after this struct.
