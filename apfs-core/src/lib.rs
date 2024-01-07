@@ -36,6 +36,7 @@ pub mod snapshot {
     pub use apfs_types::snapshot::*;
 }
 pub mod space_manager;
+pub mod write;
 
 pub use apfs_types::common;
 pub use apfs_types::{ParseError, ParsedDiskStruct};

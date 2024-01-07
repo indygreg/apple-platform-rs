@@ -2,18 +2,48 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-use crate::block::{Block, BlockReader};
+use crate::block::{Block, BlockReadError, BlockReader};
 use crate::btree::BTree;
-use crate::error::{ApfsError, Result};
+use crate::error::ApfsError;
 use crate::read::container::SuperblockReader;
 use apfs_types::common::{
-    PhysicalAddressRaw, PhysicalObjectIdentifierRaw, TransactionIdentifierRaw,
+    EphemeralObjectIdentifierRaw, PhysicalAddressRaw, PhysicalObjectIdentifierRaw,
+    TransactionIdentifierRaw,
 };
 pub use apfs_types::space_manager::*;
-use apfs_types::{DiskStruct, ParsedDiskStruct};
+use apfs_types::{DiskStruct, ParseError, ParsedDiskStruct};
 use bit_vec::BitVec;
 use bytes::Bytes;
 use std::ops::Deref;
+
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum SpaceManagerError {
+    #[error("Chunk info block too large for block size")]
+    ChunkInfoTooLarge,
+
+    #[error("block reading error: {0}")]
+    BlockRead(#[from] BlockReadError),
+
+    #[error("parse error:{0}")]
+    Parse(#[from] ParseError),
+
+    #[error("free queue ephemeral object id not found: {0}")]
+    FreeQueueEphemeralObjectNotFound(EphemeralObjectIdentifierRaw),
+
+    // TODO these should be a b-tree specific error type.
+    #[error("failed to construct free queue b-tree: {0}")]
+    FreeQueueConstruction(Box<ApfsError>),
+
+    #[error("failed to walk free queue b-tree: {0}")]
+    FreeQueueWalk(Box<ApfsError>),
+
+    #[error("bitmap block out of range")]
+    BitmapBlockOutOfRange,
+}
+
+pub type Result<T, E = SpaceManagerError> = std::result::Result<T, E>;
 
 /// Represents a bitmap referenced by a [ChunkInfoRaw].
 ///
@@ -232,10 +262,14 @@ impl SpaceManagerBlock {
         if queue.tree_oid() != 0.into() {
             let mapping = reader
                 .find_ephemeral_object_mapping(queue.tree_oid())
-                .ok_or_else(|| ApfsError::EphemeralObjectNotFound(queue.tree_oid()))?;
+                .ok_or_else(|| {
+                    SpaceManagerError::FreeQueueEphemeralObjectNotFound(queue.tree_oid())
+                })?;
 
             let block = reader.get_block_validated(mapping.address())?;
-            Ok(Some(BTree::from_block(block)?))
+            Ok(Some(BTree::from_block(block).map_err(|err| {
+                SpaceManagerError::FreeQueueConstruction(Box::new(err))
+            })?))
         } else {
             Ok(None)
         }
@@ -249,8 +283,13 @@ impl SpaceManagerBlock {
         cb: impl Fn(SpaceManagerFreeQueueKeyParsed, SpaceManagerFreeQueueValueRaw) -> Result<()>,
     ) -> Result<()> {
         if let Some(queue) = self.free_queue(reader, queue)? {
-            for res in queue.iter_entries(reader, &reader.object_map()?) {
-                let (k, v) = res?;
+            for res in queue.iter_entries(
+                reader,
+                &reader
+                    .object_map()
+                    .map_err(|err| SpaceManagerError::FreeQueueWalk(Box::new(err)))?,
+            ) {
+                let (k, v) = res.map_err(|err| SpaceManagerError::FreeQueueWalk(Box::new(err)))?;
 
                 let k = SpaceManagerFreeQueueKeyParsed::from_bytes(k.into())?;
 

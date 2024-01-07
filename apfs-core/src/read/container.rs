@@ -370,6 +370,6 @@ impl SuperblockReader {
 
         let block = self.inner.get_block_validated(oid.address())?;
 
-        SpaceManagerBlock::new(block)
+        Ok(SpaceManagerBlock::new(block)?)
     }
 }

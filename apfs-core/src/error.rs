@@ -18,8 +18,6 @@ pub enum ApfsError {
     NonAligned,
     #[error("malformed trailing bounds: {0}")]
     TrailingBoundsMalformed(&'static str),
-    #[error("invalid fletcher64 checksum")]
-    InvalidChecksum,
     #[error("invalid file system object type")]
     InvalidFileSystemObjectType,
     #[error("string data not NULL terminated")]
@@ -36,6 +34,8 @@ pub enum ApfsError {
     VirtualObjectNotFound(VirtualObjectIdentifierRaw),
     #[error("block read error: {0}")]
     BlockRead(#[from] crate::block::BlockReadError),
+    #[error("space manager error:{0}")]
+    SpaceManager(#[from] crate::space_manager::SpaceManagerError),
     #[error("reaper not found")]
     ReaperNotFound,
     #[error("space manager not found")]

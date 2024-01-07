@@ -4,10 +4,11 @@
 
 //! Block-level primitives.
 
-use crate::error::{ApfsError, Result};
+use crate::error::Result;
+use crate::write::block::MutBlock;
 use apfs_types::common::PhysicalObjectIdentifierRaw;
 use apfs_types::object::ObjectHeaderParsed;
-use apfs_types::ParsedDiskStruct;
+use apfs_types::{ParseError, ParsedDiskStruct};
 use bytes::{Bytes, BytesMut};
 use log::trace;
 use std::io::{Read, Seek, SeekFrom, Write};
@@ -21,6 +22,10 @@ pub enum BlockReadError {
     BlockBounds(PhysicalObjectIdentifierRaw),
     #[error("I/O error reading block data: {0}")]
     Io(#[from] std::io::Error),
+    #[error("invalid checksum")]
+    InvalidChecksum,
+    #[error("failed to parse object header: {0}")]
+    ObjectHeaderParse(ParseError),
     #[error("other block reading error: {0}")]
     Other(&'static str),
 }
@@ -80,15 +85,30 @@ pub trait BlockReader {
     fn get_block_validated<N: Into<PhysicalObjectIdentifierRaw>>(
         &self,
         block_number: N,
-    ) -> Result<Block, ApfsError> {
+    ) -> Result<Block, BlockReadError> {
         let block = self.get_block(block_number)?;
         block.validate_checksum()?;
 
         Ok(block)
     }
+
+    /// Resolve a [MutBlock] instance for a specified block number.
+    ///
+    /// This is similar to [Self::get_block()] except this version returns a [MutBlock],
+    /// allowing modification of existing block data.
+    fn get_mut_block<N: Into<PhysicalObjectIdentifierRaw>>(
+        &self,
+        block_number: N,
+    ) -> Result<MutBlock, BlockReadError> {
+        let block_number = block_number.into();
+        let mut res = MutBlock::new_zeroed(block_number, self.block_size() as _);
+        self.read_block_into(block_number, &mut res)?;
+
+        Ok(res)
+    }
 }
 
-fn fletcher64(input: &[u8]) -> u64 {
+pub fn fletcher64(input: &[u8]) -> u64 {
     let mut sum1 = 0u64;
     let mut sum2 = 0u64;
 
@@ -146,13 +166,13 @@ impl Block {
     }
 
     /// Ensure the checksum is valid, returning an error if not.
-    pub fn validate_checksum(&self) -> Result<(), ApfsError> {
+    pub fn validate_checksum(&self) -> Result<(), BlockReadError> {
         let header = self.object_header()?;
 
         if header.checksum() == self.checksum_object() {
             Ok(())
         } else {
-            Err(ApfsError::InvalidChecksum)
+            Err(BlockReadError::InvalidChecksum)
         }
     }
 
@@ -163,8 +183,8 @@ impl Block {
     /// headerless blocks will return garbage values in the header.
     ///
     /// It is up to callers to validate the block's validity.
-    pub fn object_header(&self) -> Result<ObjectHeaderParsed> {
-        Ok(ObjectHeaderParsed::from_bytes(self.buf.clone())?)
+    pub fn object_header(&self) -> Result<ObjectHeaderParsed, BlockReadError> {
+        ObjectHeaderParsed::from_bytes(self.buf.clone()).map_err(BlockReadError::ObjectHeaderParse)
     }
 }
 
