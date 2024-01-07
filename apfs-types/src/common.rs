@@ -363,6 +363,12 @@ impl From<i64> for PhysicalAddressRaw {
     }
 }
 
+impl From<u64> for PhysicalAddressRaw {
+    fn from(value: u64) -> Self {
+        Self(value as i64)
+    }
+}
+
 impl From<PhysicalAddressRaw> for i64 {
     fn from(value: PhysicalAddressRaw) -> Self {
         value.0
