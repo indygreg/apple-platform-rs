@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* scroll 0.11 -> 0.12.
+
 ## 0.17.0
 
 Released on 2023-11-17.

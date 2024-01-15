@@ -16,6 +16,8 @@ Released on ReleaseDate.
 * aws-sdk-s3 0.36 -> 1.10.
 * aws-smithy-http 0.57 -> 0.60.
 * aws-smithy-types 0.57 -> 1.1.
+* goblin 0.7 -> 0.8.
+* scroll 0.11 -> 0.12.
 * tungstenite 0.20 -> 0.21.
 * windows-sys 0.48 -> 0.52.
 
