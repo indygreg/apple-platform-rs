@@ -72,10 +72,28 @@ impl BundleSigner {
             .map_err(AppleCodesignError::DirectoryBundle)?;
         let root_bundle_path = main_bundle.root_dir().to_path_buf();
 
-        let mut bundles = main_bundle
-            .nested_bundles(true)
-            .map_err(AppleCodesignError::DirectoryBundle)?
-            .into_iter()
+        let mut bundles = BTreeMap::default();
+
+        bundles.insert(None, SingleBundleSigner::new(root_bundle_path, main_bundle));
+
+        Ok(Self { bundles })
+    }
+
+    /// Find bundles in subdirectories of the main bundle and mark them for signing.
+    pub fn collect_nested_bundles(&mut self) -> Result<(), AppleCodesignError> {
+        let (root_bundle_path, nested) = {
+            let main = self.bundles.get(&None).expect("main bundle should exist");
+
+            let nested = main
+                .bundle
+                .nested_bundles(true)
+                .map_err(AppleCodesignError::DirectoryBundle)?;
+
+            (main.root_bundle_path.clone(), nested)
+        };
+
+        self.bundles.extend(
+        nested.into_iter()
             .filter(|(k, bundle)| {
                 // Our bundle classifier is very aggressive about annotating directories
                 // as bundles. Pretty much anything with an Info.plist can get through.
@@ -125,11 +143,9 @@ impl BundleSigner {
                     SingleBundleSigner::new(root_bundle_path.clone(), bundle),
                 )
             })
-            .collect::<BTreeMap<Option<String>, SingleBundleSigner>>();
+        );
 
-        bundles.insert(None, SingleBundleSigner::new(root_bundle_path, main_bundle));
-
-        Ok(Self { bundles })
+        Ok(())
     }
 
     /// Write a signed bundle to the given destination directory.

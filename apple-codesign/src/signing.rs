@@ -156,7 +156,8 @@ impl<'key> UnifiedSigner<'key> {
         let input_path = input_path.as_ref();
         warn!("signing bundle at {}", input_path.display());
 
-        let signer = BundleSigner::new_from_path(input_path)?;
+        let mut signer = BundleSigner::new_from_path(input_path)?;
+        signer.collect_nested_bundles()?;
         signer.write_signed_bundle(output_path, &self.settings)?;
 
         Ok(())

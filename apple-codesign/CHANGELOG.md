@@ -14,6 +14,8 @@ Released on ReleaseDate.
   notarizations to Apple. (#124)
 * Fixed a bug where `.dSYM/` directories were incorrectly signed as
   bundles. (#128)
+* (API) `BundleSigner` now requires calling `collect_nested_bundles()` to register
+  child bundles for signing instead of signing all nested bundles by default.
 * aws-config 0.57 -> 1.1.
 * aws-sdk-s3 0.36 -> 1.10.
 * aws-smithy-http 0.57 -> 0.60.
