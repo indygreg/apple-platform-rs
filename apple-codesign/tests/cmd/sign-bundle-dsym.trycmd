@@ -20,12 +20,6 @@ $ touch MyApp.app/Contents/MacOS/MyApp.app.dSYM/Contents/Resources/Relocations/a
 $ rcodesign sign MyApp.app MyApp.app.signed
 signing MyApp.app to MyApp.app.signed
 signing bundle at MyApp.app
-signing 1 nested bundles in the following order:
-Contents/MacOS/MyApp.app.dSYM
-entering nested bundle Contents/MacOS/MyApp.app.dSYM
-signing bundle at MyApp.app/Contents/MacOS/MyApp.app.dSYM into MyApp.app.signed/Contents/MacOS/MyApp.app.dSYM
-bundle has no main executable to sign specially
-leaving nested bundle Contents/MacOS/MyApp.app.dSYM
 signing bundle at MyApp.app into MyApp.app.signed
 signing main executable Contents/MacOS/MyApp
 
@@ -44,8 +38,6 @@ f e3b0c44298fc1c149afb MyApp.app.signed/Contents/MacOS/MyApp.app.dSYM/Contents/R
 d                      MyApp.app.signed/Contents/MacOS/MyApp.app.dSYM/Contents/Resources/Relocations
 d                      MyApp.app.signed/Contents/MacOS/MyApp.app.dSYM/Contents/Resources/Relocations/aarch64
 f e3b0c44298fc1c149afb MyApp.app.signed/Contents/MacOS/MyApp.app.dSYM/Contents/Resources/Relocations/aarch64/MyApp.yml
-d                      MyApp.app.signed/Contents/MacOS/MyApp.app.dSYM/Contents/_CodeSignature
-f de284994e528302d0e0a MyApp.app.signed/Contents/MacOS/MyApp.app.dSYM/Contents/_CodeSignature/CodeResources
 d                      MyApp.app.signed/Contents/_CodeSignature
 f cc2d27446655d0b25e58 MyApp.app.signed/Contents/_CodeSignature/CodeResources
 
@@ -112,151 +104,6 @@ $ rcodesign print-signature-info MyApp.app.signed
   file_size: 0
   file_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
   entity: other
-- path: Contents/MacOS/MyApp.app.dSYM/Contents/_CodeSignature/CodeResources
-  file_size: 2708
-  file_sha256: de284994e528302d0e0aff72fbb67494b72801d74462bdc86b44b0661e515233
-  entity:
-    bundle_code_signature_file: !ResourcesXml
-    - <?xml version="1.0" encoding="UTF-8"?>
-    - <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-    - <plist version="1.0">
-    - <dict>
-    - '  <key>files</key>'
-    - '  <dict>'
-    - '    <key>Resources/DWARF/MyApp</key>'
-    - '    <data>'
-    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
-    - '    </data>'
-    - '    <key>Resources/Relocations/aarch64/MyApp.yml</key>'
-    - '    <data>'
-    - '    2jmj7l5rSw0yVb/vlWAYkK/YBwk='
-    - '    </data>'
-    - '  </dict>'
-    - '  <key>files2</key>'
-    - '  <dict>'
-    - '    <key>Resources/DWARF/MyApp</key>'
-    - '    <dict>'
-    - '      <key>hash2</key>'
-    - '      <data>'
-    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
-    - '      </data>'
-    - '    </dict>'
-    - '    <key>Resources/Relocations/aarch64/MyApp.yml</key>'
-    - '    <dict>'
-    - '      <key>hash2</key>'
-    - '      <data>'
-    - '      47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
-    - '      </data>'
-    - '    </dict>'
-    - '  </dict>'
-    - '  <key>rules</key>'
-    - '  <dict>'
-    - '    <key>^Resources/</key>'
-    - '    <true/>'
-    - '    <key>^Resources/.*/.lproj/</key>'
-    - '    <dict>'
-    - '      <key>optional</key>'
-    - '      <true/>'
-    - '      <key>weight</key>'
-    - '      <real>1000</real>'
-    - '    </dict>'
-    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
-    - '    <dict>'
-    - '      <key>omit</key>'
-    - '      <true/>'
-    - '      <key>weight</key>'
-    - '      <real>1100</real>'
-    - '    </dict>'
-    - '    <key>^Resources/Base/.lproj/</key>'
-    - '    <dict>'
-    - '      <key>weight</key>'
-    - '      <real>1010</real>'
-    - '    </dict>'
-    - '    <key>^version.plist$</key>'
-    - '    <true/>'
-    - '  </dict>'
-    - '  <key>rules2</key>'
-    - '  <dict>'
-    - '    <key>.*/.dSYM($|/)</key>'
-    - '    <dict>'
-    - '      <key>weight</key>'
-    - '      <real>11</real>'
-    - '    </dict>'
-    - '    <key>^(.*/)?/.DS_Store$</key>'
-    - '    <dict>'
-    - '      <key>omit</key>'
-    - '      <true/>'
-    - '      <key>weight</key>'
-    - '      <real>2000</real>'
-    - '    </dict>'
-    - '    <key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>'
-    - '    <dict>'
-    - '      <key>nested</key>'
-    - '      <true/>'
-    - '      <key>weight</key>'
-    - '      <real>10</real>'
-    - '    </dict>'
-    - '    <key>^.*</key>'
-    - '    <true/>'
-    - '    <key>^Info/.plist$</key>'
-    - '    <dict>'
-    - '      <key>omit</key>'
-    - '      <true/>'
-    - '      <key>weight</key>'
-    - '      <real>20</real>'
-    - '    </dict>'
-    - '    <key>^PkgInfo$</key>'
-    - '    <dict>'
-    - '      <key>omit</key>'
-    - '      <true/>'
-    - '      <key>weight</key>'
-    - '      <real>20</real>'
-    - '    </dict>'
-    - '    <key>^Resources/</key>'
-    - '    <dict>'
-    - '      <key>weight</key>'
-    - '      <real>20</real>'
-    - '    </dict>'
-    - '    <key>^Resources/.*/.lproj/</key>'
-    - '    <dict>'
-    - '      <key>optional</key>'
-    - '      <true/>'
-    - '      <key>weight</key>'
-    - '      <real>1000</real>'
-    - '    </dict>'
-    - '    <key>^Resources/.*/.lproj/locversion.plist$</key>'
-    - '    <dict>'
-    - '      <key>omit</key>'
-    - '      <true/>'
-    - '      <key>weight</key>'
-    - '      <real>1100</real>'
-    - '    </dict>'
-    - '    <key>^Resources/Base/.lproj/</key>'
-    - '    <dict>'
-    - '      <key>weight</key>'
-    - '      <real>1010</real>'
-    - '    </dict>'
-    - '    <key>^[^/]+$</key>'
-    - '    <dict>'
-    - '      <key>nested</key>'
-    - '      <true/>'
-    - '      <key>weight</key>'
-    - '      <real>10</real>'
-    - '    </dict>'
-    - '    <key>^embedded/.provisionprofile$</key>'
-    - '    <dict>'
-    - '      <key>weight</key>'
-    - '      <real>20</real>'
-    - '    </dict>'
-    - '    <key>^version/.plist$</key>'
-    - '    <dict>'
-    - '      <key>weight</key>'
-    - '      <real>20</real>'
-    - '    </dict>'
-    - '  </dict>'
-    - </dict>
-    - </plist>
-    - ''
 - path: Contents/_CodeSignature/CodeResources
   file_size: 2734
   file_sha256: cc2d27446655d0b25e58aa5da3dc69320fa09d259e0215f17e6bdee93b354043

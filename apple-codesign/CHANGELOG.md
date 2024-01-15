@@ -12,6 +12,8 @@ Released on ReleaseDate.
 * Fix to restore working builds with `--no-default-features`.
 * Added `notary-list` command to print information about recently submitted
   notarizations to Apple. (#124)
+* Fixed a bug where `.dSYM/` directories were incorrectly signed as
+  bundles. (#128)
 * aws-config 0.57 -> 1.1.
 * aws-sdk-s3 0.36 -> 1.10.
 * aws-smithy-http 0.57 -> 0.60.

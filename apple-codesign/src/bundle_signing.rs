@@ -82,29 +82,38 @@ impl BundleSigner {
                 // We apply additional filtering here so we only emit bundles that can
                 // be signed.
                 //
-                // Arguably a better solution here is to use the CodeResources rule
+                // A better solution here is to use the CodeResources rule
                 // based file walker to look for directories with the "nested" flag.
                 // If a bundle-looking directory exists outside of a "nested" rule,
                 // it probably shouldn't be signed.
 
-                let has_package_type = matches!(bundle.info_plist_key_string("CFBundlePackageType"), Ok(Some(_)));
+                let (has_package_type, has_signable_package_type) = if let Ok(Some(pt)) = bundle.info_plist_key_string("CFBundlePackageType") {
+                    (true, pt != "dSYM")
+                } else {
+                    (false, false)
+                };
+
                 let has_bundle_identifier = matches!(bundle.info_plist_key_string("CFBundleIdentifier"), Ok(Some(_)));
 
-                match (has_package_type, has_bundle_identifier)  {
-                    (true, true) => {
+                match (has_package_type, has_signable_package_type, has_bundle_identifier)  {
+                    (true, false, _) =>{
+                        debug!("{k} discarded because its CFBundlePackageType is not signable");
+                        false
+                    }
+                    (true, _, true) => {
                         // It quacks like a bundle.
                         true
                     }
-                    (false, false) => {
+                    (false, _, false) => {
                         // This looks like a naked Info.plist.
                         debug!("{k} discarded as a signable bundle because its Info.plist lacks CFBundlePackageType and CFBundleIdentifier");
                         false
                     }
-                    (true, false) => {
+                    (true, _, false) => {
                         info!("{k} has an Info.plist with a CFBundlePackageType but not a CFBundleIdentifier; we'll try to sign it but we recommend adding a CFBundleIdentifier");
                         true
                     }
-                    (false, true) => {
+                    (false, _, true) => {
                         info!("{k} has an Info.plist with a CFBundleIdentifier but without a CFBundlePackageType; we'll try to sign it but we recommend adding a CFBundlePackageType");
                         true
                     }
