@@ -60,19 +60,25 @@ Apple's servers to scan the asset and issue a notarization ticket.
 If a notarization operation is interrupted or if you want to check on its
 status, there are a few support commands to query Apple's servers.
 
+``notary-list`` will list the most recent submitted notarization requests.
+This command will print a list of submission IDs, dates, and a brief status
+of each one.::
+
+   rcodesign notary-list --api-key-file ~/.appstoreconnect/key.json
+
 ``notary-wait`` can be used to wait on a previously submitted notarization
 request to finish::
 
-   rcodesign notary-wait
+   rcodesign notary-wait \
      --api-key-file ~/.appstoreconnect/key.json \
      <submission ID>
 
 Here, ``<submission ID>`` is an identifier issued by Apple and printed when
-running ``rcodesign notary-submit``.
+running ``rcodesign notary-list`` or ``rcodesign notary-submit``.
 
 ``notary-log`` can be used to retrieve the notarization log for a submission
 identifier::
 
-   rcodesign notary-log
+   rcodesign notary-log \
      --api-key-file ~/.appstoreconnect/key.json \
      <submission ID>
