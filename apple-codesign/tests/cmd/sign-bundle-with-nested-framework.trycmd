@@ -802,4 +802,43 @@ $ rcodesign print-signature-info MyApp.app.signed
     - </plist>
     - ''
 
+$ rcodesign sign --shallow MyApp.app MyApp.app.signed-shallow
+? 1
+signing MyApp.app to MyApp.app.signed-shallow
+signing bundle at MyApp.app
+3 nested bundles will be copied instead of signed because shallow signing enabled:
+Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
+Contents/Frameworks/Sparkle.framework/Versions/A
+Contents/Frameworks/Sparkle.framework
+entering nested bundle Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
+shallow signing enabled; bundle will be copied instead of signed
+leaving nested bundle Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
+entering nested bundle Contents/Frameworks/Sparkle.framework/Versions/A
+shallow signing enabled; bundle will be copied instead of signed
+leaving nested bundle Contents/Frameworks/Sparkle.framework/Versions/A
+entering nested bundle Contents/Frameworks/Sparkle.framework
+shallow signing enabled; bundle will be copied instead of signed
+leaving nested bundle Contents/Frameworks/Sparkle.framework
+signing bundle at MyApp.app into MyApp.app.signed-shallow
+Error: binary does not have code signature data
+
+$ rcodesign sign --shallow MyApp.app.signed MyApp.app.signed-shallow
+signing MyApp.app.signed to MyApp.app.signed-shallow
+signing bundle at MyApp.app.signed
+3 nested bundles will be copied instead of signed because shallow signing enabled:
+Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
+Contents/Frameworks/Sparkle.framework/Versions/A
+Contents/Frameworks/Sparkle.framework
+entering nested bundle Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
+shallow signing enabled; bundle will be copied instead of signed
+leaving nested bundle Contents/Frameworks/Sparkle.framework/Versions/A/Resources/Autoupdate.app
+entering nested bundle Contents/Frameworks/Sparkle.framework/Versions/A
+shallow signing enabled; bundle will be copied instead of signed
+leaving nested bundle Contents/Frameworks/Sparkle.framework/Versions/A
+entering nested bundle Contents/Frameworks/Sparkle.framework
+shallow signing enabled; bundle will be copied instead of signed
+leaving nested bundle Contents/Frameworks/Sparkle.framework
+signing bundle at MyApp.app.signed into MyApp.app.signed-shallow
+signing main executable Contents/MacOS/MyApp
+
 ```

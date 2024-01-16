@@ -333,6 +333,19 @@ Options:
       --exclude <EXCLUDE>
           Glob expression of paths to exclude from signing
 
+      --shallow
+          Do not traverse into nested entities when signing.
+          
+          Some signable entities (like directory bundles) have child/nested entities that can be signed. By default, signing traversed into these entities and signs all entities recursively.
+          
+          Activating shallow signing mode using this flag overrides the default behavior.
+          
+          The behavior of this flag is subject to change. As currently implemented it will:
+          
+          * Prevent signing nested bundles when signing a bundle. e.g. if an app bundle contains a framework, only the app bundle will be signed. Additional Mach-O binaries within a bundle may still be signed with this flag set.
+          
+          Activating shallow signing mode can result in signing failures if the skipped nested entities aren't signed. For example, when signing an application bundle containing an unsigned nested bundle/framework, signing will fail with an error about a missing code signature. Always be sure to sign nested entities before their parents when this mode is activated.
+
       --smartcard-slot <SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
 

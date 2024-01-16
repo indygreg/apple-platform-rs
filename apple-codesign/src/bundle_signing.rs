@@ -173,10 +173,14 @@ impl BundleSigner {
         bundles.sort_by(|(a, _), (b, _)| b.len().cmp(&a.len()));
 
         if !bundles.is_empty() {
-            warn!(
-                "signing {} nested bundles in the following order:",
-                bundles.len()
-            );
+            if settings.shallow() {
+                warn!("{} nested bundles will be copied instead of signed because shallow signing enabled:", bundles.len());
+            } else {
+                warn!(
+                    "signing {} nested bundles in the following order:",
+                    bundles.len()
+                );
+            }
             for bundle in &bundles {
                 warn!("{}", bundle.0);
             }
@@ -186,8 +190,11 @@ impl BundleSigner {
             let nested_dest_dir = dest_dir.join(rel);
             warn!("entering nested bundle {}", rel,);
 
-            // If we excluded this bundle from signing, just copy all the files.
-            if settings.path_exclusion_pattern_matches(rel) {
+            if settings.shallow() {
+                warn!("shallow signing enabled; bundle will be copied instead of signed");
+                copy_bundle(&nested.bundle, &nested_dest_dir)?;
+            } else if settings.path_exclusion_pattern_matches(rel) {
+                // If we excluded this bundle from signing, just copy all the files.
                 warn!("bundle is in exclusion list; it will be copied instead of signed");
                 copy_bundle(&nested.bundle, &nested_dest_dir)?;
             } else {

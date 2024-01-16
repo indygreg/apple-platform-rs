@@ -302,6 +302,7 @@ pub struct SigningSettings<'key> {
     time_stamp_url: Option<Url>,
     signing_time: Option<chrono::DateTime<chrono::Utc>>,
     path_exclusion_patterns: Vec<Pattern>,
+    shallow: bool,
 
     // Scope-specific settings.
     // These are BTreeMap so when we filter the keys, keys with higher precedence come
@@ -510,6 +511,19 @@ impl<'key> SigningSettings<'key> {
     pub fn add_path_exclusion(&mut self, v: &str) -> Result<(), AppleCodesignError> {
         self.path_exclusion_patterns.push(Pattern::new(v)?);
         Ok(())
+    }
+
+    /// Whether to perform a shallow, non-nested signing operation.
+    ///
+    /// Can mean different things to different entities. For bundle signing, shallow
+    /// mode means not to recurse into nested bundles.
+    pub fn shallow(&self) -> bool {
+        self.shallow
+    }
+
+    /// Set whether to perform a shallow signing operation.
+    pub fn set_shallow(&mut self, v: bool) {
+        self.shallow = v;
     }
 
     /// Obtain the primary digest type to use.
@@ -1230,6 +1244,7 @@ impl<'key> SigningSettings<'key> {
             signing_time: self.signing_time,
             team_id: self.team_id.clone(),
             path_exclusion_patterns: self.path_exclusion_patterns.clone(),
+            shallow: self.shallow,
             digest_type: self
                 .digest_type
                 .clone()

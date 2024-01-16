@@ -1454,6 +1454,29 @@ struct Sign {
     #[arg(long)]
     exclude: Vec<String>,
 
+    /// Do not traverse into nested entities when signing.
+    ///
+    /// Some signable entities (like directory bundles) have child/nested entities
+    /// that can be signed. By default, signing traversed into these entities and
+    /// signs all entities recursively.
+    ///
+    /// Activating shallow signing mode using this flag overrides the default behavior.
+    ///
+    /// The behavior of this flag is subject to change. As currently implemented it
+    /// will:
+    ///
+    /// * Prevent signing nested bundles when signing a bundle. e.g. if an app
+    ///   bundle contains a framework, only the app bundle will be signed. Additional
+    ///   Mach-O binaries within a bundle may still be signed with this flag set.
+    ///
+    /// Activating shallow signing mode can result in signing failures if the skipped
+    /// nested entities aren't signed. For example, when signing an application bundle
+    /// containing an unsigned nested bundle/framework, signing will fail with an
+    /// error about a missing code signature. Always be sure to sign nested entities
+    /// before their parents when this mode is activated.
+    #[arg(long)]
+    shallow: bool,
+
     /// Path to Mach-O binary to sign
     input_path: PathBuf,
 
@@ -1511,6 +1534,8 @@ impl CliCommand for Sign {
             settings.set_team_id(team_name);
         }
 
+        settings.set_shallow(self.shallow);
+
         for pattern in &self.exclude {
             settings.add_path_exclusion(pattern)?;
         }
@@ -1527,6 +1552,7 @@ impl CliCommand for Sign {
                 self.input_path.display(),
                 output_path.display()
             );
+
             signer.sign_path(&self.input_path, output_path)?;
         } else {
             warn!("signing {} in place", self.input_path.display());

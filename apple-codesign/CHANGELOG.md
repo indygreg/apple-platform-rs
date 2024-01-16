@@ -14,6 +14,12 @@ Released on ReleaseDate.
   notarizations to Apple. (#124)
 * Fixed a bug where `.dSYM/` directories were incorrectly signed as
   bundles. (#128)
+* The `sign` command has gained a `--shallow` argument to prevent traversing into
+  nested entities when signing. It currently only prevents traversal into nested
+  bundles. In the future, behavior may be expanded to also exclude signing of
+  additional Mach-O binaries inside bundles, among other potential changes.
+  Ultimately we want this signing mode to converge with the default behavior of
+  Apple's tooling.
 * (API) `BundleSigner` now requires calling `collect_nested_bundles()` to register
   child bundles for signing instead of signing all nested bundles by default.
 * aws-config 0.57 -> 1.1.

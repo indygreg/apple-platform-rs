@@ -416,4 +416,14 @@ $ rcodesign print-signature-info MyApp.app.signed
     - </plist>
     - ''
 
+$ rcodesign sign --shallow --entitlements-xml-file entitlements.plist MyApp.app MyApp.app.signed-shallow
+setting entitlements XML for main signing target from path entitlements.plist
+signing MyApp.app to MyApp.app.signed-shallow
+signing bundle at MyApp.app
+signing bundle at MyApp.app into MyApp.app.signed-shallow
+signing Mach-O file Contents/MacOS/bin
+signing Mach-O file Contents/MacOS/lib.dylib
+signing Mach-O file Contents/Resources/non-nested-bin
+signing main executable Contents/MacOS/MyApp
+
 ```
