@@ -82,3 +82,84 @@ identifier::
    rcodesign notary-log \
      --api-key-file ~/.appstoreconnect/key.json \
      <submission ID>
+
+.. _apple_codesign_notarization_problems:
+
+Common Notarization Problems
+============================
+
+Notarization can fail for a myriad of reasons. On software that hasn't been
+successfully notarized before and on untested release pipeline, notarization
+failures before success are somewhat expected.
+
+Apple's requirements for notarization are enumerated at
+`Notarizing macOS software before distribution <https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution>`_.
+
+The sections below document common notarization failures and how to mitigate
+them. They somewhat mirror Apple's official guidance at
+`Resolving common notarization issues <https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/resolving_common_notarization_issues>`_,
+which we highly recommend you read before this documentation.
+
+.. _apple_codesign_notarization_problem_apple_first:
+
+Notarize with Apple Tooling First
+---------------------------------
+
+For applications that haven't been notarized before or when debugging issues
+with notarization, we highly recommend using Apple's official tooling and
+workflows for notarizing from a macOS machine before attempting to debug
+notarization with ``rcodesign``.
+
+This is because notarization and its errors can be challenging to work through.
+Having an existence proof that a piece of software can be notarized with Apple's
+tooling proves that software is capable of passing notarization. It means that
+failures in ``rcodesign`` notarization are due to invoking ``rcodesign``
+incorrectly or due to a bug in ``rcodesign``.
+
+We highly recommend reading Apple's notarization documentation (linked above)
+when debugging notarization failures.
+
+.. _apple_codesign_notarization_problem_hardened_runtime:
+
+Hardened Runtime Not Enabled
+----------------------------
+
+The hardened runtime needs to be enabled to pass notarization. If you don't
+have the hardened runtime enabled, notarization has been known to fail with
+the error: ``The executable does not have the hardened runtime enabled.``
+
+To enable the hardened runtime with ``rcodesign sign``, the ``runtime``
+code signature flag must be enabled via the ``--code-signature-flags`` argument.
+e.g.::
+
+   rcodesign sign \
+      --code-signature-flags runtime \
+      MyApp.app
+
+``--code-signature-flags`` only applies to the _main_ entity being signed by
+default. If you are signing an application bundle with multiple binaries, for
+example, you will need to use the _scoped_ syntax to ``--code-signature-flags``
+to specify code signature flags for each additional path being signed. e.g.::
+
+   rcodesign sign \
+     --code-signature-flags runtime \
+     --code-signature-flags Contents/MacOS/additional-binary:runtime \
+     MyApp.app
+
+For complex bundles consisting of several binaries or nested bundles, this
+can grow quite cumbersome and it is easy to forget to annotate a binary,
+especially if new files appear in the bundles. For complex signing scenarios,
+we recommend using :ref:`configuration files <apple_codesign_config_files>` to
+define the signing settings.
+
+.. _apple_codesign_notarization_problem_signing_key:
+
+Incorrect Signing Certificate
+-----------------------------
+
+Another common notarization problem is not signing with an Apple issued signing
+certificate or not using the appropriate certificate for signing a particular
+entity.
+
+See Apple's `Use a valid Developer ID certificate <https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/resolving_common_notarization_issues#3087721>`_
+for more.
