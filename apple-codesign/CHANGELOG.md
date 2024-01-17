@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.27.0
+
+Released on 2024-01-17.
+
 * Published a
   [GitHub Action for code signing and notarization](https://github.com/marketplace/actions/apple-code-signing)
   and wrote project documentation for how to use it. (#6)

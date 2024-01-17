@@ -1,6 +1,6 @@
 [package]
 name = "apple-xar"
-version = "0.17.0"
+version = "0.18.0"
 authors = ["Gregory Szorc <gregory.szorc@gmail.com>"]
 edition = "2021"
 rust-version = "1.70"

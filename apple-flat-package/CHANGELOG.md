@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.18.0
+
+Released on 2024-01-17.
+
 ## 0.17.0
 
 * scroll 0.11 -> 0.12.
