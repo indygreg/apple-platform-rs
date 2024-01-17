@@ -6,7 +6,7 @@
 
 use {
     crate::{
-        certificate::AppleCertificate,
+        certificate::{AppleCertificate, CodeSigningCertificateExtension},
         code_directory::CodeSignatureFlags,
         code_requirement::CodeRequirementExpression,
         cryptography::DigestType,
@@ -19,7 +19,7 @@ use {
     goblin::mach::cputype::{
         CpuType, CPU_TYPE_ARM, CPU_TYPE_ARM64, CPU_TYPE_ARM64_32, CPU_TYPE_X86_64,
     },
-    log::info,
+    log::{error, info},
     reqwest::{IntoUrl, Url},
     std::{
         collections::{BTreeMap, BTreeSet},
@@ -303,6 +303,7 @@ pub struct SigningSettings<'key> {
     signing_time: Option<chrono::DateTime<chrono::Utc>>,
     path_exclusion_patterns: Vec<Pattern>,
     shallow: bool,
+    for_notarization: bool,
 
     // Scope-specific settings.
     // These are BTreeMap so when we filter the keys, keys with higher precedence come
@@ -526,6 +527,19 @@ impl<'key> SigningSettings<'key> {
         self.shallow = v;
     }
 
+    /// Whether the signed asset will later be notarized.
+    ///
+    /// This serves as a hint to engage additional signing settings that are required
+    /// for an asset to be successfully notarized by Apple.
+    pub fn for_notarization(&self) -> bool {
+        self.for_notarization
+    }
+
+    /// Set whether to engage notarization compatibility mode.
+    pub fn set_for_notarization(&mut self, v: bool) {
+        self.for_notarization = v;
+    }
+
     /// Obtain the primary digest type to use.
     pub fn digest_type(&self, scope: impl AsRef<SettingsScope>) -> DigestType {
         self.digest_type
@@ -680,7 +694,21 @@ impl<'key> SigningSettings<'key> {
         &self,
         scope: impl AsRef<SettingsScope>,
     ) -> Option<CodeSignatureFlags> {
-        self.code_signature_flags.get(scope.as_ref()).copied()
+        let mut flags = self.code_signature_flags.get(scope.as_ref()).copied();
+
+        if self.for_notarization {
+            flags.get_or_insert(CodeSignatureFlags::default());
+
+            flags.as_mut().map(|flags| {
+                if !flags.contains(CodeSignatureFlags::RUNTIME) {
+                    info!("adding hardened runtime flag because notarization mode enabled");
+                }
+
+                flags.insert(CodeSignatureFlags::RUNTIME);
+            });
+        }
+
+        flags
     }
 
     /// Set code signature flags for signed Mach-O binaries.
@@ -1245,6 +1273,7 @@ impl<'key> SigningSettings<'key> {
             team_id: self.team_id.clone(),
             path_exclusion_patterns: self.path_exclusion_patterns.clone(),
             shallow: self.shallow,
+            for_notarization: self.for_notarization,
             digest_type: self
                 .digest_type
                 .clone()
@@ -1350,6 +1379,49 @@ impl<'key> SigningSettings<'key> {
                     key_map(ScopedSetting::LibraryConstraints, key).map(|key| (key, value))
                 })
                 .collect::<BTreeMap<_, _>>(),
+        }
+    }
+
+    /// Attempt to validate the settings consistency when the `for notarization` flag is set.
+    ///
+    /// On error, logs errors at error level and returns an Err.
+    pub fn ensure_for_notarization_settings(&self) -> Result<(), AppleCodesignError> {
+        if !self.for_notarization {
+            return Ok(());
+        }
+
+        let mut have_error = false;
+
+        if let Some((_, cert)) = self.signing_key() {
+            if !cert.chains_to_apple_root_ca() && !cert.is_test_apple_signed_certificate() {
+                error!("--for-notarization requires use of an Apple-issued signing certificate; current certificate is not signed by Apple");
+                error!("hint: use a signing certificate issued by Apple that is signed by an Apple certificate authority");
+                have_error = true;
+            }
+
+            if !cert.apple_code_signing_extensions().into_iter().any(|e| {
+                e == CodeSigningCertificateExtension::DeveloperIdApplication
+                    || e == CodeSigningCertificateExtension::DeveloperIdInstaller
+                    || e == CodeSigningCertificateExtension::DeveloperIdKernel {}
+            }) {
+                error!("--for-notarization requires use of a Developer ID signing certificate; current certificate doesn't appear to be such a certificate");
+                error!("hint: use a `Developer ID Application`, `Developer ID Installer`, or `Developer ID Kernel` certificate");
+                have_error = true;
+            }
+
+            if self.time_stamp_url().is_none() {
+                error!("--for-notarization requires use of a time-stamp protocol server; none configured");
+                have_error = true;
+            }
+        } else {
+            error!("--for-notarization requires use of a Developer ID signing certificate; no signing certificate was provided");
+            have_error = true;
+        }
+
+        if have_error {
+            Err(AppleCodesignError::ForNotarizationInvalidSettings)
+        } else {
+            Ok(())
         }
     }
 }
@@ -1599,6 +1671,26 @@ mod tests {
 
         let s = settings.entitlements_xml(SettingsScope::Main)?;
         assert_eq!(s, Some("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>application-identifier</key>\n\t<string>appid</string>\n\t<key>com.apple.developer.team-identifier</key>\n\t<string>ABCDEF</string>\n</dict>\n</plist>".into()));
+
+        Ok(())
+    }
+
+    #[test]
+    fn for_notarization_handling() -> Result<(), AppleCodesignError> {
+        let mut settings = SigningSettings::default();
+        settings.set_for_notarization(true);
+
+        assert_eq!(
+            settings.code_signature_flags(SettingsScope::Main),
+            Some(CodeSignatureFlags::RUNTIME)
+        );
+
+        assert_eq!(
+            settings
+                .as_bundle_macho_settings("")
+                .code_signature_flags(SettingsScope::Main),
+            Some(CodeSignatureFlags::RUNTIME)
+        );
 
         Ok(())
     }

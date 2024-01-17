@@ -346,6 +346,19 @@ Options:
           
           Activating shallow signing mode can result in signing failures if the skipped nested entities aren't signed. For example, when signing an application bundle containing an unsigned nested bundle/framework, signing will fail with an error about a missing code signature. Always be sure to sign nested entities before their parents when this mode is activated.
 
+      --for-notarization
+          Indicate that the entity being signed will later be notarized.
+          
+          Notarized software is subject to specific requirements, such as enabling the hardened runtime.
+          
+          The presence of this flag influences signing settings and engages additional checks to help ensure that signed software can be successfully notarized.
+          
+          This flag is best effort. Notarization failures of software signed with this flag may be indicative of bugs in this software.
+          
+          The behavior of this flag is subject to change. As currently implemented, it will:
+          
+          * Require the use of a "Developer ID" signing certificate issued by Apple. * Require the use of a time-stamp server. * Enable the hardened runtime code signature flag on all Mach-O binaries (equivalent to `--code-signature-flags runtime` for all signed paths).
+
       --smartcard-slot <SLOT>
           Smartcard slot number of signing certificate to use (9c is common)
 

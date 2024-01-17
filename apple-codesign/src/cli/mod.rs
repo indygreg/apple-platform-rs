@@ -1477,6 +1477,27 @@ struct Sign {
     #[arg(long)]
     shallow: bool,
 
+    /// Indicate that the entity being signed will later be notarized.
+    ///
+    /// Notarized software is subject to specific requirements, such as enabling the
+    /// hardened runtime.
+    ///
+    /// The presence of this flag influences signing settings and engages additional
+    /// checks to help ensure that signed software can be successfully notarized.
+    ///
+    /// This flag is best effort. Notarization failures of software signed with
+    /// this flag may be indicative of bugs in this software.
+    ///
+    /// The behavior of this flag is subject to change. As currently implemented,
+    /// it will:
+    ///
+    /// * Require the use of a "Developer ID" signing certificate issued by Apple.
+    /// * Require the use of a time-stamp server.
+    /// * Enable the hardened runtime code signature flag on all Mach-O binaries
+    ///   (equivalent to `--code-signature-flags runtime` for all signed paths).
+    #[arg(long)]
+    for_notarization: bool,
+
     /// Path to Mach-O binary to sign
     input_path: PathBuf,
 
@@ -1535,12 +1556,15 @@ impl CliCommand for Sign {
         }
 
         settings.set_shallow(self.shallow);
+        settings.set_for_notarization(self.for_notarization);
 
         for pattern in &self.exclude {
             settings.add_path_exclusion(pattern)?;
         }
 
         ScopedSigningSettings(c.paths.clone()).load_into_settings(&mut settings)?;
+
+        settings.ensure_for_notarization_settings()?;
 
         // Settings are locked in. Proceed to sign.
 

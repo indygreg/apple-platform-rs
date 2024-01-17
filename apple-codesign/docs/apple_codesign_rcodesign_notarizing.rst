@@ -100,6 +100,30 @@ them. They somewhat mirror Apple's official guidance at
 `Resolving common notarization issues <https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/resolving_common_notarization_issues>`_,
 which we highly recommend you read before this documentation.
 
+.. _apple_codesign_notarization_for_notarization:
+
+Using `sign --for-notarization`
+-------------------------------
+
+The ``rcodesign sign`` command has a ``--for-notarization`` argument that
+attempts to engage *Apple notarization compatibility mode*.
+
+When this flag is used:
+
+* The signing configuration is validated for notarization compatibility.
+* Signing settings are automatically changed to help ensure notarization compatibility.
+
+This flag is best effort. If you encounter notarization failures when using
+this flag that you think could be automatically detected or prevented,
+please consider filing a bug report.
+
+Usage example::
+
+   rcodesign sign \
+     --for-notarization \
+     --pem-source developer-id-application.pem \
+     MyApp.app
+
 .. _apple_codesign_notarization_problem_apple_first:
 
 Notarize with Apple Tooling First

@@ -900,6 +900,9 @@ pub trait AppleCertificate: Sized {
     /// certificates as the Organizational Unit field of the subject. So this
     /// function is just a shortcut for retrieving that.
     fn apple_team_id(&self) -> Option<String>;
+
+    /// Whether this is a certificate pretending to be signed by an Apple CA but isn't really.
+    fn is_test_apple_signed_certificate(&self) -> bool;
 }
 
 impl AppleCertificate for CapturedX509Certificate {
@@ -1028,6 +1031,15 @@ impl AppleCertificate for CapturedX509Certificate {
                     .into(),
             ))
             .unwrap_or(None)
+    }
+
+    fn is_test_apple_signed_certificate(&self) -> bool {
+        if let Ok(digest) = self.sha256_fingerprint() {
+            hex::encode(digest)
+                == "5939ad5770d8b977b38d07533754371314744e87a8d606433f689e9bc6b980a0"
+        } else {
+            false
+        }
     }
 }
 

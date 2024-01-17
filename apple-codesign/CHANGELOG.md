@@ -20,6 +20,11 @@ Released on ReleaseDate.
   additional Mach-O binaries inside bundles, among other potential changes.
   Ultimately we want this signing mode to converge with the default behavior of
   Apple's tooling.
+* The `sign` command has gained a `--for-notarization` argument that attempts to
+  engage and enforce signing settings required for Apple notarization. The goal
+  of the feature is to cut down on notarization failures after successful
+  signing operations. If you encounter a notarization failure when using this
+  new flag, consider filing a bug report.
 * (API) `BundleSigner` now requires calling `collect_nested_bundles()` to register
   child bundles for signing instead of signing all nested bundles by default.
 * aws-config 0.57 -> 1.1.

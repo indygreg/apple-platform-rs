@@ -286,6 +286,9 @@ pub enum AppleCodesignError {
     #[error("Could not find App Store Connect API key in default search locations")]
     AppStoreConnectApiKeyNotFound,
 
+    #[error("signing settings are not compatible with notarization")]
+    ForNotarizationInvalidSettings,
+
     #[error("do not know how to notarize {0}")]
     NotarizeUnsupportedPath(PathBuf),
 
