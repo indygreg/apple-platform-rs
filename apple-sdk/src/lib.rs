@@ -237,6 +237,8 @@ pub enum Platform {
     MacOsX,
     WatchOs,
     WatchSimulator,
+    XrOs,
+    XrOsSimulator,
     Unknown(String),
 }
 
@@ -254,6 +256,8 @@ impl FromStr for Platform {
             "macosx" => Ok(Self::MacOsX),
             "watchos" => Ok(Self::WatchOs),
             "watchsimulator" => Ok(Self::WatchSimulator),
+            "xros" => Ok(Self::XrOs),
+            "xrsimulator" => Ok(Self::XrOsSimulator),
             v => Ok(Self::Unknown(v.to_string())),
         }
     }
@@ -318,6 +322,8 @@ impl Platform {
             target if target.ends_with("-apple-watchos") => Platform::WatchOs,
             "x86_64-apple-tvos" => Self::AppleTvSimulator,
             target if target.ends_with("-apple-tvos") => Platform::AppleTvOs,
+            "aarch64-apple-xros-sim" => Platform::XrOsSimulator,
+            target if target.ends_with("-apple-xros") => Platform::XrOs,
             _ => return Err(Error::UnknownTarget(target.to_string())),
         };
         Ok(platform)
@@ -339,6 +345,8 @@ impl Platform {
             Self::MacOsX => "MacOSX",
             Self::WatchOs => "WatchOS",
             Self::WatchSimulator => "WatchSimulator",
+            Self::XrOs => "XROS",
+            Self::XrOsSimulator => "XRSimulator",
             Self::Unknown(v) => v,
         }
     }
@@ -1081,6 +1089,8 @@ mod test {
         test("x86_64-apple-ios-macabi", IPhoneOs);
         test("x86_64-apple-tvos", AppleTvSimulator);
         test("x86_64-apple-watchos-sim", WatchSimulator);
+        test("aarch64-apple-xros", XrOs);
+        test("aarch64-apple-xros-sim", XrOsSimulator);
 
         assert!(Platform::from_target_triple("x86_64-unknown-linux-gnu").is_err());
 
