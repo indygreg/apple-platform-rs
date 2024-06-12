@@ -21,6 +21,7 @@ use {
     aws_smithy_types::byte_stream::ByteStream,
     headers::Authorization,
     hyper::Uri,
+    hyper::client::HttpConnector,
     hyper_proxy::{Proxy, Intercept, ProxyConnector},
     log::warn,
     sha2::Digest,
@@ -296,9 +297,10 @@ impl Notarizer {
             UploadKind::Path(path) => rt.block_on(ByteStream::from_path(path))?,
         };
 
+
         // upload using s3 api
         warn!("resolving AWS S3 configuration from Apple-provided credentials");
-        let config = rt.block_on(
+        let mut config = rt.block_on(
             aws_config::defaults(aws_config::BehaviorVersion::latest())
                 .credentials_provider(Credentials::new(
                     submission.data.attributes.aws_access_key_id.clone(),
@@ -313,39 +315,58 @@ impl Notarizer {
                 .region(Region::new("us-west-2"))
                 .load(),
         );
-
-        let http_proxy = env::var_os("HTTP_PROXY").or(env::var_os("http_proxy"));
-        if http_proxy.is_some() {
-          debug!("using proxy: {:?}", http_proxy);
-
-          let proxy = {
-          let proxy_uri = http_proxy.unwrap().to_str().unwrap().parse::<Uri>().unwrap();
-          let mut proxy = Proxy::new(Intercept::All, proxy_uri);
-
-          let proxy_user = env::var_os("proxy_user");
-          let proxy_password = env::var_os("proxy_password");
-
-          match (proxy_user, proxy_password) {
-              (Some(user), Some(password)) => {
-              proxy.set_authorization(Authorization::basic(user.to_str().unwrap(), password.to_str().unwrap()));
-              }
-              _ => {}
-          }
-
-          let connector = hyper::client::HttpConnector::new();
-          let proxy_connector = ProxyConnector::from_proxy(connector, proxy).unwrap();
-          proxy_connector
-          };
-          let hyper_client = aws_smithy_client::hyper_ext::Adapter::builder()
-          .build(proxy);
-          let proxy_config = aws_sdk_s3::config::Builder::from(&config).http_connector(hyper_client).build();
-          let s3_client = aws_sdk_s3::client::Client::from_conf(proxy_config);
+        warn!("test");
+        // check if proxy env var is set
+        if env::var("https_proxy").is_err() {
+            warn!("no proxy set");
         }
         else
         {
-          debug!("no proxy configured");
-          let s3_client = aws_sdk_s3::Client::new(&config);
+            warn!("proxy set");
+            pub fn determine_proxy() -> Option<ProxyConnector<HttpConnector>> {
+                // let proxy_url: Url = std::env::var("https_proxy").ok()?.parse().ok()?;
+                let proxy_uri: Uri = std::env::var("https_proxy").ok()?.parse().ok()?;
+                let mut proxy = Proxy::new(Intercept::All, proxy_uri);
+            
+                let proxy_user = env::var_os("proxy_user");
+                let proxy_password = env::var_os("proxy_password");
+                match (proxy_user, proxy_password) {
+                    (Some(user), Some(password)) => {
+                    proxy.set_authorization(Authorization::basic(user.to_str().unwrap(), password.to_str().unwrap()));
+                    }
+                    _ => {}
+                }
+            
+                let connector = HttpConnector::new();
+                Some(ProxyConnector::from_proxy(connector, proxy).unwrap())
+            }
+
+            let proxy = determine_proxy().unwrap();
+            let client = aws_smithy_runtime::client::http::hyper_014::HyperClientBuilder::new().build(proxy);
+
+             // upload using s3 api
+            warn!("resolving AWS S3 configuration from Apple-provided credentials");
+            config = rt.block_on(
+                aws_config::defaults(aws_config::BehaviorVersion::latest())
+                    .credentials_provider(Credentials::new(
+                        submission.data.attributes.aws_access_key_id.clone(),
+                        submission.data.attributes.aws_secret_access_key.clone(),
+                        Some(submission.data.attributes.aws_session_token.clone()),
+                        None,
+                        "apple-codesign",
+                    ))
+                    // The region is not given anywhere in the Apple documentation. From
+                    // manually testing all available regions, it appears to be
+                    // us-west-2.
+                    .http_client(client.clone())
+                    .region(Region::new("us-west-2"))
+                    .load(),
+            );
         }
+
+
+        let s3_client = aws_sdk_s3::Client::new(&config);
+
         warn!(
             "uploading asset to s3://{}/{}",
             submission.data.attributes.bucket, submission.data.attributes.object
