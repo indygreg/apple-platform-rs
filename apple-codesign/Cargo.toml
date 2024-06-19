@@ -44,7 +44,7 @@ goblin = "0.8.0"
 headers = "0.3.8"
 hex = "0.4.3"
 hyper = { version = "0.14.27", features = ["client"] }
-hyper-proxy = "0.9.1"
+hyper-proxy = { version = "0.9.1", default-features = false, features = ["rustls"] }
 log = "0.4.20"
 md-5 = "0.10.6"
 minicbor = { version = "0.20.0", features = ["derive", "std"] }
