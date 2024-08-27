@@ -505,6 +505,7 @@ pub struct FileEncoding {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Ea {
+    pub id: u64,
     pub name: String,
     pub offset: u64,
     pub size: u64,
@@ -516,7 +517,7 @@ pub struct Ea {
 
 impl Ea {
     pub fn write_xml<W: Write>(&self, writer: &mut EventWriter<W>) -> XarResult<()> {
-        writer.write(XmlEvent::start_element("ea"))?;
+        writer.write(XmlEvent::start_element("ea").attr("id", &format!("{}", self.id)))?;
 
         writer.write(XmlEvent::start_element("name"))?;
         writer.write(XmlEvent::characters(&self.name))?;
