@@ -6,6 +6,7 @@
 
 Released on ReleaseDate.
 
+* Added `id` field to `Ea` struct. (#155)
 * `base64` 0.21 -> 0.22.
 * `cryptographic-message-syntax` 0.26 -> 0.27.
 * `reqwest` 0.11 -> 0.12.
