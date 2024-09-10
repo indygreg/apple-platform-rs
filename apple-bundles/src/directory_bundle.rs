@@ -34,6 +34,8 @@ pub struct DirectoryBundle {
     /// The type of this bundle.
     package_type: BundlePackageType,
 
+    info_plist_path: PathBuf,
+
     /// Parsed `Info.plist` file.
     info_plist: plist::Dictionary,
 }
@@ -140,6 +142,7 @@ impl DirectoryBundle {
             root_name,
             shallow,
             package_type,
+            info_plist_path,
             info_plist,
         })
     }
@@ -175,10 +178,7 @@ impl DirectoryBundle {
 
     /// Obtain the path to the `Info.plist` file.
     pub fn info_plist_path(&self) -> PathBuf {
-        match self.package_type {
-            BundlePackageType::App | BundlePackageType::Bundle => self.resolve_path("Info.plist"),
-            BundlePackageType::Framework => self.root.join("Resources").join("Info.plist"),
-        }
+        self.info_plist_path.clone()
     }
 
     /// Obtain the parsed `Info.plist` file.
