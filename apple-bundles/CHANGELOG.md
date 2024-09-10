@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* `DirectoryBundle::info_plist_path()` now returns the path the instance was
+  constructed with instead of deriving it at call time. Previously, the
+  derivation logic could disagree with the constructed value. (#157)
 * `plist` 1.6.0 -> 1.7.0.
 * `walkdir` 2.4 -> 2.5.
 
