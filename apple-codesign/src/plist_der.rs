@@ -13,7 +13,7 @@ use {
         ber::enc::EncodeError,
         de::Error as DeError,
         enc::Error as EncError,
-        types::{fields::Fields, Class, Constraints, Constructed, Integer, Tag},
+        types::{fields::{Field, Fields}, Class, Constraints, Constructed, Integer, Tag},
         AsnType, Codec, Decode, Decoder, Encode, Encoder,
     },
     std::collections::BTreeMap,
@@ -38,7 +38,9 @@ impl AsnType for Dictionary {
 }
 
 impl Constructed for Dictionary {
-    const FIELDS: Fields = Fields::empty();
+    // This is incorrect, but a required field is needed to be specified to
+    // communicate to rasn it needs to know that there is fields to decode.
+    const FIELDS: Fields = Fields::from_static(&[Field::new_optional_type::<()>("key")]);
 }
 
 impl Encode for Dictionary {
@@ -75,7 +77,7 @@ impl Decode for Dictionary {
         tag: Tag,
         _constraints: Constraints,
     ) -> Result<Self, D::Error> {
-        decoder.decode_sequence::<Self, _>(tag, |decoder| {
+        decoder.decode_sequence::<Self, _, _>(tag, Some(|| Self(plist::Dictionary::new())), |decoder| {
             let mut dict = plist::Dictionary::new();
 
             loop {
@@ -190,7 +192,10 @@ impl AsnType for WrappedPlist {
 }
 
 impl Constructed for WrappedPlist {
-    const FIELDS: Fields = Fields::empty();
+    const FIELDS: Fields = Fields::from_static(&[
+        Field::new_required_type::<Integer>("key"),
+        Field::new_required_type::<WrappedValue>("value"),
+    ]);
 }
 
 impl TryFrom<Value> for WrappedPlist {
@@ -238,8 +243,8 @@ impl Decode for WrappedPlist {
         tag: Tag,
         _constraints: Constraints,
     ) -> Result<Self, D::Error> {
-        decoder.decode_sequence::<Self, _>(tag, |decoder| {
-            let _ = decoder.decode_integer(Tag::INTEGER, Constraints::NONE)?;
+        decoder.decode_sequence::<Self, _, _>(tag, None::<fn() -> Self>, |decoder| {
+            let _: Integer = decoder.decode_integer(Tag::INTEGER, Constraints::NONE)?;
             let value = WrappedValue::decode(decoder)?;
 
             Ok(Self(value))
