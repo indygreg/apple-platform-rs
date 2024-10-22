@@ -84,6 +84,12 @@ pub enum SdkSearchLocation {
     /// if available.
     CommandLineTools,
 
+    /// Check the paths configured by `xcode-select --switch`.
+    ///
+    /// This effectively controls whether the Developer Directory resolved by
+    /// [DeveloperDirectory::from_xcode_select_paths()] will be searched, if available.
+    XcodeSelectPaths,
+
     /// Invoke `xcode-select` to find a *Developer Directory* to search.
     ///
     /// This mechanism is intended as a fallback in case other (pure Rust) mechanisms for locating
@@ -129,6 +135,9 @@ impl Display for SdkSearchLocation {
             Self::DeveloperDirEnv => f.write_str("DEVELOPER_DIR environment variable"),
             Self::SystemXcode => f.write_str("System-installed Xcode application"),
             Self::CommandLineTools => f.write_str("Xcode Command Line Tools installation"),
+            Self::XcodeSelectPaths => {
+                f.write_str("Internal xcode-select paths (`/var/db/xcode_select_link`)")
+            }
             Self::XcodeSelect => f.write_str("xcode-select"),
             Self::SystemXcodes => f.write_str("All system-installed Xcode applications"),
             Self::Developer(dir) => {
@@ -182,6 +191,15 @@ impl SdkSearchLocation {
             Self::CommandLineTools => {
                 if let Some(path) = command_line_tools_sdks_directory() {
                     Ok(SdkSearchResolvedLocation::SdksDirectory(path))
+                } else {
+                    Ok(SdkSearchResolvedLocation::None)
+                }
+            }
+            Self::XcodeSelectPaths => {
+                if let Some(dir) = DeveloperDirectory::from_xcode_select_paths()? {
+                    Ok(SdkSearchResolvedLocation::PlatformDirectories(
+                        dir.platforms()?,
+                    ))
                 } else {
                     Ok(SdkSearchResolvedLocation::None)
                 }
@@ -275,9 +293,7 @@ pub enum SdkSearchEvent {
 impl Display for SdkSearchEvent {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::SearchingLocation(location) => {
-                f.write_fmt(format_args!("searching {location}"))
-            }
+            Self::SearchingLocation(location) => f.write_fmt(format_args!("searching {location}")),
             Self::PlatformDirectoryInclude(path) => f.write_fmt(format_args!(
                 "searching Platform directory {}",
                 path.display()
@@ -322,8 +338,9 @@ pub type SdkProgressCallback = fn(SdkSearchEvent);
 /// 1. Use path specified by `SDKROOT` environment variable, if defined.
 /// 2. Find SDKs within the Developer Directory defined by the `DEVELOPER_DIR` environment
 ///    variable.
-/// 3. Find SDKs within the system installed `Xcode` application.
-/// 4. Find SDKs within the system installed Xcode Command Line Tools.
+/// 3. Find SDKs within the path configured with `xcode-select --switch`.
+/// 4. Find SDKs within the system installed Xcode application.
+/// 5. Find SDKs within the system installed Xcode Command Line Tools.
 ///
 /// Simply call [Self::location()] to register a new location. If the default locations
 /// are not desirable, construct an empty instance via [Self::empty()] and register your
@@ -383,6 +400,7 @@ impl Default for SdkSearch {
             locations: vec![
                 SdkSearchLocation::SdkRootEnv,
                 SdkSearchLocation::DeveloperDirEnv,
+                SdkSearchLocation::XcodeSelectPaths,
                 SdkSearchLocation::SystemXcode,
                 SdkSearchLocation::CommandLineTools,
             ],
@@ -617,9 +635,7 @@ impl SdkSearch {
                     if let Some(cb) = &self.progress_callback {
                         cb(SdkSearchEvent::SdkFilterExclude(
                             sdk_path,
-                            format!(
-                                "SDK version {sdk_version} < minimum version {min_version}"
-                            ),
+                            format!("SDK version {sdk_version} < minimum version {min_version}"),
                         ));
                     }
 
@@ -630,9 +646,7 @@ impl SdkSearch {
                 if let Some(cb) = &self.progress_callback {
                     cb(SdkSearchEvent::SdkFilterExclude(
                         sdk_path,
-                        format!(
-                            "Unknown SDK version fails to meet minimum version {min_version}"
-                        ),
+                        format!("Unknown SDK version fails to meet minimum version {min_version}"),
                     ));
                 }
 
@@ -646,9 +660,7 @@ impl SdkSearch {
                     if let Some(cb) = &self.progress_callback {
                         cb(SdkSearchEvent::SdkFilterExclude(
                             sdk_path,
-                            format!(
-                                "SDK version {sdk_version} > maximum version {max_version}"
-                            ),
+                            format!("SDK version {sdk_version} > maximum version {max_version}"),
                         ));
                     }
 
@@ -660,9 +672,7 @@ impl SdkSearch {
                 if let Some(cb) = &self.progress_callback {
                     cb(SdkSearchEvent::SdkFilterExclude(
                         sdk_path,
-                        format!(
-                            "Unknown SDK version fails to meet maximum version {max_version}"
-                        ),
+                        format!("Unknown SDK version fails to meet maximum version {max_version}"),
                     ));
                 }
 

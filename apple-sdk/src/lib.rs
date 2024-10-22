@@ -119,6 +119,8 @@ pub const XCODE_APP_RELATIVE_PATH_DEVELOPER: &str = "Contents/Developer";
 /// Error type for this crate.
 #[derive(Debug)]
 pub enum Error {
+    /// Error occurred when trying to read `xcode-select` paths.
+    XcodeSelectPathFailedReading(std::io::Error),
     /// Error occurred when running `xcode-select`.
     XcodeSelectRun(std::io::Error),
     /// `xcode-select` did not run successfully.
@@ -162,6 +164,9 @@ pub enum Error {
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::XcodeSelectPathFailedReading(err) => {
+                f.write_fmt(format_args!("Error reading xcode-select paths: {err}"))
+            }
             Self::XcodeSelectRun(err) => {
                 f.write_fmt(format_args!("Error running xcode-select: {err}"))
             }
@@ -509,6 +514,59 @@ impl DeveloperDirectory {
         } else {
             Ok(None)
         }
+    }
+
+    /// Attempt to resolve an instance by checking the paths that
+    /// `xcode-select --switch` configures. If there is no path configured,
+    /// this returns `None`.
+    ///
+    /// This checks, in order:
+    /// - The path pointed to by `/var/db/xcode_select_link`.
+    /// - The path pointed to by `/usr/share/xcode-select/xcode_dir_link`
+    ///   (legacy, previously created by `xcode-select`).
+    /// - The path stored in `/usr/share/xcode-select/xcode_dir_path`
+    ///   (legacy, previously created by `xcode-select`).
+    ///
+    /// There are no sources available for `xcode-select`, so we do not know
+    /// if these are the only paths that `xcode-select` uses. We can be fairly
+    /// sure, though, since the logic has been reverse-engineered
+    /// [several][darling-xcselect] [times][bouldev-xcselect].
+    ///
+    /// The exact list of paths that `apple-sdk` searches here is an
+    /// implementation detail, and may change in the future (e.g. if
+    /// `xcode-select` is changed to use a different set of paths).
+    ///
+    /// [darling-xcselect]: https://github.com/darlinghq/darling/blob/773e9874cf38fdeb9518f803e041924e255d0ebe/src/xcselect/xcselect.c#L138-L197
+    /// [bouldev-xcselect]: https://github.com/bouldev/libxcselect-shim/blob/c5387de92c30ab16cbfc8012e98c74c718ce8eff/src/libxcselect/xcselect_get_developer_dir_path.c#L39-L86
+    pub fn from_xcode_select_paths() -> Result<Option<Self>, Error> {
+        match std::fs::read_link("/var/db/xcode_select_link") {
+            Ok(path) => return Ok(Some(Self { path })),
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+                // Ignore if the path does not exist
+            }
+            Err(err) => return Err(Error::XcodeSelectPathFailedReading(err)),
+        }
+
+        match std::fs::read_link("/usr/share/xcode-select/xcode_dir_link") {
+            Ok(path) => return Ok(Some(Self { path })),
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+                // Ignore if the path does not exist
+            }
+            Err(err) => return Err(Error::XcodeSelectPathFailedReading(err)),
+        }
+
+        match std::fs::read_to_string("/usr/share/xcode-select/xcode_dir_path") {
+            Ok(s) => {
+                let path = PathBuf::from(s.trim_end_matches('\n'));
+                return Ok(Some(Self { path }));
+            }
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
+                // Ignore if the path does not exist
+            }
+            Err(err) => return Err(Error::XcodeSelectPathFailedReading(err)),
+        }
+
+        Ok(None)
     }
 
     /// Attempt to resolve an instance by running `xcode-select`.
