@@ -19,9 +19,14 @@ use {
     apple_bundles::DirectoryBundle,
     aws_sdk_s3::config::{Credentials, Region},
     aws_smithy_types::byte_stream::ByteStream,
+    headers::Authorization,
+    hyper::Uri,
+    hyper::client::HttpConnector,
+    hyper_proxy::{Proxy, Intercept, ProxyConnector},
     log::warn,
     sha2::Digest,
     std::{
+        env,
         fs::File,
         io::{Read, Seek, SeekFrom, Write},
         path::{Path, PathBuf},
@@ -292,9 +297,10 @@ impl Notarizer {
             UploadKind::Path(path) => rt.block_on(ByteStream::from_path(path))?,
         };
 
+
         // upload using s3 api
         warn!("resolving AWS S3 configuration from Apple-provided credentials");
-        let config = rt.block_on(
+        let mut config = rt.block_on(
             aws_config::defaults(aws_config::BehaviorVersion::latest())
                 .credentials_provider(Credentials::new(
                     submission.data.attributes.aws_access_key_id.clone(),
@@ -309,6 +315,55 @@ impl Notarizer {
                 .region(Region::new("us-west-2"))
                 .load(),
         );
+        warn!("test");
+        // check if proxy env var is set
+        if env::var("https_proxy").is_err() {
+            warn!("no proxy set");
+        }
+        else
+        {
+            warn!("proxy set");
+            pub fn determine_proxy() -> Option<ProxyConnector<HttpConnector>> {
+                // let proxy_url: Url = std::env::var("https_proxy").ok()?.parse().ok()?;
+                let proxy_uri: Uri = std::env::var("https_proxy").ok()?.parse().ok()?;
+                let mut proxy = Proxy::new(Intercept::All, proxy_uri);
+            
+                let proxy_user = env::var_os("proxy_user");
+                let proxy_password = env::var_os("proxy_password");
+                match (proxy_user, proxy_password) {
+                    (Some(user), Some(password)) => {
+                    proxy.set_authorization(Authorization::basic(user.to_str().unwrap(), password.to_str().unwrap()));
+                    }
+                    _ => {}
+                }
+            
+                let connector = HttpConnector::new();
+                Some(ProxyConnector::from_proxy(connector, proxy).unwrap())
+            }
+
+            let proxy = determine_proxy().unwrap();
+            let client = aws_smithy_runtime::client::http::hyper_014::HyperClientBuilder::new().build(proxy);
+
+             // upload using s3 api
+            warn!("resolving AWS S3 configuration from Apple-provided credentials");
+            config = rt.block_on(
+                aws_config::defaults(aws_config::BehaviorVersion::latest())
+                    .credentials_provider(Credentials::new(
+                        submission.data.attributes.aws_access_key_id.clone(),
+                        submission.data.attributes.aws_secret_access_key.clone(),
+                        Some(submission.data.attributes.aws_session_token.clone()),
+                        None,
+                        "apple-codesign",
+                    ))
+                    // The region is not given anywhere in the Apple documentation. From
+                    // manually testing all available regions, it appears to be
+                    // us-west-2.
+                    .http_client(client.clone())
+                    .region(Region::new("us-west-2"))
+                    .load(),
+            );
+        }
+
 
         let s3_client = aws_sdk_s3::Client::new(&config);
 
