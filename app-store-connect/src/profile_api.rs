@@ -4,10 +4,12 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::{AppStoreConnectClient, Result};
+use crate::{
+    bundle_api::BundleIdResponse, certs_api::CertificatesResponse, AppStoreConnectClient, Result,
+};
 use serde::{Deserialize, Serialize};
 
-const APPLE_CERTIFICATE_URL: &str = "https://api.appstoreconnect.apple.com/v1/profiles";
+const APPLE_PROFILES_URL: &str = "https://api.appstoreconnect.apple.com/v1/profiles";
 
 impl AppStoreConnectClient {
     pub fn create_profile(
@@ -56,7 +58,7 @@ impl AppStoreConnectClient {
         };
         let req = self
             .client
-            .post(APPLE_CERTIFICATE_URL)
+            .post(APPLE_PROFILES_URL)
             .bearer_auth(token)
             .header("Accept", "application/json")
             .header("Content-Type", "application/json")
@@ -64,11 +66,31 @@ impl AppStoreConnectClient {
         Ok(self.send_request(req)?.json()?)
     }
 
+    pub fn get_profile_bundle_id(&self, profile_id: &str) -> Result<BundleIdResponse> {
+        let token = self.get_token()?;
+        let req = self
+            .client
+            .get(format!("{APPLE_PROFILES_URL}/{profile_id}/bundleId"))
+            .bearer_auth(token)
+            .header("Accept", "application/json");
+        Ok(self.send_request(req)?.json()?)
+    }
+
+    pub fn list_profile_certificates(&self, profile_id: &str) -> Result<CertificatesResponse> {
+        let token = self.get_token()?;
+        let req = self
+            .client
+            .get(format!("{APPLE_PROFILES_URL}/{profile_id}/certificates"))
+            .bearer_auth(token)
+            .header("Accept", "application/json");
+        Ok(self.send_request(req)?.json()?)
+    }
+
     pub fn list_profiles(&self) -> Result<ProfilesResponse> {
         let token = self.get_token()?;
         let req = self
             .client
-            .get(APPLE_CERTIFICATE_URL)
+            .get(APPLE_PROFILES_URL)
             .bearer_auth(token)
             .header("Accept", "application/json");
         Ok(self.send_request(req)?.json()?)
@@ -78,7 +100,7 @@ impl AppStoreConnectClient {
         let token = self.get_token()?;
         let req = self
             .client
-            .get(format!("{APPLE_CERTIFICATE_URL}/{id}"))
+            .get(format!("{APPLE_PROFILES_URL}/{id}"))
             .bearer_auth(token)
             .header("Accept", "application/json");
         Ok(self.send_request(req)?.json()?)
@@ -88,7 +110,7 @@ impl AppStoreConnectClient {
         let token = self.get_token()?;
         let req = self
             .client
-            .delete(format!("{APPLE_CERTIFICATE_URL}/{id}"))
+            .delete(format!("{APPLE_PROFILES_URL}/{id}"))
             .bearer_auth(token);
         self.send_request(req)?;
         Ok(())
@@ -191,7 +213,7 @@ pub struct ProfileAttributes {
     pub platform: String,
     pub profile_content: String,
     pub uuid: String,
-    pub created_date: String,
+    pub created_date: Option<String>,
     pub profile_state: String,
     pub profile_type: String,
     pub expiration_date: String,
