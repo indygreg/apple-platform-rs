@@ -8,6 +8,8 @@ use crate::{profile_api::ProfilesResponse, AppStoreConnectClient, Result};
 use serde::{Deserialize, Serialize};
 
 const APPLE_BUNDLE_IDS_URL: &str = "https://api.appstoreconnect.apple.com/v1/bundleIds";
+const APPLE_BUNDLE_CAPABILITIES_URL: &str =
+    "https://api.appstoreconnect.apple.com/v1/bundleIdCapabilities";
 
 impl AppStoreConnectClient {
     pub fn register_bundle_id(&self, identifier: &str, name: &str) -> Result<BundleIdResponse> {
@@ -70,6 +72,38 @@ impl AppStoreConnectClient {
             .bearer_auth(token)
             .header("Accept", "application/json");
         Ok(self.send_request(req)?.json()?)
+    }
+
+    pub fn enable_bundle_id_capability(
+        &self,
+        id: &str,
+        capability: BundleIdCapabilityCreateRequestDataAttributes,
+    ) -> Result<()> {
+        let token = self.get_token()?;
+
+        let body = BundleIdCapabilityCreateRequest {
+            data: BundleIdCapabilityCreateRequestData {
+                attributes: capability,
+                relationships: BundleIdCapabilityCreateRequestDataRelationships {
+                    bundle_id: BundleIdCapabilityCreateRequestDataRelationshipBundleId {
+                        data: BundleIdCapabilityCreateRequestDataRelationshipBundleIdData {
+                            id: id.to_string(),
+                            r#type: "bundleIds".to_string(),
+                        },
+                    },
+                },
+                r#type: "bundleIdCapabilities".to_string(),
+            },
+        };
+
+        let req = self
+            .client
+            .post(APPLE_BUNDLE_CAPABILITIES_URL)
+            .bearer_auth(token)
+            .header("Accept", "application/json")
+            .json(&body);
+        self.send_request(req)?;
+        Ok(())
     }
 
     pub fn delete_bundle_id(&self, id: &str) -> Result<()> {
@@ -159,8 +193,47 @@ pub struct BundleCapability {
     pub id: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BundleCapabilityAttributes {
     pub capability_type: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BundleIdCapabilityCreateRequest {
+    data: BundleIdCapabilityCreateRequestData,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BundleIdCapabilityCreateRequestData {
+    attributes: BundleIdCapabilityCreateRequestDataAttributes,
+    relationships: BundleIdCapabilityCreateRequestDataRelationships,
+    r#type: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BundleIdCapabilityCreateRequestDataAttributes {
+    pub capability_type: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BundleIdCapabilityCreateRequestDataRelationships {
+    bundle_id: BundleIdCapabilityCreateRequestDataRelationshipBundleId,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BundleIdCapabilityCreateRequestDataRelationshipBundleId {
+    data: BundleIdCapabilityCreateRequestDataRelationshipBundleIdData,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BundleIdCapabilityCreateRequestDataRelationshipBundleIdData {
+    id: String,
+    r#type: String,
 }

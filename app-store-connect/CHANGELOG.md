@@ -8,7 +8,8 @@ Released on ReleaseDate.
 
 * New APIs and CLI commands to: list capabilities with a bundle ID;
   list profiles associated with a bundle ID; get bundle ID associated with
-  a profile; list certificates associated with a profile. (#164)
+  a profile; list certificates associated with a profile; enable capacity
+  for a bundle ID. (#164)
 * Added `IosDistribution` variant to `CertificateType` enum.
 * MSRV 1.70 -> 1.78.
 * `base64` 0.21 -> 0.22.

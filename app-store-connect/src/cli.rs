@@ -4,7 +4,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::bundle_api::{BundleCapability, BundleId, BundleIdPlatform};
+use crate::bundle_api::{
+    BundleCapability, BundleId, BundleIdCapabilityCreateRequestDataAttributes, BundleIdPlatform,
+};
 use crate::certs_api::{self, Certificate, CertificateType};
 use crate::device_api::Device;
 use crate::profile_api::{Profile, ProfileType};
@@ -99,16 +101,22 @@ pub enum BundleCommand {
     },
     List,
     Get {
-        /// Id of certificate.
+        /// Id of bundle id.
         id: String,
     },
     GetProfiles {
-        /// Id of certificate.
+        /// Id of bundle id.
         id: String,
     },
     GetCapabilities {
-        /// Id of certificate.
+        /// Id of bundle id.
         id: String,
+    },
+    EnableCapability {
+        /// Id of bundle id.
+        id: String,
+        /// Capability type.
+        capability: String,
     },
     Delete {
         /// Id of bundle id to revoke.
@@ -143,6 +151,15 @@ impl BundleCommand {
                 for capability in resp.data {
                     print_capability(&capability);
                 }
+            }
+            Self::EnableCapability { id, capability } => {
+                client.enable_bundle_id_capability(
+                    &id,
+                    BundleIdCapabilityCreateRequestDataAttributes {
+                        capability_type: capability.clone(),
+                    },
+                )?;
+                println!("capability {capability} enabled for bundle ID {id}");
             }
             Self::GetProfiles { id } => {
                 let resp = client.list_bundle_profiles(&id)?;
