@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* MSRV 1.70 -> 1.78.
+
 ## 0.27.0
 
 Released on 2024-01-17.
