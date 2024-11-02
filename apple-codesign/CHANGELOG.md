@@ -21,6 +21,7 @@ Released on ReleaseDate.
 * `oid-registry` 0.6 -> 0.7.
 * `once_cell` 1.19 -> 1.20.
 * `plist` 1.6 -> 1.7.
+* `rasn` 0.12 -> 0.17.
 * `rayon` 1.8 -> 1.10.
 * `regex` 1.10 -> 1.11.
 * `reqwest` 0.11 -> 0.12.
