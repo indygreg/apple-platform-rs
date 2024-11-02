@@ -7,6 +7,23 @@
 Released on ReleaseDate.
 
 * MSRV 1.70 -> 1.78.
+* `aws-config` 1.1 -> 1.5.
+* `aws-sdk-s3` 1.12 -> 1.24.
+* `aws-smithy-types` 1.1 -> 1.2.
+* `bitflags` 2.4 -> 2.6.
+* `bytes` 1.5 -> 1.8.
+* `once_cell` 1.19 -> 1.20.
+* `plist` 1.6 -> 1.7.
+* `rayon` 1.8 -> 1.10.
+* `regex` 1.10 -> 1.11.
+* `security-framework` 2.9 -> 2.11.
+* `subtle` 2.5 -> 2.6.
+* `tempfile` 3.9 -> 3.13.
+* `tokio` 1.35 -> 1.41.
+* `uuid` 1.6 -> 1.11.
+* `walkdir` 2.4 -> 2.5.
+* `widestring` 1.0 -> 1.1.
+* `zeroize` 1.7 -> 1.8.
 
 ## 0.27.0
 

@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* `crc32fast` 1.3 -> 1.4.
+
 ## 0.2.0
 
 Released on 2023-11-06.

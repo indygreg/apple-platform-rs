@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* `plist` 1.6.0 -> 1.7.0.
+* `walkdir` 2.4 -> 2.5.
+
 ## 0.19.0
 
 Released on 2024-01-17.

@@ -9,6 +9,7 @@ Released on ReleaseDate.
 * XROS support. `Platform` enumeration added `XrOs` and `XrOsSimulator`
   variants. The `aarch64-apple-xros-sim` and `*-apple-xros` triples are
   now recognized as XROS.
+* `plist` 1.6 -> 1.7.
 
 ## 0.5.2
 

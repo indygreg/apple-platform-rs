@@ -16,73 +16,73 @@ name = "rcodesign"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = "1.0.79"
-aws-config = { version = "1.1.2", optional = true }
-aws-sdk-s3 = { version = "1.12.0", optional = true }
-aws-smithy-http = {version = "0.60.2", optional = true }
-aws-smithy-types = {version = "1.1.2", optional = true }
+anyhow = "1.0.92"
+aws-config = { version = "1.5.9", optional = true }
+aws-sdk-s3 = { version = "1.24.0", optional = true }
+aws-smithy-http = { version = "0.60.11", optional = true }
+aws-smithy-types = { version = "1.2.8", optional = true }
 base64 = "0.21.7"
 bcder = "0.7.4"
-bitflags = "2.4.1"
-bytes = "1.5.0"
-clap = { version = "4.4.17", features = ["derive"] }
-chrono = "0.4.31"
+bitflags = "2.6.0"
+bytes = "1.8.0"
+clap = { version = "4.4.18", features = ["derive"] }
+chrono = "0.4.38"
 cryptographic-message-syntax = "0.26.0"
-der = {  version = "0.7.8", features = ["alloc"] }
+der = { version = "0.7.9", features = ["alloc"] }
 dialoguer = "0.11.0"
 difference = "2.0.0"
 digest = "0.10.7"
 dirs = "5.0.1"
 elliptic-curve = { version = "0.13.8", features = ["arithmetic", "pkcs8"] }
-env_logger = "0.10.1"
-figment = { version = "0.10.13", features = ["env", "toml"] }
-filetime = "0.2.23"
+env_logger = "0.10.2"
+figment = { version = "0.10.19", features = ["env", "toml"] }
+filetime = "0.2.25"
 glob = "0.3.1"
-goblin = "0.8.0"
+goblin = "0.8.2"
 hex = "0.4.3"
-log = "0.4.20"
+log = "0.4.22"
 md-5 = "0.10.6"
 minicbor = { version = "0.20.0", features = ["derive", "std"] }
-num-traits = "0.2.17"
+num-traits = "0.2.19"
 object = { version = "0.32.2", features = ["write"] }
 oid-registry = "0.6.1"
-once_cell = "1.19.0"
+once_cell = "1.20.2"
 p12 = "0.6.3"
 p256 = { version = "0.13.2", default-features = false, features = ["arithmetic", "pkcs8", "std"] }
-pem = "3.0.3"
+pem = "3.0.4"
 pkcs1 = { version = "0.7.5", features = ["alloc", "std", "pkcs8"] }
 pkcs8 = { version = "0.10.2", features = ["alloc", "std"] }
-plist = "1.6.0"
+plist = "1.7.0"
 rand = "0.8.5"
-rasn = "0.12.4"
-rayon = "1.8.0"
-regex = "1.10.2"
-reqwest = { version = "0.11.23", default-features = false, features = ["blocking", "json", "rustls-tls-native-roots"] }
-ring = "0.17.7"
+rasn = "0.12.5"
+rayon = "1.10.0"
+regex = "1.11.1"
+reqwest = { version = "0.11.27", default-features = false, features = ["blocking", "json", "rustls-tls-native-roots"] }
+ring = "0.17.8"
 rsa = "0.9.6"
 scroll = "0.12.0"
 sha2 = "0.10.8"
-semver = "1.0.21"
-serde = { version = "1.0.195", features = ["derive"] }
-serde_json = "1.0.111"
-serde_yaml = "0.9.30"
+semver = "1.0.23"
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
+serde_yaml = "0.9.34"
 signature = { version = "2.2.0", features = ["std"] }
 simple-file-manifest = "0.11.0"
 spake2 = "0.4.0"
 spki = { version = "0.7.3", features = ["pem"] }
-subtle = "2.5.0"
-tempfile = "3.9.0"
-thiserror = "1.0.56"
-tokio = { version = "1.35.1", features = ["rt"] }
+subtle = "2.6.1"
+tempfile = "3.13.0"
+thiserror = "1.0.66"
+tokio = { version = "1.41.0", features = ["rt"] }
 tungstenite = { version = "0.21.0", features = ["rustls-tls-native-roots"] }
-uuid = { version = "1.6.1", features = ["v4"] }
-walkdir = "2.4.0"
+uuid = { version = "1.11.0", features = ["v4"] }
+walkdir = "2.5.0"
 x509 = "0.2.0"
 x509-certificate = "0.23.1"
-xml-rs = "0.8.19"
+xml-rs = "0.8.22"
 yasna = "0.5.2"
 yubikey = { version = "0.8.0", optional = true, features = ["untested"] }
-zeroize = { version = "1.7.0", features = ["zeroize_derive"] }
+zeroize = { version = "1.8.1", features = ["zeroize_derive"] }
 zip = { version = "0.6.6", default-features = false, features = ["deflate"] }
 zip_structs = "0.2.1"
 
@@ -104,18 +104,18 @@ path = "../apple-xar"
 version = "0.18.0"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-security-framework = { version = "2.9.2", features = ["OSX_10_12"] }
-security-framework-sys = { version = "2.9.1", features = ["OSX_10_12"] }
+security-framework = { version = "2.11.1", features = ["OSX_10_12"] }
+security-framework-sys = { version = "2.12.0", features = ["OSX_10_12"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-widestring = { version = "1.0.2" }
-windows-sys = { version = "0.52.0", features = [ "Win32_Foundation", "Win32_Security_Cryptography"] }
+widestring = { version = "1.1.0" }
+windows-sys = { version = "0.59.0", features = ["Win32_Foundation", "Win32_Security_Cryptography"] }
 
 [dev-dependencies]
-flate2 = "1.0.28"
-indoc = "2.0.4"
+flate2 = "1.0.34"
+indoc = "2.0.5"
 simple-file-manifest = "0.11.0"
-tar = "0.4.40"
+tar = "0.4.43"
 trycmd-indygreg-fork = "0.14.20"
 zip = { version = "0.6.6", default-features = false }
 

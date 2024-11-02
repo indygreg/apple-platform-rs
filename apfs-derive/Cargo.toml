@@ -14,7 +14,7 @@ repository = "https://github.com/indygreg/apple-platform-rs.git"
 proc-macro = true
 
 [dependencies]
-indoc = "2.0.4"
-proc-macro2 = "1.0.76"
-syn = { version = "2.0.48", features = ["extra-traits", "full"] }
-quote = "1.0.35"
+indoc = "2.0.5"
+proc-macro2 = "1.0.89"
+syn = { version = "2.0.87", features = ["extra-traits", "full"] }
+quote = "1.0.37"

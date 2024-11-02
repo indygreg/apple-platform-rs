@@ -12,11 +12,11 @@ repository = "https://github.com/indygreg/apple-platform-rs.git"
 readme = "README.md"
 
 [dependencies]
-flate2 = "1.0.28"
+flate2 = "1.0.34"
 scroll = { version = "0.12.0", features = ["derive"] }
 serde-xml-rs = "0.6.0"
-serde = { version = "1.0.195", features = ["derive"] }
-thiserror = "1.0.56"
+serde = { version = "1.0.214", features = ["derive"] }
+thiserror = "1.0.66"
 
 [dependencies.apple-xar]
 path = "../apple-xar"
