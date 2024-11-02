@@ -14,6 +14,7 @@ Released on ReleaseDate.
 * `bitflags` 2.4 -> 2.6.
 * `bytes` 1.5 -> 1.8.
 * `cryptographic-message-syntax` 0.26 -> 0.27.
+* `env_logger` 0.10 -> 0.11.
 * `once_cell` 1.19 -> 1.20.
 * `plist` 1.6 -> 1.7.
 * `rayon` 1.8 -> 1.10.
