@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* gpt 3.1 -> 4.0.
+
 ## 0.4.0
 
 Released on 2023-11-15.

@@ -130,7 +130,7 @@ impl<W: Write + Seek> DmgWriter<W> {
         let mut partition = PartRecord::new_protective(Some(sector_count.try_into()?));
         partition.os_type = 11;
         mbr.set_partition(0, partition);
-        let mbr = mbr.as_bytes()?;
+        let mbr = mbr.to_bytes().to_vec();
         self.add_partition("Master Boot Record (MBR : 0)", &mbr)?;
         self.add_partition("FAT32 (FAT32 : 1)", fat32)?;
         self.finish()?;

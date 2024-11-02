@@ -15,7 +15,7 @@ fatfs = "0.3.6"
 flate2 = "1.0.34"
 fscommon = "0.1.1"
 getrandom = "0.2.15"
-gpt = "3.1.0"
+gpt = "4.0.0"
 md5 = "0.7.0"
 plist = "1.7.0"
 serde = { version = "1.0.214", features = ["derive"] }

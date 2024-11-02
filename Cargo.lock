@@ -1776,13 +1776,13 @@ dependencies = [
 
 [[package]]
 name = "gpt"
-version = "3.1.0"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8283e7331b8c93b9756e0cfdbcfb90312852f953c6faf9bf741e684cc3b6ad69"
+checksum = "ffa5448a0d9d541f1840c0e1b5fe513360861ca83c4b920619f54efe277f9254"
 dependencies = [
  "bitflags 2.6.0",
  "crc",
- "log",
+ "simple-bytes",
  "uuid",
 ]
 
@@ -3433,6 +3433,12 @@ name = "similar"
 version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1de1d4f81173b03af4c0cbed3c898f6bff5b870e4a7f5d6f4057d62a7a4b686e"
+
+[[package]]
+name = "simple-bytes"
+version = "0.2.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c11532d9d241904f095185f35dcdaf930b1427a94d5b01d7002d74ba19b44cc4"
 
 [[package]]
 name = "simple-file-manifest"
