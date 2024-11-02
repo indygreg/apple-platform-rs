@@ -7,6 +7,7 @@
 Released on ReleaseDate.
 
 * MSRV 1.70 -> 1.78.
+* `base64` 0.21 -> 0.22.
 
 ## 0.5.0
 

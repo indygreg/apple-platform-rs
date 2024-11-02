@@ -141,7 +141,7 @@ name = "app-store-connect"
 version = "0.5.0"
 dependencies = [
  "anyhow",
- "base64 0.21.7",
+ "base64 0.22.1",
  "clap",
  "dirs",
  "env_logger",
@@ -194,7 +194,7 @@ dependencies = [
  "aws-sdk-s3",
  "aws-smithy-http",
  "aws-smithy-types",
- "base64 0.21.7",
+ "base64 0.22.1",
  "bcder",
  "bitflags 2.6.0",
  "bytes",
@@ -312,7 +312,7 @@ dependencies = [
 name = "apple-xar"
 version = "0.18.0"
 dependencies = [
- "base64 0.21.7",
+ "base64 0.22.1",
  "bcder",
  "bzip2",
  "chrono",

@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* base64 0.21 -> 0.22.
+
 ## 0.18.0
 
 Released on 2024-01-17.

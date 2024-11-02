@@ -10,6 +10,7 @@ Released on ReleaseDate.
 * `aws-config` 1.1 -> 1.5.
 * `aws-sdk-s3` 1.12 -> 1.24.
 * `aws-smithy-types` 1.1 -> 1.2.
+* `base64` 0.21 -> 0.22.
 * `bitflags` 2.4 -> 2.6.
 * `bytes` 1.5 -> 1.8.
 * `once_cell` 1.19 -> 1.20.
