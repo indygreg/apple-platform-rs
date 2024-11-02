@@ -17,6 +17,7 @@ Released on ReleaseDate.
 * `env_logger` 0.10 -> 0.11.
 * `goblin` 0.8 -> 0.9.
 * `minicbor` 0.20 -> 0.24.
+* `object` 0.32 -> 0.36.
 * `once_cell` 1.19 -> 1.20.
 * `plist` 1.6 -> 1.7.
 * `rayon` 1.8 -> 1.10.
