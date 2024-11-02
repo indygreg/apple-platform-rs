@@ -42,7 +42,7 @@ goblin = "0.9.2"
 hex = "0.4.3"
 log = "0.4.22"
 md-5 = "0.10.6"
-minicbor = { version = "0.20.0", features = ["derive", "std"] }
+minicbor = { version = "0.24.4", features = ["derive", "std"] }
 num-traits = "0.2.19"
 object = { version = "0.32.2", features = ["write"] }
 oid-registry = "0.6.1"
