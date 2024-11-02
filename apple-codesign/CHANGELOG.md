@@ -28,6 +28,7 @@ Released on ReleaseDate.
 * `subtle` 2.5 -> 2.6.
 * `tempfile` 3.9 -> 3.13.
 * `tokio` 1.35 -> 1.41.
+* `tungstenite` 0.21 -> 0.24.
 * `uuid` 1.6 -> 1.11.
 * `walkdir` 2.4 -> 2.5.
 * `widestring` 1.0 -> 1.1.
