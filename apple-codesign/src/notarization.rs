@@ -73,7 +73,7 @@ pub fn bundle_to_zip(bundle: &DirectoryBundle) -> Result<Vec<u8>, AppleCodesignE
         let name =
             format!("{}/{}", bundle.name(), file.relative_path().display()).replace('\\', "/");
 
-        let options = zip::write::FileOptions::default();
+        let options = zip::write::SimpleFileOptions::default();
 
         let options = if entry.link_target().is_some() {
             symlinks.push(name.as_bytes().to_vec());
@@ -432,7 +432,9 @@ impl Notarizer {
         Ok(status)
     }
 
-    pub fn list_submissions(&self) -> Result<notary_api::ListSubmissionResponse, AppleCodesignError> {
+    pub fn list_submissions(
+        &self,
+    ) -> Result<notary_api::ListSubmissionResponse, AppleCodesignError> {
         Ok(self.client()?.list_submissions()?)
     }
 }

@@ -34,6 +34,7 @@ Released on ReleaseDate.
 * `widestring` 1.0 -> 1.1.
 * `x509-certificate` 0.23 -> 0.24.
 * `zeroize` 1.7 -> 1.8.
+* `zip` 0.6 -> 2.2.
 
 ## 0.27.0
 
