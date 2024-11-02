@@ -8,7 +8,7 @@ pub mod odc;
 pub use odc::{OdcBuilder, OdcHeader, OdcReader};
 
 use {
-    chrono::{DateTime, NaiveDateTime, Utc},
+    chrono::{DateTime, Utc},
     std::{
         fmt::Debug,
         io::{Chain, Cursor, Read},
@@ -74,11 +74,9 @@ pub trait CpioHeader: Debug {
 
     /// Modified time as a [DateTime].
     fn modified_time(&self) -> DateTime<Utc> {
-        DateTime::<Utc>::from_naive_utc_and_offset(
-            NaiveDateTime::from_timestamp_opt(self.mtime() as _, 0)
-                .expect("out of range timestamp"),
-            Utc,
-        )
+        DateTime::from_timestamp(self.mtime() as _, 0)
+            .expect("out of range timestamp")
+            .to_utc()
     }
 
     /// File size in bytes.
