@@ -13,10 +13,12 @@ Released on ReleaseDate.
 * `base64` 0.21 -> 0.22.
 * `bitflags` 2.4 -> 2.6.
 * `bytes` 1.5 -> 1.8.
+* `cryptographic-message-syntax` 0.26 -> 0.27.
 * `once_cell` 1.19 -> 1.20.
 * `plist` 1.6 -> 1.7.
 * `rayon` 1.8 -> 1.10.
 * `regex` 1.10 -> 1.11.
+* `reqwest` 0.11 -> 0.12.
 * `security-framework` 2.9 -> 2.11.
 * `subtle` 2.5 -> 2.6.
 * `tempfile` 3.9 -> 3.13.
@@ -24,6 +26,7 @@ Released on ReleaseDate.
 * `uuid` 1.6 -> 1.11.
 * `walkdir` 2.4 -> 2.5.
 * `widestring` 1.0 -> 1.1.
+* `x509-certificate` 0.23 -> 0.24.
 * `zeroize` 1.7 -> 1.8.
 
 ## 0.27.0

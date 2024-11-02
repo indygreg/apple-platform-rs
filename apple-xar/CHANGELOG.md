@@ -6,7 +6,10 @@
 
 Released on ReleaseDate.
 
-* base64 0.21 -> 0.22.
+* `base64` 0.21 -> 0.22.
+* `cryptographic-message-syntax` 0.26 -> 0.27.
+* `reqwest` 0.11 -> 0.12.
+* `x509-certificate` 0.23 -> 0.24.
 
 ## 0.18.0
 

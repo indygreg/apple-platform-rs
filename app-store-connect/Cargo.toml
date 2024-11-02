@@ -20,9 +20,9 @@ jsonwebtoken = "9.2.0"
 log = "0.4.22"
 pem = "3.0.4"
 rand = "0.8.5"
-reqwest = { version = "0.11.27", default-features = false, features = ["blocking", "json", "rustls-tls-native-roots"] }
+reqwest = { version = "0.12.9", default-features = false, features = ["blocking", "json", "rustls-tls-native-roots"] }
 rsa = "0.9.6"
 serde = { version = "1.0.214", features = ["derive"] }
 serde_json = "1.0.132"
 thiserror = "1.0.66"
-x509-certificate = "0.23.1"
+x509-certificate = "0.24.0"

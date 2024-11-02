@@ -8,6 +8,8 @@ Released on ReleaseDate.
 
 * MSRV 1.70 -> 1.78.
 * `base64` 0.21 -> 0.22.
+* `reqwest` 0.11 -> 0.12
+* `x509-certificate` 0.23 -> 0.24.
 
 ## 0.5.0
 
