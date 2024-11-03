@@ -51,7 +51,8 @@ assemble-exe-artifacts exe commit dest:
 
   RUN_ID=$(gh run list \
     --workflow {{exe}}.yml \
-    --json databaseId,headSha | \
+    --json databaseId,headSha \
+    --status completed | \
     jq --raw-output '.[] | select(.headSha=="{{commit}}") | .databaseId' | head -n 1)
 
   if [ -z "${RUN_ID}" ]; then
