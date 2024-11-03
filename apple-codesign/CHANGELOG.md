@@ -11,6 +11,8 @@ Released on ReleaseDate.
 * MSRV 1.70 -> 1.78.
 * Improve logging of S3 upload failures. We should now hopefully print something
   more useful than `s3 upload error: unhandled error` on failures.
+* `Info.plist` path handling should be more robust. This should fix errors
+  like `I/O error: No such file or directory` when signing Frameworks. (#163)
 * `aws-config` 1.1 -> 1.5.
 * `aws-sdk-s3` 1.12 -> 1.24.
 * `aws-smithy-types` 1.1 -> 1.2.
