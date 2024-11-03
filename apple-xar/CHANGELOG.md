@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.19.0
+
+Released on 2024-11-03.
+
 * Added `id` field to `Ea` struct. (#155)
 * `base64` 0.21 -> 0.22.
 * `cryptographic-message-syntax` 0.26 -> 0.27.

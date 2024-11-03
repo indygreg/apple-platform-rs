@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.20.0
+
+Released on 2024-11-03.
+
 * `DirectoryBundle::info_plist_path()` now returns the path the instance was
   constructed with instead of deriving it at call time. Previously, the
   derivation logic could disagree with the constructed value. (#157)

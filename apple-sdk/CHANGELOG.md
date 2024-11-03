@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.6.0
+
+Released on 2024-11-03.
+
 * XROS support. `Platform` enumeration added `XrOs` and `XrOsSimulator`
   variants. The `aarch64-apple-xros-sim` and `*-apple-xros` triples are
   now recognized as XROS.

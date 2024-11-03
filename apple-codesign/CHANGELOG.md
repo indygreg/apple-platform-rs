@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.28.0
+
+Released on 2024-11-03.
+
 * Fixed `env_logger` construction so `RUST_LOG` environment variable is
   respected. (#162)
 * MSRV 1.70 -> 1.78.

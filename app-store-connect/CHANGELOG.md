@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.6.0
+
+Released on 2024-11-03.
+
 * New APIs and CLI commands to: list capabilities with a bundle ID;
   list profiles associated with a bundle ID; get bundle ID associated with
   a profile; list certificates associated with a profile; enable capacity
