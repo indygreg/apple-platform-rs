@@ -5,6 +5,7 @@ members = [
     'apple-bom',
     'apple-bundles',
     'apple-codesign',
+    'apple-device-tree',
     'apple-dmg',
     'apple-flat-package',
     'apple-sdk',
