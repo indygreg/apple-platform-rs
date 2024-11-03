@@ -329,8 +329,11 @@ impl Notarizer {
             .body(bytestream)
             .send();
 
-        rt.block_on(fut)
-            .map_err(|e| AppleCodesignError::AwsS3Error(Box::new(aws_sdk_s3::Error::from(e))))?;
+        rt.block_on(fut).map_err(|e| {
+            AppleCodesignError::AwsS3PutObject(
+                aws_smithy_types::error::display::DisplayErrorContext(e),
+            )
+        })?;
 
         warn!("S3 upload completed successfully");
 

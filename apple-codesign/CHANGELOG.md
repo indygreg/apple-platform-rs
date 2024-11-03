@@ -9,6 +9,8 @@ Released on ReleaseDate.
 * Fixed `env_logger` construction so `RUST_LOG` environment variable is
   respected. (#162)
 * MSRV 1.70 -> 1.78.
+* Improve logging of S3 upload failures. We should now hopefully print something
+  more useful than `s3 upload error: unhandled error` on failures.
 * `aws-config` 1.1 -> 1.5.
 * `aws-sdk-s3` 1.12 -> 1.24.
 * `aws-smithy-types` 1.1 -> 1.2.
