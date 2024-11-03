@@ -57,7 +57,7 @@ rand = "0.8.5"
 rasn = "0.20.2"
 rayon = "1.10.0"
 regex = "1.11.1"
-reqwest = { version = "0.12.9", default-features = false, features = ["blocking", "json", "rustls-tls-native-roots"] }
+reqwest = { version = "0.12.9", default-features = false, features = ["blocking", "http2", "json", "rustls-tls-native-roots"] }
 ring = "0.17.8"
 rsa = "0.9.6"
 scroll = "0.12.0"

@@ -11,6 +11,8 @@ Released on ReleaseDate.
   a profile; list certificates associated with a profile; enable capacity
   for a bundle ID. (#164)
 * Added `IosDistribution` variant to `CertificateType` enum.
+* Enabled `http2` feature of `reqwest` crate. This may provide better HTTP/2.0
+  compatibility.
 * MSRV 1.70 -> 1.78.
 * `base64` 0.21 -> 0.22.
 * `env_logger` 0.10 -> 0.11.
