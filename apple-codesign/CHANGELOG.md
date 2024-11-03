@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* `aws-sdk-s3` 1.24 -> 1.59.
+* `clap` 4.4 -> 4.5.
+
 ## 0.28.0
 
 Released on 2024-11-03.

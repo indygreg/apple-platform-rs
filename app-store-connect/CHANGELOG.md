@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* `clap` 4.4 -> 4.5.
+* `jsonwebtoken` 9.2 -> 9.3.
+
 ## 0.6.0
 
 Released on 2024-11-03.

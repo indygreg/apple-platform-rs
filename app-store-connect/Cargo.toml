@@ -13,10 +13,10 @@ readme = "README.md"
 [dependencies]
 anyhow = "1.0.92"
 base64 = "0.22.1"
-clap = { version = "4.4.18", features = ["derive"] }
+clap = { version = "4.5.20", features = ["derive"] }
 dirs = "5.0.1"
 env_logger = "0.11.5"
-jsonwebtoken = "9.2.0"
+jsonwebtoken = "9.3.0"
 log = "0.4.22"
 pem = "3.0.4"
 rand = "0.8.5"
@@ -24,5 +24,5 @@ reqwest = { version = "0.12.9", default-features = false, features = ["blocking"
 rsa = "0.9.6"
 serde = { version = "1.0.214", features = ["derive"] }
 serde_json = "1.0.132"
-thiserror = "1.0.66"
+thiserror = "1.0.67"
 x509-certificate = "0.24.0"
