@@ -2,7 +2,7 @@
 name = "app-store-connect"
 version = "0.6.0"
 edition = "2021"
-rust-version = "1.78"
+rust-version = "1.81"
 license = "Apache-2.0 OR MIT"
 description = "Apple App Store Connect API and client"
 keywords = ["apple"]

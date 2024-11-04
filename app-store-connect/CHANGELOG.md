@@ -6,6 +6,7 @@
 
 Released on ReleaseDate.
 
+* MSRV 1.78 -> 1.81.
 * `clap` 4.4 -> 4.5.
 * `jsonwebtoken` 9.2 -> 9.3.
 
