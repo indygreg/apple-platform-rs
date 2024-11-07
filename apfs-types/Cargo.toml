@@ -15,7 +15,7 @@ bitflags = "2.6.0"
 bytes = { version = "1.8.0", optional = true, default-features = false }
 chrono = { version = "0.4.38", default-features = false }
 num_enum = { version = "0.7.3", features = ["complex-expressions"] }
-thiserror = "1.0.67"
+thiserror = "1.0.68"
 
 [dependencies.apfs-derive]
 path = "../apfs-derive"

@@ -8,7 +8,7 @@ repository = "https://github.com/indygreg/apple-platform-rs"
 license = "Apache-2.0 OR MIT"
 
 [dependencies]
-anyhow = "1.0.92"
+anyhow = "1.0.93"
 byteorder = "1.5.0"
 crc32fast = "1.4.2"
 fatfs = "0.3.6"
