@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* When signing a bundle in `--shallow` mode, we no longer sign Mach-O binaries
+  that aren't the *main* bundle binary. The new behavior is compatible with the
+  behavior of Apple's `codesign`. (#148)
 * MSRV 1.78 -> 1.81.
 * `aws-sdk-s3` 1.24 -> 1.59.
 * `clap` 4.4 -> 4.5.
