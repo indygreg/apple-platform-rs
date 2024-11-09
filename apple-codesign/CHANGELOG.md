@@ -9,6 +9,9 @@ Released on ReleaseDate.
 * When signing a bundle in `--shallow` mode, we no longer sign Mach-O binaries
   that aren't the *main* bundle binary. The new behavior is compatible with the
   behavior of Apple's `codesign`. (#148)
+* Fixed a bug where signing of a bundle containing child bundles could sign and
+  install certain files multiple times. This could result in a child bundle having
+  an incorrect signature. (#149)
 * MSRV 1.78 -> 1.81.
 * `aws-sdk-s3` 1.24 -> 1.59.
 * `clap` 4.4 -> 4.5.

@@ -22,7 +22,7 @@ use {
     simple_file_manifest::create_symlink,
     std::{
         borrow::Cow,
-        collections::BTreeMap,
+        collections::{BTreeMap, BTreeSet},
         io::Write,
         path::{Path, PathBuf},
     },
@@ -33,12 +33,19 @@ use {
 /// This does not use the CodeResources rules for a bundle. Rather, it
 /// blindly copies all files in the bundle. This means that excluded files
 /// can be copied.
-pub fn copy_bundle(bundle: &DirectoryBundle, dest_dir: &Path) -> Result<(), AppleCodesignError> {
+///
+/// Returns the set of bundle-relative paths that are installed.
+pub fn copy_bundle(
+    bundle: &DirectoryBundle,
+    dest_dir: &Path,
+) -> Result<BTreeSet<PathBuf>, AppleCodesignError> {
     let settings = SigningSettings::default();
 
-    let context = BundleSigningContext {
+    let mut context = BundleSigningContext {
         dest_dir: dest_dir.to_path_buf(),
         settings: &settings,
+        previously_installed_paths: Default::default(),
+        installed_paths: Default::default(),
     };
 
     for file in bundle
@@ -48,7 +55,7 @@ pub fn copy_bundle(bundle: &DirectoryBundle, dest_dir: &Path) -> Result<(), Appl
         context.install_file(file.absolute_path(), file.relative_path())?;
     }
 
-    Ok(())
+    Ok(context.installed_paths)
 }
 
 /// A primitive for signing an Apple bundle.
@@ -186,22 +193,63 @@ impl BundleSigner {
             }
         }
 
+        // We keep track of root relative input paths that have been installed so we can
+        // skip installing in case we encounter the path again when signing a parent
+        // bundle.
+        //
+        // If we fail to do this, during non-shallow signing operations we may descend
+        // into a child bundle that is outside a directory with the "nested" flag set.
+        // Files in non-"nested" directories need to be sealed in CodeResources files
+        // as regular files, not bundles. So we need to walk into the child bundle in
+        // this scenario. But during the walk we want to prevent already installed files
+        // from being processed again.
+        //
+        // In the case of Mach-O binaries in the above non-"nested" directory scenario,
+        // excluding already signed files prevents the Mach-O from being signed again.
+        // Signing the Mach-O twice could invalidate the bundle's signature and/or result
+        // in incorrect signing settings since a bundle's main binary wouldn't be
+        // recognized as such since we're outside the context of that bundle.
+        //
+        // In all cases, we prevent redundant work installing files if a file is seen
+        // twice.
+        let mut installed_rel_paths = BTreeSet::<PathBuf>::new();
+
         for (rel, nested) in bundles {
+            let rel_path = PathBuf::from(rel);
+
             let nested_dest_dir = dest_dir.join(rel);
             warn!("entering nested bundle {}", rel,);
 
-            if settings.shallow() {
+            let bundle_installed_rel_paths = if settings.shallow() {
                 warn!("shallow signing enabled; bundle will be copied instead of signed");
-                copy_bundle(&nested.bundle, &nested_dest_dir)?;
+                copy_bundle(&nested.bundle, &nested_dest_dir)?
             } else if settings.path_exclusion_pattern_matches(rel) {
                 // If we excluded this bundle from signing, just copy all the files.
                 warn!("bundle is in exclusion list; it will be copied instead of signed");
-                copy_bundle(&nested.bundle, &nested_dest_dir)?;
+                copy_bundle(&nested.bundle, &nested_dest_dir)?
             } else {
-                nested.write_signed_bundle(
+                let bundle_installed = installed_rel_paths
+                    .iter()
+                    .filter_map(|p| {
+                        if let Ok(p) = p.strip_prefix(&rel_path) {
+                            Some(p.to_path_buf())
+                        } else {
+                            None
+                        }
+                    })
+                    .collect::<BTreeSet<_>>();
+
+                let info = nested.write_signed_bundle(
                     nested_dest_dir,
                     &settings.as_nested_bundle_settings(rel),
+                    bundle_installed,
                 )?;
+
+                info.installed_rel_paths
+            };
+
+            for p in bundle_installed_rel_paths {
+                installed_rel_paths.insert(rel_path.join(p).to_path_buf());
             }
 
             warn!("leaving nested bundle {}", rel);
@@ -212,7 +260,9 @@ impl BundleSigner {
             .get(&None)
             .expect("main bundle should have a key");
 
-        main.write_signed_bundle(dest_dir, settings)
+        Ok(main
+            .write_signed_bundle(dest_dir, settings, installed_rel_paths)?
+            .bundle)
     }
 }
 
@@ -343,16 +393,22 @@ pub struct BundleSigningContext<'a, 'key> {
     pub settings: &'a SigningSettings<'key>,
     /// Where the bundle is getting installed to.
     pub dest_dir: PathBuf,
+    /// Bundle relative paths of files that have already been installed.
+    ///
+    /// The already-present destination file content should be used for sealing.
+    pub previously_installed_paths: BTreeSet<PathBuf>,
+    /// Bundle relative paths of files that are installed by this signing operation.
+    pub installed_paths: BTreeSet<PathBuf>,
 }
 
 impl<'a, 'key> BundleSigningContext<'a, 'key> {
     /// Install a file (regular or symlink) in the destination directory.
     pub fn install_file(
-        &self,
+        &mut self,
         source_path: &Path,
-        dest_rel_path: &Path,
+        bundle_rel_path: &Path,
     ) -> Result<PathBuf, AppleCodesignError> {
-        let dest_path = self.dest_dir.join(dest_rel_path);
+        let dest_path = self.dest_dir.join(bundle_rel_path);
 
         if source_path != dest_path {
             // Remove an existing file before installing the replacement. In
@@ -394,6 +450,11 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
             }
         }
 
+        // Always record the installation even if we no-op. The intent of the
+        // annotation is to mark files that are already present in the destination
+        // bundle.
+        self.installed_paths.insert(bundle_rel_path.to_path_buf());
+
         Ok(dest_path)
     }
 
@@ -402,24 +463,24 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
     /// Returns Mach-O metadata which can be recorded in a CodeResources file.
 
     pub fn sign_and_install_macho(
-        &self,
+        &mut self,
         source_path: &Path,
-        dest_rel_path: &Path,
+        bundle_rel_path: &Path,
     ) -> Result<(PathBuf, SignedMachOInfo), AppleCodesignError> {
-        warn!("signing Mach-O file {}", dest_rel_path.display());
+        warn!("signing Mach-O file {}", bundle_rel_path.display());
 
         let macho_data = std::fs::read(source_path)?;
         let signer = MachOSigner::new(&macho_data)?;
 
         let mut settings = self
             .settings
-            .as_bundle_macho_settings(dest_rel_path.to_string_lossy().as_ref());
+            .as_bundle_macho_settings(bundle_rel_path.to_string_lossy().as_ref());
 
         // When signing a Mach-O in the context of a bundle, always define the
         // binary identifier from the filename so everything is consistent.
         // Unless an existing setting overrides it, of course.
         if settings.binary_identifier(SettingsScope::Main).is_none() {
-            let identifier = path_identifier(dest_rel_path)?;
+            let identifier = path_identifier(bundle_rel_path)?;
             info!("setting binary identifier based on path: {}", identifier);
 
             settings.set_binary_identifier(SettingsScope::Main, &identifier);
@@ -430,15 +491,26 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
         let mut new_data = Vec::<u8>::with_capacity(macho_data.len() + 2_usize.pow(17));
         signer.write_signed_binary(&settings, &mut new_data)?;
 
-        let dest_path = self.dest_dir.join(dest_rel_path);
+        let dest_path = self.dest_dir.join(bundle_rel_path);
 
         info!("writing Mach-O to {}", dest_path.display());
         write_macho_file(source_path, &dest_path, &new_data)?;
 
         let info = SignedMachOInfo::parse_data(&new_data)?;
 
+        self.installed_paths.insert(bundle_rel_path.to_path_buf());
+
         Ok((dest_path, info))
     }
+}
+
+/// Holds metadata describing the result of a bundle signing operation.
+pub struct BundleSigningInfo {
+    /// The signed bundle.
+    pub bundle: DirectoryBundle,
+
+    /// Bundle relative paths of files that are installed by this signing operation.
+    pub installed_rel_paths: BTreeSet<PathBuf>,
 }
 
 /// A primitive for signing a single Apple bundle.
@@ -469,7 +541,8 @@ impl SingleBundleSigner {
         &self,
         dest_dir: impl AsRef<Path>,
         settings: &SigningSettings,
-    ) -> Result<DirectoryBundle, AppleCodesignError> {
+        previously_installed_paths: BTreeSet<PathBuf>,
+    ) -> Result<BundleSigningInfo, AppleCodesignError> {
         let dest_dir = dest_dir.as_ref();
 
         warn!(
@@ -499,9 +572,11 @@ impl SingleBundleSigner {
                 // But we still need to preserve files (hopefully just symlinks) outside the
                 // nested bundles under `Versions/`. Since we don't nest into child bundles
                 // here, it should be safe to handle each encountered file.
-                let context = BundleSigningContext {
+                let mut context = BundleSigningContext {
                     dest_dir: dest_dir.to_path_buf(),
                     settings,
+                    previously_installed_paths,
+                    installed_paths: Default::default(),
                 };
 
                 for file in self
@@ -512,8 +587,13 @@ impl SingleBundleSigner {
                     context.install_file(file.absolute_path(), file.relative_path())?;
                 }
 
-                return DirectoryBundle::new_from_path(dest_dir)
-                    .map_err(AppleCodesignError::DirectoryBundle);
+                let bundle = DirectoryBundle::new_from_path(dest_dir)
+                    .map_err(AppleCodesignError::DirectoryBundle)?;
+
+                return Ok(BundleSigningInfo {
+                    bundle,
+                    installed_rel_paths: context.installed_paths,
+                });
             } else {
                 info!("found an unversioned framework; signing like normal");
             }
@@ -609,15 +689,17 @@ impl SingleBundleSigner {
             );
         }
 
-        let context = BundleSigningContext {
+        let mut context = BundleSigningContext {
             dest_dir: dest_dir_root.clone(),
             settings,
+            previously_installed_paths,
+            installed_paths: Default::default(),
         };
 
         resources_builder.walk_and_seal_directory(
             &self.root_bundle_path,
             self.bundle.root_dir(),
-            &context,
+            &mut context,
         )?;
 
         let info_plist_data = std::fs::read(self.bundle.info_plist_path())?;
@@ -674,10 +756,20 @@ impl SingleBundleSigner {
             let dest_path = dest_dir_root.join(exe.relative_path());
             info!("writing signed main executable to {}", dest_path.display());
             write_macho_file(exe.absolute_path(), &dest_path, &new_data)?;
+
+            context
+                .installed_paths
+                .insert(exe.relative_path().to_path_buf());
         } else {
             warn!("bundle has no main executable to sign specially");
         }
 
-        DirectoryBundle::new_from_path(&dest_dir_root).map_err(AppleCodesignError::DirectoryBundle)
+        let bundle = DirectoryBundle::new_from_path(&dest_dir_root)
+            .map_err(AppleCodesignError::DirectoryBundle)?;
+
+        Ok(BundleSigningInfo {
+            bundle,
+            installed_rel_paths: context.installed_paths,
+        })
     }
 }
