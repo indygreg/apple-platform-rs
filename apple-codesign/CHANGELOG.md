@@ -16,6 +16,7 @@ Released on ReleaseDate.
 * `aws-sdk-s3` 1.24 -> 1.59.
 * `clap` 4.4 -> 4.5.
 * `minicbor` 0.24 -> 0.25.
+* `thiserror` 1.0 -> 2.0.
 
 ## 0.28.0
 

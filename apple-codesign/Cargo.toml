@@ -72,7 +72,7 @@ spake2 = "0.4.0"
 spki = { version = "0.7.3", features = ["pem"] }
 subtle = "2.6.1"
 tempfile = "3.13.0"
-thiserror = "1.0.68"
+thiserror = "2.0.3"
 tokio = { version = "1.41.0", features = ["rt"] }
 tungstenite = { version = "0.24.0", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.11.0", features = ["v4"] }
