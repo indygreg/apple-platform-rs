@@ -1,6 +1,6 @@
 [package]
 name = "apple-flat-package"
-version = "0.19.0"
+version = "0.20.0"
 authors = ["Gregory Szorc <gregory.szorc@gmail.com>"]
 edition = "2021"
 rust-version = "1.81"
@@ -20,7 +20,7 @@ thiserror = "2.0.3"
 
 [dependencies.apple-xar]
 path = "../apple-xar"
-version = "0.19.0"
+version = "0.20.0"
 
 [dependencies.cpio-archive]
 path = "../cpio-archive"

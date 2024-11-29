@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.7.0
+
+Released on 2024-11-29.
+
 * MSRV 1.78 -> 1.81.
 * `clap` 4.4 -> 4.5.
 * `jsonwebtoken` 9.2 -> 9.3.

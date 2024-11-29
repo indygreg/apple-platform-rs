@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+## 0.29.0
+
+Released on 2024-11-29.
+
 * When signing a bundle in `--shallow` mode, we no longer sign Mach-O binaries
   that aren't the *main* bundle binary. The new behavior is compatible with the
   behavior of Apple's `codesign`. (#148)
