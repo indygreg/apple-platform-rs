@@ -16,7 +16,7 @@ name = "odumpbom"
 path = "src/dumpbom.rs"
 
 [dependencies]
-clap = "4.5.20"
+clap = "4.5.21"
 chrono = "0.4.38"
 crc32fast = "1.4.2"
 hex = "0.4.3"
