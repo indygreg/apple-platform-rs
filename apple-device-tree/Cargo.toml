@@ -1,0 +1,30 @@
+[package]
+name = "apple-device-tree"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.78"
+license = "MIT OR Apache-2.0"
+description = "Apple device tree format"
+keywords = ["apple", "device-tree", "dtb"]
+homepage = "https://github.com/indygreg/apple-platform-rs"
+repository = "https://github.com/indygreg/apple-platform-rs.git"
+readme = "README.md"
+
+[dependencies]
+scroll = { version = "0.12.0", default-features = false, features = ["derive"] }
+serde = { version = "1.0.207", default-features = false, features = [
+    "derive",
+], optional = true }
+
+[dev-dependencies]
+clap = { version = "4.5.15", features = ["derive"] }
+serde_json = "1.0.124"
+
+[features]
+default = []
+serde = ["dep:serde"]
+
+[[example]]
+name = "dtb-parse"
+path = "examples/dtb-parse.rs"
+required-features = ["serde"]
