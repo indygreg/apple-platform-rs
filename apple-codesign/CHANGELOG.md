@@ -13,6 +13,7 @@ Released on ReleaseDate.
 * Interpret empty signature data in Mach-O load command as a missing signature.
   (#183)
 * Handle DER plists encoded as a SET. (#182)
+* Notarization network polling now handles some transient network errors. (#174)
 * MSRV 1.81 -> 1.88.
 * `aws-smithy-http` 0.60 -> 0.62.
 * `cryptographic-message-syntax` 0.27 -> 0.28.
