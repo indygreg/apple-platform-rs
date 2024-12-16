@@ -45,7 +45,7 @@ impl MachOType {
         let mut fh = File::open(path.as_ref())?;
 
         let mut header = vec![0u8; 4];
-        let count = fh.read(&mut header)?;
+        let mut count = fh.read(&mut header)?;
 
         if count < 4 {
             return Ok(None);
@@ -54,7 +54,21 @@ impl MachOType {
         let magic = goblin::mach::peek(&header, 0)?;
 
         if magic == FAT_MAGIC {
-            Ok(Some(Self::Mach))
+            // As java .class files and FAT Mach-O files share the same magic number
+            // we need another heuristic to distinguish them, taken from:
+            // https://stackoverflow.com/questions/73546728/magic-value-collision-between-macho-fat-binaries-and-java-class-files
+            count = fh.read(&mut header)?;
+
+            if count < 4 {
+                return Ok(None);
+            }
+
+            let architectures = goblin::mach::peek(&header, 0)?;
+            if architectures < 0x20 {
+                Ok(Some(Self::Mach))
+            } else{
+                Ok(None)
+            }
         } else if let Ok((_, Some(_))) = parse_magic_and_ctx(&header, 0) {
             Ok(Some(Self::MachO))
         } else {
