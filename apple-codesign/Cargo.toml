@@ -58,7 +58,7 @@ rasn = "0.20.2"
 rayon = "1.10.0"
 regex = "1.11.1"
 reqwest = { version = "0.12.9", default-features = false, features = ["blocking", "http2", "json", "rustls-tls-native-roots"] }
-ring = "0.17.8"
+ring = "0.17.12"
 rsa = "0.9.7"
 scroll = "0.12.0"
 sha2 = "0.10.8"
