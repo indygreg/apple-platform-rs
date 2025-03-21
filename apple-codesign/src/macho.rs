@@ -113,6 +113,11 @@ impl<'a> MachOBinary<'a> {
             let signature_segment_end_offset =
                 signature_segment_start_offset + linkedit_data_command.datasize as usize;
 
+            // Signature can be empty.
+            if signature_segment_end_offset <= signature_segment_start_offset {
+                return Ok(None);
+            }
+
             let signature_data =
                 &linkedit.data[signature_segment_start_offset..signature_segment_end_offset];
 

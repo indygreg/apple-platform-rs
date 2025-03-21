@@ -10,6 +10,8 @@ Released on ReleaseDate.
   PKCS#11 based signing providers.) (#198)
 * Mach-O file sniffing has been refined to prevent false positives on
   Java `.class` files. (#175)
+* Interpret empty signature data in Mach-O load command as a missing signature.
+  (#183)
 * MSRV 1.81 -> 1.88.
 * `aws-smithy-http` 0.60 -> 0.62.
 * `cryptographic-message-syntax` 0.27 -> 0.28.
