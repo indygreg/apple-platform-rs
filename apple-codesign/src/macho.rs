@@ -116,17 +116,22 @@ impl<'a> MachOBinary<'a> {
             let signature_data =
                 &linkedit.data[signature_segment_start_offset..signature_segment_end_offset];
 
-            Ok(Some(MachOSignatureData {
-                linkedit_segment_index,
-                linkedit_segment_start_offset,
-                linkedit_segment_end_offset,
-                signature_file_start_offset,
-                signature_file_end_offset,
-                signature_segment_start_offset,
-                signature_segment_end_offset,
-                linkedit_segment_data: linkedit.data,
-                signature_data,
-            }))
+            if signature_data.len() > 0 {
+                Ok(None)
+            } else {
+                Ok(Some(MachOSignatureData {
+                    linkedit_segment_index,
+                    linkedit_segment_start_offset,
+                    linkedit_segment_end_offset,
+                    signature_file_start_offset,
+                    signature_file_end_offset,
+                    signature_segment_start_offset,
+                    signature_segment_end_offset,
+                    linkedit_segment_data: linkedit.data,
+                    signature_data,
+                }))
+            }
+
         } else {
             Ok(None)
         }
