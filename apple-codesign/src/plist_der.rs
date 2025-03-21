@@ -252,6 +252,69 @@ impl Decode for WrappedPlist {
     }
 }
 
+/// Represents a top-level plist with SET format in the rasn domain.
+struct SetPlist(WrappedValue);
+
+impl AsnType for SetPlist {
+    const TAG: Tag = Tag {
+        class: Class::Universal,
+        value: 17,
+    };
+}
+
+impl Constructed for SetPlist {
+    const FIELDS: Fields = Fields::from_static(&[Field::new_optional_type::<()>("key")]);
+}
+
+impl TryFrom<Value> for SetPlist {
+    type Error = EncodeError;
+
+    fn try_from(value: Value) -> Result<Self, Self::Error> {
+        Ok(Self(value.try_into()?))
+    }
+}
+
+impl TryFrom<SetPlist> for Value {
+    type Error = DecodeError;
+
+    fn try_from(value: SetPlist) -> Result<Self, Self::Error> {
+        if let WrappedValue::Dictionary(d) = value.0 {
+            Ok(Self::Dictionary(d.0))
+        } else {
+            Err(DecodeError::custom(
+                "wrapped value not a dictionary",
+                Codec::Der,
+            ))
+        }
+    }
+}
+
+impl Decode for SetPlist {
+    fn decode_with_tag_and_constraints<D: Decoder>(
+        decoder: &mut D,
+        tag: Tag,
+        _constraints: Constraints,
+    ) -> Result<Self, D::Error> {
+        decoder.decode_sequence::<Self, _, _>(tag, None::<fn() -> Self>, |decoder| {
+            let mut dict = plist::Dictionary::new();
+
+            loop {
+                let entry = decoder.decode_optional::<DictionaryEntry>()?;
+
+                if let Some(entry) = entry {
+                    let value = plist::Value::try_from(entry.value)?;
+
+                    dict.insert(entry.key, value);
+                } else {
+                    break;
+                }
+            }
+
+            Ok(Self(WrappedValue::Dictionary(Dictionary(dict))))
+        })
+    }
+}
+
 /// Encode a top-level plist [Value] to DER.
 pub fn der_encode_plist(value: &Value) -> Result<Vec<u8>, AppleCodesignError> {
     rasn::der::encode_scope(|encoder| {
@@ -263,9 +326,13 @@ pub fn der_encode_plist(value: &Value) -> Result<Vec<u8>, AppleCodesignError> {
 
 /// Decode DER to a plist [Value].
 pub fn der_decode_plist(data: impl AsRef<[u8]>) -> Result<Value, AppleCodesignError> {
-    rasn::der::decode::<WrappedPlist>(data.as_ref())
-        .and_then(Value::try_from)
-        .map_err(|e| AppleCodesignError::PlistDer(format!("{e}")))
+    match rasn::der::decode::<WrappedPlist>(data.as_ref()) {
+        Ok(wrapped) => Value::try_from(wrapped),
+        Err(e) => rasn::der::decode::<SetPlist>(data.as_ref())
+            .and_then(Value::try_from)
+            .map_err(|e| DecodeError::custom(format!("{e}"), Codec::Der))
+    }
+    .map_err(|e| AppleCodesignError::PlistDer(format!("Decode error: {:?}", e)))
 }
 
 #[cfg(test)]
