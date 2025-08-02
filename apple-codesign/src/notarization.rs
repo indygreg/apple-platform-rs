@@ -15,13 +15,19 @@ and waiting on the availability of a notarization ticket.
 
 use {
     crate::{reader::PathType, AppleCodesignError},
+    anyhow::Context,
     app_store_connect::{notary_api, AppStoreConnectClient, ConnectTokenEncoder, UnifiedApiKey},
     apple_bundles::DirectoryBundle,
     aws_sdk_s3::config::{Credentials, Region},
     aws_smithy_types::byte_stream::ByteStream,
+    headers::Authorization,
+    hyper::{client::HttpConnector, Uri},
+    hyper_proxy::{Intercept, Proxy, ProxyConnector},
     log::warn,
+    percent_encoding::percent_decode_str,
     sha2::Digest,
     std::{
+        env,
         fs::File,
         io::{Read, Seek, SeekFrom, Write},
         path::{Path, PathBuf},
@@ -292,24 +298,58 @@ impl Notarizer {
             UploadKind::Path(path) => rt.block_on(ByteStream::from_path(path))?,
         };
 
-        // upload using s3 api
         warn!("resolving AWS S3 configuration from Apple-provided credentials");
-        let config = rt.block_on(
-            aws_config::defaults(aws_config::BehaviorVersion::latest())
-                .credentials_provider(Credentials::new(
-                    submission.data.attributes.aws_access_key_id.clone(),
-                    submission.data.attributes.aws_secret_access_key.clone(),
-                    Some(submission.data.attributes.aws_session_token.clone()),
-                    None,
-                    "apple-codesign",
-                ))
-                // The region is not given anywhere in the Apple documentation. From
-                // manually testing all available regions, it appears to be
-                // us-west-2.
-                .region(Region::new("us-west-2"))
-                .load(),
-        );
+        let mut config_loader = aws_config::defaults(aws_config::BehaviorVersion::latest())
+            .credentials_provider(Credentials::new(
+                submission.data.attributes.aws_access_key_id.clone(),
+                submission.data.attributes.aws_secret_access_key.clone(),
+                Some(submission.data.attributes.aws_session_token.clone()),
+                None,
+                "apple-codesign",
+            ))
+            // The region is not given anywhere in the Apple documentation. From
+            // manually testing all available regions, it appears to be
+            // us-west-2.
+            .region(Region::new("us-west-2"));
 
+        if let Ok(proxy_url) = env::var("https_proxy") {
+            warn!("using proxy: {}", proxy_url);
+
+            let proxy_uri: Uri = proxy_url
+                .parse()
+                .context("invalid https_proxy URL")
+                .map_err(AppleCodesignError::Anyhow)?;
+            let mut proxy = Proxy::new(Intercept::All, proxy_uri.clone());
+
+            if let Some(authority) = proxy_uri.authority() {
+                let user_info = authority.as_str();
+                if let Some(at_pos) = user_info.find('@') {
+                    let credentials = &user_info[..at_pos];
+                    if let Some((user, pass)) = credentials.split_once(':') {
+                        let user = percent_decode_str(user).decode_utf8_lossy();
+                        let pass = percent_decode_str(pass).decode_utf8_lossy();
+                        proxy.set_authorization(Authorization::basic(&user, &pass));
+                    }
+                }
+            } else if let (Ok(user), Ok(password)) =
+                (env::var("proxy_user"), env::var("proxy_password"))
+            {
+                proxy.set_authorization(Authorization::basic(&user, &password));
+            }
+
+            let connector = HttpConnector::new();
+            let proxy_connector = ProxyConnector::from_proxy(connector, proxy)
+                .context("failed to create proxy connector")
+                .map_err(AppleCodesignError::Anyhow)?;
+
+            let client = aws_smithy_runtime::client::http::hyper_014::HyperClientBuilder::new()
+                .build(proxy_connector);
+            config_loader = config_loader.http_client(client);
+        } else {
+            warn!("no proxy set");
+        }
+
+        let config = rt.block_on(config_loader.load());
         let s3_client = aws_sdk_s3::Client::new(&config);
 
         warn!(
