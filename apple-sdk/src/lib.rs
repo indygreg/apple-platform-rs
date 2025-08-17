@@ -1109,7 +1109,9 @@ mod test {
                 // Ensure we're able to parse all platform types in existence. We want
                 // this to fail when Apple introduces new platforms so we can implement
                 // support for the new platform!
-                assert!(!matches!(platform.platform, Platform::Unknown(_)));
+                if let Platform::Unknown(name) = platform.platform {
+                    panic!("unknown platform: {}:{}", name, platform.path.display());
+                }
             }
         }
 
