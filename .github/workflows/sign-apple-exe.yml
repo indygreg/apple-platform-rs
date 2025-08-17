@@ -65,7 +65,7 @@ jobs:
               dist/output/${{ github.event.inputs.exe_name }}
 
       - name: Upload
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: exe-${{ github.event.inputs.exe_name }}
           path: dist/output/${{ github.event.inputs.exe_name }}
