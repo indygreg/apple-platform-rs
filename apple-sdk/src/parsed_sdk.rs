@@ -450,7 +450,9 @@ mod test {
     fn find_all_sdks() -> Result<(), Error> {
         for dir in DeveloperDirectory::find_system_xcodes()? {
             for sdk in dir.sdks::<ParsedSdk>()? {
-                assert!(!matches!(sdk.platform(), Platform::Unknown(_)));
+                if let Platform::Unknown(name) = sdk.platform() {
+                    panic!("unknown platform: {}:{}", name, sdk.path.display());
+                }
                 assert!(sdk.version().is_some());
             }
         }
