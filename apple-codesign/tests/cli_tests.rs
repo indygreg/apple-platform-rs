@@ -12,7 +12,7 @@ use {
     trycmd_indygreg_fork::{schema::TryCmd, Error, TestCases},
 };
 
-const COREUTILS_VERSION: &str = "0.0.22";
+const COREUTILS_VERSION: &str = "0.0.30";
 /// List of coreutils binaries to materialize in trycmd test environments.
 const COREUTILS_BINARIES: [&str; 11] = [
     "cat", "cp", "hashsum", "ln", "ls", "mkdir", "mv", "rm", "sort", "test", "touch",
