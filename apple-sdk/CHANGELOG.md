@@ -8,6 +8,7 @@ Released on ReleaseDate.
 
 * Ignore SDK-like directories having the name `AssetRuntime.*`, which we
   believe to be invalid.
+* MSRV 1.81 -> 1.86.
 
 ## 0.6.0
 

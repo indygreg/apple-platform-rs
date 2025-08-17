@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* MSRV 1.81 -> 1.86.
+
 * `clap` 4.4 -> 4.5.
 
 ## 0.3.0
