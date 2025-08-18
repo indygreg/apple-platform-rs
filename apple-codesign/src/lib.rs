@@ -167,3 +167,6 @@ pub use verify::*;
 pub mod windows;
 #[cfg(feature = "yubikey")]
 pub mod yubikey;
+
+#[cfg(feature = "pkcs11")]
+pub mod pkcs11;
