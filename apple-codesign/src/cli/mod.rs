@@ -2501,9 +2501,7 @@ pub fn main_impl() -> Result<(), AppleCodesignError> {
 
     let mut builder = env_logger::Builder::new();
 
-    builder
-        .filter_level(log_level)
-        .parse_default_env();
+    builder.filter_level(log_level).parse_default_env();
 
     // Disable log context except at higher log levels.
     if log_level <= LevelFilter::Info {

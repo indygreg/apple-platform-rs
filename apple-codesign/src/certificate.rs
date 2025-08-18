@@ -944,9 +944,7 @@ impl AppleCertificate for CapturedX509Certificate {
         let cert: &x509_certificate::rfc5280::Certificate = self.as_ref();
 
         cert.iter_extensions()
-            .filter_map(|extension| {
-                CodeSigningCertificateExtension::try_from(&extension.id).ok()
-            })
+            .filter_map(|extension| CodeSigningCertificateExtension::try_from(&extension.id).ok())
             .collect::<Vec<_>>()
     }
 
@@ -1320,9 +1318,7 @@ impl AppleCertificateBuilder for X509CertificateBuilder {
     fn apple_code_signing_extensions(&self) -> Vec<CodeSigningCertificateExtension> {
         self.extensions()
             .iter()
-            .filter_map(|ext| {
-                CodeSigningCertificateExtension::try_from(&ext.id).ok()
-            })
+            .filter_map(|ext| CodeSigningCertificateExtension::try_from(&ext.id).ok())
             .collect::<Vec<_>>()
     }
 }
