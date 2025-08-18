@@ -7,6 +7,7 @@
 Released on ReleaseDate.
 
 * MSRV 1.81 -> 1.86.
+* `aws-smithy-http` 0.60 -> 0.62.
 
 ## 0.29.0
 

@@ -8,15 +8,15 @@ repository = "https://github.com/indygreg/apple-platform-rs"
 license = "Apache-2.0 OR MIT"
 
 [dependencies]
-anyhow = "1.0.93"
+anyhow = "1.0.99"
 byteorder = "1.5.0"
-crc32fast = "1.4.2"
+crc32fast = "1.5.0"
 fatfs = "0.3.6"
-flate2 = "1.0.35"
+flate2 = "1.1.2"
 fscommon = "0.1.1"
-getrandom = "0.2.15"
-gpt = "4.0.0"
+getrandom = "0.2.16"
+gpt = "4.1.0"
 md5 = "0.7.0"
-plist = "1.7.0"
-serde = { version = "1.0.215", features = ["derive"] }
-serde_bytes = "0.11.15"
+plist = "1.7.4"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_bytes = "0.11.17"
