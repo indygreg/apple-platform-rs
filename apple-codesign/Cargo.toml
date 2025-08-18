@@ -115,7 +115,7 @@ windows-sys = { version = "0.59.0", features = ["Win32_Foundation", "Win32_Secur
 flate2 = "1.0.35"
 indoc = "2.0.5"
 simple-file-manifest = "0.11.0"
-tar = "0.4.43"
+tar = "0.4.44"
 trycmd-indygreg-fork = "0.14.20"
 zip = { version = "2.2.1", default-features = false }
 
