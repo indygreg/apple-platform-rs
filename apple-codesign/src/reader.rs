@@ -313,7 +313,7 @@ impl CmsSigner {
                 attributes.push(format!("{}", attr.typ));
 
                 if attr.typ == CD_DIGESTS_PLIST_OID {
-                    if let Some(data) = attr.values.get(0) {
+                    if let Some(data) = attr.values.first() {
                         let data = data.deref().clone();
 
                         let plist = data

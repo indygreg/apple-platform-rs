@@ -261,7 +261,7 @@ impl BomBuilder {
                     link_name: None,
                 };
 
-                let mut path_cstring = Vec::<u8>::with_capacity(path.as_bytes().len());
+                let mut path_cstring = Vec::<u8>::with_capacity(path.len());
                 path_cstring.extend(path.as_bytes());
                 path_cstring.push(0);
                 let path_cstring =
@@ -284,7 +284,7 @@ impl BomBuilder {
                 .expect("parent path should be present");
             let path_id = path_to_path_id.len() as u32 + 1;
 
-            let mut path_cstring = Vec::<u8>::with_capacity(path.as_bytes().len() + 1);
+            let mut path_cstring = Vec::<u8>::with_capacity(path.len() + 1);
             path_cstring.extend(path.as_bytes());
             path_cstring.push(0);
             let path_cstring = CString::new(path_cstring).expect("should be valid C string");
@@ -301,7 +301,7 @@ impl BomBuilder {
                 b: 1,
                 checksum_or_type: entry.crc32().unwrap_or(0),
                 link_name_length: if let Some(link_name) = entry.link_name() {
-                    link_name.as_bytes().len() as u32 + 1
+                    link_name.len() as u32 + 1
                 } else {
                     0
                 },
@@ -465,7 +465,7 @@ impl BomBuilder {
             count: 1,
             paths: vec![BomPathsEntry {
                 block_index: blocks.len() as u32 + 1,
-                file_index: if let Some(entry) = paths_blocks[0].paths.get(0) {
+                file_index: if let Some(entry) = paths_blocks[0].paths.first() {
                     entry.file_index
                 } else {
                     0

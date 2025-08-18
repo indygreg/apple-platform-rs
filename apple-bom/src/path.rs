@@ -264,7 +264,7 @@ impl BomPath {
     /// The path that this link refers to, as a [CString].
     pub fn link_name_cstring(&self) -> Option<CString> {
         if let Some(link_name) = &self.link_name {
-            let mut data = Vec::<u8>::with_capacity(link_name.as_bytes().len() + 1);
+            let mut data = Vec::<u8>::with_capacity(link_name.len() + 1);
             data.extend(link_name.as_bytes());
             data.push(0);
 

@@ -271,8 +271,7 @@ impl<T: Read + Sized> Read for OdcReader<T> {
         if let Some(reader) = &mut self.entry_reader {
             reader.read(buf)
         } else {
-            Err(std::io::Error::new(
-                std::io::ErrorKind::Other,
+            Err(std::io::Error::other(
                 "no current archive entry to read from",
             ))
         }

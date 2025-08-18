@@ -356,7 +356,7 @@ impl CliCommand for DebugFileTree {
         let root = self
             .path
             .components()
-            .last()
+            .next_back()
             .expect("should have final component")
             .as_os_str()
             .to_string_lossy()

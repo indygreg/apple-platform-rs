@@ -76,7 +76,7 @@ impl TableOfContents {
         emitter
             .into_inner()
             .into_inner()
-            .map_err(|e| Error::Io(std::io::Error::new(std::io::ErrorKind::Other, e)))
+            .map_err(|e| Error::Io(std::io::Error::other(e)))
     }
 
     pub fn write_xml<W: Write>(&self, writer: &mut EventWriter<W>) -> XarResult<()> {

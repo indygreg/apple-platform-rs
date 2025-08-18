@@ -251,7 +251,7 @@ impl KeySource for MacosKeychainSigningKey {
                 let matches = if let Some(wanted_fingerprint) = &self.sha256_fingerprint {
                     let got_fingerprint = hex::encode(cert.sha256_fingerprint()?.as_ref());
 
-                    wanted_fingerprint.to_ascii_lowercase() == got_fingerprint.to_ascii_lowercase()
+                    wanted_fingerprint.eq_ignore_ascii_case(&got_fingerprint)
                 } else {
                     false
                 };

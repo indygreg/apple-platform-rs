@@ -191,7 +191,7 @@ impl<W: Write + Seek> DmgWriter<W> {
 fn symlink(target: &str) -> Result<Vec<u8>> {
     let xsym = format!(
         "XSym\n{:04}\n{:x}\n{}\n",
-        target.as_bytes().len(),
+        target.len(),
         md5::compute(target.as_bytes()),
         target,
     );

@@ -352,7 +352,7 @@ impl<R: Read + Seek + Sized + Debug> XarReader<R> {
 
         if let Some((signature, certificates)) = self.rsa_signature()? {
             // The first certificate is the signing certificate.
-            if let Some(cert) = certificates.get(0) {
+            if let Some(cert) = certificates.first() {
                 cert.verify_signed_data(signed_data, signature)?;
                 Ok(true)
             } else {

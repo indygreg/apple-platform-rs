@@ -811,7 +811,7 @@ impl PairedClient {
 
         let cert = res.as_signing_certificate()?;
 
-        if let Some(cert) = cert.certificates.get(0) {
+        if let Some(cert) = cert.certificates.first() {
             let cert_der = STANDARD_ENGINE.decode(&cert.certificate)?;
             let chain_der = cert
                 .chain

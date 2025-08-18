@@ -293,13 +293,13 @@ impl BomVar {
     pub fn new(block_index: u32, name: impl ToString) -> Result<Self, Error> {
         let name = name.to_string();
 
-        if name.as_bytes().len() > 254 {
+        if name.len() > 254 {
             return Err(Error::BadVariableString);
         }
 
         Ok(Self {
             block_index,
-            name_length: name.as_bytes().len() as u8 + 1,
+            name_length: name.len() as u8 + 1,
             name,
         })
     }
@@ -879,7 +879,7 @@ impl BomBlockTree {
         let mut paths = self.paths(bom)?;
 
         while paths.is_path_info == 0 {
-            let entry = paths.paths.get(0).ok_or(Error::BadIndex)?;
+            let entry = paths.paths.first().ok_or(Error::BadIndex)?;
             paths = entry.paths(bom)?;
         }
 

@@ -1015,7 +1015,7 @@ impl<'key> SigningSettings<'key> {
                     } else {
                         info!(
                             "preserving existing binary identifier in Mach-O ({})",
-                            cd.ident.to_string()
+                            cd.ident
                         );
                         self.set_binary_identifier(scope_index.clone(), cd.ident.to_string());
                         seen_identifier = Some(cd.ident.to_string());
