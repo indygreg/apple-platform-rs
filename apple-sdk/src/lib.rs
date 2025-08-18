@@ -944,6 +944,15 @@ impl SdkPath {
             return Err(Error::PathNotSdk(path));
         }
 
+        // Filter out the AssetRuntime.* paths. These only existed in a few
+        // Xcode releases and while they have JSON and plist descriptor files,
+        // the metadata inside is incomplete and they are the only files in
+        // the directory. Since they don't exist in newer Xcode versions, they
+        // may have been published prematurely.
+        if s.starts_with("AssetRuntime.") {
+            return Err(Error::PathNotSdk(path));
+        }
+
         // prefix can be a platform name (e.g. `MacOSX`) or a platform name + version
         // (e.g. `MacOSX12.4`).
         let (platform_name, version) = if let Some(first_digit) = prefix

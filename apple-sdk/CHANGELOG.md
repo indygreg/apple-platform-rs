@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* Ignore SDK-like directories having the name `AssetRuntime.*`, which we
+  believe to be invalid.
+
 ## 0.6.0
 
 Released on 2024-11-03.
