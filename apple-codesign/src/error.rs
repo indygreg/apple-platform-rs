@@ -368,6 +368,9 @@ pub enum AppleCodesignError {
     #[error("zip structs error: {0}")]
     ZipStructs(#[from] zip_structs::zip_error::ZipReadError),
 
+    #[error("PKCS11 error: {0}")]
+    Pkcs11Error(String),
+
     #[error("remote signing error: {0}")]
     RemoteSign(#[from] RemoteSignError),
 

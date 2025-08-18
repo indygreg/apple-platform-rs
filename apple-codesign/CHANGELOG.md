@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* PKCS#11 support. (Support signing with Google Cloud HSM, SoftHSM, other
+  PKCS#11 based signing providers.) (#198)
 * MSRV 1.81 -> 1.88.
 * `aws-smithy-http` 0.60 -> 0.62.
 * `cryptographic-message-syntax` 0.27 -> 0.28.
