@@ -53,7 +53,7 @@ pem = "3.0.5"
 pkcs1 = { version = "0.7.5", features = ["alloc", "std", "pkcs8"] }
 pkcs8 = { version = "0.10.2", features = ["alloc", "std"] }
 plist = "1.7.4"
-rand = "0.8.5"
+rand = "0.9.2"
 rasn = "0.20.2"
 rayon = "1.11.0"
 regex = "1.11.1"
