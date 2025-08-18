@@ -13,7 +13,7 @@ readme = "README.md"
 
 [dependencies]
 flate2 = "1.1.2"
-scroll = { version = "0.12.0", features = ["derive"] }
+scroll = { version = "0.13.0", features = ["derive"] }
 serde-xml-rs = "0.7.1"
 serde = { version = "1.0.219", features = ["derive"] }
 thiserror = "2.0.15"

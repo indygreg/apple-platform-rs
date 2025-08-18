@@ -23,7 +23,7 @@ md-5 = "0.10.6"
 flate2 = "1.1.2"
 rand = { version = "0.8.5", optional = true }
 reqwest = { version = "0.12.23", default-features = false, optional = true }
-scroll = { version = "0.12.0", features = ["derive"] }
+scroll = { version = "0.13.0", features = ["derive"] }
 serde-xml-rs = "0.7.1"
 serde = { version = "1.0.219", features = ["derive"] }
 sha1 = "0.10.6"

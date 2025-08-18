@@ -166,7 +166,7 @@ dependencies = [
  "clap",
  "crc32fast",
  "hex",
- "scroll",
+ "scroll 0.13.0",
  "simple-file-manifest",
  "thiserror 2.0.15",
 ]
@@ -236,7 +236,7 @@ dependencies = [
  "reqwest",
  "ring",
  "rsa",
- "scroll",
+ "scroll 0.13.0",
  "security-framework 2.11.1",
  "security-framework-sys",
  "semver",
@@ -294,7 +294,7 @@ dependencies = [
  "apple-xar",
  "cpio-archive",
  "flate2",
- "scroll",
+ "scroll 0.13.0",
  "serde",
  "serde-xml-rs",
  "thiserror 2.0.15",
@@ -324,7 +324,7 @@ dependencies = [
  "md-5",
  "rand 0.8.5",
  "reqwest",
- "scroll",
+ "scroll 0.13.0",
  "serde",
  "serde-xml-rs",
  "sha1",
@@ -1933,7 +1933,7 @@ checksum = "daa0a64d21a7eb230583b4c5f4e23b7e4e57974f96620f42a7e75e08ae66d745"
 dependencies = [
  "log",
  "plain",
- "scroll",
+ "scroll 0.12.0",
 ]
 
 [[package]]
@@ -3764,7 +3764,16 @@ version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ab8598aa408498679922eff7fa985c25d58a90771bd6be794434c5277eab1a6"
 dependencies = [
- "scroll_derive",
+ "scroll_derive 0.12.1",
+]
+
+[[package]]
+name = "scroll"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1257cd4248b4132760d6524d6dda4e053bc648c9070b960929bf50cfb1e7add"
+dependencies = [
+ "scroll_derive 0.13.0",
 ]
 
 [[package]]
@@ -3772,6 +3781,17 @@ name = "scroll_derive"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1783eabc414609e28a5ba76aee5ddd52199f7107a0b24c2e9746a1ecc34a683d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "scroll_derive"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "22fc4f90c27b57691bbaf11d8ecc7cfbfe98a4da6dbe60226115d322aa80c06e"
 dependencies = [
  "proc-macro2",
  "quote",

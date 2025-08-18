@@ -60,7 +60,7 @@ regex = "1.11.1"
 reqwest = { version = "0.12.23", default-features = false, features = ["blocking", "http2", "json", "rustls-tls-native-roots"] }
 ring = "0.17.14"
 rsa = "0.9.8"
-scroll = "0.12.0"
+scroll = "0.13.0"
 sha2 = "0.10.9"
 semver = "1.0.26"
 serde = { version = "1.0.219", features = ["derive"] }

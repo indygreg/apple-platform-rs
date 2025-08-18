@@ -20,6 +20,6 @@ clap = "4.5.45"
 chrono = "0.4.41"
 crc32fast = "1.5.0"
 hex = "0.4.3"
-scroll = { version = "0.12.0", features = ["derive"] }
+scroll = { version = "0.13.0", features = ["derive"] }
 simple-file-manifest = "0.11.0"
 thiserror = "2.0.15"
