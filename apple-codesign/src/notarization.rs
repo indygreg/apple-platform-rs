@@ -22,6 +22,7 @@ use {
     log::warn,
     sha2::Digest,
     std::{
+        error::Error,
         fs::File,
         io::{Read, Seek, SeekFrom, Write},
         path::{Path, PathBuf},
@@ -381,27 +382,34 @@ impl Notarizer {
         let start_time = std::time::Instant::now();
 
         loop {
-            let status = self.get_submission(submission_id)?;
+            match self.get_submission(submission_id) {
+                Ok(status) => {
+                    let elapsed = start_time.elapsed();
 
-            let elapsed = start_time.elapsed();
+                    warn!(
+                        "poll state after {}s: {:?}",
+                        elapsed.as_secs(),
+                        status.data.attributes.status
+                    );
 
-            warn!(
-                "poll state after {}s: {:?}",
-                elapsed.as_secs(),
-                status.data.attributes.status
-            );
+                    if status.data.attributes.status != notary_api::SubmissionResponseStatus::InProgress {
+                        warn!("Notary API Server has finished processing the uploaded asset");
 
-            if status.data.attributes.status != notary_api::SubmissionResponseStatus::InProgress {
-                warn!("Notary API Server has finished processing the uploaded asset");
-
-                return Ok(status);
+                        return Ok(status);
+                    }
+                },
+                Err(e) => {
+                    if !is_transient_error(&e) {
+                        return Err(e)
+                    }
+                }
             }
 
+            let elapsed = start_time.elapsed();
             if elapsed >= wait_limit {
                 warn!("reached wait limit after {}s", elapsed.as_secs());
                 return Err(AppleCodesignError::NotarizeWaitLimitReached);
             }
-
             std::thread::sleep(self.wait_poll_interval);
         }
     }
@@ -439,5 +447,31 @@ impl Notarizer {
         &self,
     ) -> Result<notary_api::ListSubmissionResponse, AppleCodesignError> {
         Ok(self.client()?.list_submissions()?)
+    }
+}
+
+fn is_transient_error(root: &(dyn Error + 'static)) -> bool {
+    if let Some::<&reqwest::Error>(reqwest_error) = root.downcast_ref::<reqwest::Error>() {
+        if reqwest_error.is_timeout() {
+            warn(reqwest_error, 0);
+            return true;
+        }
+        if reqwest_error.is_connect() {
+            warn(reqwest_error, 0);
+            return true;
+        }
+    }
+    
+    if let Some(source) = root.source() {
+        return is_transient_error(source)
+    }
+    
+    return false
+}
+
+fn warn(error: &(dyn Error + 'static), indent: usize) {
+    warn!("{}{}", " ".repeat(indent), error);
+    if let Some(source) =  error.source() {
+         warn(source, indent + 1);
     }
 }
