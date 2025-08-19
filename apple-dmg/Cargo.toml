@@ -16,7 +16,7 @@ flate2 = "1.1.2"
 fscommon = "0.1.1"
 getrandom = "0.2.16"
 gpt = "4.1.0"
-md5 = "0.7.0"
+md5 = "0.8.0"
 plist = "1.7.4"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_bytes = "0.11.17"
