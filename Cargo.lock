@@ -279,7 +279,7 @@ dependencies = [
  "fatfs",
  "flate2",
  "fscommon",
- "getrandom 0.2.16",
+ "getrandom 0.3.3",
  "gpt",
  "md5",
  "plist",
