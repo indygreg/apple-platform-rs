@@ -85,6 +85,7 @@ yubikey = { version = "0.8.0", optional = true, features = ["untested"] }
 zeroize = { version = "1.8.1", features = ["zeroize_derive"] }
 zip = { version = "2.4.2", default-features = false, features = ["deflate"] }
 zip_structs = "0.2.1"
+cryptoki = { version = "0.10.0", optional = true }
 
 [dependencies.app-store-connect]
 path = "../app-store-connect"
@@ -129,3 +130,4 @@ notarize = [
     "aws-smithy-types",
 ]
 smartcard = ["yubikey"]
+pkcs11 = ["cryptoki"]

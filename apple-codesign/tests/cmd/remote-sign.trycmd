@@ -71,6 +71,30 @@ Options:
       --p12-password-file <PATH>
           Path to file containing password for opening --p12-file file
 
+      --pkcs11-library <PATH>
+          Path to PKCS11 library (.so/.dylib/.dll)
+
+      --pkcs11-token-label <LABEL>
+          PKCS11 token label to use
+
+      --pkcs11-slot-id <ID>
+          PKCS11 slot ID to use (alternative to token label)
+
+      --pkcs11-pin <SECRET>
+          PIN for PKCS11 token
+
+      --pkcs11-pin-env <STRING>
+          Environment variable holding the PKCS11 PIN
+
+      --pkcs11-certificate-file <PATH>
+          Path to certificate file (PEM/DER) (alternative to loading from PKCS11 token)
+
+      --pkcs11-key-label <LABEL>
+          Private key label in PKCS11 token (CKA_LABEL attribute)
+
+      --pkcs11-key-id <ID>
+          Private key ID in PKCS11 token (CKA_ID attribute)
+
       --remote-signing-url <URL>
           URL of a remote code signing server
 

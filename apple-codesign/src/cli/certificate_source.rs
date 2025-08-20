@@ -20,12 +20,21 @@ use {
     spki::EncodePublicKey,
     std::path::PathBuf,
     x509_certificate::CapturedX509Certificate,
+    std::convert::TryFrom,
 };
 
 #[cfg(feature = "yubikey")]
 use {
     crate::{cli::prompt_smartcard_pin, yubikey::YubiKey},
     std::str::FromStr,
+};
+
+#[cfg(feature = "pkcs11")]
+use {
+    crate::pkcs11::Pkcs11PrivateKey,
+    cryptoki::{
+        context::{CInitializeArgs, Pkcs11},
+    },
 };
 
 #[cfg(target_os = "macos")]
@@ -635,6 +644,10 @@ pub struct CertificateSource {
     pub p12_key: Option<P12SigningKey>,
 
     #[command(flatten)]
+    #[serde(default, rename = "pkcs11", skip_serializing_if = "Option::is_none")]
+    pub pkcs11_key: Option<Pkcs11SigningKey>,
+
+    #[command(flatten)]
     #[serde(default, rename = "remote", skip_serializing_if = "Option::is_none")]
     pub remote_signing_key: Option<RemoteSigningKey>,
 
@@ -674,6 +687,10 @@ impl CertificateSource {
             res.push(key as &dyn KeySource);
         }
 
+        if let Some(key) = &self.pkcs11_key {
+            res.push(key as &dyn KeySource);
+        }
+
         if let Some(key) = &self.remote_signing_key {
             res.push(key as &dyn KeySource);
         }
@@ -703,4 +720,200 @@ impl CertificateSource {
 
         Ok(res)
     }
+}
+
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct Pkcs11SigningKey {
+    /// Path to PKCS11 library (.so/.dylib/.dll)
+    #[arg(long = "pkcs11-library", value_name = "PATH")]
+    pub library_path: Option<PathBuf>,
+
+    /// PKCS11 token label to use
+    #[arg(long = "pkcs11-token-label", value_name = "LABEL")]
+    pub token_label: Option<String>,
+
+    /// PKCS11 slot ID to use (alternative to token label)
+    #[arg(long = "pkcs11-slot-id", value_name = "ID")]
+    pub slot_id: Option<u64>,
+
+    /// PIN for PKCS11 token
+    #[arg(long = "pkcs11-pin", value_name = "SECRET")]
+    pub pkcs11_pin: Option<String>,
+
+    /// Environment variable holding the PKCS11 PIN
+    #[arg(long = "pkcs11-pin-env", value_name = "STRING")]
+    #[serde(skip)]
+    pub pkcs11_pin_env: Option<String>,
+
+    /// Path to certificate file (PEM/DER)
+    #[arg(long = "pkcs11-certificate-file", value_name = "PATH")]
+    pub certificate_file: Option<PathBuf>,
+
+    /// Private key label in PKCS11 token (CKA_LABEL attribute)
+    #[arg(long = "pkcs11-key-label", value_name = "LABEL")]
+    pub key_label: Option<String>,
+
+    /// Private key ID in PKCS11 token (CKA_ID attribute)
+    #[arg(long = "pkcs11-key-id", value_name = "ID")]
+    pub key_id: Option<String>,
+}
+
+impl KeySource for Pkcs11SigningKey {
+    #[cfg(feature = "pkcs11")]
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        let library_path = match &self.library_path {
+            Some(path) => path.clone(),
+            None => return Ok(Default::default()),
+        };
+
+        info!("initializing PKCS11 library: {}", library_path.display());
+
+        let pkcs11 = Pkcs11::new(library_path.clone())?;
+        pkcs11.initialize(CInitializeArgs::OsThreads).or_else(|e| {
+            match e {
+                cryptoki::error::Error::AlreadyInitialized => {
+                    info!("PKCS11 library already initialized");
+                    Ok(())
+                }
+                _ => Err(e),
+            }
+        })?;
+
+        let slots = pkcs11.get_slots_with_token()?;
+        if slots.is_empty() {
+            return Err(AppleCodesignError::Pkcs11Error("no PKCS11 tokens found".into()));
+        }
+
+        // Find the right slot
+        let slot = if let Some(slot_id) = self.slot_id {
+            slots.into_iter()
+                .find(|s| s.id() == slot_id)
+                .ok_or_else(|| AppleCodesignError::Pkcs11Error(format!("PKCS11 slot {} not found", slot_id)))?
+        } else if let Some(token_label) = &self.token_label {
+            let target_label = token_label.trim();
+            slots.into_iter()
+                .find(|slot| {
+                    if let Ok(token_info) = pkcs11.get_token_info(*slot) {
+                        let label = String::from_utf8_lossy(&token_info.label().as_bytes()).trim().to_string();
+                        label == target_label
+                    } else {
+                        false
+                    }
+                })
+                .ok_or_else(|| AppleCodesignError::Pkcs11Error(format!("PKCS11 token '{}' not found", target_label)))?
+        } else {
+            slots[0] // Use first slot if no preference specified
+        };
+
+        info!("using PKCS11 slot: {}", slot.id());
+
+        // Load certificate from local file
+        let cert = if let Some(cert_file) = &self.certificate_file {
+            // Load certificate from local file (similar to osslsigncode)
+            info!("loading certificate from local file: {}", cert_file.display());
+            self.load_certificate_from_file(cert_file)?
+        } else {
+            return Err(AppleCodesignError::Pkcs11Error(
+                "--pkcs11-certificate-file is required for Apple code signing workflows".into()
+            ));
+        };
+
+        info!("loaded certificate: {}", cert.subject_common_name().unwrap_or_else(|| "unknown".into()));
+
+        // Create PKCS11 private key wrapper
+        let pkcs11_key = if let Some(key_id) = &self.key_id {
+            // Use CKA_ID attribute
+            Pkcs11PrivateKey::new_with_id(
+                library_path,
+                slot.id(),
+                key_id.clone(),
+                self.get_pin()?,
+                cert.clone(),
+            )?
+        } else if let Some(key_label) = &self.key_label {
+            // Use CKA_LABEL attribute
+            Pkcs11PrivateKey::new_with_label(
+                library_path,
+                slot.id(),
+                key_label.clone(),
+                self.get_pin()?,
+                cert.clone(),
+            )?
+        } else {
+            // Try to find private key automatically based on certificate
+            info!("attempting automatic private key discovery");
+            Pkcs11PrivateKey::new_from_certificate(
+                library_path,
+                slot.id(),
+                self.get_pin()?,
+                cert.clone(),
+            )?
+        };
+
+        Ok(SigningCertificates {
+            keys: vec![Box::new(pkcs11_key)],
+            certs: vec![cert],
+        })
+    }
+
+    #[cfg(not(feature = "pkcs11"))]
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        if self.library_path.is_some() {
+            error!("PKCS11 support not available; ignoring --pkcs11-* arguments");
+        }
+        Ok(Default::default())
+    }
+}
+
+#[cfg(feature = "pkcs11")]
+impl Pkcs11SigningKey {
+    fn get_pin(&self) -> Result<Option<String>, AppleCodesignError> {
+        if let Some(pin) = &self.pkcs11_pin {
+            Ok(Some(pin.clone()))
+        } else if let Some(pin_env) = &self.pkcs11_pin_env {
+            match std::env::var(pin_env) {
+                Ok(pin) => {
+                    info!("using PIN from {} environment variable", pin_env);
+                    Ok(Some(pin))
+                }
+                Err(_) => {
+                    error!("failed to read PIN from environment variable: {}", pin_env);
+                    Err(AppleCodesignError::Pkcs11Error(format!(
+                        "PIN environment variable {} not found", pin_env
+                    )))
+                }
+            }
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn load_certificate_from_file(&self, cert_file: &PathBuf) -> Result<CapturedX509Certificate, AppleCodesignError> {
+        let cert_data = std::fs::read(cert_file)?;
+
+        // Try PEM first
+        if let Ok(pem) = pem::parse(&cert_data) {
+            if pem.tag() == "CERTIFICATE" {
+                return CapturedX509Certificate::from_der(pem.contents()).map_err(|e| {
+                    AppleCodesignError::Pkcs11Error(format!(
+                        "failed to parse PEM certificate from file {}: {}",
+                        cert_file.display(),
+                        e
+                    ))
+                });
+            }
+        }
+
+        // Try DER
+        CapturedX509Certificate::from_der(cert_data).map_err(|e| {
+            AppleCodesignError::Pkcs11Error(format!(
+                "failed to parse certificate from file {}: {}",
+                cert_file.display(),
+                e
+            ))
+        })
+    }
+
+
 }

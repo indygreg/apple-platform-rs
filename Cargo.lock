@@ -202,6 +202,7 @@ dependencies = [
  "chrono",
  "clap",
  "cryptographic-message-syntax",
+ "cryptoki",
  "der 0.7.10",
  "dialoguer",
  "difference",
@@ -1374,6 +1375,29 @@ dependencies = [
  "ring",
  "signature 2.2.0",
  "x509-certificate",
+]
+
+[[package]]
+name = "cryptoki"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "781357a7779a8e92ea985121bbf379a9adf0777f44ab6392efc6abd5aa9b67db"
+dependencies = [
+ "bitflags 1.3.2",
+ "cryptoki-sys",
+ "libloading",
+ "log",
+ "paste",
+ "secrecy",
+]
+
+[[package]]
+name = "cryptoki-sys"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "753e27d860277930ae9f394c119c8c70303236aab0ffab1d51f3d207dbb2bc4b"
+dependencies = [
+ "libloading",
 ]
 
 [[package]]
@@ -2943,6 +2967,12 @@ dependencies = [
  "primeorder",
  "sha2",
 ]
+
+[[package]]
+name = "paste"
+version = "1.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pbkdf2"
