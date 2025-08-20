@@ -14,6 +14,7 @@ jobs:
     with:
       actions_ref: "aacf4321e814ace18fe44ef5b8ae213c7b13e460"
       bin: rcodesign
+      extra_build_args_linux_gnu: '--all-features'
       extra_build_args_macos: '--all-features'
       extra_build_args_windows: '--all-features'
       just_bootstrap: true
