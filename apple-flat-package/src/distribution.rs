@@ -319,6 +319,7 @@ pub struct Title {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename = "kebab-case")]
 pub struct VolumeCheck {
+    #[serde(default)]
     pub script: bool,
     pub allowed_os_versions: Option<AllowedOsVersions>,
     pub required_bundles: Option<RequiredBundles>,
