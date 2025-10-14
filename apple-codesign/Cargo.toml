@@ -17,10 +17,6 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.93"
-aws-config = { version = "1.5.10", optional = true }
-aws-sdk-s3 = { version = "1.63.0", optional = true }
-aws-smithy-http = { version = "0.60.11", optional = true }
-aws-smithy-types = { version = "1.2.9", optional = true }
 base64 = "0.22.1"
 bcder = "0.7.4"
 bitflags = "2.6.0"
@@ -60,6 +56,7 @@ regex = "1.11.1"
 reqwest = { version = "0.12.9", default-features = false, features = ["blocking", "http2", "json", "rustls-tls-native-roots"] }
 ring = "0.17.8"
 rsa = "0.9.7"
+rust-s3 = "0.37.0"
 scroll = "0.12.0"
 sha2 = "0.10.8"
 semver = "1.0.23"
@@ -123,9 +120,5 @@ zip = { version = "2.2.1", default-features = false }
 default = ["notarize"]
 notarize = [
     "app-store-connect",
-    "aws-config",
-    "aws-sdk-s3",
-    "aws-smithy-http",
-    "aws-smithy-types",
 ]
 smartcard = ["yubikey"]
