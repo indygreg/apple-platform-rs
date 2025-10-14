@@ -17,8 +17,6 @@ use {
     crate::{reader::PathType, AppleCodesignError},
     app_store_connect::{notary_api, AppStoreConnectClient, ConnectTokenEncoder, UnifiedApiKey},
     apple_bundles::DirectoryBundle,
-    aws_sdk_s3::config::{Credentials, Region},
-    aws_smithy_types::byte_stream::ByteStream,
     log::warn,
     sha2::Digest,
     std::{
@@ -293,29 +291,26 @@ impl Notarizer {
             .enable_all()
             .build()?;
         let bytestream = match upload {
-            UploadKind::Data(data) => ByteStream::from(data),
-            UploadKind::Path(path) => rt.block_on(ByteStream::from_path(path))?,
+            UploadKind::Data(data) => data,
+            UploadKind::Path(path) => {
+                std::fs::read(path)?
+            },
         };
 
         // upload using s3 api
         warn!("resolving AWS S3 configuration from Apple-provided credentials");
-        let config = rt.block_on(
-            aws_config::defaults(aws_config::BehaviorVersion::latest())
-                .credentials_provider(Credentials::new(
-                    submission.data.attributes.aws_access_key_id.clone(),
-                    submission.data.attributes.aws_secret_access_key.clone(),
-                    Some(submission.data.attributes.aws_session_token.clone()),
-                    None,
-                    "apple-codesign",
-                ))
-                // The region is not given anywhere in the Apple documentation. From
-                // manually testing all available regions, it appears to be
-                // us-west-2.
-                .region(Region::new("us-west-2"))
-                .load(),
-        );
 
-        let s3_client = aws_sdk_s3::Client::new(&config);
+        let credentials = s3::creds::Credentials::new(
+            Some(submission.data.attributes.aws_access_key_id.as_str()),
+            Some(submission.data.attributes.aws_secret_access_key.as_str()),
+            None,
+            Some(submission.data.attributes.aws_session_token.as_str()),
+            None,
+        ).unwrap();
+
+        let s3_client = s3::Bucket::new(submission.data.attributes.bucket.as_str(), "us-west-2".parse().unwrap(), credentials).unwrap();
+
+        // let s3_client = aws_sdk_s3::Client::new(&config);
 
         warn!(
             "uploading asset to s3://{}/{}",
@@ -328,17 +323,14 @@ impl Notarizer {
         // like it does in other languages.
         // See https://github.com/awslabs/aws-sdk-rust/issues/494
         let fut = s3_client
-            .put_object()
-            .bucket(submission.data.attributes.bucket.clone())
-            .key(submission.data.attributes.object.clone())
-            .body(bytestream)
-            .send();
+            .put_object(submission.data.attributes.object.clone(), &bytestream);
 
-        rt.block_on(fut).map_err(|e| {
-            AppleCodesignError::AwsS3PutObject(
-                aws_smithy_types::error::display::DisplayErrorContext(e),
-            )
-        })?;
+        rt.block_on(fut).unwrap();
+        // map_err(|e| {
+        //     AppleCodesignError::AwsS3PutObject(
+        //         aws_smithy_types::error::display::DisplayErrorContext(e),
+        //     )
+        // })?;
 
         warn!("S3 upload completed successfully");
 
