@@ -510,10 +510,12 @@ mod test {
         assert!(!WORLD_WIDE_DEVELOPER_RELATIONS_G3_CERTIFICATE.is_apple_root_ca());
         assert!(WORLD_WIDE_DEVELOPER_RELATIONS_G3_CERTIFICATE.is_apple_intermediate_ca());
 
-        let wanted = [APPLE_INC_ROOT_CERTIFICATE.deref(),
+        let wanted = [
+            APPLE_INC_ROOT_CERTIFICATE.deref(),
             APPLE_COMPUTER_INC_ROOT_CERTIFICATE.deref(),
             APPLE_ROOT_CA_G2_ROOT_CERTIFICATE.deref(),
-            APPLE_ROOT_CA_G3_ROOT_CERTIFICATE.deref()];
+            APPLE_ROOT_CA_G3_ROOT_CERTIFICATE.deref(),
+        ];
 
         for cert in KnownCertificate::all() {
             if wanted.contains(cert) {

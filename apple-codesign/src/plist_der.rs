@@ -13,7 +13,10 @@ use {
         ber::enc::EncodeError,
         de::Error as DeError,
         enc::Error as EncError,
-        types::{fields::{Field, Fields}, Class, Constraints, Constructed, Integer, Tag},
+        types::{
+            fields::{Field, Fields},
+            Class, Constraints, Constructed, Integer, Tag,
+        },
         AsnType, Codec, Decode, Decoder, Encode, Encoder,
     },
     std::collections::BTreeMap,
@@ -77,23 +80,27 @@ impl Decode for Dictionary {
         tag: Tag,
         _constraints: Constraints,
     ) -> Result<Self, D::Error> {
-        decoder.decode_sequence::<Self, _, _>(tag, Some(|| Self(plist::Dictionary::new())), |decoder| {
-            let mut dict = plist::Dictionary::new();
+        decoder.decode_sequence::<Self, _, _>(
+            tag,
+            Some(|| Self(plist::Dictionary::new())),
+            |decoder| {
+                let mut dict = plist::Dictionary::new();
 
-            loop {
-                let entry = decoder.decode_optional::<DictionaryEntry>()?;
+                loop {
+                    let entry = decoder.decode_optional::<DictionaryEntry>()?;
 
-                if let Some(entry) = entry {
-                    let value = plist::Value::try_from(entry.value)?;
+                    if let Some(entry) = entry {
+                        let value = plist::Value::try_from(entry.value)?;
 
-                    dict.insert(entry.key, value);
-                } else {
-                    break;
+                        dict.insert(entry.key, value);
+                    } else {
+                        break;
+                    }
                 }
-            }
 
-            Ok(Self(dict))
-        })
+                Ok(Self(dict))
+            },
+        )
     }
 }
 

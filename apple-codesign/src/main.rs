@@ -17,7 +17,9 @@ fn main() {
                     })
                 })
             });
-            if let Some(profile) = err.profile.as_ref() { eprintln!("  in profile: {}", profile) }
+            if let Some(profile) = err.profile.as_ref() {
+                eprintln!("  in profile: {}", profile)
+            }
             eprintln!("  problem key: {}", err.path.join(", "));
             eprintln!("  problem: {:?}", err.kind);
 
