@@ -292,9 +292,7 @@ impl Notarizer {
             .build()?;
         let bytestream = match upload {
             UploadKind::Data(data) => data,
-            UploadKind::Path(path) => {
-                std::fs::read(path)?
-            },
+            UploadKind::Path(path) => std::fs::read(path)?,
         };
 
         // upload using s3 api
@@ -306,9 +304,15 @@ impl Notarizer {
             None,
             Some(submission.data.attributes.aws_session_token.as_str()),
             None,
-        ).unwrap();
+        )
+        .unwrap();
 
-        let s3_client = s3::Bucket::new(submission.data.attributes.bucket.as_str(), "us-west-2".parse().unwrap(), credentials).unwrap();
+        let s3_client = s3::Bucket::new(
+            submission.data.attributes.bucket.as_str(),
+            "us-west-2".parse().unwrap(),
+            credentials,
+        )
+        .unwrap();
 
         // let s3_client = aws_sdk_s3::Client::new(&config);
 
@@ -322,8 +326,7 @@ impl Notarizer {
         // Unfortunately, aws-sdk-s3 does not have a simple upload_file helper
         // like it does in other languages.
         // See https://github.com/awslabs/aws-sdk-rust/issues/494
-        let fut = s3_client
-            .put_object(submission.data.attributes.object.clone(), &bytestream);
+        let fut = s3_client.put_object(submission.data.attributes.object.clone(), &bytestream);
 
         rt.block_on(fut).unwrap();
         // map_err(|e| {

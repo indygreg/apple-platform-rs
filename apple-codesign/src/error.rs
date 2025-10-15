@@ -374,16 +374,6 @@ pub enum AppleCodesignError {
     #[error("remote signing error: {0}")]
     RemoteSign(#[from] RemoteSignError),
 
-    #[cfg(feature = "notarize")]
-    #[error("bytestream creation error: {0}")]
-    AwsByteStream(anyhow::Error),
-
-    #[cfg(feature = "notarize")]
-    #[error("s3 upload error: {0}")]
-    AwsS3PutObject(
-        anyhow::Error
-    ),
-
     #[error("bad time value")]
     BadTime,
 
