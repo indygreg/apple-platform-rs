@@ -375,7 +375,7 @@ pub enum AppleCodesignError {
     RemoteSign(#[from] RemoteSignError),
 
     #[cfg(feature = "notarize")]
-    #[error("s3 upload error: ")]
+    #[error("s3 credentials error: ")]
     RustS3Credentials(s3::creds::error::CredentialsError),
 
     #[cfg(feature = "notarize")]
