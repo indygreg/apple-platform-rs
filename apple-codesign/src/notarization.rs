@@ -287,10 +287,7 @@ impl Notarizer {
         submission: &notary_api::NewSubmissionResponse,
         upload: UploadKind,
     ) -> Result<(), AppleCodesignError> {
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()?;
-        let bytestream = match upload {
+        let content = match upload {
             UploadKind::Data(data) => data,
             UploadKind::Path(path) => std::fs::read(path)?,
         };
@@ -305,16 +302,14 @@ impl Notarizer {
             Some(submission.data.attributes.aws_session_token.as_str()),
             None,
         )
-        .unwrap();
+        .map_err(AppleCodesignError::RustS3Credentials)?;
 
-        let s3_client = s3::Bucket::new(
+        let s3_bucket = s3::Bucket::new(
             submission.data.attributes.bucket.as_str(),
             "us-west-2".parse().unwrap(),
             credentials,
         )
-        .unwrap();
-
-        // let s3_client = aws_sdk_s3::Client::new(&config);
+        .map_err(AppleCodesignError::RustS3PutObject)?;
 
         warn!(
             "uploading asset to s3://{}/{}",
@@ -326,14 +321,9 @@ impl Notarizer {
         // Unfortunately, aws-sdk-s3 does not have a simple upload_file helper
         // like it does in other languages.
         // See https://github.com/awslabs/aws-sdk-rust/issues/494
-        let fut = s3_client.put_object(submission.data.attributes.object.clone(), &bytestream);
-
-        rt.block_on(fut).unwrap();
-        // map_err(|e| {
-        //     AppleCodesignError::AwsS3PutObject(
-        //         aws_smithy_types::error::display::DisplayErrorContext(e),
-        //     )
-        // })?;
+        let _response = s3_bucket
+            .put_object(submission.data.attributes.object.clone(), &content)
+            .map_err(AppleCodesignError::RustS3PutObject)?;
 
         warn!("S3 upload completed successfully");
 

@@ -56,7 +56,7 @@ regex = "1.12.2"
 reqwest = { version = "0.12.28", default-features = false, features = ["blocking", "http2", "json", "rustls-tls-native-roots"] }
 ring = "0.17.14"
 rsa = "0.9.9"
-rust-s3 = "0.37.0"
+rust-s3 = { version = "0.37.0", default-features = false, features = ["sync-native-tls"] }
 scroll = "0.13.0"
 sha2 = "0.10.9"
 semver = "1.0.27"
@@ -70,11 +70,9 @@ spki = { version = "0.7.3", features = ["pem"] }
 subtle = "2.6.1"
 tempfile = "3.24.0"
 thiserror = "2.0.17"
-tokio = { version = "1.48.0", features = ["rt"] }
 tungstenite = { version = "0.28.0", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.19.0", features = ["v4"] }
 walkdir = "2.5.0"
-x509 = "0.2.0"
 x509-certificate = "0.25.0"
 xml-rs = "1.0.0"
 yasna = "0.5.2"

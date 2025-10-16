@@ -374,6 +374,14 @@ pub enum AppleCodesignError {
     #[error("remote signing error: {0}")]
     RemoteSign(#[from] RemoteSignError),
 
+    #[cfg(feature = "notarize")]
+    #[error("s3 upload error: ")]
+    RustS3Credentials(s3::creds::error::CredentialsError),
+
+    #[cfg(feature = "notarize")]
+    #[error("s3 upload error: ")]
+    RustS3PutObject(s3::error::S3Error),
+
     #[error("bad time value")]
     BadTime,
 
