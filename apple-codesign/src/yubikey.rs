@@ -193,7 +193,7 @@ impl YubiKey {
 
     /// Find certificates in this device.
     pub fn find_certificates(
-        &mut self,
+        &self,
     ) -> Result<Vec<(SlotId, CapturedX509Certificate)>, AppleCodesignError> {
         let mut guard = self.inner()?;
         let yk = guard.deref_mut();
@@ -219,7 +219,7 @@ impl YubiKey {
 
     /// Obtain an entity for creating signatures using a certificate at a slot.
     pub fn get_certificate_signer(
-        &mut self,
+        &self,
         slot_id: SlotId,
     ) -> Result<Option<CertificateSigner>, AppleCodesignError> {
         Ok(self
