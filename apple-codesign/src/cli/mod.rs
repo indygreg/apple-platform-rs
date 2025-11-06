@@ -1602,7 +1602,7 @@ impl CliCommand for SmartcardScan {
             println!("Device {}: {}", index, reader.name());
 
             if let Ok(yk) = reader.open() {
-                let mut yk = crate::yubikey::YubiKey::from(yk);
+                let yk = crate::yubikey::YubiKey::from(yk);
                 println!("Device {}: Serial: {}", index, yk.inner()?.serial());
                 println!("Device {}: Version: {}", index, yk.inner()?.version());
 
