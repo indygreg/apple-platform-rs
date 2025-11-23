@@ -32,7 +32,7 @@ der = { version = "0.7.10", features = ["alloc"] }
 dialoguer = "0.11.0"
 difference = "2.0.0"
 digest = "0.10.7"
-dirs = "5.0.1"
+dirs = "6.0.0"
 elliptic-curve = { version = "0.13.8", features = ["arithmetic", "pkcs8"] }
 env_logger = "0.11.8"
 figment = { version = "0.10.19", features = ["env", "toml"] }
