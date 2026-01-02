@@ -114,7 +114,7 @@ impl<'a, T: DiskStruct> ApfsDataStructure<'a, T> {
         let ptr = data.as_ptr();
 
         // Can only cast if memory is properly aligned.
-        if (ptr as usize) % core::mem::align_of::<T>() == 0 {
+        if (ptr as usize).is_multiple_of(core::mem::align_of::<T>()) {
             Ok(unsafe { &*ptr.cast() })
         } else {
             Err(ParseError::NonAligned)
@@ -134,7 +134,7 @@ impl<'a, T: DiskStruct + StaticSized> ApfsDataStructure<'a, T> {
     /// If `retain_input` is true, we always retain the source bytes.
     pub fn new_static_sized(buf: Bytes, retain_input: bool) -> Result<Self, ParseError> {
         if cfg!(target_endian = "little")
-            && ((buf.as_ptr() as usize) % core::mem::align_of::<T>() == 0)
+            && (buf.as_ptr() as usize).is_multiple_of(core::mem::align_of::<T>())
         {
             let inner = OwnedOrBorrowed::Borrowed(Self::cast_bytes(buf.as_ref())?);
 
@@ -158,7 +158,7 @@ impl<'a, T: DiskStruct + DynamicSized> ApfsDataStructure<'a, T> {
     /// data to be retrieved and decoded later.
     pub fn new_dynamic_sized(buf: Bytes) -> Result<Self, ParseError> {
         let inner = if cfg!(target_endian = "little")
-            && ((buf.as_ptr() as usize) % core::mem::align_of::<T>() == 0)
+            && (buf.as_ptr() as usize).is_multiple_of(core::mem::align_of::<T>())
         {
             OwnedOrBorrowed::Borrowed(Self::cast_bytes(buf.as_ref())?)
         } else {

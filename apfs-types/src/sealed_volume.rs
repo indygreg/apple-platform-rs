@@ -54,10 +54,12 @@ bitflags! {
 /// Supported digest algorithms (`apfs_hash_type_t`).
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[repr(u32)]
+#[derive(Default)]
 pub enum ApfsHashType {
     /// An invalid hash algorithm (`APFS_HASH_INVALID`).
     Invalid = 0,
     /// SHA-256 (`APFS_HASH_SHA256`).
+    #[default]
     Sha256 = 0x01,
     /// SHA-512/256 variant of Secure Hash Algorithm 2 (`APFS_HASH_SHA512_256`).
     Sha512_256 = 0x02,
@@ -67,11 +69,6 @@ pub enum ApfsHashType {
     Sha512 = 0x04,
 }
 
-impl Default for ApfsHashType {
-    fn default() -> Self {
-        Self::Sha256
-    }
-}
 
 impl ApfsHashType {
     /// The size in bytes of hashes produced by this format.

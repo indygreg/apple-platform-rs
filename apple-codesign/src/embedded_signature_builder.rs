@@ -35,7 +35,9 @@ pub const CD_DIGESTS_PLIST_OID: bcder::ConstOid = Oid(&[42, 134, 72, 134, 247, 9
 pub const CD_DIGESTS_OID: bcder::ConstOid = Oid(&[42, 134, 72, 134, 247, 99, 100, 9, 2]);
 
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Default)]
 enum BlobsState {
+    #[default]
     Empty,
     SpecialAdded,
     CodeDirectoryAdded,
@@ -43,11 +45,6 @@ enum BlobsState {
     TicketAdded,
 }
 
-impl Default for BlobsState {
-    fn default() -> Self {
-        Self::Empty
-    }
-}
 
 /// An entity for producing and writing [EmbeddedSignature].
 ///
