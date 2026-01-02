@@ -481,8 +481,7 @@ impl InMemoryPrivateKey {
 }
 
 /// Represents a digest type encountered in code signature data structures.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
-#[derive(Default)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum, Default)]
 pub enum DigestType {
     None,
     Sha1,
@@ -494,7 +493,6 @@ pub enum DigestType {
     #[value(skip)]
     Unknown(u8),
 }
-
 
 impl TryFrom<DigestType> for DigestAlgorithm {
     type Error = AppleCodesignError;

@@ -69,7 +69,6 @@ pub enum ApfsHashType {
     Sha512 = 0x04,
 }
 
-
 impl ApfsHashType {
     /// The size in bytes of hashes produced by this format.
     pub fn hash_size(&self) -> usize {
