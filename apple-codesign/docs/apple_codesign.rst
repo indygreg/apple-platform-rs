@@ -57,6 +57,7 @@ to be used as a standalone project.
    apple_codesign_getting_started
    apple_codesign_rcodesign
    apple_codesign_certificate_management
+   apple_codesign_pkcs11
    apple_codesign_smartcard
    apple_codesign_github_actions
    apple_codesign_concepts
