@@ -10,8 +10,9 @@ Released on ReleaseDate.
 * `bzip2` 0.4 -> 0.6.
 * `cryptographic-message-syntax` 0.27 -> 0.28.
 * `scroll` 0.12 -> 0.13.
-* `serde-xml-rs` 0.6. -> 0.7.
+* `serde-xml-rs` 0.6. -> 0.8.
 * `x509-certificate` 0.24 -> 0.25.
+* `xml-rs` 0.8 -> 1.0.
 
 ## 0.20.0
 

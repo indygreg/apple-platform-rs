@@ -17,7 +17,7 @@ use {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename = "installer-gui-script", rename_all = "kebab-case")]
 pub struct Distribution {
-    #[serde(rename = "minSpecVersion")]
+    #[serde(rename = "@minSpecVersion")]
     pub min_spec_version: u8,
 
     // maxSpecVersion and verifiedSpecVersion are reserved attributes but not yet defined.
@@ -44,16 +44,20 @@ pub struct Distribution {
 impl Distribution {
     /// Parse Distribution XML from a reader.
     pub fn from_reader(reader: impl Read) -> PkgResult<Self> {
-        let mut de =
-            serde_xml_rs::Deserializer::new_from_reader(reader).non_contiguous_seq_elements(true);
+        let mut de = serde_xml_rs::Deserializer::from_config(
+            serde_xml_rs::SerdeXml::default().overlapping_sequences(true),
+            reader,
+        );
 
         Ok(Self::deserialize(&mut de)?)
     }
 
     /// Parse Distribution XML from a string.
     pub fn from_xml(s: &str) -> PkgResult<Self> {
-        let mut de = serde_xml_rs::Deserializer::new_from_reader(s.as_bytes())
-            .non_contiguous_seq_elements(true);
+        let mut de = serde_xml_rs::Deserializer::from_config(
+            serde_xml_rs::SerdeXml::default().overlapping_sequences(true),
+            s.as_bytes(),
+        );
 
         Ok(Self::deserialize(&mut de)?)
     }
@@ -67,6 +71,7 @@ pub struct AllowedOsVersions {
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct App {
+    #[serde(rename = "@id")]
     pub id: String,
 }
 
@@ -74,22 +79,30 @@ pub struct App {
 #[serde(rename_all = "kebab-case")]
 pub struct Background {
     // TODO convert to enum.
+    #[serde(rename = "@alignment")]
     pub alignment: Option<String>,
+    #[serde(rename = "@file")]
     pub file: String,
+    #[serde(rename = "@mime-type")]
     pub mime_type: Option<String>,
     // TODO convert to enum
+    #[serde(rename = "@scaling")]
     pub scaling: Option<String>,
+    #[serde(rename = "@uti")]
     pub uti: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Bundle {
-    #[serde(rename = "CFBundleShortVersionString")]
+    #[serde(rename = "@CFBundleShortVersionString")]
     pub cf_bundle_short_version_string: Option<String>,
-    #[serde(rename = "CFBundleVersion")]
+    #[serde(rename = "@CFBundleVersion")]
     pub cf_bundle_version: Option<String>,
+    #[serde(rename = "@id")]
     pub id: String,
+    #[serde(rename = "@path")]
     pub path: String,
+    #[serde(rename = "@search")]
     pub search: Option<bool>,
     // BuildVersion, SourceVersion reserved attributes.
 }
@@ -103,21 +116,30 @@ pub struct BundleVersion {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Choice {
     // The naming format on this element is all over the place.
-    #[serde(rename = "customLocation")]
+    #[serde(rename = "@customLocation")]
     pub custom_location: Option<String>,
-    #[serde(rename = "customLocationAllowAlternateVolumes")]
+    #[serde(rename = "@customLocationAllowAlternateVolumes")]
     pub custom_location_allow_alternative_volumes: Option<bool>,
+    #[serde(rename = "@description")]
     pub description: Option<String>,
-    #[serde(rename = "description-mime-type")]
+    #[serde(rename = "@description-mime-type")]
     pub description_mime_type: Option<String>,
+    #[serde(rename = "@enabled")]
     pub enabled: Option<bool>,
+    #[serde(rename = "@id")]
     pub id: String,
+    #[serde(rename = "@selected")]
     pub selected: Option<bool>,
+    #[serde(rename = "@start_enabled")]
     pub start_enabled: Option<bool>,
+    #[serde(rename = "@start_selected")]
     pub start_selected: Option<bool>,
+    #[serde(rename = "@start_visible")]
     pub start_visible: Option<bool>,
     // Supposed to be required. But there are elements with only `id` attribute in wild.
+    #[serde(rename = "@title")]
     pub title: Option<String>,
+    #[serde(rename = "@visible")]
     pub visible: Option<bool>,
     // bundle, customLocationIsSelfContained, tooltip, and versStr are reserved attributes.
     #[serde(default, rename = "pkg-ref")]
@@ -132,24 +154,28 @@ pub struct ChoicesOutline {
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Conclusion {
+    #[serde(rename = "@file")]
     pub file: String,
-    #[serde(rename = "mime-type")]
+    #[serde(rename = "@mime-type")]
     pub mime_type: Option<String>,
+    #[serde(rename = "@uti")]
     pub uti: Option<String>,
     // language is a reserved attribute.
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Domains {
+    #[serde(rename = "@enable_anywhere")]
     pub enable_anywhere: bool,
-    #[serde(rename = "enable_currentUserHome")]
+    #[serde(rename = "@enable_currentUserHome")]
     pub enable_current_user_home: bool,
-    #[serde(rename = "enable_localSystem")]
+    #[serde(rename = "@enable_localSystem")]
     pub enable_local_system: bool,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct InstallationCheck {
+    #[serde(rename = "@script")]
     pub script: Option<bool>,
     pub ram: Option<Ram>,
     #[serde(rename = "required-graphics")]
@@ -159,14 +185,18 @@ pub struct InstallationCheck {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct License {
+    #[serde(rename = "@file")]
     pub file: String,
+    #[serde(rename = "@mime-type")]
     pub mime_type: Option<String>,
+    #[serde(rename = "@uti")]
     pub uti: Option<String>,
     // auto, language, and sla are reserved but not defined.
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Line {
+    #[serde(rename = "@choice")]
     pub choice: String,
     #[serde(default, rename = "line")]
     pub lines: Vec<Line>,
@@ -185,15 +215,17 @@ pub struct MustClose {
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Options {
-    #[serde(rename = "allow-external-scripts")]
+    #[serde(rename = "@allow-external-scripts")]
     pub allow_external_scripts: Option<bool>,
+    #[serde(rename = "@customize")]
     pub customize: Option<String>,
-    #[serde(rename = "hostArchitectures")]
+    #[serde(rename = "@hostArchitectures")]
     pub host_architecutres: Option<String>,
+    #[serde(rename = "@mpkg")]
     pub mpkg: Option<String>,
-    #[serde(rename = "require-scripts")]
+    #[serde(rename = "@require-scripts")]
     pub require_scripts: Option<bool>,
-    #[serde(rename = "rootVolumeOnly")]
+    #[serde(rename = "@rootVolumeOnly")]
     pub root_volume_only: Option<bool>,
     // type, visibleOnlyForPredicate are reserved attributes.
 }
@@ -201,22 +233,28 @@ pub struct Options {
 /// Defines a range of supported OS versions.
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct OsVersion {
+    #[serde(rename = "@before")]
     pub before: Option<String>,
+    #[serde(rename = "@min")]
     pub min: String,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct PkgRef {
+    #[serde(rename = "@active")]
     pub active: Option<bool>,
+    #[serde(rename = "@auth")]
     pub auth: Option<String>,
+    #[serde(rename = "@id")]
     pub id: String,
-    #[serde(rename = "installKBytes")]
+    #[serde(rename = "@installKBytes")]
     pub install_kbytes: Option<u64>,
     // TODO make enum
-    #[serde(rename = "onConclusion")]
+    #[serde(rename = "@onConclusion")]
     pub on_conclusion: Option<String>,
-    #[serde(rename = "onConclusionScript")]
+    #[serde(rename = "@onConclusionScript")]
     pub on_conclusion_script: Option<String>,
+    #[serde(rename = "@version")]
     pub version: Option<String>,
     // archiveKBytes, packageIdentifier reserved attributes.
     #[serde(rename = "must-close")]
@@ -229,34 +267,41 @@ pub struct PkgRef {
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Product {
+    #[serde(rename = "@id")]
     pub id: String,
+    #[serde(rename = "@version")]
     pub version: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Ram {
-    #[serde(rename = "min-gb")]
+    #[serde(rename = "@min-gb")]
     pub min_gb: String,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Readme {
+    #[serde(rename = "@file")]
     pub file: String,
+    #[serde(rename = "@mime-type")]
     pub mime_type: Option<String>,
+    #[serde(rename = "@uti")]
     pub uti: Option<String>,
     // language is reserved.
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Relocate {
-    #[serde(rename = "search-id")]
+    #[serde(rename = "@search-id")]
     pub search_id: String,
     pub bundle: Bundle,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct RequiredBundles {
+    #[serde(rename = "@all")]
     pub all: Option<bool>,
+    #[serde(rename = "@description")]
     pub description: Option<String>,
     #[serde(rename = "bundle")]
     pub bundles: Vec<Bundle>,
@@ -264,20 +309,22 @@ pub struct RequiredBundles {
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct RequiredClDevice {
-    #[serde(rename = "$value")]
+    #[serde(rename = "#content")]
     pub predicate: String,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct RequiredGlRenderer {
-    #[serde(rename = "$value")]
+    #[serde(rename = "#content")]
     pub predicate: String,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct RequiredGraphics {
+    #[serde(rename = "@description")]
     pub description: Option<String>,
+    #[serde(rename = "@single-device")]
     pub single_device: Option<bool>,
     pub required_cl_device: Option<RequiredClDevice>,
     pub required_gl_renderer: Option<RequiredGlRenderer>,
@@ -286,7 +333,7 @@ pub struct RequiredGraphics {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Script {
     // language is a reserved attribute.
-    #[serde(rename = "$value")]
+    #[serde(rename = "#content")]
     pub script: String,
 }
 
@@ -301,24 +348,29 @@ pub enum SearchValue {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Search {
+    #[serde(rename = "@id")]
     pub id: String,
+    #[serde(rename = "@script")]
     pub script: Option<String>,
+    #[serde(rename = "@search-id")]
     pub search_id: Option<String>,
+    #[serde(rename = "@search-path")]
     pub search_path: Option<String>,
-    #[serde(rename = "type")]
+    #[serde(rename = "@type")]
     pub search_type: String,
     pub value: SearchValue,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Title {
-    #[serde(rename = "$value")]
+    #[serde(rename = "#content")]
     pub title: String,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename = "kebab-case")]
 pub struct VolumeCheck {
+    #[serde(rename = "@script")]
     pub script: bool,
     pub allowed_os_versions: Option<AllowedOsVersions>,
     pub required_bundles: Option<RequiredBundles>,
@@ -327,8 +379,11 @@ pub struct VolumeCheck {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Welcome {
+    #[serde(rename = "@file")]
     pub file: String,
+    #[serde(rename = "@mime-type")]
     pub mime_type: Option<String>,
+    #[serde(rename = "@uti")]
     pub uti: Option<String>,
     // language reserved attribute.
 }

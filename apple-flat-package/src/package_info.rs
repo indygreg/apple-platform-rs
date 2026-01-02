@@ -20,61 +20,71 @@ pub struct PackageInfo {
     /// Authentication requirements for the package install.
     ///
     /// Values include `none` and `root`.
+    #[serde(rename = "@auth")]
     pub auth: String,
 
-    #[serde(rename = "deleteObsoleteLanguages")]
+    #[serde(rename = "@deleteObsoleteLanguages")]
     pub delete_obsolete_languages: Option<bool>,
 
     /// Whether symlinks found at install time should be resolved instead of being replaced by a
     /// real file or directory.
-    #[serde(rename = "followSymLinks")]
+    #[serde(rename = "@followSymLinks")]
     pub follow_symlinks: Option<bool>,
 
     /// Format version of the package.
     ///
     /// Value is likely `2`.
+    #[serde(rename = "@format-version")]
     pub format_version: u8,
 
     /// Identifies the tool that assembled this package.
+    #[serde(rename = "@generator-version")]
     pub generator_version: Option<String>,
 
     /// Uniform type identifier that defines the package.
     ///
     /// Should ideally be unique to this package.
+    #[serde(rename = "@identifier")]
     pub identifier: String,
 
     /// Default location where the payload hierarchy should be installed.
+    #[serde(rename = "@install-location")]
     pub install_location: Option<String>,
 
     /// Defines minimum OS version on which the package can be installed.
-    #[serde(rename = "minimumSystemVersion")]
+    #[serde(rename = "@minimumSystemVersion")]
     pub minimum_system_version: Option<bool>,
 
     /// Defines if permissions of existing directories should be updated with ones from the payload.
+    #[serde(rename = "@overwrite-permissions")]
     pub overwrite_permissions: Option<bool>,
 
     /// Action to perform after install.
     ///
     /// Potential values can include `logout`, `restart`, and `shutdown`.
+    #[serde(rename = "@postinstall-action")]
     pub postinstall_action: Option<String>,
 
     /// Preserve extended attributes on files.
+    #[serde(rename = "@preserve-xattr")]
     pub preserve_xattr: Option<bool>,
 
     /// Unknown.
     ///
     /// Probably has something to do with whether the installation tree can be relocated
     /// without issue.
+    #[serde(rename = "@relocatable")]
     pub relocatable: Option<bool>,
 
     /// Whether items in the package should be compressed after installation.
-    #[serde(rename = "useHFSPlusCompression")]
+    #[serde(rename = "@useHFSPlusCompression")]
     pub use_hfs_plus_compression: Option<bool>,
 
     /// Version of the package.
     ///
     /// This is the version of the package itself, not the version of the application
     /// being installed.
+    #[serde(rename = "@version")]
     pub version: String,
 
     // End of attributes. Beginning of elements.
@@ -163,8 +173,10 @@ impl PackageInfo {
 
     /// Parse Distribution XML from a string.
     pub fn from_xml(s: &str) -> PkgResult<Self> {
-        let mut de = serde_xml_rs::Deserializer::new_from_reader(s.as_bytes())
-            .non_contiguous_seq_elements(true);
+        let mut de = serde_xml_rs::Deserializer::from_config(
+            serde_xml_rs::SerdeXml::default().overlapping_sequences(true),
+            s.as_bytes(),
+        );
 
         Ok(Self::deserialize(&mut de)?)
     }
@@ -175,32 +187,36 @@ impl PackageInfo {
 #[serde(rename_all = "kebab-case")]
 pub struct File {
     /// File path.
+    #[serde(rename = "@path")]
     pub path: String,
 
     /// Required SHA-1 of file.
+    #[serde(rename = "@required-sha1")]
     pub required_sha1: Option<String>,
 
     /// SHA-1 of file.
+    #[serde(rename = "@sha1")]
     pub sha1: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Payload {
-    #[serde(rename = "numberOfFiles")]
+    #[serde(rename = "@numberOfFiles")]
     pub number_of_files: u64,
-    #[serde(rename = "installKBytes")]
+    #[serde(rename = "@installKBytes")]
     pub install_kbytes: u64,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct BundleRef {
+    #[serde(rename = "@id")]
     pub id: Option<String>,
 }
 
 /// Wrapper type to represent <scripts>.
 #[derive(Clone, Debug, Default, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Scripts {
-    #[serde(rename = "$value")]
+    #[serde(rename = "#content")]
     pub scripts: Vec<Script>,
 }
 
@@ -218,9 +234,11 @@ pub enum Script {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct PreInstall {
     /// Name of script to run.
+    #[serde(rename = "@file")]
     pub file: String,
 
     /// ID of bundle element to run before.
+    #[serde(rename = "@component-id")]
     pub component_id: Option<String>,
 }
 
@@ -228,9 +246,11 @@ pub struct PreInstall {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct PostInstall {
     /// Name of script to run.
+    #[serde(rename = "@file")]
     pub file: String,
 
     /// ID of bundle element to run after.
+    #[serde(rename = "@component-id")]
     pub component_id: Option<String>,
 }
 

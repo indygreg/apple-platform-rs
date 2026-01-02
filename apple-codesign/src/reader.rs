@@ -150,6 +150,7 @@ fn pretty_print_xml(xml: &[u8]) -> Result<Vec<u8>, AppleCodesignError> {
                 break;
             }
             xml::reader::XmlEvent::Whitespace(_) => {}
+            xml::reader::XmlEvent::Doctype { .. } => {}
             event => {
                 if let Some(event) = event.as_writer_event() {
                     emitter.write(event).map_err(AppleCodesignError::XmlWrite)?;

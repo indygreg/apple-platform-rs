@@ -156,6 +156,7 @@ impl XarToC {
 #[serde(deny_unknown_fields)]
 pub struct Checksum {
     /// The digest format used.
+    #[serde(rename = "@style")]
     pub style: ChecksumType,
 
     /// Offset within heap of the checksum data.
@@ -481,8 +482,9 @@ impl FileData {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct FileChecksum {
+    #[serde(rename = "@style")]
     pub style: ChecksumType,
-    #[serde(rename = "$value")]
+    #[serde(rename = "#text")]
     pub checksum: String,
 }
 
@@ -499,13 +501,14 @@ impl FileChecksum {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct FileEncoding {
+    #[serde(rename = "@style")]
     pub style: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Ea {
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@id", skip_serializing_if = "Option::is_none")]
     pub id: Option<u64>,
     pub name: String,
     pub offset: u64,
@@ -568,6 +571,7 @@ pub struct FinderCreateTime {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Signature {
+    #[serde(rename = "@style")]
     pub style: SignatureStyle,
     pub offset: u64,
     pub size: u64,

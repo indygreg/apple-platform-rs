@@ -21,6 +21,7 @@ Released on ReleaseDate.
 * `tungstenite` 0.24 -> 0.28.
 * `windows-sys` 0.59 -> 0.61.
 * `x509-certificate` 0.24 -> 0.25.
+* `xml-rs` 0.8 -> 1.0.
 * `zip` 2.4 -> 7.0.
 
 ## 0.29.0
