@@ -6,7 +6,7 @@
 
 Released on ReleaseDate.
 
-* MSRV 1.81 -> 1.87.
+* MSRV 1.81 -> 1.88.
 * `-serde-xml-rs` 0.6. -> 0.7.
 
 ## 0.20.0

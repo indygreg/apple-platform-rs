@@ -6,7 +6,7 @@
 
 Released on ReleaseDate.
 
-* MSRV 1.81 -> 1.87.
+* MSRV 1.81 -> 1.88.
 
 ## 0.21.0
 
