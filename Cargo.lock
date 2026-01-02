@@ -301,7 +301,6 @@ dependencies = [
  "base64",
  "bcder",
  "bzip2",
- "chrono",
  "cryptographic-message-syntax",
  "digest",
  "flate2",
