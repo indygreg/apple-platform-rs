@@ -222,7 +222,7 @@ dependencies = [
  "ring",
  "rsa",
  "scroll",
- "security-framework 2.11.1",
+ "security-framework 3.5.1",
  "security-framework-sys",
  "semver",
  "serde",

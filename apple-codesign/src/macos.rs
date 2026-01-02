@@ -18,10 +18,7 @@ use {
         certificate::SecCertificate,
         item::{ItemClass, ItemSearchOptions, Reference, SearchResult},
         key::SecKey,
-        os::macos::{
-            item::ItemSearchOptionsExt,
-            keychain::{SecKeychain, SecPreferencesDomain},
-        },
+        os::macos::keychain::{SecKeychain, SecPreferencesDomain},
     },
     security_framework_sys::key::Algorithm as KeychainAlgorithm,
     signature::Signer,

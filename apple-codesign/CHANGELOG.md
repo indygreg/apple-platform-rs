@@ -17,6 +17,7 @@ Released on ReleaseDate.
 * `object` 0.26 -> 0.28.
 * `oid-registry` 0.7 -> 0.8.
 * `scroll` 0.12 -> 0.13.
+* `security-framework` 2.11 -> 3.5.
 * `x509-certificate` 0.24 -> 0.25.
 * `zip` 2.4 -> 7.0.
 
