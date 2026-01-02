@@ -21,6 +21,7 @@ actions-bootstrap-rust-linux:
 actions-bootstrap-rust-macos:
 
 actions-bootstrap-rust-windows:
+  choco install nasm
 
 # Trigger a workflow on a branch.
 ci-run workflow branch="ci-test":
