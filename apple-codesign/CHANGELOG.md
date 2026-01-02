@@ -6,7 +6,7 @@
 
 Released on ReleaseDate.
 
-* MSRV 1.81 -> 1.86.
+* MSRV 1.81 -> 1.87.
 * `aws-smithy-http` 0.60 -> 0.62.
 * `cryptographic-message-syntax` 0.27 -> 0.28.
 * `x509-certificate` 0.24 -> 0.25.

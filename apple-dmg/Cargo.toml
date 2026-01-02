@@ -2,7 +2,7 @@
 name = "apple-dmg"
 version = "0.5.0"
 edition = "2021"
-rust-version = "1.86"
+rust-version = "1.87"
 description = "Library for reading and writing dmg images."
 repository = "https://github.com/indygreg/apple-platform-rs"
 license = "Apache-2.0 OR MIT"

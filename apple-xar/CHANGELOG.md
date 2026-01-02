@@ -6,7 +6,7 @@
 
 Released on ReleaseDate.
 
-* MSRV 1.81 -> 1.86.
+* MSRV 1.81 -> 1.87.
 * `cryptographic-message-syntax` 0.27 -> 0.28.
 * `-serde-xml-rs` 0.6. -> 0.7.
 * `x509-certificate` 0.24 -> 0.25.
