@@ -187,7 +187,7 @@ impl YubiKey {
         self.pin_callback = Some(Arc::new(cb));
     }
 
-    pub fn inner(&self) -> Result<MutexGuard<RawYubiKey>, AppleCodesignError> {
+    pub fn inner(&self) -> Result<MutexGuard<'_, RawYubiKey>, AppleCodesignError> {
         self.yk.lock().map_err(|_| AppleCodesignError::PoisonedLock)
     }
 
