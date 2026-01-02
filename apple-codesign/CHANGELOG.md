@@ -10,8 +10,10 @@ Released on ReleaseDate.
 * `aws-smithy-http` 0.60 -> 0.62.
 * `cryptographic-message-syntax` 0.27 -> 0.28.
 * `dirs` 5 -> 6.
+* `goblin` 0.9 -> 0.10.
 * `md5` 0.7 -> 0.8.
 * `object` 0.26 -> 0.28.
+* `scroll` 0.12 -> 0.13.
 * `x509-certificate` 0.24 -> 0.25.
 
 ## 0.29.0
