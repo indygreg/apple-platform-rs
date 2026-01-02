@@ -353,9 +353,7 @@ pub type SessionInfoCallback = fn(sjs_base64: &str, sjs_pem: &str) -> Result<(),
 fn create_websocket(
     req: impl IntoClientRequest,
 ) -> Result<WebSocket<MaybeTlsStream<TcpStream>>, RemoteSignError> {
-    let config = WebSocketConfig {
-        ..Default::default()
-    };
+    let config = WebSocketConfig::default();
 
     let req = req.into_client_request()?;
     warn!("connecting to {}", req.uri());
