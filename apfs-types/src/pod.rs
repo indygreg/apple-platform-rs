@@ -299,7 +299,7 @@ pub struct ApfsString {
 impl ApfsString {
     pub fn from_bytes(buf: Bytes) -> Result<Self, ParseError> {
         if let Some(last) = buf.last() {
-            if !*last == 0 {
+            if *last != 0 {
                 return Err(ParseError::StringNotNullTerminated);
             }
         } else {
