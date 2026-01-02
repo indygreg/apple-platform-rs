@@ -18,9 +18,9 @@ use {
     std::ptr,
     std::slice,
     widestring::U16CString,
-    windows_sys::Win32::{
-        Foundation::{GetLastError, BOOL},
-        Security::Cryptography::*,
+    windows_sys::{
+        core::BOOL,
+        Win32::{Foundation::GetLastError, Security::Cryptography::*},
     },
     x509_certificate::{
         CapturedX509Certificate, EcdsaCurve, KeyAlgorithm, KeyInfoSigner, Sign, Signature,
