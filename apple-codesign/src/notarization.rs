@@ -163,9 +163,14 @@ impl Notarizer {
         )?))
     }
 
+    /// Construct an instance from a [`UnifiedApiKey`].
+    pub fn from_api_key(key: UnifiedApiKey) -> Result<Self, AppleCodesignError> {
+        Ok(Self::new(key.try_into()?))
+    }
+
     /// Construct an instance from a file containing a JSON encoded API key.
-    pub fn from_api_key(path: &Path) -> Result<Self, AppleCodesignError> {
-        Ok(Self::new(UnifiedApiKey::from_json_path(path)?.try_into()?))
+    pub fn from_api_key_file(path: &Path) -> Result<Self, AppleCodesignError> {
+        Self::from_api_key(UnifiedApiKey::from_json_path(path)?)
     }
 
     /// Attempt to notarize an asset defined by a filesystem path.
