@@ -214,17 +214,6 @@ impl ServerMessage {
     }
 }
 
-/// Response messages seen from server.
-#[derive(Clone, Debug, Deserialize)]
-#[serde(untagged)]
-enum ServerPayload {
-    Error(ServerError),
-    Greeting(ServerGreeting),
-    SessionJoined(ServerJoined),
-    PeerMessage(ServerPeerMessage),
-    SessionClosed(ServerSessionClosed),
-}
-
 #[derive(Clone, Debug, Deserialize)]
 struct ServerError {
     code: String,
