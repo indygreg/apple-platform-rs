@@ -477,7 +477,7 @@ impl UnjoinedSigningClient {
         signing_cert: CapturedX509Certificate,
         certificates: Vec<CapturedX509Certificate>,
         default_server_url: String,
-    ) -> Result<SigningClient, RemoteSignError> {
+    ) -> Result<SigningClient<'_>, RemoteSignError> {
         // An error here could result in the peer hanging indefinitely because the session
         // is unjoined. Ideally we'd recover from this by attempting to join with an error.
         // However, we may not even be able to obtain the session ID since sometimes it is
@@ -566,7 +566,7 @@ impl UnjoinedSigningClient {
         signing_key: &dyn KeyInfoSigner,
         signing_cert: CapturedX509Certificate,
         certificates: Vec<CapturedX509Certificate>,
-    ) -> Result<SigningClient, RemoteSignError> {
+    ) -> Result<SigningClient<'_>, RemoteSignError> {
         let session_id = join_context.session_id.clone();
 
         warn!("joining session...");

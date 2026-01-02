@@ -1260,7 +1260,7 @@ impl<'a> ParsedBom<'a> {
     }
 
     /// Attempt to resolve a block at an index as a [BomBlockPathRecord].
-    pub fn block_as_path_record(&self, index: usize) -> Result<BomBlockPathRecord, Error> {
+    pub fn block_as_path_record(&self, index: usize) -> Result<BomBlockPathRecord<'_>, Error> {
         self.block_data(index)?.pread_with(0, scroll::BE)
     }
 

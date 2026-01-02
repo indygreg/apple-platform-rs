@@ -581,7 +581,7 @@ impl<'a> RequirementBlob<'a> {
     }
 
     /// Parse the binary data in this blob into Code Requirement expressions.
-    pub fn parse_expressions(&self) -> Result<CodeRequirements, AppleCodesignError> {
+    pub fn parse_expressions(&self) -> Result<CodeRequirements<'_>, AppleCodesignError> {
         Ok(CodeRequirements::parse_binary(&self.data)?.0)
     }
 }

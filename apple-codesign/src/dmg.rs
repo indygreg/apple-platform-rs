@@ -409,7 +409,7 @@ impl DmgSigner {
     /// Create special blobs that are added to the superblob.
     pub fn create_special_blobs(
         &self,
-    ) -> Result<Vec<(CodeSigningSlot, BlobData)>, AppleCodesignError> {
+    ) -> Result<Vec<(CodeSigningSlot, BlobData<'_>)>, AppleCodesignError> {
         Ok(vec![(
             CodeSigningSlot::RequirementSet,
             RequirementSetBlob::default().into(),

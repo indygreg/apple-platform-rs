@@ -136,7 +136,7 @@ impl<'a> MachOBinary<'a> {
     ///
     /// Returns `Ok(None)` if no signature exists, `Ok(Some)` if it does, or
     /// `Err` if there is a parse error.
-    pub fn code_signature(&self) -> Result<Option<EmbeddedSignature>, AppleCodesignError> {
+    pub fn code_signature(&self) -> Result<Option<EmbeddedSignature<'_>>, AppleCodesignError> {
         if let Some(signature) = self.find_signature_data()? {
             Ok(Some(EmbeddedSignature::from_bytes(
                 signature.signature_data,
@@ -642,7 +642,7 @@ impl<'a> MachFile<'a> {
     /// Iterate [MachO] instances in this data.
     ///
     /// The `Option<usize>` is `Some` if this is a universal Mach-O or `None` otherwise.
-    pub fn iter_macho(&self) -> impl Iterator<Item = &MachOBinary> {
+    pub fn iter_macho(&self) -> impl Iterator<Item = &MachOBinary<'_>> {
         self.machos.iter()
     }
 
