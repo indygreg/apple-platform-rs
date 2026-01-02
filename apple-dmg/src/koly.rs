@@ -134,7 +134,7 @@ impl KolyTrailer {
         main_digest: u32,
     ) -> Self {
         let mut segment_id = [0; 16];
-        getrandom::getrandom(&mut segment_id).unwrap();
+        getrandom::fill(&mut segment_id).unwrap();
         Self {
             data_fork_length,
             sector_count: sectors,
