@@ -9,6 +9,7 @@ Released on ReleaseDate.
 * MSRV 1.81 -> 1.88.
 * `aws-smithy-http` 0.60 -> 0.62.
 * `cryptographic-message-syntax` 0.27 -> 0.28.
+* `dialoguer` 0.11 -> 0.12.
 * `dirs` 5 -> 6.
 * `goblin` 0.9 -> 0.10.
 * `md5` 0.7 -> 0.8.
