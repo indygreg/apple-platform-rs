@@ -371,7 +371,7 @@ pub struct Title {
 #[serde(rename = "kebab-case")]
 pub struct VolumeCheck {
     #[serde(rename = "@script")]
-    pub script: bool,
+    pub script: Option<bool>,
     pub allowed_os_versions: Option<AllowedOsVersions>,
     pub required_bundles: Option<RequiredBundles>,
 }
