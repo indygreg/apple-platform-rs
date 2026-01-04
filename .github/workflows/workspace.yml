@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
 jobs:
   build-and-test:
-    uses: indygreg/actions/.github/workflows/rust-workspace-build-and-test.yml@aacf4321e814ace18fe44ef5b8ae213c7b13e460
+    uses: indygreg/actions/.github/workflows/rust-workspace-build-and-test.yml@c6d30fbd797895cf9eaafb5b6b8bd54358fba0e7
     with:
-      actions_ref: "aacf4321e814ace18fe44ef5b8ae213c7b13e460"
+      actions_ref: "c6d30fbd797895cf9eaafb5b6b8bd54358fba0e7"
       msrv: "1.88.0"
       sccache_s3_bucket: apple-platform-rs-sccache
       no_default_features: true
