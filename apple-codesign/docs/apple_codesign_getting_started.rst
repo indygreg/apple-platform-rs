@@ -11,6 +11,18 @@ Pre-built binaries are published as GitHub Releases. Go to
 https://github.com/indygreg/apple-platform-rs/releases and look for the latest
 release of ``Apple Codesign``.
 
+On Linux, the ``*-unknown-linux-musl`` binaries should run anywhere. However, the
+``*-unknown-linux-musl``` binaries lack support for some optional features, notably
+PKCS#11. (PKCS#11 requires loading shared libraries, which isn't supported by
+statically linked musl libc binaries.)
+
+The ``*-unknown-linux-gnu``` binaries are compiled against glibc 2.35 and therefore
+require a Linux distro from at least February 2022 to avoid missing symbol errors.
+Ubuntu 22.04 and Fedora 36 are the oldest distro releases supporting glibc 2.35.
+
+Installing Via Cargo
+--------------------
+
 To install the latest release version of the ``rcodesign`` executable using Cargo
 (Rust's package manager):
 
