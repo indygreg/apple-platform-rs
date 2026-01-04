@@ -139,7 +139,7 @@ impl NotaryApi {
     /// Resolve a notarizer from arguments.
     fn notarizer(&self) -> Result<Notarizer, AppleCodesignError> {
         if let Some(api_key_path) = &self.api_key_path {
-            Notarizer::from_api_key(api_key_path)
+            Notarizer::from_api_key_file(api_key_path)
         } else if let (Some(issuer), Some(key)) = (&self.api_issuer, &self.api_key) {
             Notarizer::from_api_key_id(issuer, key)
         } else {
