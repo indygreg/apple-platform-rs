@@ -375,16 +375,12 @@ pub enum AppleCodesignError {
     RemoteSign(#[from] RemoteSignError),
 
     #[cfg(feature = "notarize")]
-    #[error("bytestream creation error: {0}")]
-    AwsByteStream(#[from] aws_smithy_types::byte_stream::error::Error),
+    #[error("s3 credentials error: ")]
+    RustS3Credentials(s3::creds::error::CredentialsError),
 
     #[cfg(feature = "notarize")]
-    #[error("s3 upload error: {0}")]
-    AwsS3PutObject(
-        aws_smithy_types::error::display::DisplayErrorContext<
-            aws_sdk_s3::error::SdkError<aws_sdk_s3::operation::put_object::PutObjectError>,
-        >,
-    ),
+    #[error("s3 upload error: ")]
+    RustS3PutObject(s3::error::S3Error),
 
     #[error("bad time value")]
     BadTime,
