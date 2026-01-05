@@ -829,7 +829,7 @@ impl KeySource for Pkcs11SigningKey {
                 key_id.clone(),
                 self.get_pin()?,
                 cert.clone(),
-            )?
+            )
         } else if let Some(key_label) = &self.key_label {
             // Use CKA_LABEL attribute
             Pkcs11PrivateKey::new_with_label(
@@ -838,7 +838,7 @@ impl KeySource for Pkcs11SigningKey {
                 key_label.clone(),
                 self.get_pin()?,
                 cert.clone(),
-            )?
+            )
         } else {
             // Try to find private key automatically based on certificate
             info!("attempting automatic private key discovery");
@@ -847,7 +847,7 @@ impl KeySource for Pkcs11SigningKey {
                 slot.id(),
                 self.get_pin()?,
                 cert.clone(),
-            )?
+            )
         };
 
         Ok(SigningCertificates {
