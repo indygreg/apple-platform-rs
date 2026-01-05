@@ -901,6 +901,12 @@ impl Pkcs11SigningKey {
                         e
                     ))
                 });
+            } else {
+                warn!(
+                    "PEM file {} has tag '{}' but expected 'CERTIFICATE'; attempting DER parsing",
+                    cert_file.display(),
+                    pem.tag()
+                );
             }
         }
 
