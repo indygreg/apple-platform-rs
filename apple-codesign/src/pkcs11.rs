@@ -51,14 +51,14 @@ impl Pkcs11PrivateKey {
         key_reference: KeyReference,
         pin: Option<String>,
         certificate: CapturedX509Certificate,
-    ) -> Result<Self, AppleCodesignError> {
-        Ok(Self {
+    ) -> Self {
+        Self {
             library_path,
             slot_id,
             key_reference,
             pin,
             certificate,
-        })
+        }
     }
 
     pub fn new_with_label(
@@ -67,14 +67,14 @@ impl Pkcs11PrivateKey {
         key_label: String,
         pin: Option<String>,
         certificate: CapturedX509Certificate,
-    ) -> Result<Self, AppleCodesignError> {
-        Ok(Self {
+    ) -> Self {
+        Self {
             library_path,
             slot_id,
             key_reference: KeyReference::Label(key_label),
             pin,
             certificate,
-        })
+        }
     }
 
     pub fn new_with_id(
@@ -83,14 +83,14 @@ impl Pkcs11PrivateKey {
         key_id: String,
         pin: Option<String>,
         certificate: CapturedX509Certificate,
-    ) -> Result<Self, AppleCodesignError> {
-        Ok(Self {
+    ) -> Self {
+        Self {
             library_path,
             slot_id,
             key_reference: KeyReference::Id(key_id),
             pin,
             certificate,
-        })
+        }
     }
 
     pub fn new_from_certificate(
@@ -98,14 +98,14 @@ impl Pkcs11PrivateKey {
         slot_id: u64,
         pin: Option<String>,
         certificate: CapturedX509Certificate,
-    ) -> Result<Self, AppleCodesignError> {
-        Ok(Self {
+    ) -> Self {
+        Self {
             library_path,
             slot_id,
             key_reference: KeyReference::FromCertificate,
             pin,
             certificate,
-        })
+        }
     }
 
     fn with_session<T, F>(&self, f: F) -> Result<T, AppleCodesignError>
