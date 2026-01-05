@@ -729,11 +729,11 @@ pub struct Pkcs11SigningKey {
     pub library_path: Option<PathBuf>,
 
     /// PKCS11 token label to use
-    #[arg(long = "pkcs11-token-label", value_name = "LABEL")]
+    #[arg(long = "pkcs11-token-label", group = "pkcs11-slot", value_name = "LABEL")]
     pub token_label: Option<String>,
 
     /// PKCS11 slot ID to use (alternative to token label)
-    #[arg(long = "pkcs11-slot-id", value_name = "ID")]
+    #[arg(long = "pkcs11-slot-id", group = "pkcs11-slot", value_name = "ID")]
     pub slot_id: Option<u64>,
 
     /// PIN for PKCS11 token
@@ -750,11 +750,11 @@ pub struct Pkcs11SigningKey {
     pub certificate_file: Option<PathBuf>,
 
     /// Private key label in PKCS11 token (CKA_LABEL attribute)
-    #[arg(long = "pkcs11-key-label", value_name = "LABEL")]
+    #[arg(long = "pkcs11-key-label", group = "pkcs11-key", value_name = "LABEL")]
     pub key_label: Option<String>,
 
     /// Private key ID in PKCS11 token (CKA_ID attribute)
-    #[arg(long = "pkcs11-key-id", value_name = "ID")]
+    #[arg(long = "pkcs11-key-id", group = "pkcs11-key", value_name = "ID")]
     pub key_id: Option<String>,
 }
 
