@@ -59,7 +59,7 @@ rayon = "1.11.0"
 regex = "1.12.2"
 reqwest = { version = "0.12.28", default-features = false, features = ["blocking", "http2", "json", "rustls-tls-native-roots"] }
 ring = "0.17.14"
-rsa = "0.9.9"
+rsa = "0.9.10"
 scroll = "0.13.0"
 sha2 = "0.10.9"
 semver = "1.0.27"
