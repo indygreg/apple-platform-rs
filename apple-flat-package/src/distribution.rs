@@ -30,7 +30,7 @@ pub struct Distribution {
     pub license: Option<License>,
     #[serde(default)]
     pub locator: Vec<Locator>,
-    pub options: Option<Options>,
+    pub options: Vec<Options>,
     #[serde(default)]
     pub pkg_ref: Vec<PkgRef>,
     pub product: Option<Product>,
@@ -166,11 +166,11 @@ pub struct Conclusion {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Domains {
     #[serde(rename = "@enable_anywhere")]
-    pub enable_anywhere: bool,
+    pub enable_anywhere: Option<bool>,
     #[serde(rename = "@enable_currentUserHome")]
-    pub enable_current_user_home: bool,
+    pub enable_current_user_home: Option<bool>,
     #[serde(rename = "@enable_localSystem")]
-    pub enable_local_system: bool,
+    pub enable_local_system: Option<bool>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
@@ -268,7 +268,7 @@ pub struct PkgRef {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Product {
     #[serde(rename = "@id")]
-    pub id: String,
+    pub id: Option<String>,
     #[serde(rename = "@version")]
     pub version: Option<String>,
 }
@@ -309,13 +309,13 @@ pub struct RequiredBundles {
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct RequiredClDevice {
-    #[serde(rename = "#content")]
+    #[serde(rename = "#text")]
     pub predicate: String,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct RequiredGlRenderer {
-    #[serde(rename = "#content")]
+    #[serde(rename = "#text")]
     pub predicate: String,
 }
 
@@ -333,7 +333,7 @@ pub struct RequiredGraphics {
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Script {
     // language is a reserved attribute.
-    #[serde(rename = "#content")]
+    #[serde(rename = "#text")]
     pub script: String,
 }
 
@@ -363,7 +363,7 @@ pub struct Search {
 
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Title {
-    #[serde(rename = "#content")]
+    #[serde(rename = "#text")]
     pub title: String,
 }
 

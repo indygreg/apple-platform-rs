@@ -6,6 +6,9 @@
 
 Released on ReleaseDate.
 
+* `Distribution`'s `options` field type `Option<Options>` -> `Vec<Options>`.
+* `Domain`'s fields have been changed from `bool` -> `Option<bool>`.
+* `Product`'s `id` field type `String` -> `Option<String>`.
 * `VolumeCheck`'s `script` field has been changed from `bool` -> `Option<bool>`.
   (#213)
 * MSRV 1.81 -> 1.88.

@@ -116,3 +116,17 @@ pub enum Error {
 
 /// Result type for this crate.
 pub type PkgResult<T> = std::result::Result<T, Error>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn zoom_distribution() -> Result<(), Error> {
+        let data = include_bytes!("testdata-zoom-distribution.xml");
+
+        Distribution::from_reader(std::io::Cursor::new(data))?;
+
+        Ok(())
+    }
+}
