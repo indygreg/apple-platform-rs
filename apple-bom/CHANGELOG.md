@@ -6,6 +6,7 @@
 
 Released on ReleaseDate.
 
+* `BomBuilder` will no longer encode multiple NULL bytes in paths. (#241)
 * MSRV 1.81 -> 1.88.
 * `clap` 4.4 -> 4.5.
 * `scroll` 0.12 -> 0.13.

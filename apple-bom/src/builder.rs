@@ -220,7 +220,7 @@ impl BomBuilder {
         };
         let file = BomBlockFile {
             parent_path_id: 0,
-            name: Cow::from(CString::new(b".\0".to_vec()).expect("string is null terminated")),
+            name: Cow::from(CString::new(b".".to_vec()).expect("string is null terminated")),
         };
 
         records.push((1u32, path_record, file));
@@ -263,7 +263,6 @@ impl BomBuilder {
 
                 let mut path_cstring = Vec::<u8>::with_capacity(path.len());
                 path_cstring.extend(path.as_bytes());
-                path_cstring.push(0);
                 let path_cstring =
                     CString::new(path_cstring).expect("C string should be well formed");
 
@@ -286,7 +285,6 @@ impl BomBuilder {
 
             let mut path_cstring = Vec::<u8>::with_capacity(path.len() + 1);
             path_cstring.extend(path.as_bytes());
-            path_cstring.push(0);
             let path_cstring = CString::new(path_cstring).expect("should be valid C string");
 
             let path_record = BomBlockPathRecord {
