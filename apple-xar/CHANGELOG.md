@@ -6,6 +6,10 @@
 
 Released on ReleaseDate.
 
+* The `FileType` enum has been removed and `File`'s `file_type`
+  field is now a `String`. This change was made due to the `xml-rs`
+  upgrade and our inability to figure out how to get XML element values
+  to deserialize as enums.
 * MSRV 1.81 -> 1.88.
 * `bzip2` 0.4 -> 0.6.
 * `cryptographic-message-syntax` 0.27 -> 0.28.

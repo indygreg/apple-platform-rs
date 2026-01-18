@@ -5,7 +5,7 @@
 use {
     crate::{
         format::{XarChecksum, XarHeader},
-        table_of_contents::{ChecksumType, File, FileType, SignatureStyle, TableOfContents},
+        table_of_contents::{ChecksumType, File, SignatureStyle, TableOfContents},
         Error, XarResult,
     },
     scroll::IOread,
@@ -283,16 +283,17 @@ impl<R: Read + Seek + Sized + Debug> XarReader<R> {
         for (path, file) in self.toc.files()? {
             let dest_path = dest_dir.join(path);
 
-            match file.file_type {
-                FileType::Directory => {
+            match file.file_type.as_str() {
+                "directory" => {
                     std::fs::create_dir(&dest_path)?;
                 }
-                FileType::File => {
+                "file" => {
                     let mut fh = std::fs::File::create(&dest_path)?;
                     self.write_file_data_decoded_from_file(&file, &mut fh)?;
                 }
-                FileType::HardLink => return Err(Error::Unsupported("writing hard links")),
-                FileType::Link => return Err(Error::Unsupported("writing symlinks")),
+                "hardlink" => return Err(Error::Unsupported("writing hard links")),
+                "link" => return Err(Error::Unsupported("writing symlinks")),
+                _ => return Err(Error::Unsupported("unknown file type")),
             }
         }
 
