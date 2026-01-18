@@ -266,8 +266,6 @@ impl BomPath {
         if let Some(link_name) = &self.link_name {
             let mut data = Vec::<u8>::with_capacity(link_name.len() + 1);
             data.extend(link_name.as_bytes());
-            data.push(0);
-
             Some(CString::new(data).expect("should be valid C string"))
         } else {
             None
