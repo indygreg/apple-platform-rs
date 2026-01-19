@@ -31,9 +31,7 @@ use {
 #[cfg(feature = "pkcs11")]
 use {
     crate::pkcs11::Pkcs11PrivateKey,
-    cryptoki::{
-        context::{CInitializeArgs, Pkcs11},
-    },
+    cryptoki::context::{CInitializeArgs, CInitializeFlags, Pkcs11},
 };
 
 #[cfg(target_os = "macos")]
@@ -729,7 +727,11 @@ pub struct Pkcs11SigningKey {
     pub library_path: Option<PathBuf>,
 
     /// PKCS11 token label to use
-    #[arg(long = "pkcs11-token-label", group = "pkcs11-slot", value_name = "LABEL")]
+    #[arg(
+        long = "pkcs11-token-label",
+        group = "pkcs11-slot",
+        value_name = "LABEL"
+    )]
     pub token_label: Option<String>,
 
     /// PKCS11 slot ID to use (alternative to token label)
@@ -769,38 +771,43 @@ impl KeySource for Pkcs11SigningKey {
         info!("initializing PKCS11 library: {}", library_path.display());
 
         let pkcs11 = Pkcs11::new(library_path.clone())?;
-        pkcs11.initialize(CInitializeArgs::OsThreads).or_else(|e| {
-            match e {
-                cryptoki::error::Error::AlreadyInitialized => {
-                    info!("PKCS11 library already initialized");
-                    Ok(())
-                }
-                _ => Err(e),
-            }
-        })?;
+        pkcs11.initialize(CInitializeArgs::new(CInitializeFlags::OS_LOCKING_OK))?;
 
         let slots = pkcs11.get_slots_with_token()?;
         if slots.is_empty() {
-            return Err(AppleCodesignError::Pkcs11Error("no PKCS11 tokens found".into()));
+            return Err(AppleCodesignError::Pkcs11Error(
+                "no PKCS11 tokens found".into(),
+            ));
         }
 
         // Find the right slot
         let slot = if let Some(slot_id) = self.slot_id {
-            slots.into_iter()
+            slots
+                .into_iter()
                 .find(|s| s.id() == slot_id)
-                .ok_or_else(|| AppleCodesignError::Pkcs11Error(format!("PKCS11 slot {} not found", slot_id)))?
+                .ok_or_else(|| {
+                    AppleCodesignError::Pkcs11Error(format!("PKCS11 slot {} not found", slot_id))
+                })?
         } else if let Some(token_label) = &self.token_label {
             let target_label = token_label.trim();
-            slots.into_iter()
+            slots
+                .into_iter()
                 .find(|slot| {
                     if let Ok(token_info) = pkcs11.get_token_info(*slot) {
-                        let label = String::from_utf8_lossy(&token_info.label().as_bytes()).trim().to_string();
+                        let label = String::from_utf8_lossy(&token_info.label().as_bytes())
+                            .trim()
+                            .to_string();
                         label == target_label
                     } else {
                         false
                     }
                 })
-                .ok_or_else(|| AppleCodesignError::Pkcs11Error(format!("PKCS11 token '{}' not found", target_label)))?
+                .ok_or_else(|| {
+                    AppleCodesignError::Pkcs11Error(format!(
+                        "PKCS11 token '{}' not found",
+                        target_label
+                    ))
+                })?
         } else {
             slots[0] // Use first slot if no preference specified
         };
@@ -810,15 +817,22 @@ impl KeySource for Pkcs11SigningKey {
         // Load certificate from local file
         let cert = if let Some(cert_file) = &self.certificate_file {
             // Load certificate from local file (similar to osslsigncode)
-            info!("loading certificate from local file: {}", cert_file.display());
+            info!(
+                "loading certificate from local file: {}",
+                cert_file.display()
+            );
             self.load_certificate_from_file(cert_file)?
         } else {
             return Err(AppleCodesignError::Pkcs11Error(
-                "--pkcs11-certificate-file is required for Apple code signing workflows".into()
+                "--pkcs11-certificate-file is required for Apple code signing workflows".into(),
             ));
         };
 
-        info!("loaded certificate: {}", cert.subject_common_name().unwrap_or_else(|| "unknown".into()));
+        info!(
+            "loaded certificate: {}",
+            cert.subject_common_name()
+                .unwrap_or_else(|| "unknown".into())
+        );
 
         // Create PKCS11 private key wrapper
         let pkcs11_key = if let Some(key_id) = &self.key_id {
@@ -879,7 +893,8 @@ impl Pkcs11SigningKey {
                 Err(_) => {
                     error!("failed to read PIN from environment variable: {}", pin_env);
                     Err(AppleCodesignError::Pkcs11Error(format!(
-                        "PIN environment variable {} not found", pin_env
+                        "PIN environment variable {} not found",
+                        pin_env
                     )))
                 }
             }
@@ -888,7 +903,10 @@ impl Pkcs11SigningKey {
         }
     }
 
-    fn load_certificate_from_file(&self, cert_file: &PathBuf) -> Result<CapturedX509Certificate, AppleCodesignError> {
+    fn load_certificate_from_file(
+        &self,
+        cert_file: &PathBuf,
+    ) -> Result<CapturedX509Certificate, AppleCodesignError> {
         let cert_data = std::fs::read(cert_file)?;
 
         // Try PEM first
@@ -919,6 +937,4 @@ impl Pkcs11SigningKey {
             ))
         })
     }
-
-
 }

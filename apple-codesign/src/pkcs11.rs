@@ -7,7 +7,7 @@ use {
     bcder::{encode::Values, OctetString},
     bytes::Bytes,
     cryptoki::{
-        context::{CInitializeArgs, Pkcs11},
+        context::{CInitializeArgs, CInitializeFlags, Pkcs11},
         mechanism::{Mechanism, MechanismType},
         object::{Attribute, AttributeType, ObjectClass, ObjectHandle},
         session::UserType,
@@ -113,12 +113,7 @@ impl Pkcs11PrivateKey {
         F: FnOnce(&cryptoki::session::Session) -> Result<T, AppleCodesignError>,
     {
         let pkcs11 = Pkcs11::new(&self.library_path)?;
-        pkcs11
-            .initialize(CInitializeArgs::OsThreads)
-            .or_else(|e| match e {
-                cryptoki::error::Error::AlreadyInitialized => Ok(()),
-                _ => Err(e),
-            })?;
+        pkcs11.initialize(CInitializeArgs::new(CInitializeFlags::OS_LOCKING_OK))?;
 
         let slots = pkcs11.get_slots_with_token()?;
         let slot = slots
@@ -131,7 +126,7 @@ impl Pkcs11PrivateKey {
         let session = pkcs11.open_rw_session(slot)?;
 
         if let Some(pin) = &self.pin {
-            session.login(UserType::User, Some(&AuthPin::new(pin.clone())))?;
+            session.login(UserType::User, Some(&AuthPin::new(pin.clone().into())))?;
         }
 
         let result = f(&session)?;
