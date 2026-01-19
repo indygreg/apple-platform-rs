@@ -235,7 +235,7 @@ impl<R: Read + Seek + Sized + Debug> XarReader<R> {
             "application/x-gzip" => {
                 Box::new(flate2::write::ZlibDecoder::new(writer)) as Box<dyn Write>
             }
-            "application/x-lzma" => Box::new(xz2::write::XzDecoder::new(writer)) as Box<dyn Write>,
+            "application/x-lzma" => Box::new(liblzma::write::XzDecoder::new(writer)) as Box<dyn Write>,
             encoding => {
                 return Err(Error::UnimplementedFileEncoding(encoding.to_string()));
             }
