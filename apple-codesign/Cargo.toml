@@ -18,15 +18,15 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1.0.100"
 aws-config = { version = "1.8.12", optional = true }
-aws-sdk-s3 = { version = "1.119.0", optional = true }
+aws-sdk-s3 = { version = "1.120.0", optional = true }
 aws-smithy-http = { version = "0.62.6", optional = true }
-aws-smithy-types = { version = "1.3.5", optional = true }
+aws-smithy-types = { version = "1.3.6", optional = true }
 base64 = "0.22.1"
 bcder = "0.7.6"
 bitflags = "2.10.0"
 bytes = "1.11.0"
 clap = { version = "4.5.54", features = ["derive"] }
-chrono = { version = "0.4.42", features = ["serde"] }
+chrono = { version = "0.4.43", features = ["serde"] }
 cryptographic-message-syntax = "0.28.0"
 der = { version = "0.7.10", features = ["alloc"] }
 dialoguer = "0.12.0"
@@ -36,7 +36,7 @@ dirs = "6.0.0"
 elliptic-curve = { version = "0.13.8", features = ["arithmetic", "pkcs8"] }
 env_logger = "0.11.8"
 figment = { version = "0.10.19", features = ["env", "toml"] }
-filetime = "0.2.26"
+filetime = "0.2.27"
 glob = "0.3.3"
 goblin = "0.10.4"
 hex = "0.4.3"
@@ -59,12 +59,12 @@ rayon = "1.11.0"
 regex = "1.12.2"
 reqwest = { version = "0.12.28", default-features = false, features = ["blocking", "http2", "json", "rustls-tls-native-roots"] }
 ring = "0.17.14"
-rsa = "0.9.9"
+rsa = "0.9.10"
 scroll = "0.13.0"
 sha2 = "0.10.9"
 semver = "1.0.27"
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.148"
+serde_json = "1.0.149"
 serde_yaml = "0.9.34"
 signature = { version = "2.2.0", features = ["std"] }
 simple-file-manifest = "0.11.0"
@@ -72,7 +72,7 @@ spake2 = "0.4.0"
 spki = { version = "0.7.3", features = ["pem"] }
 subtle = "2.6.1"
 tempfile = "3.24.0"
-thiserror = "2.0.17"
+thiserror = "2.0.18"
 tokio = { version = "1.49.0", features = ["rt"] }
 tungstenite = { version = "0.28.0", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.19.0", features = ["v4"] }
@@ -83,7 +83,7 @@ xml-rs = "1.0.0"
 yasna = "0.5.2"
 yubikey = { version = "0.8.0", optional = true, features = ["untested"] }
 zeroize = { version = "1.8.2", features = ["zeroize_derive"] }
-zip = { version = "7.0.0", default-features = false, features = ["deflate"] }
+zip = { version = "7.1.0", default-features = false, features = ["deflate"] }
 zip_structs = "0.2.1"
 cryptoki = { version = "0.10.0", optional = true }
 
@@ -113,12 +113,12 @@ widestring = { version = "1.2.1" }
 windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Security_Cryptography"] }
 
 [dev-dependencies]
-flate2 = "1.1.5"
+flate2 = "1.1.8"
 indoc = "2.0.7"
 simple-file-manifest = "0.11.0"
 tar = "0.4.44"
 trycmd-indygreg-fork = "0.14.20"
-zip = { version = "7.0.0", default-features = false }
+zip = { version = "7.1.0", default-features = false }
 
 [features]
 default = ["notarize"]
