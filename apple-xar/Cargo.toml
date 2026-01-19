@@ -19,7 +19,7 @@ cryptographic-message-syntax = { version = "0.28.0", optional = true }
 digest = "0.10.7"
 log = "0.4.29"
 md-5 = "0.10.6"
-flate2 = "1.1.5"
+flate2 = "1.1.8"
 rand = { version = "0.8.5", optional = true }
 reqwest = { version = "0.12.28", default-features = false, optional = true }
 scroll = { version = "0.13.0", features = ["derive"] }
@@ -28,8 +28,8 @@ serde = { version = "1.0.228", features = ["derive"] }
 sha1 = "0.10.6"
 sha2 = "0.10.9"
 signature = { version = "2.2.0", features = ["std"], optional = true }
-thiserror = "2.0.17"
-url = "2.5.7"
+thiserror = "2.0.18"
+url = "2.5.8"
 xml-rs = "1.0.0"
 x509-certificate = "0.25.0"
 liblzma = { version = "0.4.5", features = ["static", "parallel"] }
