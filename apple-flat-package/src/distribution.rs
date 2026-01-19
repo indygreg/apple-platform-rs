@@ -219,6 +219,10 @@ pub struct Options {
     pub allow_external_scripts: Option<bool>,
     #[serde(rename = "@customize")]
     pub customize: Option<String>,
+    #[serde(rename = "@customLocation")]
+    pub custom_location: Option<String>,
+    #[serde(rename = "@customLocationAllowAlternateVolumes")]
+    pub custom_location_allow_alternate_volumes: Option<String>,
     #[serde(rename = "@hostArchitectures")]
     pub host_architecutres: Option<String>,
     #[serde(rename = "@mpkg")]

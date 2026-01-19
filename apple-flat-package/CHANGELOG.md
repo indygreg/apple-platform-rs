@@ -6,6 +6,8 @@
 
 Released on ReleaseDate.
 
+* `Options` now has `custom_location` and `custom_location_allow_alternate_volumes`
+  fields (#249).
 * `Distribution`'s `options` field type `Option<Options>` -> `Vec<Options>`.
 * `Domain`'s fields have been changed from `bool` -> `Option<bool>`.
 * `Product`'s `id` field type `String` -> `Option<String>`.
