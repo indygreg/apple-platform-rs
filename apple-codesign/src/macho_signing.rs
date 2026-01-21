@@ -382,7 +382,9 @@ impl<'data> MachOSigner<'data> {
         if binaries.len() > 1 {
             create_universal_macho(writer, binaries.iter().map(|x| x.as_slice()))?;
         } else {
-            writer.write_all(&binaries[0])?;
+            for binary in binaries {
+                writer.write(&binary)?;
+            }
         }
 
         Ok(())
