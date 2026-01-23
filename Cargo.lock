@@ -1145,7 +1145,6 @@ name = "cpio-archive"
 version = "0.10.0"
 dependencies = [
  "chrono",
- "is_executable",
  "simple-file-manifest",
  "thiserror 2.0.18",
 ]
@@ -2357,15 +2356,6 @@ checksum = "c91338f0783edbd6195decb37bae672fd3b165faffb89bf7b9e6942f8b1a731a"
 dependencies = [
  "memchr",
  "serde",
-]
-
-[[package]]
-name = "is_executable"
-version = "1.0.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baabb8b4867b26294d818bf3f651a454b6901431711abb96e296245888d6e8c4"
-dependencies = [
- "windows-sys 0.60.2",
 ]
 
 [[package]]
