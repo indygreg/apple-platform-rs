@@ -11,7 +11,6 @@
 use {
     crate::{CpioHeader, CpioReader, CpioResult, Error},
     chrono::{DateTime, Utc},
-    is_executable::IsExecutable,
     simple_file_manifest::{
         FileManifest, S_IFDIR, S_IRGRP, S_IROTH, S_IRUSR, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR,
     },
@@ -539,10 +538,6 @@ impl<W: Write + Sized> OdcBuilder<W> {
         header.file_size = metadata.len();
         header.mode = self.default_mode_file.unwrap_or(permissions_to_u32(metadata.permissions()));
 
-        if path.is_executable() {
-            header.mode |= S_IXUSR | S_IXGRP | S_IXOTH;
-        }
-
         bytes_written += header.write(&mut self.writer)?;
         bytes_written += std::io::copy(&mut fh, &mut self.writer)?;
 
@@ -554,7 +549,19 @@ impl<W: Write + Sized> OdcBuilder<W> {
         let mut bytes_written = 0;
 
         for (path, entry) in manifest.iter_entries() {
-            let mode = if entry.is_executable() { 0o755 } else { 0o644 };
+            let metadata = path.metadata()?;
+            let mut mode = permissions_to_u32(metadata.permissions());
+
+            if metadata.is_file() {
+                if let Some(m) = self.default_mode_file {
+                    mode = m;
+                }
+            } else if metadata.is_dir() {
+                if let Some(m) = self.default_mode_dir {
+                    mode = m;
+                }
+            }
+
             let data = entry.resolve_content()?;
 
             bytes_written += self.append_file_from_data(path.display().to_string(), data, mode)?;
