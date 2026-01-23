@@ -18,6 +18,7 @@ use {
     std::{
         collections::HashSet,
         ffi::CStr,
+        fs,
         io::{Read, Take, Write},
         path::Path,
     },
@@ -69,6 +70,33 @@ fn write_octal(value: u64, writer: &mut impl Write, size: usize) -> CpioResult<(
 
     Ok(())
 }
+
+/// permissions_to_u32 converts fs::Permissions objects to chmod integers.
+pub fn permissions_to_u32(permissions: fs::Permissions) -> u32 {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        permissions.mode()
+    }
+    #[cfg(windows)]
+    {
+        if permissions.readonly() {
+            0o444u32
+        } else {
+            0o666u32
+        }
+    }
+}
+
+/// GENERIC_DIRECTORY_MODE applies to auto generated directories.
+const GENERIC_DIRECTORY_MODE: u32 = S_IFDIR
+    | S_IRUSR
+    | S_IWUSR
+    | S_IXUSR
+    | S_IRGRP
+    | S_IXGRP
+    | S_IROTH
+    | S_IXOTH;
 
 /// Parsed portable ASCII format header.
 #[derive(Clone, Debug)]
@@ -297,8 +325,8 @@ pub struct OdcBuilder<W: Write + Sized> {
     default_uid: u32,
     default_gid: u32,
     default_mtime: DateTime<Utc>,
-    default_mode_file: u32,
-    default_mode_dir: u32,
+    default_mode_file: Option<u32>,
+    default_mode_dir: Option<u32>,
     auto_write_dirs: bool,
     seen_dirs: HashSet<String>,
     entry_count: u32,
@@ -313,15 +341,8 @@ impl<W: Write + Sized> OdcBuilder<W> {
             default_uid: 0,
             default_gid: 0,
             default_mtime: Utc::now(),
-            default_mode_file: S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH,
-            default_mode_dir: S_IFDIR
-                | S_IRUSR
-                | S_IWUSR
-                | S_IXUSR
-                | S_IRGRP
-                | S_IXGRP
-                | S_IROTH
-                | S_IXOTH,
+            default_mode_file: None,
+            default_mode_dir: None,
             auto_write_dirs: true,
             seen_dirs: HashSet::new(),
             entry_count: 0,
@@ -330,12 +351,12 @@ impl<W: Write + Sized> OdcBuilder<W> {
     }
 
     /// Set the default file mode to use for files.
-    pub fn default_mode_file(&mut self, mode: u32) {
+    pub fn default_mode_file(&mut self, mode: Option<u32>) {
         self.default_mode_file = mode;
     }
 
     /// Set the default file mode to use for directories.
-    pub fn default_mode_directory(&mut self, mode: u32) {
+    pub fn default_mode_directory(&mut self, mode: Option<u32>) {
         self.default_mode_dir = mode;
     }
 
@@ -372,7 +393,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
         OdcHeader {
             dev: 0,
             inode,
-            mode: self.default_mode_file,
+            mode: 0u32,
             uid: self.default_uid,
             gid: self.default_gid,
             nlink: 0,
@@ -407,7 +428,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
 
             if !self.seen_dirs.contains(&dir) {
                 let mut header = self.next_header();
-                header.mode = self.default_mode_dir;
+                header.mode = self.default_mode_file.unwrap_or(GENERIC_DIRECTORY_MODE);
                 header.name = dir.clone();
 
                 bytes_written += header.write(&mut self.writer)?;
@@ -516,6 +537,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
         let mut header = self.next_header();
         header.name = archive_path;
         header.file_size = metadata.len();
+        header.mode = self.default_mode_file.unwrap_or(permissions_to_u32(metadata.permissions()));
 
         if path.is_executable() {
             header.mode |= S_IXUSR | S_IXGRP | S_IXOTH;
