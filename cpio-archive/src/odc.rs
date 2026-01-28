@@ -606,7 +606,6 @@ impl<W: Write + Sized> OdcBuilder<W> {
         if !self.finished {
             let mut header = self.next_header();
             header.dev = 0u32;
-            header.inode = 0u32;
             header.mode = 0u32;
             header.uid = 0u32;
             header.gid = 0u32;
@@ -618,13 +617,12 @@ impl<W: Write + Sized> OdcBuilder<W> {
             let count = header.write(&mut self.writer)?;
             self.bytes_written += count;
 
-            dbg!(self.bytes_written);
-
+            let block_size = 512usize;
             let mut padding_u64 = 0u64;
-            let rem = (self.bytes_written as usize) % 512usize;
+            let rem = (self.bytes_written as usize) % block_size;
 
             if rem != 0 {
-                let padding = 512usize - rem;
+                let padding = block_size - rem;
                 padding_u64 = padding as u64;
                 let data = vec![0u8; padding];
                 self.writer.write_all(&data)?;
