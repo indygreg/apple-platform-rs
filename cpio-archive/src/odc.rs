@@ -330,6 +330,7 @@ pub struct OdcBuilder<W: Write + Sized> {
     seen_dirs: HashSet<String>,
     entry_count: u32,
     finished: bool,
+    bytes_written: u64,
 }
 
 impl<W: Write + Sized> OdcBuilder<W> {
@@ -346,6 +347,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
             seen_dirs: HashSet::new(),
             entry_count: 0,
             finished: false,
+            bytes_written: 0,
         }
     }
 
@@ -518,6 +520,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
         self.writer.write_all(data)?;
         bytes_written += data.len() as u64;
 
+        self.bytes_written += bytes_written;
         Ok(bytes_written)
     }
 
@@ -553,6 +556,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
         bytes_written += header.write(&mut self.writer)?;
         bytes_written += std::io::copy(&mut fh, &mut self.writer)?;
 
+        self.bytes_written += bytes_written;
         Ok(bytes_written)
     }
 
@@ -579,6 +583,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
             bytes_written += self.append_file_from_data(path.display().to_string(), data, mode)?;
         }
 
+        self.bytes_written += bytes_written;
         Ok(bytes_written)
     }
 
@@ -591,11 +596,33 @@ impl<W: Write + Sized> OdcBuilder<W> {
     pub fn finish(&mut self) -> CpioResult<u64> {
         if !self.finished {
             let mut header = self.next_header();
+            header.dev = 0u32;
+            header.inode = 0u32;
+            header.mode = 0u32;
+            header.uid = 0u32;
+            header.gid = 0u32;
+            header.nlink = 1u32; // GNU compatibility
+            header.rdev = 0u32;
+            header.mtime = 0u32;
+            header.file_size = 0u64;
             header.name = TRAILER.to_string();
             let count = header.write(&mut self.writer)?;
+            self.bytes_written += count;
+
+            let mut padding = 0usize;
+            let rem = (self.bytes_written as usize) % 512usize;
+
+            if rem != 0 {
+                padding = 512usize - rem;
+                let data = vec![0u8; padding];
+                self.writer.write_all(&data)?;
+            }
+
             self.finished = true;
 
-            Ok(count)
+            let bytes_written = count + (padding as u64);
+            self.bytes_written = bytes_written;
+            Ok(bytes_written)
         } else {
             Ok(0)
         }
