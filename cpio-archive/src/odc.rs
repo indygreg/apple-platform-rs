@@ -449,7 +449,10 @@ impl<W: Write + Sized> OdcBuilder<W> {
         &mut self,
         header: OdcHeader,
     ) -> CpioResult<u64> {
-        header.write(&mut self.writer)
+        let bytes_written = header.write(&mut self.writer)?;
+        self.bytes_written += bytes_written;
+
+        Ok(bytes_written)
     }
 
     /// Append a raw header and corresponding file data to the writer.
@@ -471,10 +474,13 @@ impl<W: Write + Sized> OdcBuilder<W> {
             return Err(Error::SizeMismatch);
         }
 
-        let written = header.write(&mut self.writer)?;
+        let bytes_written = header.write(&mut self.writer)?;
+        self.bytes_written += bytes_written;
         self.writer.write_all(data)?;
+        let data_len = data.len() as u64;
+        self.bytes_written += data_len;
 
-        Ok(written + data.len() as u64)
+        Ok(bytes_written + data_len)
     }
 
     /// Append a raw header and corresponding data from a reader to the writer.
@@ -489,13 +495,16 @@ impl<W: Write + Sized> OdcBuilder<W> {
         header: OdcHeader,
         reader: &mut impl Read,
     ) -> CpioResult<u64> {
-        let written = header.write(&mut self.writer)?;
-        let copied = std::io::copy(reader, &mut self.writer)?;
+        let bytes_written = header.write(&mut self.writer)?;
+        self.bytes_written += bytes_written;
+        let bytes_copied = std::io::copy(reader, &mut self.writer)?;
 
-        if copied != header.file_size {
+        if bytes_copied != header.file_size {
             Err(Error::SizeMismatch)
         } else {
-            Ok(written + copied)
+            self.bytes_written += bytes_copied;
+
+            Ok(bytes_written + bytes_copied)
         }
     }
 
@@ -609,20 +618,22 @@ impl<W: Write + Sized> OdcBuilder<W> {
             let count = header.write(&mut self.writer)?;
             self.bytes_written += count;
 
-            let mut padding = 0usize;
+            dbg!(self.bytes_written);
+
+            let mut padding_u64 = 0u64;
             let rem = (self.bytes_written as usize) % 512usize;
 
             if rem != 0 {
-                padding = 512usize - rem;
+                let padding = 512usize - rem;
+                padding_u64 = padding as u64;
                 let data = vec![0u8; padding];
                 self.writer.write_all(&data)?;
+                self.bytes_written += padding_u64;
             }
 
             self.finished = true;
 
-            let bytes_written = count + (padding as u64);
-            self.bytes_written = bytes_written;
-            Ok(bytes_written)
+            Ok(count + padding_u64)
         } else {
             Ok(0)
         }
