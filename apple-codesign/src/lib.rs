@@ -168,5 +168,8 @@ pub mod windows;
 #[cfg(feature = "yubikey")]
 pub mod yubikey;
 
+#[cfg(feature = "aws-kms")]
+pub mod aws_kms;
+
 #[cfg(feature = "pkcs11")]
 pub mod pkcs11;

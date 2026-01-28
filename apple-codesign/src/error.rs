@@ -368,6 +368,34 @@ pub enum AppleCodesignError {
     #[error("zip structs error: {0}")]
     ZipStructs(#[from] zip_structs::zip_error::ZipReadError),
 
+    #[error("AWS KMS error: {0}")]
+    AWSKMSError(String),
+
+    #[cfg(feature = "aws-kms")]
+    #[error("AWS KMS sign error: {0}")]
+    AWSKMSSignError(
+        Box<
+            aws_smithy_types::error::display::DisplayErrorContext<
+                aws_sdk_kms::error::SdkError<aws_sdk_kms::operation::sign::SignError>,
+            >,
+        >,
+    ),
+
+    #[cfg(feature = "aws-kms")]
+    #[error("AWS KMS get public key error: {0}")]
+    AWSKMSGetPublicKeyError(
+        Box<
+            aws_smithy_types::error::display::DisplayErrorContext<
+                aws_sdk_kms::error::SdkError<
+                    aws_sdk_kms::operation::get_public_key::GetPublicKeyError,
+                >,
+            >,
+        >,
+    ),
+
+    #[error("Selected private key is not usable: {0}")]
+    KeyNotUsable(String),
+
     #[error("PKCS11 error: {0}")]
     Pkcs11Error(String),
 
