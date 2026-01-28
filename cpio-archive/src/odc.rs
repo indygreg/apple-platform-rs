@@ -438,6 +438,18 @@ impl<W: Write + Sized> OdcBuilder<W> {
         Ok(bytes_written)
     }
 
+    /// Append a raw header, such as for a directory.
+    ///
+    /// The writer is written as-is.
+    ///
+    /// Automatic directory emission is not processed in this mode.
+    pub fn append_header(
+        &mut self,
+        header: OdcHeader,
+    ) -> CpioResult<u64> {
+        header.write(&mut self.writer)
+    }
+
     /// Append a raw header and corresponding file data to the writer.
     ///
     /// The writer and data are written as-is.
