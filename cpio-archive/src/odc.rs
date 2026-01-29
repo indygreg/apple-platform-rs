@@ -564,8 +564,8 @@ impl<W: Write + Sized> OdcBuilder<W> {
 
         bytes_written += header.write(&mut self.writer)?;
         bytes_written += std::io::copy(&mut fh, &mut self.writer)?;
-
         self.bytes_written += bytes_written;
+
         Ok(bytes_written)
     }
 
@@ -592,7 +592,6 @@ impl<W: Write + Sized> OdcBuilder<W> {
             bytes_written += self.append_file_from_data(path.display().to_string(), data, mode)?;
         }
 
-        self.bytes_written += bytes_written;
         Ok(bytes_written)
     }
 
