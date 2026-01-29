@@ -336,7 +336,7 @@ impl Notarizer {
 
         rt.block_on(fut).map_err(|e| {
             AppleCodesignError::AwsS3PutObject(
-                aws_smithy_types::error::display::DisplayErrorContext(e),
+                aws_smithy_types::error::display::DisplayErrorContext(e).into(),
             )
         })?;
 
