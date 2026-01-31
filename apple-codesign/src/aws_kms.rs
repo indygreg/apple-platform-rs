@@ -14,32 +14,140 @@
 //! Alternatively, you can create a CSR from the KMS public key and then self
 //! sign it.
 
+use std::io::BufRead;
+use std::io::BufReader;
+use std::io::Read;
+use std::process::Child;
+use std::process::Command;
+use std::process::Stdio;
 use std::sync::Arc;
 
 use aws_config::BehaviorVersion;
 use bcder::{decode::Constructed, Mode};
+use rand::Rng;
 use signature::Signer;
+use tempfile::TempDir;
 use x509_certificate::{
     rfc5280::SubjectPublicKeyInfo, EcdsaCurve, KeyAlgorithm, KeyInfoSigner, Sign, Signature,
     SignatureAlgorithm, X509CertificateError,
 };
 
+use aws_sdk_kms::types::KeySpec as AWSKeySpec;
 use aws_sdk_kms::types::SigningAlgorithmSpec as AWSSigningAlgorithm;
 
 use crate::{cryptography::PrivateKey, AppleCodesignError};
+
+fn key_algorithm_to_aws(key_alg: KeyAlgorithm) -> AWSKeySpec {
+    match key_alg {
+        KeyAlgorithm::Rsa => AWSKeySpec::Rsa2048,
+        KeyAlgorithm::Ecdsa(EcdsaCurve::Secp256r1) => AWSKeySpec::EccNistP256,
+        KeyAlgorithm::Ecdsa(EcdsaCurve::Secp384r1) => AWSKeySpec::EccNistP384,
+        KeyAlgorithm::Ed25519 => AWSKeySpec::EccNistEdwards25519,
+    }
+}
 
 pub struct KMSSigner {
     pub runtime: tokio::runtime::Runtime,
     client: aws_sdk_kms::Client,
 }
 
+pub struct TestKMSSigner {
+    process: Child,
+    _stderr_logger: std::thread::JoinHandle<()>,
+    #[allow(dead_code)]
+    tmpdir: TempDir,
+    pub signer: Arc<KMSSigner>,
+}
+
+impl TestKMSSigner {
+    /// Creates a test signing process for KMS
+    pub fn new(local_kms_exe: &str) -> Result<TestKMSSigner, AppleCodesignError> {
+        let tmpdir = TempDir::new()?;
+        let mut parts = None;
+        'trying: for attempt in 1..=5 {
+            if attempt == 5 {
+                return Err(AppleCodesignError::AWSKMSError(
+                    "Failed to start up local-kms".into(),
+                ));
+            }
+            let try_port = rand::thread_rng().gen_range(2000u16..65535);
+
+            let mut proc = Command::new(local_kms_exe)
+                .env("KMS_DATA_PATH", tmpdir.path())
+                .env("KMS_SEED_PATH", "/dev/null")
+                // TODO: this needs to be set somehow safely, I guess we can read
+                // the stderr and watch for the log line for starting
+                // successfully??
+                .env("PORT", try_port.to_string())
+                .stderr(Stdio::piped())
+                .spawn()?;
+            let pipe = proc.stderr.take().unwrap();
+            let mut buf_reader = BufReader::new(pipe);
+            let mut buf = String::new();
+
+            while let Ok(read) = buf_reader.read_line(&mut buf) {
+                println!("{}", buf);
+                if read == 0 {
+                    // EOF before we got a startup message, that seems bad
+                    continue 'trying;
+                }
+                if buf.contains("started on") {
+                    // we got one! we unfortunately can't drop the stderr for
+                    // the daemon as it will cause it to terminate, so we have
+                    // to have a thread reading it and throwing it away.
+                    let logger_thread = std::thread::spawn(move || {
+                        let mut buf = vec![0; 100];
+                        while let Ok(_) = buf_reader.read(&mut buf) {}
+                    });
+                    parts = Some((proc, try_port, logger_thread));
+                    break 'trying;
+                }
+                buf.clear();
+            }
+        }
+        let (process, port, logger_thread) = parts.unwrap();
+
+        let signer = KMSSigner::new_local(port)?;
+
+        Ok(TestKMSSigner {
+            _stderr_logger: logger_thread,
+            tmpdir,
+            process,
+            signer,
+        })
+    }
+}
+
+impl Drop for TestKMSSigner {
+    fn drop(&mut self) {
+        let _ = self.process.kill();
+    }
+}
+
 impl KMSSigner {
+    /// Creates a new KMSSigner for production use.
     pub fn new() -> Result<Arc<KMSSigner>, AppleCodesignError> {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()?;
 
         let config = runtime.block_on(aws_config::load_defaults(BehaviorVersion::v2026_01_12()));
+        let client = aws_sdk_kms::Client::new(&config);
+        Ok(Arc::new(KMSSigner { runtime, client }))
+    }
+
+    pub fn new_local(port: u16) -> Result<Arc<KMSSigner>, AppleCodesignError> {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()?;
+
+        let config = runtime.block_on(
+            aws_config::defaults(BehaviorVersion::v2026_01_12())
+                .endpoint_url(format!("http://localhost:{port}"))
+                .test_credentials()
+                .region("eu-west-2")
+                .load(),
+        );
         let client = aws_sdk_kms::Client::new(&config);
         Ok(Arc::new(KMSSigner { runtime, client }))
     }
@@ -85,6 +193,26 @@ impl AWSKMSKey {
             public_key_info: actual_pubkey,
             key_id,
         })
+    }
+
+    /// Creates a new signing key on KMS.
+    ///
+    /// This function is intended only for use in tests.
+    pub async fn create_key(
+        signer: Arc<KMSSigner>,
+        alg: KeyAlgorithm,
+    ) -> Result<(String, Self), AppleCodesignError> {
+        let new_key = signer
+            .client
+            .create_key()
+            .key_spec(key_algorithm_to_aws(alg))
+            .key_usage(aws_sdk_kms::types::KeyUsageType::SignVerify)
+            .send()
+            .await
+            .expect("creating kms key, testing only");
+
+        let key_id = &new_key.key_metadata.expect("key metadata missing").key_id;
+        Ok((key_id.clone(), Self::new(signer, key_id.clone()).await?))
     }
 
     pub fn public_key_info(&self) -> &SubjectPublicKeyInfo {
@@ -224,5 +352,27 @@ impl PrivateKey for AWSKMSKey {
 
     fn finish(&self) -> Result<(), AppleCodesignError> {
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn fixture() -> TestKMSSigner {
+        TestKMSSigner::new("/Users/jade/go/bin/local-kms").expect("making test kms signer")
+    }
+
+    #[test]
+    fn test_sign_foo() {
+        let test = fixture();
+        let key = test
+            .signer
+            .runtime
+            .block_on(AWSKMSKey::create_key(
+                test.signer.clone(),
+                KeyAlgorithm::Rsa,
+            ))
+            .unwrap();
     }
 }
