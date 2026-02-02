@@ -1007,7 +1007,7 @@ impl<'key> SigningSettings<'key> {
                         // The binary identifier should agree between all Mach-O within a
                         // universal binary. If we've already seen an identifier, use it
                         // implicitly.
-                        if initial_identifier != cd.ident.as_ref() {
+                        if initial_identifier != (cd.ident.as_ref() as &str) {
                             info!("identifiers within Mach-O do not agree (initial: {initial_identifier}, subsequent: {}); reconciling to {initial_identifier}",
                             cd.ident);
                             self.set_binary_identifier(scope_index.clone(), initial_identifier);
