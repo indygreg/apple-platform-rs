@@ -810,7 +810,7 @@ impl<'a> EntitlementsDerBlob<'a> {
 
     /// Attempt to parse and resolve the DER data into a plist.
     pub fn parse_der(&self) -> Result<plist::Value, AppleCodesignError> {
-        crate::plist_der::der_decode_plist(self.der.as_ref() as &[u8])
+        crate::plist_der::der_decode_plist(self.der.as_ref())
     }
 
     /// Parse the plist from DER and format to XML.
@@ -860,12 +860,12 @@ impl<'a> ConstraintsDerBlob<'a> {
 
     /// Attempt to parse and resolve the DER data into a plist.
     pub fn parse_der_plist(&self) -> Result<plist::Value> {
-        crate::plist_der::der_decode_plist(self.der.as_ref() as &[u8])
+        crate::plist_der::der_decode_plist(self.der.as_ref())
     }
 
     /// Attempt to parse DER into an [EncodedEnvironmentConstraints] instance.
     pub fn parse_encoded_constraints(&self) -> Result<EncodedEnvironmentConstraints> {
-        EncodedEnvironmentConstraints::from_der(self.der.as_ref() as &[u8])
+        EncodedEnvironmentConstraints::from_der(self.der.as_ref())
     }
 
     /// Parse the plist from DER and format to XML.
