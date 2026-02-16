@@ -469,6 +469,14 @@ impl<'a, 'key> BundleSigningContext<'a, 'key> {
     ) -> Result<(PathBuf, SignedMachOInfo), AppleCodesignError> {
         warn!("signing Mach-O file {}", bundle_rel_path.display());
 
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = std::fs::metadata(source_path)?.permissions();
+            perms.set_mode(0o755);
+            std::fs::set_permissions(source_path, perms)?;
+        }
+
         let macho_data = std::fs::read(source_path)?;
         let signer = MachOSigner::new(&macho_data)?;
 
@@ -722,6 +730,14 @@ impl SingleBundleSigner {
         // Seal the main executable.
         if let Some(exe) = main_exe {
             warn!("signing main executable {}", exe.relative_path().display());
+
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let mut perms = std::fs::metadata(exe.absolute_path())?.permissions();
+                perms.set_mode(0o755);
+                std::fs::set_permissions(exe.absolute_path(), perms)?;
+            }
 
             let macho_data = std::fs::read(exe.absolute_path())?;
             let signer = MachOSigner::new(&macho_data)?;
