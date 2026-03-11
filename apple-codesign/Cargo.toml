@@ -75,7 +75,7 @@ tempfile = "3.24.0"
 thiserror = "2.0.18"
 tokio = { version = "1.49.0", features = ["rt"] }
 tungstenite = { version = "0.28.0", features = ["rustls-tls-native-roots"] }
-uuid = { version = "1.19.0", features = ["v4"] }
+uuid = { version = "1.20.0", features = ["v4"] }
 walkdir = "2.5.0"
 x509 = "0.2.0"
 x509-certificate = "0.25.0"
