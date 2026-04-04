@@ -11,13 +11,13 @@
 use {
     crate::{CpioHeader, CpioReader, CpioResult, Error},
     chrono::{DateTime, Utc},
-    is_executable::IsExecutable,
     simple_file_manifest::{
         FileManifest, S_IFDIR, S_IRGRP, S_IROTH, S_IRUSR, S_IWUSR, S_IXGRP, S_IXOTH, S_IXUSR,
     },
     std::{
         collections::HashSet,
         ffi::CStr,
+        fs,
         io::{Read, Take, Write},
         path::Path,
     },
@@ -69,6 +69,33 @@ fn write_octal(value: u64, writer: &mut impl Write, size: usize) -> CpioResult<(
 
     Ok(())
 }
+
+/// permissions_to_u32 converts fs::Permissions objects to chmod integers.
+pub fn permissions_to_u32(permissions: fs::Permissions) -> u32 {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        permissions.mode()
+    }
+    #[cfg(windows)]
+    {
+        if permissions.readonly() {
+            0o444u32
+        } else {
+            0o666u32
+        }
+    }
+}
+
+/// GENERIC_DIRECTORY_MODE applies to auto generated directories.
+const GENERIC_DIRECTORY_MODE: u32 = S_IFDIR
+    | S_IRUSR
+    | S_IWUSR
+    | S_IXUSR
+    | S_IRGRP
+    | S_IXGRP
+    | S_IROTH
+    | S_IXOTH;
 
 /// Parsed portable ASCII format header.
 #[derive(Clone, Debug)]
@@ -297,12 +324,13 @@ pub struct OdcBuilder<W: Write + Sized> {
     default_uid: u32,
     default_gid: u32,
     default_mtime: DateTime<Utc>,
-    default_mode_file: u32,
-    default_mode_dir: u32,
+    default_mode_file: Option<u32>,
+    default_mode_dir: Option<u32>,
     auto_write_dirs: bool,
     seen_dirs: HashSet<String>,
     entry_count: u32,
     finished: bool,
+    bytes_written: u64,
 }
 
 impl<W: Write + Sized> OdcBuilder<W> {
@@ -313,29 +341,23 @@ impl<W: Write + Sized> OdcBuilder<W> {
             default_uid: 0,
             default_gid: 0,
             default_mtime: Utc::now(),
-            default_mode_file: S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH,
-            default_mode_dir: S_IFDIR
-                | S_IRUSR
-                | S_IWUSR
-                | S_IXUSR
-                | S_IRGRP
-                | S_IXGRP
-                | S_IROTH
-                | S_IXOTH,
+            default_mode_file: None,
+            default_mode_dir: None,
             auto_write_dirs: true,
             seen_dirs: HashSet::new(),
             entry_count: 0,
             finished: false,
+            bytes_written: 0,
         }
     }
 
     /// Set the default file mode to use for files.
-    pub fn default_mode_file(&mut self, mode: u32) {
+    pub fn default_mode_file(&mut self, mode: Option<u32>) {
         self.default_mode_file = mode;
     }
 
     /// Set the default file mode to use for directories.
-    pub fn default_mode_directory(&mut self, mode: u32) {
+    pub fn default_mode_directory(&mut self, mode: Option<u32>) {
         self.default_mode_dir = mode;
     }
 
@@ -372,7 +394,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
         OdcHeader {
             dev: 0,
             inode,
-            mode: self.default_mode_file,
+            mode: 0u32,
             uid: self.default_uid,
             gid: self.default_gid,
             nlink: 0,
@@ -407,13 +429,28 @@ impl<W: Write + Sized> OdcBuilder<W> {
 
             if !self.seen_dirs.contains(&dir) {
                 let mut header = self.next_header();
-                header.mode = self.default_mode_dir;
+                header.mode = self.default_mode_file.unwrap_or(GENERIC_DIRECTORY_MODE);
                 header.name = dir.clone();
 
                 bytes_written += header.write(&mut self.writer)?;
                 self.seen_dirs.insert(dir);
             }
         }
+
+        Ok(bytes_written)
+    }
+
+    /// Append a raw header, such as for a directory.
+    ///
+    /// The writer is written as-is.
+    ///
+    /// Automatic directory emission is not processed in this mode.
+    pub fn append_header(
+        &mut self,
+        header: OdcHeader,
+    ) -> CpioResult<u64> {
+        let bytes_written = header.write(&mut self.writer)?;
+        self.bytes_written += bytes_written;
 
         Ok(bytes_written)
     }
@@ -437,10 +474,13 @@ impl<W: Write + Sized> OdcBuilder<W> {
             return Err(Error::SizeMismatch);
         }
 
-        let written = header.write(&mut self.writer)?;
+        let bytes_written = header.write(&mut self.writer)?;
+        self.bytes_written += bytes_written;
         self.writer.write_all(data)?;
+        let data_len = data.len() as u64;
+        self.bytes_written += data_len;
 
-        Ok(written + data.len() as u64)
+        Ok(bytes_written + data_len)
     }
 
     /// Append a raw header and corresponding data from a reader to the writer.
@@ -455,13 +495,16 @@ impl<W: Write + Sized> OdcBuilder<W> {
         header: OdcHeader,
         reader: &mut impl Read,
     ) -> CpioResult<u64> {
-        let written = header.write(&mut self.writer)?;
-        let copied = std::io::copy(reader, &mut self.writer)?;
+        let bytes_written = header.write(&mut self.writer)?;
+        self.bytes_written += bytes_written;
+        let bytes_copied = std::io::copy(reader, &mut self.writer)?;
 
-        if copied != header.file_size {
+        if bytes_copied != header.file_size {
             Err(Error::SizeMismatch)
         } else {
-            Ok(written + copied)
+            self.bytes_written += bytes_copied;
+
+            Ok(bytes_written + bytes_copied)
         }
     }
 
@@ -486,6 +529,7 @@ impl<W: Write + Sized> OdcBuilder<W> {
         self.writer.write_all(data)?;
         bytes_written += data.len() as u64;
 
+        self.bytes_written += bytes_written;
         Ok(bytes_written)
     }
 
@@ -516,13 +560,11 @@ impl<W: Write + Sized> OdcBuilder<W> {
         let mut header = self.next_header();
         header.name = archive_path;
         header.file_size = metadata.len();
-
-        if path.is_executable() {
-            header.mode |= S_IXUSR | S_IXGRP | S_IXOTH;
-        }
+        header.mode = self.default_mode_file.unwrap_or(permissions_to_u32(metadata.permissions()));
 
         bytes_written += header.write(&mut self.writer)?;
         bytes_written += std::io::copy(&mut fh, &mut self.writer)?;
+        self.bytes_written += bytes_written;
 
         Ok(bytes_written)
     }
@@ -532,7 +574,19 @@ impl<W: Write + Sized> OdcBuilder<W> {
         let mut bytes_written = 0;
 
         for (path, entry) in manifest.iter_entries() {
-            let mode = if entry.is_executable() { 0o755 } else { 0o644 };
+            let metadata = path.metadata()?;
+            let mut mode = permissions_to_u32(metadata.permissions());
+
+            if metadata.is_file() {
+                if let Some(m) = self.default_mode_file {
+                    mode = m;
+                }
+            } else if metadata.is_dir() {
+                if let Some(m) = self.default_mode_dir {
+                    mode = m;
+                }
+            }
+
             let data = entry.resolve_content()?;
 
             bytes_written += self.append_file_from_data(path.display().to_string(), data, mode)?;
@@ -550,11 +604,33 @@ impl<W: Write + Sized> OdcBuilder<W> {
     pub fn finish(&mut self) -> CpioResult<u64> {
         if !self.finished {
             let mut header = self.next_header();
+            header.dev = 0u32;
+            header.mode = 0u32;
+            header.uid = 0u32;
+            header.gid = 0u32;
+            header.nlink = 1u32; // GNU compatibility
+            header.rdev = 0u32;
+            header.mtime = 0u32;
+            header.file_size = 0u64;
             header.name = TRAILER.to_string();
             let count = header.write(&mut self.writer)?;
+            self.bytes_written += count;
+
+            let block_size = 512usize;
+            let mut padding_u64 = 0u64;
+            let rem = (self.bytes_written as usize) % block_size;
+
+            if rem != 0 {
+                let padding = block_size - rem;
+                padding_u64 = padding as u64;
+                let data = vec![0u8; padding];
+                self.writer.write_all(&data)?;
+                self.bytes_written += padding_u64;
+            }
+
             self.finished = true;
 
-            Ok(count)
+            Ok(count + padding_u64)
         } else {
             Ok(0)
         }
