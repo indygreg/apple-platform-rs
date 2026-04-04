@@ -300,6 +300,7 @@ impl<'a> TryFrom<PrivateKeyInfo<'a>> for InMemoryPrivateKey {
                 let curve_oid = value.algorithm.parameters_oid()?;
 
                 match curve_oid.as_bytes() {
+                    // FIXME(jade): support more curves
                     x if x == OID_EC_P256.as_bytes() => {
                         let secret_key = ECSecretKey::<NistP256>::try_from(value)?;
 

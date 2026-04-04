@@ -279,7 +279,7 @@ impl ScopedSetting {
 /// Represents code signing settings.
 ///
 /// This type holds settings related to a single logical signing operation.
-/// Some settings (such as the signing key-pair are global). Other settings
+/// Some settings (such as the signing key-pair) are global. Other settings
 /// (such as the entitlements or designated requirement) can be applied on a
 /// more granular, scoped basis. The scoping of these lower-level settings is
 /// controlled via [SettingsScope]. If a setting is specified with a scope, it

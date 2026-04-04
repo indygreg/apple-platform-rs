@@ -386,6 +386,9 @@ impl Signer<Signature> for StoreCertificate {
 
 impl Sign for StoreCertificate {
     fn sign(&self, message: &[u8]) -> Result<(Vec<u8>, SignatureAlgorithm), X509CertificateError> {
+        // FIXME(jade): this is likely buggy and wrong: this is the signature
+        // algorithm of this *certificate*, which is not the algorithm used by
+        // the signature function. However, this function isn't used.
         let algorithm = self.signature_algorithm()?;
 
         Ok((self.try_sign(message)?.into(), algorithm))

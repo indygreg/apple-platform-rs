@@ -645,6 +645,10 @@ pub struct CertificateSource {
     pub pkcs11_key: Option<Pkcs11SigningKey>,
 
     #[command(flatten)]
+    #[serde(default, rename = "aws_kms", skip_serializing_if = "Option::is_none")]
+    pub aws_kms_key: Option<AWSKMSSigningKey>,
+
+    #[command(flatten)]
     #[serde(default, rename = "remote", skip_serializing_if = "Option::is_none")]
     pub remote_signing_key: Option<RemoteSigningKey>,
 
@@ -684,6 +688,10 @@ impl CertificateSource {
             res.push(key as &dyn KeySource);
         }
 
+        if let Some(key) = &self.aws_kms_key {
+            res.push(key as &dyn KeySource);
+        }
+
         if let Some(key) = &self.pkcs11_key {
             res.push(key as &dyn KeySource);
         }
@@ -716,6 +724,117 @@ impl CertificateSource {
         }
 
         Ok(res)
+    }
+}
+
+fn load_certificate_from_file(
+    cert_file: &PathBuf,
+) -> Result<CapturedX509Certificate, AppleCodesignError> {
+    let cert_data = std::fs::read(cert_file)?;
+
+    // Try PEM first
+    if let Ok(pem) = pem::parse(&cert_data) {
+        if pem.tag() == "CERTIFICATE" {
+            return CapturedX509Certificate::from_der(pem.contents()).map_err(|e| {
+                AppleCodesignError::Pkcs11Error(format!(
+                    "failed to parse PEM certificate from file {}: {}",
+                    cert_file.display(),
+                    e
+                ))
+            });
+        } else {
+            warn!(
+                "PEM file {} has tag '{}' but expected 'CERTIFICATE'; attempting DER parsing",
+                cert_file.display(),
+                pem.tag()
+            );
+        }
+    }
+
+    // Try DER
+    CapturedX509Certificate::from_der(cert_data).map_err(|e| {
+        AppleCodesignError::Pkcs11Error(format!(
+            "failed to parse certificate from file {}: {}",
+            cert_file.display(),
+            e
+        ))
+    })
+}
+
+#[derive(Args, Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AWSKMSSigningKey {
+    /// AWS KMS Key ID to sign with. For example:
+    /// - UUID: `1234abcd-12ab-34cd-56ef-1234567890ab`
+    /// - ARN: `arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab`
+    /// - Alias name: `alias/ExampleAlias`
+    /// - Alias ARN: `arn:aws:kms:us-east-2:111122223333:alias/ExampleAlias`
+    #[arg(long = "aws-kms-key-id")]
+    pub aws_key_id: Option<String>,
+
+    /// Path to certificate file (PEM/DER)
+    #[arg(long = "aws-kms-certificate-file", value_name = "PATH")]
+    pub aws_certificate_file: Option<PathBuf>,
+}
+
+impl KeySource for AWSKMSSigningKey {
+    #[cfg(feature = "aws-kms")]
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        // Load certificate from local file
+        let cert = if let Some(cert_file) = &self.aws_certificate_file {
+            // Load certificate from local file (similar to osslsigncode)
+            info!(
+                "loading certificate from local file: {}",
+                cert_file.display()
+            );
+            Some(load_certificate_from_file(cert_file)?)
+        } else {
+            // It is not an error to not have a certificate (e.g. you might be
+            // generating a CSR), and if it is required it will be enforced
+            // later.
+            None
+        };
+
+        let key_id = self
+            .aws_key_id
+            .as_ref()
+            .ok_or(AppleCodesignError::AWSKMSError(
+                "--aws-kms-key-id is required for signing with AWS KMS".to_owned(),
+            ))?;
+
+        let aws = crate::aws_kms::KMSSigner::new()?;
+
+        let key = aws.runtime.block_on(crate::aws_kms::AWSKMSKey::new(
+            aws.clone(),
+            key_id.to_owned(),
+        ))?;
+
+        if let Some(ref cert) = cert {
+            info!(
+                "loaded certificate: {}",
+                cert.subject_common_name()
+                    .unwrap_or_else(|| "unknown".into())
+            );
+            let expected_pubkey = &cert.tbs_certificate().subject_public_key_info;
+            if expected_pubkey != key.public_key_info() {
+                return Err(AppleCodesignError::KeyNotUsable(
+                    "Public key of given private key does not match the certificate".to_owned(),
+                ));
+            }
+        }
+
+        Ok(SigningCertificates {
+            keys: vec![Box::new(key)],
+            certs: cert.into_iter().collect(),
+        })
+    }
+
+    #[cfg(not(feature = "aws-kms"))]
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        if self.key_id.is_some() {
+            error!("AWS KMS support not available; ignoring --aws-kms-* arguments");
+        }
+        Ok(Default::default())
     }
 }
 
@@ -821,7 +940,7 @@ impl KeySource for Pkcs11SigningKey {
                 "loading certificate from local file: {}",
                 cert_file.display()
             );
-            self.load_certificate_from_file(cert_file)?
+            load_certificate_from_file(cert_file)?
         } else {
             return Err(AppleCodesignError::Pkcs11Error(
                 "--pkcs11-certificate-file is required for Apple code signing workflows".into(),
@@ -901,40 +1020,5 @@ impl Pkcs11SigningKey {
         } else {
             Ok(None)
         }
-    }
-
-    fn load_certificate_from_file(
-        &self,
-        cert_file: &PathBuf,
-    ) -> Result<CapturedX509Certificate, AppleCodesignError> {
-        let cert_data = std::fs::read(cert_file)?;
-
-        // Try PEM first
-        if let Ok(pem) = pem::parse(&cert_data) {
-            if pem.tag() == "CERTIFICATE" {
-                return CapturedX509Certificate::from_der(pem.contents()).map_err(|e| {
-                    AppleCodesignError::Pkcs11Error(format!(
-                        "failed to parse PEM certificate from file {}: {}",
-                        cert_file.display(),
-                        e
-                    ))
-                });
-            } else {
-                warn!(
-                    "PEM file {} has tag '{}' but expected 'CERTIFICATE'; attempting DER parsing",
-                    cert_file.display(),
-                    pem.tag()
-                );
-            }
-        }
-
-        // Try DER
-        CapturedX509Certificate::from_der(cert_data).map_err(|e| {
-            AppleCodesignError::Pkcs11Error(format!(
-                "failed to parse certificate from file {}: {}",
-                cert_file.display(),
-                e
-            ))
-        })
     }
 }
