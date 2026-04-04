@@ -603,14 +603,27 @@ impl CliCommand for GenerateSelfSignedCertificate {
         if let Some(path) = &self.p12_path {
             let password = get_pkcs12_password(self.p12_password.clone(), None::<PathBuf>)?;
 
-            let pfx = p12::PFX::new(
-                &cert.encode_der()?,
-                &key_pair.to_pkcs8_one_asymmetric_key_der(),
-                None,
-                &password,
-                "code-signing",
-            )
-            .ok_or_else(|| {
+            let chain = vec![p12_keystore::Certificate::from_der(&cert.encode_der()?).map_err(|e| {
+                AppleCodesignError::CliGeneralError(format!("error processing certificate: {e:?}").into())
+            })?];
+
+            let local_key_id = {
+                use sha2::{Digest, Sha256};
+                let mut hasher = Sha256::new();
+                hasher.update(&key_pair.to_pkcs8_one_asymmetric_key_der());
+                let hash = hasher.finalize();
+                hash[..8].to_vec()
+            };
+
+            let keychain = p12_keystore::PrivateKeyChain::new(&key_pair.to_pkcs8_one_asymmetric_key_der(), local_key_id, chain);
+
+            let entry = p12_keystore::KeyStoreEntry::PrivateKeyChain(keychain);
+
+            let mut keystore = p12_keystore::KeyStore::new();
+            keystore.add_entry("code-signing", entry);
+            let writer = keystore.writer(&password);
+
+            let pfx = writer.write().map_err(|_e| {
                 AppleCodesignError::CliGeneralError("failed to create PFX structure".into())
             })?;
 
@@ -619,7 +632,7 @@ impl CliCommand for GenerateSelfSignedCertificate {
             if let Some(parent) = path.parent() {
                 std::fs::create_dir_all(parent)?;
             }
-            std::fs::write(path, pfx.to_der())?;
+            std::fs::write(path, pfx)?;
 
             wrote_file = true;
         }
