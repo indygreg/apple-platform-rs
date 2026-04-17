@@ -77,7 +77,7 @@ tokio = { version = "1.52.1", features = ["rt"] }
 tungstenite = { version = "0.28.0", features = ["rustls-tls-native-roots"] }
 uuid = { version = "1.23.1", features = ["v4"] }
 walkdir = "2.5.0"
-x509 = "0.2.0"
+
 x509-certificate = "0.25.0"
 xml-rs = "1.0.0"
 yasna = "0.5.2"
