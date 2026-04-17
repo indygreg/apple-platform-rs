@@ -65,8 +65,10 @@ jobs:
               --remote-signer \
               --remote-public-key-pem-file ci/developer-id-application.pem \
               --code-signature-flags runtime \
-              dist/input/${{ github.event.inputs.exe_name }} \
-              dist/output/${{ github.event.inputs.exe_name }}
+              "dist/input/${EXE_NAME}" \
+              "dist/output/${EXE_NAME}"
+        env:
+          EXE_NAME: "${{ github.event.inputs.exe_name }}"
 
       - name: Upload
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
