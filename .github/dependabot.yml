@@ -7,9 +7,14 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "workspace: "
+    cooldown:
+      default-days: 7
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     commit-message:
       prefix: "ci: "
+    cooldown:
+      default-days: 7
