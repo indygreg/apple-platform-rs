@@ -32,6 +32,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: 'false'
 
       - name: Download rcodesign Linux executable
         uses: dawidd6/action-download-artifact@980d668e73c8252f062c5b3356914db466ba5d8e
