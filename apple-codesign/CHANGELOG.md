@@ -25,6 +25,7 @@ Released on ReleaseDate.
 * `minicbor` 0.25 -> 2.1.
 * `object` 0.26 -> 0.28.
 * `oid-registry` 0.7 -> 0.8.
+* `rasn` 0.20 -> 0.28.
 * `scroll` 0.12 -> 0.13.
 * `security-framework` 2.11 -> 3.5.
 * `tungstenite` 0.24 -> 0.28.

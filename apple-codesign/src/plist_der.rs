@@ -15,7 +15,7 @@ use {
         enc::Error as EncError,
         types::{
             fields::{Field, Fields},
-            Class, Constraints, Constructed, Integer, Tag,
+            Class, Constraints, Constructed, Identifier, Integer, Tag,
         },
         AsnType, Codec, Decode, Decoder, Encode, Encoder,
     },
@@ -40,35 +40,49 @@ impl AsnType for Dictionary {
     };
 }
 
-impl Constructed for Dictionary {
+impl Constructed<1> for Dictionary {
     // This is incorrect, but a required field is needed to be specified to
     // communicate to rasn it needs to know that there is fields to decode.
-    const FIELDS: Fields = Fields::from_static(&[Field::new_optional_type::<()>("key")]);
+    const FIELDS: Fields<1> = Fields::from_static([Field::new_optional_type::<()>(0, "key")]);
 }
 
 impl Encode for Dictionary {
-    fn encode_with_tag_and_constraints<E: Encoder>(
+    fn encode_with_tag_and_constraints<'encoder, E: Encoder<'encoder>>(
         &self,
         encoder: &mut E,
         tag: Tag,
         _constraints: Constraints,
+        identifier: Identifier,
     ) -> Result<(), E::Error> {
         // Sort it alphabetically.
         let map = self.0.iter().collect::<BTreeMap<_, _>>();
 
-        encoder.encode_sequence::<Self, _>(tag, |encoder| {
-            for (k, v) in map {
-                let wrapped = WrappedValue::try_from(v.clone())?;
+        encoder.encode_sequence::<1, 0, Dictionary, _>(
+            tag,
+            |encoder| {
+                for (k, v) in map {
+                    let wrapped = WrappedValue::try_from(v.clone())?;
 
-                encoder.encode_sequence::<Self, _>(Tag::SEQUENCE, |encoder| {
-                    encoder.encode_utf8_string(Tag::UTF8_STRING, Constraints::NONE, k)?;
-                    wrapped.encode(encoder)?;
-                    Ok(())
-                })?;
-            }
+                    encoder.encode_sequence::<2, 0, DictionaryEntry, _>(
+                        Tag::SEQUENCE,
+                        |encoder| {
+                            encoder.encode_utf8_string(
+                                Tag::UTF8_STRING,
+                                Constraints::NONE,
+                                k,
+                                Identifier::UTF8_STRING,
+                            )?;
+                            wrapped.encode(encoder)?;
+                            Ok(())
+                        },
+                        Identifier::SEQUENCE,
+                    )?;
+                }
 
-            Ok(())
-        })?;
+                Ok(())
+            },
+            identifier,
+        )?;
 
         Ok(())
     }
@@ -80,7 +94,7 @@ impl Decode for Dictionary {
         tag: Tag,
         _constraints: Constraints,
     ) -> Result<Self, D::Error> {
-        decoder.decode_sequence::<Self, _, _>(
+        decoder.decode_sequence::<_, _, _, _, _>(
             tag,
             Some(|| Self(plist::Dictionary::new())),
             |decoder| {
@@ -198,10 +212,10 @@ impl AsnType for WrappedPlist {
     };
 }
 
-impl Constructed for WrappedPlist {
-    const FIELDS: Fields = Fields::from_static(&[
-        Field::new_required_type::<Integer>("key"),
-        Field::new_required_type::<WrappedValue>("value"),
+impl Constructed<2> for WrappedPlist {
+    const FIELDS: Fields<2> = Fields::from_static([
+        Field::new_required_type::<Integer>(0, "key"),
+        Field::new_required_type::<WrappedValue>(1, "value"),
     ]);
 }
 
@@ -229,16 +243,26 @@ impl TryFrom<WrappedPlist> for Value {
 }
 
 impl Encode for WrappedPlist {
-    fn encode_with_tag_and_constraints<E: Encoder>(
+    fn encode_with_tag_and_constraints<'a, E: Encoder<'a>>(
         &self,
         encoder: &mut E,
         tag: Tag,
         _constraints: Constraints,
+        identifier: Identifier,
     ) -> Result<(), E::Error> {
-        encoder.encode_sequence::<Self, _>(tag, |encoder| {
-            encoder.encode_integer(Tag::INTEGER, Constraints::NONE, &Integer::from(1))?;
-            self.0.encode(encoder)
-        })?;
+        encoder.encode_sequence::<2, 0, WrappedPlist, _>(
+            tag,
+            |encoder| {
+                encoder.encode_integer(
+                    Tag::INTEGER,
+                    Constraints::NONE,
+                    &Integer::from(1),
+                    Identifier::INTEGER,
+                )?;
+                self.0.encode(encoder)
+            },
+            identifier,
+        )?;
 
         Ok(())
     }
@@ -250,7 +274,7 @@ impl Decode for WrappedPlist {
         tag: Tag,
         _constraints: Constraints,
     ) -> Result<Self, D::Error> {
-        decoder.decode_sequence::<Self, _, _>(tag, None::<fn() -> Self>, |decoder| {
+        decoder.decode_sequence::<_, _, _, _, _>(tag, None::<fn() -> Self>, |decoder| {
             let _: Integer = decoder.decode_integer(Tag::INTEGER, Constraints::NONE)?;
             let value = WrappedValue::decode(decoder)?;
 
@@ -269,8 +293,8 @@ impl AsnType for SetPlist {
     };
 }
 
-impl Constructed for SetPlist {
-    const FIELDS: Fields = Fields::from_static(&[Field::new_optional_type::<()>("key")]);
+impl Constructed<1> for SetPlist {
+    const FIELDS: Fields<1> = Fields::from_static([Field::new_optional_type::<()>(0, "key")]);
 }
 
 impl TryFrom<Value> for SetPlist {
@@ -302,7 +326,7 @@ impl Decode for SetPlist {
         tag: Tag,
         _constraints: Constraints,
     ) -> Result<Self, D::Error> {
-        decoder.decode_sequence::<Self, _, _>(tag, None::<fn() -> Self>, |decoder| {
+        decoder.decode_sequence::<_, _, _, _, _>(tag, None::<fn() -> Self>, |decoder| {
             let mut dict = plist::Dictionary::new();
 
             loop {
