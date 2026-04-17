@@ -14,7 +14,7 @@ Released on ReleaseDate.
   (#183)
 * Handle DER plists encoded as a SET. (#182)
 * Notarization network polling now handles some transient network errors. (#174)
-* MSRV 1.81 -> 1.88.
+* MSRV 1.81 -> 1.92.
 * `aws-smithy-http` 0.60 -> 0.62.
 * `cryptographic-message-syntax` 0.27 -> 0.28.
 * `dialoguer` 0.11 -> 0.12.

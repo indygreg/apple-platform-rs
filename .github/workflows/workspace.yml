@@ -13,7 +13,7 @@ jobs:
     uses: indygreg/actions/.github/workflows/rust-workspace-build-and-test.yml@1eaaf4707bbebceaecc842cd23245a007c31666a
     with:
       actions_ref: "1eaaf4707bbebceaecc842cd23245a007c31666a"
-      msrv: "1.88.0"
+      msrv: "1.92.0"
       sccache_s3_bucket: apple-platform-rs-sccache
       no_default_features: true
     secrets:

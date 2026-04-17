@@ -13,7 +13,7 @@ Released on ReleaseDate.
 * `Product`'s `id` field type `String` -> `Option<String>`.
 * `VolumeCheck`'s `script` field has been changed from `bool` -> `Option<bool>`.
   (#213)
-* MSRV 1.81 -> 1.88.
+* MSRV 1.81 -> 1.92.
 * `scroll` 0.12 -> 0.13.
 * `serde-xml-rs` 0.6. -> 0.8.
 

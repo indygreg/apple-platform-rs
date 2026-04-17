@@ -6,7 +6,7 @@
 
 Released on ReleaseDate.
 
-* MSRV 1.81 -> 1.88.
+* MSRV 1.81 -> 1.92.
 * `dirs` 5 -> 6.
 * `x509-certificate` 0.24 -> 0.25.
 
