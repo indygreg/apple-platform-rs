@@ -23,6 +23,8 @@ on:
         required: false
         default: main
 
+permissions: { }
+
 jobs:
   sign:
     name: Sign ${{ github.event.inputs.exe_name }}

@@ -8,6 +8,7 @@ on:
   schedule:
     - cron: '12 15 * * *'
   workflow_dispatch:
+permissions: { }
 jobs:
   build-and-test:
     uses: indygreg/actions/.github/workflows/rust-workspace-build-and-test.yml@1eaaf4707bbebceaecc842cd23245a007c31666a

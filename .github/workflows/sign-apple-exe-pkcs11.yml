@@ -7,6 +7,8 @@ env:
   PKCS11_PIN: "12345"
   KEY_LABEL: "mykey"
 
+permissions: { }
+
 jobs:
   sign:
     name: Test SoftHSM Code Signing
