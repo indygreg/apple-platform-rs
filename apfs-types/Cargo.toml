@@ -11,10 +11,10 @@ homepage = "https://github.com/indygreg/apple-platform-rs"
 repository = "https://github.com/indygreg/apple-platform-rs.git"
 
 [dependencies]
-bitflags = "2.10.0"
+bitflags = "2.11.1"
 bytes = { version = "1.11.1", optional = true, default-features = false }
-chrono = { version = "0.4.43", default-features = false }
-num_enum = { version = "0.7.5", features = ["complex-expressions"] }
+chrono = { version = "0.4.44", default-features = false }
+num_enum = { version = "0.7.6", features = ["complex-expressions"] }
 thiserror = "2.0.18"
 
 [dependencies.apfs-derive]
