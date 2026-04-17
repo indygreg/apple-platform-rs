@@ -36,7 +36,7 @@ jobs:
           persist-credentials: 'false'
 
       - name: Download rcodesign Linux executable
-        uses: dawidd6/action-download-artifact@980d668e73c8252f062c5b3356914db466ba5d8e
+        uses: dawidd6/action-download-artifact@09d0677378d50fef230b7cd4c0dea6dfe8883938
         with:
           repo: ${{github.repository}}
           workflow: '.github/workflows/rcodesign.yml'
@@ -47,7 +47,7 @@ jobs:
           path: bins/
 
       - name: Download artifact to sign
-        uses: dawidd6/action-download-artifact@980d668e73c8252f062c5b3356914db466ba5d8e
+        uses: dawidd6/action-download-artifact@09d0677378d50fef230b7cd4c0dea6dfe8883938
         with:
           repo: ${{ github.repository }}
           workflow: ${{ github.event.inputs.workflow }}
