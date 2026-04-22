@@ -381,8 +381,10 @@ pub enum AppleCodesignError {
     #[cfg(feature = "notarize")]
     #[error("s3 upload error: {0}")]
     AwsS3PutObject(
-        aws_smithy_types::error::display::DisplayErrorContext<
-            aws_sdk_s3::error::SdkError<aws_sdk_s3::operation::put_object::PutObjectError>,
+        Box<
+            aws_smithy_types::error::display::DisplayErrorContext<
+                aws_sdk_s3::error::SdkError<aws_sdk_s3::operation::put_object::PutObjectError>,
+            >,
         >,
     ),
 
@@ -396,10 +398,18 @@ pub enum AppleCodesignError {
     Plist(#[from] plist::Error),
 
     #[error("config error: {0:?}")]
-    Figment(#[from] figment::Error),
+    Figment(Box<figment::Error>),
 
     #[error("environment constraints: {0}")]
     EnvironmentConstraint(String),
+}
+
+/// Can't use `#[from]` because we have to box this; we are boxing it because it's
+/// >200 bytes and clippy doesn't like it.
+impl From<figment::Error> for AppleCodesignError {
+    fn from(err: figment::Error) -> Self {
+        Self::Figment(Box::new(err))
+    }
 }
 
 /// Result type for this library.
