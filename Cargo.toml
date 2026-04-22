@@ -11,5 +11,6 @@ members = [
     'apple-xar',
     'app-store-connect',
     'cpio-archive',
+    'apple-device-tree',
 ]
 resolver = "2"
