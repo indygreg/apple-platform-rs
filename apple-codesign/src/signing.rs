@@ -66,6 +66,15 @@ impl<'key> UnifiedSigner<'key> {
         let output_path = output_path.as_ref();
 
         warn!("signing {} as a Mach-O binary", input_path.display());
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let mut perms = std::fs::metadata(input_path)?.permissions();
+            perms.set_mode(0o755);
+            std::fs::set_permissions(input_path, perms)?;
+        }
+
         let macho_data = std::fs::read(input_path)?;
 
         let mut settings = self.settings.clone();
