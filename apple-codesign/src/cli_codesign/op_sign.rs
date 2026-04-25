@@ -31,6 +31,10 @@ use {
 
 const APPLE_TIMESTAMP_URL: &str = "http://timestamp.apple.com/ts01";
 
+/// Mach-O page size hard-coded by `macho_signing.rs`. Kept in sync with
+/// that file; `-P` accepts this exact value as a no-op.
+const DEFAULT_MACHO_PAGE_SIZE: u64 = 4096;
+
 pub fn run(args: &CodesignArgs) -> Result<(), AppleCodesignError> {
     reject_unsupported(args)?;
 
@@ -85,13 +89,16 @@ fn reject_unsupported(args: &CodesignArgs) -> Result<(), AppleCodesignError> {
         return Err(not_implemented("--preserve-metadata"));
     }
     if let Some(ps) = args.page_size {
-        // Pagesize has no knob in SigningSettings yet. Allow the common
-        // no-op of "pagesize equals the current default" if anyone ever
-        // passes it, but reject anything else so we never lie about
-        // honoring it.
-        return Err(not_implemented(&format!(
-            "-P / --pagesize (requested {ps})",
-        )));
+        // SigningSettings has no per-scope page-size knob yet, but
+        // macho_signing hard-codes 4096 (see macho_signing.rs:503), so
+        // `-P 4096` is a true no-op and we can accept it without lying
+        // about honoring the flag.  Anything else is rejected.
+        if ps != DEFAULT_MACHO_PAGE_SIZE {
+            return Err(not_implemented(&format!(
+                "-P / --pagesize {ps} (only {DEFAULT_MACHO_PAGE_SIZE} is honored today)",
+            )));
+        }
+        info!("--pagesize {ps} matches signer default; accepted as no-op");
     }
     if args.bundle_version.is_some() {
         return Err(not_implemented("--bundle-version"));

@@ -61,9 +61,11 @@ fn validate_constraint_requires_arg() {
 }
 
 #[test]
-fn sign_pagesize_is_not_implemented() {
+fn sign_pagesize_nondefault_is_not_implemented() {
+    // 8192 is not the signer's hard-coded page size, so we must refuse to
+    // pretend we honored it.
     let err = cli_codesign::main_impl(argv(&[
-        "-s", "-", "-P", "4096", "/nonexistent/path",
+        "-s", "-", "-P", "8192", "/nonexistent/path",
     ]))
     .unwrap_err();
     match err {
@@ -72,6 +74,27 @@ fn sign_pagesize_is_not_implemented() {
         }
         other => panic!("unexpected error: {other:?}"),
     }
+}
+
+#[test]
+fn sign_pagesize_default_is_accepted() {
+    // 4096 matches macho_signing.rs's hard-coded value, so the flag is a
+    // pure no-op and must not surface as "not implemented".  The signing
+    // attempt itself fails because /nonexistent/path doesn't exist, but
+    // that error must NOT mention pagesize.
+    let err = cli_codesign::main_impl(argv(&[
+        "-s", "-", "-P", "4096", "/nonexistent/path",
+    ]))
+    .unwrap_err();
+    let msg = format!("{err}");
+    assert!(
+        !msg.contains("pagesize"),
+        "default pagesize should be accepted as no-op; got: {msg}"
+    );
+    assert!(
+        !msg.contains("not yet implemented"),
+        "default pagesize should not stub out; got: {msg}"
+    );
 }
 
 #[test]
