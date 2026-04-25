@@ -11,3 +11,16 @@ pub fn run(_args: &CodesignArgs) -> Result<(), AppleCodesignError> {
             .into(),
     ))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hosting_is_not_implemented() {
+        let mut args = CodesignArgs::default();
+        args.operation = crate::cli_codesign::options::Operation::Hosting;
+        let err = run(&args).expect_err("hosting must error");
+        assert!(format!("{err}").contains("hosting-chain"));
+    }
+}
