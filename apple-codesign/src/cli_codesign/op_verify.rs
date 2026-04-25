@@ -80,8 +80,8 @@ pub fn run(args: &CodesignArgs) -> Result<(), AppleCodesignError> {
                 info!("{}: valid on disk", path.display());
             }
             Err(e) => {
-                eprintln!("{}: {}", path.display(), e);
                 if args.continue_on_error {
+                    eprintln!("{}: {}", path.display(), e);
                     first_error.get_or_insert(e);
                 } else {
                     return Err(e);

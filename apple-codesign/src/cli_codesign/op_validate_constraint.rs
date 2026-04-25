@@ -35,8 +35,8 @@ pub fn run(args: &CodesignArgs) -> Result<(), AppleCodesignError> {
                 info!("{}: constraint plist is valid", path.display());
             }
             Err(e) => {
-                eprintln!("{}: {}", path.display(), e);
                 if args.continue_on_error {
+                    eprintln!("{}: {}", path.display(), e);
                     worst.get_or_insert(e);
                 } else {
                     return Err(e);

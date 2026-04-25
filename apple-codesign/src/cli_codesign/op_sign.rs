@@ -58,8 +58,8 @@ pub fn run(args: &CodesignArgs) -> Result<(), AppleCodesignError> {
         };
 
         if let Err(e) = sign_one(path, args) {
-            eprintln!("{}: {}", path.display(), e);
             if args.continue_on_error {
+                eprintln!("{}: {}", path.display(), e);
                 first_error.get_or_insert(e);
             } else {
                 return Err(e);

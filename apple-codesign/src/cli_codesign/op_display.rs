@@ -59,8 +59,8 @@ pub fn run(args: &CodesignArgs) -> Result<(), AppleCodesignError> {
         match display_one(path, args) {
             Ok(()) => {}
             Err(e) => {
-                eprintln!("{}: {}", path.display(), e);
                 if args.continue_on_error {
+                    eprintln!("{}: {}", path.display(), e);
                     first_error.get_or_insert(e);
                 } else {
                     return Err(e);
@@ -133,12 +133,13 @@ fn print_entity(root: &Path, entity: &FileEntity, verbose: u8) {
             }
         }
         SignatureEntity::BundleCodeSignatureFile(kind) => {
-            println!(
-                "Bundle={} CodeSignatureFile={:?} sub_path={:?}",
-                root.display(),
-                kind,
-                entity.sub_path
-            );
+            let label = match kind {
+                crate::reader::CodeSignatureFile::ResourcesXml(_) => "CodeResources",
+                crate::reader::CodeSignatureFile::NotarizationTicket => "NotarizationTicket",
+                crate::reader::CodeSignatureFile::Other => "Other",
+            };
+            let sub = entity.sub_path.as_deref().unwrap_or("");
+            println!("Bundle={} kind={label} sub_path={sub}", root.display());
         }
         SignatureEntity::XarMember(_) | SignatureEntity::XarTableOfContents(_) => {
             println!("XarEntity={} sub_path={:?}", root.display(), entity.sub_path);
