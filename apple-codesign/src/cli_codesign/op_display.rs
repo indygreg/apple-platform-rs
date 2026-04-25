@@ -79,13 +79,21 @@ fn display_one(path: &Path, args: &CodesignArgs) -> Result<(), AppleCodesignErro
     let reader = SignatureReader::from_path(path)?;
     let entities = reader.entities()?;
 
+    // Apple's codesign -d resolves the full symlink chain (and on macOS
+    // expands /tmp into /private/tmp) before emitting `Executable=...`,
+    // so we match that.  Fall back to the original argv path if
+    // canonicalization is impossible — for instance when the user
+    // points at a path that doesn't exist on disk and we are operating
+    // on data we already loaded.
+    let display_path = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+
     if args.verbose >= 4 {
         serde_yaml::to_writer(std::io::stdout(), &entities)?;
         return Ok(());
     }
 
     for entity in &entities {
-        print_entity(path, entity, args.verbose);
+        print_entity(&display_path, entity, args.verbose);
     }
 
     // Side-channel outputs requested in codesign-compat style.
