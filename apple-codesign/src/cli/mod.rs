@@ -132,6 +132,25 @@ struct NotaryApi {
     #[arg(long, requires = "api_issuer")]
     /// App Store Connect API Key ID
     api_key: Option<String>,
+
+    /// Apple Developer ID (email address)
+    #[arg(
+        long,
+        conflicts_with = "api_key_path",
+        conflicts_with = "api_issuer",
+        conflicts_with = "api_key",
+        requires = "password",
+        requires = "team_id"
+    )]
+    apple_id: Option<String>,
+
+    /// Apple Developer account or app-specific password
+    #[arg(long, requires = "apple_id")]
+    password: Option<String>,
+
+    /// Apple Developer team ID
+    #[arg(long, requires = "apple_id")]
+    team_id: Option<String>,
 }
 
 #[cfg(feature = "notarize")]
@@ -142,6 +161,10 @@ impl NotaryApi {
             Notarizer::from_api_key_file(api_key_path)
         } else if let (Some(issuer), Some(key)) = (&self.api_issuer, &self.api_key) {
             Notarizer::from_api_key_id(issuer, key)
+        } else if let (Some(username), Some(password), Some(team_id)) =
+            (&self.apple_id, &self.password, &self.team_id)
+        {
+            Notarizer::from_username_password(username, password, team_id)
         } else {
             Err(AppleCodesignError::NotarizeNoAuthCredentials)
         }

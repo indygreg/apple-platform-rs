@@ -152,6 +152,19 @@ impl Notarizer {
         }
     }
 
+    /// Construct an instance from a username and password.
+    pub fn from_username_password(
+        username: impl ToString,
+        password: impl ToString,
+        team_id: impl ToString,
+    ) -> Result<Self, AppleCodesignError> {
+        Ok(Self::new(ConnectTokenEncoder::from_username_password(
+            username.to_string(),
+            password.to_string(),
+            team_id.to_string(),
+        )))
+    }
+
     /// Construct an instance from an API issuer ID and API key.
     pub fn from_api_key_id(
         issuer_id: impl ToString,
