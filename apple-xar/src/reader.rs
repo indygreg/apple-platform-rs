@@ -42,7 +42,18 @@ impl<R: Read + Seek + Sized + Debug> XarReader<R> {
     pub fn new(mut reader: R) -> XarResult<Self> {
         let header = reader.ioread_with::<XarHeader>(scroll::BE)?;
 
-        let mut header_extra = vec![0u8; header.size as usize - 28];
+        // The header magic must contain `xar!`.
+        if header.magic != u32::from_be_bytes(*b"xar!") {
+            return Err(Error::InvalidFileId);
+        }
+
+        // The header must be at least 28 bytes.
+        if header.size < 28 {
+            return Err(Error::InvalidFileId);
+        }
+
+        let mut header_extra = vec![];
+        header_extra.try_reserve(header.size as usize - 28)?;
         reader.read_exact(&mut header_extra)?;
 
         // Following the header is a zlib compressed table of contents.
@@ -52,7 +63,8 @@ impl<R: Read + Seek + Sized + Debug> XarReader<R> {
         let toc_reader = reader.take(header.toc_length_compressed);
         let mut toc_reader = flate2::read::ZlibDecoder::new(toc_reader);
 
-        let mut toc_data = Vec::with_capacity(header.toc_length_uncompressed as _);
+        let mut toc_data = vec![];
+        toc_data.try_reserve(header.toc_length_uncompressed as _)?;
         toc_reader.read_to_end(&mut toc_data)?;
 
         let mut reader = toc_reader.into_inner().into_inner();
