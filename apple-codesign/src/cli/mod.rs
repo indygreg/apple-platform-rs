@@ -829,6 +829,10 @@ struct NotarySubmit {
     #[arg(long, default_value = "600")]
     max_wait_seconds: u64,
 
+    /// Interval in seconds between polling for the upload result
+    #[arg(long, default_value = "3")]
+    poll_interval_seconds: u64,
+
     /// Staple the notarization ticket after successful upload (implies --wait)
     #[arg(long)]
     staple: bool,
@@ -850,7 +854,9 @@ impl CliCommand for NotarySubmit {
         } else {
             None
         };
-        let notarizer = self.api.notarizer()?;
+        let mut notarizer = self.api.notarizer()?;
+        notarizer
+            .set_wait_poll_interval(std::time::Duration::from_secs(self.poll_interval_seconds));
 
         let upload = notarizer.notarize_path(&self.path, wait_limit)?;
 
@@ -879,6 +885,10 @@ struct NotaryWait {
     #[arg(long, default_value = "600")]
     max_wait_seconds: u64,
 
+    /// Interval in seconds between polling for the upload result
+    #[arg(long, default_value = "3")]
+    poll_interval_seconds: u64,
+
     /// The ID of the previous submission to wait on
     submission_id: String,
 
@@ -890,7 +900,9 @@ struct NotaryWait {
 impl CliCommand for NotaryWait {
     fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
         let wait_duration = std::time::Duration::from_secs(self.max_wait_seconds);
-        let notarizer = self.api.notarizer()?;
+        let mut notarizer = self.api.notarizer()?;
+        notarizer
+            .set_wait_poll_interval(std::time::Duration::from_secs(self.poll_interval_seconds));
 
         notarizer.wait_on_notarization_and_fetch_log(&self.submission_id, wait_duration)?;
 

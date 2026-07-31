@@ -53,11 +53,16 @@ Options:
           
           If not specified, the implicit "default" profile is loaded.
 
-      --staple
-          Staple the notarization ticket after successful upload (implies --wait)
+      --poll-interval-seconds <POLL_INTERVAL_SECONDS>
+          Interval in seconds between polling for the upload result
+          
+          [default: 3]
 
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times
+
+      --staple
+          Staple the notarization ticket after successful upload (implies --wait)
 
       --api-key-file <PATH>
           Path to a JSON file containing the API Key
