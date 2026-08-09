@@ -59,6 +59,9 @@ pub enum Error {
     #[cfg(feature = "signing")]
     #[error("HTTP error: {0}")]
     Reqwest(#[from] reqwest::Error),
+
+    #[error("allocation error: {0}")]
+    TryReserve(#[from] std::collections::TryReserveError),
 }
 
 pub type XarResult<T> = std::result::Result<T, Error>;
