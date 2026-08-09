@@ -152,6 +152,11 @@ impl Notarizer {
         }
     }
 
+    /// Set how long to wait between polling the server for upload status.
+    pub fn set_wait_poll_interval(&mut self, interval: Duration) {
+        self.wait_poll_interval = interval;
+    }
+
     /// Construct an instance from an API issuer ID and API key.
     pub fn from_api_key_id(
         issuer_id: impl ToString,
