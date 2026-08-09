@@ -22,7 +22,7 @@ use {
         error::AppleCodesignError,
     },
     apple_bundles::DirectoryBundle,
-    log::{debug, error, info, warn},
+    log::{debug, info, warn},
     plist::{Dictionary, Value},
     std::{
         cmp::Ordering,
@@ -1182,32 +1182,17 @@ impl CodeResourcesBuilder {
                     }
 
                     // Nested flag means the file should itself be signable.
-                    if rule.nested {
-                        if crate::reader::path_is_macho(path)? {
-                            info!("sealing nested Mach-O binary: {}", rel_path.display());
+                    if rule.nested && crate::reader::path_is_macho(path)? {
+                        info!("sealing nested Mach-O binary: {}", rel_path.display());
 
-                            self.seal_rules2_nested_macho(
-                                path,
-                                rel_path,
-                                &rel_path_normalized,
-                                &root_rel_path_normalized,
-                                context,
-                                rule.optional,
-                            )?;
-                        } else {
-                            // TODO implement this?
-                            // The logical intent is to sign and seal the nested entity.
-                            // But if we're not a directory bundle and not a Mach-O, I'm
-                            // unsure how to convey that seal. Maybe other entities like
-                            // DMG and pkg installers can have their signature digest
-                            // encapsulated in a cdhash?
-                            error!(
-                                "encountered a non Mach-O file with a nested rule: {}",
-                                rel_path.display()
-                            );
-                            error!("we do not know how to handle this scenario; either your bundle layout is invalid or you found a bug in this program");
-                            error!("if the bundle signs and verifies with Apple's tooling, consider reporting this issue");
-                        }
+                        self.seal_rules2_nested_macho(
+                            path,
+                            rel_path,
+                            &rel_path_normalized,
+                            &root_rel_path_normalized,
+                            context,
+                            rule.optional,
+                        )?;
                     } else {
                         self.seal_rules2_file(
                             path,
