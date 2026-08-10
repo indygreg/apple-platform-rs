@@ -8,7 +8,9 @@
 
 use {
     crate::Result,
+    base64::{engine::general_purpose::STANDARD, Engine},
     jsonwebtoken::{Algorithm, EncodingKey, Header},
+    reqwest::blocking::Client,
     serde::{Deserialize, Serialize},
     std::{path::Path, time::SystemTime},
     thiserror::Error,
@@ -25,6 +27,8 @@ struct ConnectTokenRequest {
 /// A JWT Token for use with App Store Connect API.
 pub type AppStoreConnectToken = String;
 
+/// A factory for App Store Connect API tokens.
+///
 /// Represents a private key used to create JWT tokens for use with App Store Connect.
 ///
 /// See https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api
@@ -42,13 +46,30 @@ pub type AppStoreConnectToken = String;
 /// All these are issued by Apple. You can log in to App Store Connect and see/manage your keys
 /// at https://appstoreconnect.apple.com/access/api.
 #[derive(Clone)]
-pub struct ConnectTokenEncoder {
-    key_id: String,
-    issuer_id: String,
-    encoding_key: EncodingKey,
+pub enum ConnectTokenEncoder {
+    JwtEncodingKey {
+        key_id: String,
+        issuer_id: String,
+        encoding_key: EncodingKey,
+    },
+
+    UsernamePassword {
+        email: String,
+        password: String,
+        team_id: String,
+    },
 }
 
 impl ConnectTokenEncoder {
+    /// Construct an instance from a username, password and team ID.
+    pub fn from_username_password(email: String, password: String, team_id: String) -> Self {
+        Self::UsernamePassword {
+            email,
+            password,
+            team_id,
+        }
+    }
+
     /// Construct an instance from an [EncodingKey] instance.
     ///
     /// This is the lowest level API and ultimately what all constructors use.
@@ -57,7 +78,7 @@ impl ConnectTokenEncoder {
         issuer_id: String,
         encoding_key: EncodingKey,
     ) -> Self {
-        Self {
+        Self::JwtEncodingKey {
             key_id,
             issuer_id,
             encoding_key,
@@ -123,30 +144,79 @@ impl ConnectTokenEncoder {
     /// Using the private key and key metadata bound to this instance, we issue a new JWT
     /// for the requested duration.
     pub fn new_token(&self, duration: u64) -> Result<AppStoreConnectToken> {
-        let header = Header {
-            kid: Some(self.key_id.clone()),
-            alg: Algorithm::ES256,
-            ..Default::default()
-        };
+        match self {
+            Self::JwtEncodingKey {
+                key_id,
+                issuer_id,
+                encoding_key,
+            } => {
+                let header = Header {
+                    kid: Some(key_id.clone()),
+                    alg: Algorithm::ES256,
+                    ..Default::default()
+                };
 
-        let now = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .expect("calculating UNIX time should never fail")
-            .as_secs();
+                let now = SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .expect("calculating UNIX time should never fail")
+                    .as_secs();
 
-        let claims = ConnectTokenRequest {
-            iss: self.issuer_id.clone(),
-            iat: now,
-            exp: now + duration,
-            aud: "appstoreconnect-v1".to_string(),
-        };
+                let claims = ConnectTokenRequest {
+                    iss: issuer_id.clone(),
+                    iat: now,
+                    exp: now + duration,
+                    aud: "appstoreconnect-v1".to_string(),
+                };
 
-        let token = jsonwebtoken::encode(&header, &claims, &self.encoding_key)?;
+                Ok(jsonwebtoken::encode(&header, &claims, encoding_key)?)
+            }
 
-        Ok(token)
+            Self::UsernamePassword {
+                email,
+                password,
+                team_id,
+            } => Ok(fetch_token_asp(email, password, team_id)?),
+        }
     }
 }
 
 #[derive(Clone, Copy, Debug, Error)]
 #[error("no app store connect api key found")]
 pub struct MissingApiKey;
+
+/// Fetch an App Store Connect API token using a username, password and team ID.
+///
+/// Uses the `https://appstoreconnect.apple.com/notary/v2/asp` endpoint.
+fn fetch_token_asp(email: &str, password: &str, team_id: &str) -> Result<String> {
+    #[derive(Deserialize)]
+    struct AspResponse {
+        data: AspData,
+    }
+
+    #[derive(Deserialize)]
+    struct AspData {
+        attributes: AspAttributes,
+    }
+
+    #[derive(Deserialize)]
+    struct AspAttributes {
+        token: String,
+    }
+
+    let res = Client::new()
+        .get("https://appstoreconnect.apple.com/notary/v2/asp")
+        .header("Accept", "application/json")
+        .header("X-Developer-Team-ID", team_id)
+        .header(
+            "X-Developer-Authorization",
+            format!(
+                "Basic {}",
+                STANDARD.encode(format!("{}:{}", email, password))
+            ),
+        )
+        .send()?
+        .error_for_status()?
+        .json::<AspResponse>()?;
+
+    Ok(res.data.attributes.token)
+}
