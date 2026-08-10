@@ -110,6 +110,38 @@ pub fn path_is_macho(path: impl AsRef<Path>) -> Result<bool, AppleCodesignError>
     Ok(MachOType::from_path(path)?.is_some())
 }
 
+/// Whether the file at `path` is a Mach-O that can actually be code-signed.
+///
+/// A file can carry Mach-O or fat/universal magic yet not be signable:
+/// a static archive like `libclang_rt.osx.a` is an `ar` archive with a fat
+/// magic but zero Mach-O slices, and files like dSYM DWARF companions parse
+/// as Mach-O but cannot hold a code signature. Apple's `codesign` seals such
+/// files as ordinary bundle resources. Use this (not [`path_is_macho`]) to
+/// decide whether to *sign* a file within a bundle.
+pub fn path_is_signable_macho(path: impl AsRef<Path>) -> Result<bool, AppleCodesignError> {
+    let path = path.as_ref();
+    if !path_is_macho(path)? {
+        return Ok(false);
+    }
+    let data = std::fs::read(path)?;
+    let machos = match MachFile::parse(&data) {
+        Ok(m) => m,
+        Err(_) => return Ok(false),
+    };
+
+    // Signable means there is at least one Mach-O slice and every slice is
+    // capable of holding a code signature.
+    let mut signable = false;
+    for macho in machos {
+        if macho.check_signing_capability().is_err() {
+            return Ok(false);
+        }
+        signable = true;
+    }
+
+    Ok(signable)
+}
+
 /// Describes the type of entity at a path.
 ///
 /// This represents a best guess.

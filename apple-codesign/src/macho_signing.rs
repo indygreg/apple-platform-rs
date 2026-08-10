@@ -323,6 +323,19 @@ impl<'data> MachOSigner<'data> {
     pub fn new(macho_data: &'data [u8]) -> Result<Self, AppleCodesignError> {
         let machos = MachFile::parse(macho_data)?.into_iter().collect::<Vec<_>>();
 
+        // A fat/universal container with no Mach-O architectures (e.g. a
+        // universal *static archive* such as libclang_rt.osx.a, whose members
+        // are `ar` archives rather than Mach-O binaries) parses fine but
+        // yields no signable binaries. Reject it here so signing code can
+        // assume at least one binary is present.
+        if machos.is_empty() {
+            return Err(AppleCodesignError::InvalidBinary(
+                "no Mach-O architectures found to sign; the input is not a signable Mach-O \
+                 binary (e.g. a fat/universal static archive)"
+                    .to_string(),
+            ));
+        }
+
         Ok(Self { machos })
     }
 

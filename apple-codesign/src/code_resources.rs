@@ -1368,7 +1368,7 @@ impl CodeResourcesBuilder {
             // to behave like Apple's `codesign` and that tool only signs the bundle's
             // "main" Mach-O binary, not other binaries.
             let sign_macho = need_install
-                && crate::reader::path_is_macho(full_path)?
+                && crate::reader::path_is_signable_macho(full_path)?
                 && !context
                     .settings
                     .path_exclusion_pattern_matches(root_rel_path)
