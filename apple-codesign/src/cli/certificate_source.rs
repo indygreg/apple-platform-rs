@@ -34,6 +34,9 @@ use {
     cryptoki::context::{CInitializeArgs, CInitializeFlags, Pkcs11},
 };
 
+#[cfg(feature = "aws-kms")]
+use crate::aws_kms::AwsKmsPrivateKey;
+
 #[cfg(target_os = "macos")]
 use crate::macos::{keychain_find_code_signing_certificates, KeychainDomain};
 
@@ -645,6 +648,10 @@ pub struct CertificateSource {
     pub pkcs11_key: Option<Pkcs11SigningKey>,
 
     #[command(flatten)]
+    #[serde(default, rename = "aws_kms", skip_serializing_if = "Option::is_none")]
+    pub aws_kms_key: Option<AwsKmsSigningKey>,
+
+    #[command(flatten)]
     #[serde(default, rename = "remote", skip_serializing_if = "Option::is_none")]
     pub remote_signing_key: Option<RemoteSigningKey>,
 
@@ -688,6 +695,10 @@ impl CertificateSource {
             res.push(key as &dyn KeySource);
         }
 
+        if let Some(key) = &self.aws_kms_key {
+            res.push(key as &dyn KeySource);
+        }
+
         if let Some(key) = &self.remote_signing_key {
             res.push(key as &dyn KeySource);
         }
@@ -716,6 +727,90 @@ impl CertificateSource {
         }
 
         Ok(res)
+    }
+}
+
+#[derive(Args, Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct AwsKmsSigningKey {
+    /// AWS KMS key ID, key ARN, or alias ARN of an asymmetric signing key
+    #[arg(
+        id = "aws_kms_key_id",
+        long = "aws-kms-key",
+        value_name = "KEY ID OR ARN"
+    )]
+    pub key_id: Option<String>,
+
+    /// Path to file containing the X.509 certificate (PEM or DER) paired with the KMS key
+    #[arg(
+        id = "aws_kms_certificate_file",
+        long = "aws-kms-certificate-file",
+        value_name = "PATH"
+    )]
+    pub certificate_file: Option<PathBuf>,
+
+    /// AWS region the KMS key resides in (overrides environment / profile)
+    #[arg(id = "aws_kms_region", long = "aws-kms-region", value_name = "REGION")]
+    pub region: Option<String>,
+}
+
+impl KeySource for AwsKmsSigningKey {
+    #[cfg(feature = "aws-kms")]
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        let key_id = match &self.key_id {
+            Some(key_id) => key_id.clone(),
+            None => return Ok(Default::default()),
+        };
+
+        // The certificate is optional: operations like CSR generation only
+        // require the key pair. Signing operations will error later if no
+        // certificate is registered.
+        let cert = if let Some(cert_file) = &self.certificate_file {
+            let cert_data = std::fs::read(cert_file)?;
+
+            // Accept either PEM or DER certificate data.
+            let cert = if let Ok(pem) = pem::parse(&cert_data) {
+                if pem.tag() != "CERTIFICATE" {
+                    return Err(AppleCodesignError::AwsKms(format!(
+                        "PEM file {} has tag '{}' but expected 'CERTIFICATE'",
+                        cert_file.display(),
+                        pem.tag()
+                    )));
+                }
+
+                CapturedX509Certificate::from_der(pem.contents())?
+            } else {
+                CapturedX509Certificate::from_der(cert_data)?
+            };
+
+            info!(
+                "loaded certificate: {}",
+                cert.subject_common_name()
+                    .unwrap_or_else(|| "unknown".into())
+            );
+
+            Some(cert)
+        } else {
+            None
+        };
+
+        let key = AwsKmsPrivateKey::new(key_id, cert.clone(), self.region.clone())?;
+
+        warn!("using AWS KMS key {}", key.key_id());
+
+        Ok(SigningCertificates {
+            keys: vec![Box::new(key)],
+            certs: cert.into_iter().collect(),
+        })
+    }
+
+    #[cfg(not(feature = "aws-kms"))]
+    fn resolve_certificates(&self) -> Result<SigningCertificates, AppleCodesignError> {
+        if self.key_id.is_some() {
+            error!("AWS KMS support not available; ignoring --aws-kms-* arguments");
+        }
+
+        Ok(Default::default())
     }
 }
 

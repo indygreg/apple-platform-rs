@@ -44,7 +44,22 @@ pub struct UnifiedApiKey {
     key_id: String,
 
     /// Base64 encoded DER of ECDSA private key material.
-    private_key: String,
+    ///
+    /// Mutually exclusive with `aws_kms_key`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    private_key: Option<String>,
+
+    /// AWS KMS key ID, key ARN, or alias ARN holding the private key.
+    ///
+    /// When set, signing operations are performed remotely via AWS KMS and
+    /// this file contains no secret material. Mutually exclusive with
+    /// `private_key`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    aws_kms_key: Option<String>,
+
+    /// AWS region of the KMS key (optional; overrides environment / profile).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    aws_kms_region: Option<String>,
 }
 
 impl UnifiedApiKey {
@@ -70,8 +85,30 @@ impl UnifiedApiKey {
         Ok(Self {
             issuer_id: issuer_id.to_string(),
             key_id: key_id.to_string(),
-            private_key,
+            private_key: Some(private_key),
+            aws_kms_key: None,
+            aws_kms_region: None,
         })
+    }
+
+    /// Construct an instance referencing a private key held in AWS KMS.
+    ///
+    /// The resulting instance (and its JSON serialization) contains no
+    /// secret material: signing requires AWS credentials authorized to
+    /// use the referenced KMS key.
+    pub fn from_aws_kms_key(
+        issuer_id: impl ToString,
+        key_id: impl ToString,
+        aws_kms_key: impl ToString,
+        aws_kms_region: Option<String>,
+    ) -> Self {
+        Self {
+            issuer_id: issuer_id.to_string(),
+            key_id: key_id.to_string(),
+            private_key: None,
+            aws_kms_key: Some(aws_kms_key.to_string()),
+            aws_kms_region,
+        }
     }
 
     /// Construct an instance from serialized JSON.
@@ -122,11 +159,39 @@ impl TryFrom<UnifiedApiKey> for ConnectTokenEncoder {
     type Error = anyhow::Error;
 
     fn try_from(value: UnifiedApiKey) -> Result<Self> {
-        let der = STANDARD_ENGINE
-            .decode(value.private_key)
-            .context("invalid unified api key")?;
+        if let Some(private_key) = value.private_key {
+            let der = STANDARD_ENGINE
+                .decode(private_key)
+                .context("invalid unified api key")?;
 
-        Self::from_ecdsa_der(value.key_id, value.issuer_id, &der)
+            return Self::from_ecdsa_der(value.key_id, value.issuer_id, &der);
+        }
+
+        if let Some(kms_key) = value.aws_kms_key {
+            #[cfg(feature = "aws-kms")]
+            {
+                let signer =
+                    crate::aws_kms::AwsKmsEs256Signer::new(kms_key, value.aws_kms_region)?;
+
+                return Ok(Self::from_es256_signer(
+                    value.key_id,
+                    value.issuer_id,
+                    std::sync::Arc::new(signer),
+                ));
+            }
+
+            #[cfg(not(feature = "aws-kms"))]
+            {
+                return Err(anyhow::anyhow!(
+                    "unified api key references AWS KMS key {kms_key} but AWS KMS support \
+                     is not compiled in (enable the `aws-kms` Cargo feature)"
+                ));
+            }
+        }
+
+        Err(anyhow::anyhow!(
+            "unified api key defines neither `private_key` nor `aws_kms_key`"
+        ))
     }
 }
 

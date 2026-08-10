@@ -8,11 +8,27 @@
 
 use {
     crate::Result,
+    base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine},
     jsonwebtoken::{Algorithm, EncodingKey, Header},
     serde::{Deserialize, Serialize},
-    std::{path::Path, time::SystemTime},
+    std::{path::Path, sync::Arc, time::SystemTime},
     thiserror::Error,
 };
+
+/// A signer capable of producing ES256 (ECDSA P-256 + SHA-256) JWT signatures.
+///
+/// Implementations sign the JWS *signing input* (the
+/// `base64url(header) + "." + base64url(claims)` byte string) and return the
+/// raw 64 byte `r || s` signature (NOT ASN.1 DER encoded), as required by
+/// RFC 7518 for the `ES256` algorithm.
+///
+/// This abstraction allows JWT signing keys to live in remote key stores
+/// (HSMs, cloud KMS services, etc) without exposing private key material.
+pub trait Es256Signer: Send + Sync {
+    /// Compute the ES256 signature of `message`, returning the raw 64 byte
+    /// `r || s` encoding.
+    fn sign_es256(&self, message: &[u8]) -> Result<Vec<u8>>;
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct ConnectTokenRequest {
@@ -42,16 +58,25 @@ pub type AppStoreConnectToken = String;
 /// All these are issued by Apple. You can log in to App Store Connect and see/manage your keys
 /// at https://appstoreconnect.apple.com/access/api.
 #[derive(Clone)]
+enum TokenSigningKey {
+    /// A private key held in memory, signed via the jsonwebtoken crate.
+    EncodingKey(EncodingKey),
+    /// An external signer (e.g. a cloud KMS or HSM).
+    Custom(Arc<dyn Es256Signer>),
+}
+
+#[derive(Clone)]
 pub struct ConnectTokenEncoder {
     key_id: String,
     issuer_id: String,
-    encoding_key: EncodingKey,
+    signing_key: TokenSigningKey,
 }
 
 impl ConnectTokenEncoder {
     /// Construct an instance from an [EncodingKey] instance.
     ///
-    /// This is the lowest level API and ultimately what all constructors use.
+    /// This is the lowest level API for in-memory keys and what all
+    /// in-memory key constructors use.
     pub fn from_jwt_encoding_key(
         key_id: String,
         issuer_id: String,
@@ -60,7 +85,23 @@ impl ConnectTokenEncoder {
         Self {
             key_id,
             issuer_id,
-            encoding_key,
+            signing_key: TokenSigningKey::EncodingKey(encoding_key),
+        }
+    }
+
+    /// Construct an instance from an external [Es256Signer].
+    ///
+    /// Use this when the private key lives in a remote key store (HSM,
+    /// cloud KMS, ...) and cannot be loaded into memory.
+    pub fn from_es256_signer(
+        key_id: String,
+        issuer_id: String,
+        signer: Arc<dyn Es256Signer>,
+    ) -> Self {
+        Self {
+            key_id,
+            issuer_id,
+            signing_key: TokenSigningKey::Custom(signer),
         }
     }
 
@@ -141,7 +182,24 @@ impl ConnectTokenEncoder {
             aud: "appstoreconnect-v1".to_string(),
         };
 
-        let token = jsonwebtoken::encode(&header, &claims, &self.encoding_key)?;
+        let token = match &self.signing_key {
+            TokenSigningKey::EncodingKey(encoding_key) => {
+                jsonwebtoken::encode(&header, &claims, encoding_key)?
+            }
+            TokenSigningKey::Custom(signer) => {
+                // Assemble the JWS by hand, since jsonwebtoken's encode()
+                // requires the private key in memory.
+                let signing_input = format!(
+                    "{}.{}",
+                    URL_SAFE_NO_PAD.encode(serde_json::to_vec(&header)?),
+                    URL_SAFE_NO_PAD.encode(serde_json::to_vec(&claims)?)
+                );
+
+                let signature = signer.sign_es256(signing_input.as_bytes())?;
+
+                format!("{}.{}", signing_input, URL_SAFE_NO_PAD.encode(signature))
+            }
+        };
 
         Ok(token)
     }
@@ -150,3 +208,49 @@ impl ConnectTokenEncoder {
 #[derive(Clone, Copy, Debug, Error)]
 #[error("no app store connect api key found")]
 pub struct MissingApiKey;
+
+#[cfg(test)]
+mod tests {
+    use {
+        super::*,
+        p256::ecdsa::{signature::Signer as _, Signature, SigningKey},
+    };
+
+    /// An [Es256Signer] backed by an in-memory P-256 key.
+    struct LocalEs256Signer {
+        key: SigningKey,
+    }
+
+    impl Es256Signer for LocalEs256Signer {
+        fn sign_es256(&self, message: &[u8]) -> Result<Vec<u8>> {
+            let signature: Signature = self.key.sign(message);
+            Ok(signature.to_bytes().to_vec())
+        }
+    }
+
+    #[test]
+    fn custom_signer_token_verifies() -> Result<()> {
+        let key = SigningKey::random(&mut rand::thread_rng());
+        let public_key = key.verifying_key().to_sec1_bytes().to_vec();
+
+        let encoder = ConnectTokenEncoder::from_es256_signer(
+            "DEADBEEF42".into(),
+            "issuer-uuid".into(),
+            Arc::new(LocalEs256Signer { key }),
+        );
+
+        let token = encoder.new_token(300)?;
+
+        let decoding_key = jsonwebtoken::DecodingKey::from_ec_der(&public_key);
+        let mut validation = jsonwebtoken::Validation::new(Algorithm::ES256);
+        validation.set_audience(&["appstoreconnect-v1"]);
+
+        let decoded =
+            jsonwebtoken::decode::<ConnectTokenRequest>(&token, &decoding_key, &validation)?;
+
+        assert_eq!(decoded.claims.iss, "issuer-uuid");
+        assert_eq!(decoded.header.kid.as_deref(), Some("DEADBEEF42"));
+
+        Ok(())
+    }
+}

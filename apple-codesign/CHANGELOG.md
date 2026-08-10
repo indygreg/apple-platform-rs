@@ -8,6 +8,13 @@ Released on ReleaseDate.
 
 * PKCS#11 support. (Support signing with Google Cloud HSM, SoftHSM, other
   PKCS#11 based signing providers.) (#198)
+* AWS KMS support via a new (default off) `aws-kms` crate feature. Signing
+  can use an asymmetric key held in AWS KMS (the private key never leaves
+  KMS) via new `--aws-kms-key`, `--aws-kms-certificate-file`, and
+  `--aws-kms-region` arguments or an `[sign.aws_kms]` config file section.
+  `encode-app-store-connect-api-key` gained `--aws-kms-key` /
+  `--aws-kms-region` arguments so notarization JWTs can also be minted by a
+  KMS held key.
 * Mach-O file sniffing has been refined to prevent false positives on
   Java `.class` files. (#175)
 * Interpret empty signature data in Mach-O load command as a missing signature.

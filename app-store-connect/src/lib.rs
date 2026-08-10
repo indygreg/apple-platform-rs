@@ -6,6 +6,8 @@
 
 mod api_key;
 mod api_token;
+#[cfg(feature = "aws-kms")]
+pub mod aws_kms;
 pub mod bundle_api;
 pub mod certs_api;
 pub mod cli;
@@ -21,7 +23,9 @@ use {
 };
 
 pub use crate::api_key::{InvalidPemPrivateKey, UnifiedApiKey};
-pub use crate::api_token::{AppStoreConnectToken, ConnectTokenEncoder, MissingApiKey};
+pub use crate::api_token::{
+    AppStoreConnectToken, ConnectTokenEncoder, Es256Signer, MissingApiKey,
+};
 
 pub type Result<T> = anyhow::Result<T>;
 

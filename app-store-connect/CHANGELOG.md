@@ -6,6 +6,14 @@
 
 Released on ReleaseDate.
 
+* Added `Es256Signer` trait and `ConnectTokenEncoder::from_es256_signer()`,
+  allowing API tokens to be signed by an external signer (e.g. an HSM or a
+  cloud KMS holding the App Store Connect API private key) instead of an
+  in-memory private key.
+* Added a new (default off) `aws-kms` crate feature providing
+  `AwsKmsEs256Signer`, an `Es256Signer` that signs via AWS KMS.
+  `UnifiedApiKey` can now reference an AWS KMS key (`aws_kms_key` /
+  `aws_kms_region` fields) instead of embedding private key material.
 * MSRV 1.81 -> 1.92.
 * `dirs` 5 -> 6.
 * `x509-certificate` 0.24 -> 0.25.

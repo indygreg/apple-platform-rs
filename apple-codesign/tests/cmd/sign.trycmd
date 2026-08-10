@@ -422,6 +422,15 @@ Options:
       --pkcs11-key-id <ID>
           Private key ID in PKCS11 token (CKA_ID attribute)
 
+      --aws-kms-key <KEY ID OR ARN>
+          AWS KMS key ID, key ARN, or alias ARN of an asymmetric signing key
+
+      --aws-kms-certificate-file <PATH>
+          Path to file containing the X.509 certificate (PEM or DER) paired with the KMS key
+
+      --aws-kms-region <REGION>
+          AWS region the KMS key resides in (overrides environment / profile)
+
       --remote-signing-url <URL>
           URL of a remote code signing server
 

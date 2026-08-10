@@ -425,17 +425,42 @@ struct EncodeAppStoreConnectApiKey {
     key_id: String,
 
     /// Path to a file containing the private key downloaded from Apple
-    private_key_path: PathBuf,
+    #[arg(required_unless_present = "aws_kms_key")]
+    private_key_path: Option<PathBuf>,
+
+    /// AWS KMS key ID, key ARN, or alias ARN holding the private key
+    ///
+    /// Use this instead of a private key path when the App Store Connect
+    /// API private key has been imported into AWS KMS. The resulting JSON
+    /// file contains no secret material.
+    #[arg(long, conflicts_with = "private_key_path", value_name = "KEY ID OR ARN")]
+    aws_kms_key: Option<String>,
+
+    /// AWS region of the KMS key (overrides environment / profile)
+    #[arg(long, requires = "aws_kms_key", value_name = "REGION")]
+    aws_kms_region: Option<String>,
 }
 
 #[cfg(feature = "notarize")]
 impl CliCommand for EncodeAppStoreConnectApiKey {
     fn run(&self, _context: &Context) -> Result<(), AppleCodesignError> {
-        let unified = app_store_connect::UnifiedApiKey::from_ecdsa_pem_path(
-            &self.issuer_id,
-            &self.key_id,
-            &self.private_key_path,
-        )?;
+        let unified = if let Some(kms_key) = &self.aws_kms_key {
+            app_store_connect::UnifiedApiKey::from_aws_kms_key(
+                &self.issuer_id,
+                &self.key_id,
+                kms_key,
+                self.aws_kms_region.clone(),
+            )
+        } else if let Some(private_key_path) = &self.private_key_path {
+            app_store_connect::UnifiedApiKey::from_ecdsa_pem_path(
+                &self.issuer_id,
+                &self.key_id,
+                private_key_path,
+            )?
+        } else {
+            // clap requires one of the two key sources to be present.
+            return Err(AppleCodesignError::CliBadArgument);
+        };
 
         if let Some(output_path) = &self.output_path {
             eprintln!("writing unified key JSON to {}", output_path.display());

@@ -170,3 +170,6 @@ pub mod yubikey;
 
 #[cfg(feature = "pkcs11")]
 pub mod pkcs11;
+
+#[cfg(feature = "aws-kms")]
+pub mod aws_kms;

@@ -31,7 +31,7 @@ to the file. However, file access restrictions may not be as secure as you
 want. Security conscious individuals should audit the permissions of the
 file and adjust accordingly.
 
-Usage: rcodesign[EXE] encode-app-store-connect-api-key [OPTIONS] <ISSUER_ID> <KEY_ID> <PRIVATE_KEY_PATH>
+Usage: rcodesign[EXE] encode-app-store-connect-api-key [OPTIONS] <ISSUER_ID> <KEY_ID> [PRIVATE_KEY_PATH]
 
 Arguments:
   <ISSUER_ID>
@@ -40,7 +40,7 @@ Arguments:
   <KEY_ID>
           The Key ID. A short alphanumeric string like DEADBEEF42
 
-  <PRIVATE_KEY_PATH>
+  [PRIVATE_KEY_PATH]
           Path to a file containing the private key downloaded from Apple
 
 Options:
@@ -56,10 +56,18 @@ Options:
   -o, --output-path <OUTPUT_PATH>
           Path to a JSON file to create the output to
 
+      --aws-kms-key <KEY ID OR ARN>
+          AWS KMS key ID, key ARN, or alias ARN holding the private key
+          
+          Use this instead of a private key path when the App Store Connect API private key has been imported into AWS KMS. The resulting JSON file contains no secret material.
+
   -P, --profile <PROFILE>
           Configuration profile to load.
           
           If not specified, the implicit "default" profile is loaded.
+
+      --aws-kms-region <REGION>
+          AWS region of the KMS key (overrides environment / profile)
 
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times

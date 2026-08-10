@@ -371,6 +371,9 @@ pub enum AppleCodesignError {
     #[error("PKCS11 error: {0}")]
     Pkcs11Error(String),
 
+    #[error("AWS KMS error: {0}")]
+    AwsKms(String),
+
     #[error("remote signing error: {0}")]
     RemoteSign(#[from] RemoteSignError),
 

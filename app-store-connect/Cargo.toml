@@ -10,8 +10,13 @@ homepage = "https://github.com/indygreg/apple-platform-rs"
 repository = "https://github.com/indygreg/apple-platform-rs.git"
 readme = "README.md"
 
+[features]
+aws-kms = ["aws-config", "aws-config/credentials-login", "aws-sdk-kms", "p256", "sha2", "tokio"]
+
 [dependencies]
 anyhow = "1.0.102"
+aws-config = { version = "1.8.13", optional = true }
+aws-sdk-kms = { version = "1.86.0", optional = true }
 base64 = "0.22.1"
 clap = { version = "4.6.1", features = ["derive"] }
 dirs = "6.0.0"
@@ -19,10 +24,16 @@ env_logger = "0.11.10"
 jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }
 log = "0.4.29"
 pem = "3.0.6"
+p256 = { version = "0.13.2", default-features = false, features = ["ecdsa", "std"], optional = true }
 rand = "0.8.6"
 reqwest = { version = "0.12.28", default-features = false, features = ["blocking", "http2", "json", "rustls-tls-native-roots"] }
 rsa = "0.9.10"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
+sha2 = { version = "0.10.9", optional = true }
 thiserror = "2.0.18"
+tokio = { version = "1.52.1", features = ["rt"], optional = true }
 x509-certificate = "0.25.0"
+
+[dev-dependencies]
+p256 = { version = "0.13.2", default-features = false, features = ["ecdsa", "std"] }
