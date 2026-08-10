@@ -1,0 +1,72 @@
+Sign a simple application bundle using the codesign-compatible CLI
+
+Apple's `codesign` always signs in place and uses `-s -` for ad-hoc
+signing.  The flow below mirrors `sign-bundle.trycmd` but operates on
+a single `MyApp.app` throughout instead of writing to a separate
+output path.
+
+```
+$ mkdir -p MyApp.app/Contents/MacOS
+$ rcodesign debug-create-macho MyApp.app/Contents/MacOS/MyApp
+assuming default minimum version 11.0.0
+writing Mach-O to MyApp.app/Contents/MacOS/MyApp
+
+$ rcodesign codesign -s - MyApp.app
+? 1
+signing bundle at MyApp.app
+Error: error interfacing with directory-based bundle: Info.plist not found; not a valid bundle
+
+$ rcodesign debug-create-info-plist --bundle-name MyApp MyApp.app/Contents/Info.plist
+writing MyApp.app/Contents/Info.plist
+
+$ mkdir -p MyApp.app/Resources
+$ touch MyApp.app/Resources/file-00.txt
+$ touch MyApp.app/Resources/file-01.txt
+
+$ rcodesign codesign -s - MyApp.app
+signing bundle at MyApp.app
+signing bundle at MyApp.app into MyApp.app
+signing main executable Contents/MacOS/MyApp
+
+$ rcodesign debug-file-tree MyApp.app
+d                      MyApp.app/
+d                      MyApp.app/Contents
+f 0a5902dc8e47f490d038 MyApp.app/Contents/Info.plist
+d                      MyApp.app/Contents/MacOS
+f 0e2027a7c6d687972a35 MyApp.app/Contents/MacOS/MyApp
+d                      MyApp.app/Contents/_CodeSignature
+f c844b31db66807774bd8 MyApp.app/Contents/_CodeSignature/CodeResources
+d                      MyApp.app/Resources
+f e3b0c44298fc1c149afb MyApp.app/Resources/file-00.txt
+f e3b0c44298fc1c149afb MyApp.app/Resources/file-01.txt
+
+```
+
+Re-signing without `-f` is rejected; with `-f` the existing signature
+is replaced — this matches Apple's `codesign -f` semantics.
+
+```
+$ rcodesign codesign -s - MyApp.app
+? 1
+Error: MyApp.app is already signed; pass -f to replace
+
+$ rcodesign codesign -s - -f MyApp.app
+signing bundle at MyApp.app
+signing bundle at MyApp.app into MyApp.app
+signing main executable Contents/MacOS/MyApp
+
+```
+
+`codesign -d` displays the resulting signature.  The path printed is
+canonicalized (matching Apple's tool), so it appears as the realpath
+of the sandbox.
+
+```
+$ rcodesign codesign -d MyApp.app
+Executable=[..]/MyApp.app
+Identifier=com.example.mybundle
+CodeDirectory version=0x20400 flags=CodeSignatureFlags(ADHOC) hashes=5 digest=sha256
+Signed (ad-hoc)
+Bundle=[..]/MyApp.app kind=CodeResources sub_path=
+
+```
