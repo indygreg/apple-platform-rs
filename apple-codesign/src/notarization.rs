@@ -299,23 +299,23 @@ impl Notarizer {
 
         // upload using s3 api
         warn!("resolving AWS S3 configuration from Apple-provided credentials");
-        let config = rt.block_on(
-            aws_config::defaults(aws_config::BehaviorVersion::latest())
-                .credentials_provider(Credentials::new(
-                    submission.data.attributes.aws_access_key_id.clone(),
-                    submission.data.attributes.aws_secret_access_key.clone(),
-                    Some(submission.data.attributes.aws_session_token.clone()),
-                    None,
-                    "apple-codesign",
-                ))
-                // The region is not given anywhere in the Apple documentation. From
-                // manually testing all available regions, it appears to be
-                // us-west-2.
-                .region(Region::new("us-west-2"))
-                .load(),
-        );
 
-        let s3_client = aws_sdk_s3::Client::new(&config);
+        let config = aws_sdk_s3::config::Builder::new()
+            .credentials_provider(Credentials::new(
+                submission.data.attributes.aws_access_key_id.clone(),
+                submission.data.attributes.aws_secret_access_key.clone(),
+                Some(submission.data.attributes.aws_session_token.clone()),
+                None,
+                "apple-codesign",
+            ))
+            // The region is not given anywhere in the Apple documentation. From
+            // manually testing all available regions, it appears to be
+            // us-west-2.
+            .region(Region::new("us-west-2"))
+            .behavior_version(aws_sdk_s3::config::BehaviorVersion::latest())
+            .build();
+
+        let s3_client = aws_sdk_s3::Client::from_conf(config);
 
         warn!(
             "uploading asset to s3://{}/{}",
