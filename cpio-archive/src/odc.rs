@@ -397,6 +397,10 @@ impl<W: Write + Sized> OdcBuilder<W> {
 
         let mut bytes_written = 0;
 
+        if !self.auto_write_dirs {
+            return Ok(bytes_written)
+        }
+
         for idx in 1..parts.len() {
             let dir = parts
                 .clone()
