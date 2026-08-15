@@ -145,7 +145,7 @@ dependencies = [
  "jsonwebtoken",
  "log",
  "pem",
- "rand 0.8.6",
+ "rand 0.10.2",
  "reqwest",
  "rsa",
  "serde",
@@ -226,7 +226,7 @@ dependencies = [
  "pkcs1",
  "pkcs8 0.10.2",
  "plist",
- "rand 0.8.6",
+ "rand 0.10.2",
  "rasn",
  "rayon",
  "regex",
@@ -318,7 +318,7 @@ dependencies = [
  "liblzma",
  "log",
  "md-5 0.10.6",
- "rand 0.8.6",
+ "rand 0.10.2",
  "reqwest",
  "scroll",
  "serde",
@@ -2509,7 +2509,7 @@ dependencies = [
  "p256 0.13.2",
  "p384",
  "pem",
- "rand 0.8.6",
+ "rand 0.8.7",
  "rsa",
  "serde",
  "serde_json",
@@ -2742,7 +2742,7 @@ dependencies = [
  "num-integer",
  "num-iter",
  "num-traits",
- "rand 0.8.6",
+ "rand 0.8.7",
  "serde",
  "smallvec",
  "zeroize",
@@ -3259,9 +3259,9 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
 name = "rand"
-version = "0.8.6"
+version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ca0ecfa931c29007047d1bc58e623ab12e5590e8c7cc53200d5202b69266d8a"
+checksum = "22f6172bdec972074665ed81ed53b71da00bfc44b65a753cfde883ec4c702a1a"
 dependencies = [
  "libc",
  "rand_chacha 0.3.1",
