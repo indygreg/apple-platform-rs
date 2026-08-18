@@ -40,7 +40,7 @@ Scoped settings take the form <value> or <scope>:<value>. If the 2nd form
 is used, the string before the first colon is parsed as a /"scoping string/".
 It can have the following values:
 
-* `main` - Applies to the main entity being signed and all nested entities.
+* `@main` - Applies to the main entity being signed and all nested entities.
 * `@<integer>` - e.g. `@0`. Applies to a Mach-O within a fat binary at the
   specified index. 0 means the first Mach-O in a fat binary.
 * `@[cpu_type=<int>` - e.g. `@[cpu_type=7]`. Applies to a Mach-O within a fat
