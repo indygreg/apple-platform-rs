@@ -24,7 +24,7 @@ The following *scoping string* syntax is defined:
    If the path belongs to a nested bundle, settings with this scope will
    apply to all signable entities in the bundle.
 
-``main``
+``@main``
    Applies to the main entity being signed and to nested/children entities.
 
 ``@<integer>``
