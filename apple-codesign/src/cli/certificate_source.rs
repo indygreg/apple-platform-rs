@@ -29,10 +29,7 @@ use {
 };
 
 #[cfg(feature = "pkcs11")]
-use {
-    crate::pkcs11::Pkcs11PrivateKey,
-    cryptoki::context::{CInitializeArgs, CInitializeFlags, Pkcs11},
-};
+use crate::pkcs11::{initialized_module, Pkcs11PrivateKey};
 
 #[cfg(target_os = "macos")]
 use crate::macos::{keychain_find_code_signing_certificates, KeychainDomain};
@@ -768,10 +765,9 @@ impl KeySource for Pkcs11SigningKey {
             None => return Ok(Default::default()),
         };
 
-        info!("initializing PKCS11 library: {}", library_path.display());
-
-        let pkcs11 = Pkcs11::new(library_path.clone())?;
-        pkcs11.initialize(CInitializeArgs::new(CInitializeFlags::OS_LOCKING_OK))?;
+        // Shared with the signing operations that follow: the module can only be
+        // initialized once per process.
+        let pkcs11 = initialized_module(&library_path)?;
 
         let slots = pkcs11.get_slots_with_token()?;
         if slots.is_empty() {
