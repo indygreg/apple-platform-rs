@@ -13,7 +13,7 @@ jobs:
   sign:
     name: Test SoftHSM Code Signing
     runs-on: 'ubuntu-24.04'
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -50,6 +50,14 @@ jobs:
           echo "Using slot ID: $SLOT_ID"
         env:
           SOFTHSM2_CONF: ${{ github.workspace }}/softhsm2.conf
+
+      - name: Run PKCS#11 module lifecycle tests
+        run: |
+          rustup toolchain install stable --profile minimal --no-self-update
+          cargo +stable test -p apple-codesign --features pkcs11 pkcs11::test
+        env:
+          SOFTHSM2_CONF: ${{ github.workspace }}/softhsm2.conf
+          APPLE_CODESIGN_TEST_PKCS11_LIBRARY: /usr/lib/softhsm/libsofthsm2.so
 
       - name: Download rcodesign from current build
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
@@ -134,8 +142,9 @@ jobs:
           # Make rcodesign executable
           chmod +x bins/rcodesign
 
-          # Sign the executable
-          bins/rcodesign sign \
+          # Sign the executable. -v surfaces the PKCS#11 module lifecycle messages
+          # that the next step asserts on.
+          bins/rcodesign -v sign \
               --pkcs11-library /usr/lib/softhsm/libsofthsm2.so \
               --pkcs11-certificate-file developerID_application.cer \
               --pkcs11-key-label $KEY_LABEL \
@@ -143,9 +152,40 @@ jobs:
               --pkcs11-pin $PKCS11_PIN \
               --code-signature-flags runtime \
               dist/input/$EXE_NAME \
-              dist/output/$EXE_NAME
+              dist/output/$EXE_NAME > sign.log 2>&1 || { cat sign.log; exit 1; }
+
+          cat sign.log
         env:
           SOFTHSM2_CONF: ${{ github.workspace }}/softhsm2.conf
+
+      - name: Check PKCS#11 module lifecycle
+        run: |
+          # A PKCS#11 module can only be initialized once per process: a second
+          # C_Initialize on a module that is still loaded fails with
+          # CKR_CRYPTOKI_ALREADY_INITIALIZED. Certificate resolution and every signing
+          # operation must therefore share one context, and that context must be
+          # finalized when signing completes.
+          if [ ! -s sign.log ]; then
+            echo "❌ sign.log is missing or empty; nothing to check"
+            exit 1
+          fi
+
+          initializations=$(grep -c 'initialized PKCS11 library' sign.log || true)
+          finalizations=$(grep -c 'finalized PKCS11 library' sign.log || true)
+
+          echo "C_Initialize: $initializations, C_Finalize: $finalizations"
+
+          if [ "$initializations" -ne 1 ]; then
+            echo "❌ expected exactly 1 PKCS#11 initialization, got $initializations"
+            exit 1
+          fi
+
+          if [ "$finalizations" -ne 1 ]; then
+            echo "❌ expected exactly 1 PKCS#11 finalization, got $finalizations"
+            exit 1
+          fi
+
+          echo "✅ PKCS#11 module initialized once and finalized once"
 
       - name: Upload signed artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
