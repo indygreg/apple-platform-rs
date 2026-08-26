@@ -151,7 +151,7 @@ pub struct SmartcardSigningKey {
 
     /// Environment variable holding the smartcard PIN
     #[arg(long = "smartcard-pin-env", value_name = "STRING")]
-    #[serde(skip)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pin_env: Option<String>,
 }
 
@@ -744,7 +744,7 @@ pub struct Pkcs11SigningKey {
 
     /// Environment variable holding the PKCS11 PIN
     #[arg(long = "pkcs11-pin-env", value_name = "STRING")]
-    #[serde(skip)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pkcs11_pin_env: Option<String>,
 
     /// Path to certificate file (PEM/DER)
