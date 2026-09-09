@@ -193,6 +193,7 @@ mod test {
                     slot: Some("9c".into()),
                     pin: None,
                     pin_env: None,
+                    serial: None,
                 }),
                 ..Default::default()
             }
@@ -214,6 +215,7 @@ mod test {
                     slot: Some("9c".into()),
                     pin: Some("1234".into()),
                     pin_env: None,
+                    serial: None,
                 }),
                 ..Default::default()
             }

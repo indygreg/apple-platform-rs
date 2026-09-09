@@ -150,9 +150,17 @@ pub struct SmartcardSigningKey {
     pub pin: Option<String>,
 
     /// Environment variable holding the smartcard PIN
+    // Not `serde(skip)`: commands like `sign` round-trip this struct
+    // through the config layer, and skipping silently dropped the value,
+    // causing an interactive PIN prompt despite --smartcard-pin-env.
     #[arg(long = "smartcard-pin-env", value_name = "STRING")]
-    #[serde(skip)]
     pub pin_env: Option<String>,
+
+    /// Serial number of the smartcard device to use
+    ///
+    /// Required to select a device when multiple smartcards are connected.
+    #[arg(long = "smartcard-serial", value_name = "SERIAL")]
+    pub serial: Option<u32>,
 }
 
 impl KeySource for SmartcardSigningKey {
@@ -161,7 +169,7 @@ impl KeySource for SmartcardSigningKey {
         if let Some(slot) = &self.slot {
             let slot_id = ::yubikey::piv::SlotId::from_str(slot)?;
             let formatted = hex::encode([u8::from(slot_id)]);
-            let mut yk = YubiKey::new()?;
+            let mut yk = YubiKey::new_with_serial(self.serial)?;
 
             if let Some(pin) = &self.pin {
                 let pin = pin.clone();

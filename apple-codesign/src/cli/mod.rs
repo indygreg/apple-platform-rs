@@ -1636,6 +1636,12 @@ struct SmartcardGenerateKey {
     #[arg(long)]
     smartcard_slot: String,
 
+    /// Serial number of the smartcard device to use
+    ///
+    /// Required to select a device when multiple smartcards are connected.
+    #[arg(long)]
+    smartcard_serial: Option<u32>,
+
     #[command(flatten)]
     policy: YubikeyPolicy,
 }
@@ -1648,7 +1654,7 @@ impl CliCommand for SmartcardGenerateKey {
         let touch_policy = str_to_touch_policy(self.policy.touch_policy.as_str())?;
         let pin_policy = str_to_pin_policy(self.policy.pin_policy.as_str())?;
 
-        let mut yk = YubiKey::new()?;
+        let mut yk = YubiKey::new_with_serial(self.smartcard_serial)?;
         yk.set_pin_callback(prompt_smartcard_pin);
 
         yk.generate_key(slot_id, touch_policy, pin_policy)?;
@@ -1740,7 +1746,12 @@ impl CliCommand for SmartcardImport {
         );
         print_certificate_info(&cert)?;
 
-        let mut yk = YubiKey::new()?;
+        let mut yk = YubiKey::new_with_serial(
+            self.certificate
+                .smartcard_key
+                .as_ref()
+                .and_then(|key| key.serial),
+        )?;
         yk.set_pin_callback(prompt_smartcard_pin);
 
         if self.dry_run {

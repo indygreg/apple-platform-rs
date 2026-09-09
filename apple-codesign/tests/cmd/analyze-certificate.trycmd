@@ -37,6 +37,11 @@ Options:
   -v, --verbose...
           Increase logging verbosity. Can be specified multiple times
 
+      --smartcard-serial <SERIAL>
+          Serial number of the smartcard device to use
+          
+          Required to select a device when multiple smartcards are connected.
+
       --keychain-domain <DOMAIN>
           (macOS only) Keychain domain to operate on
           

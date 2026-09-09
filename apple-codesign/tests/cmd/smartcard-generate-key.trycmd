@@ -22,20 +22,25 @@ Options:
           
           If not specified, the implicit "default" profile is loaded.
 
+      --smartcard-serial <SMARTCARD_SERIAL>
+          Serial number of the smartcard device to use
+          
+          Required to select a device when multiple smartcards are connected.
+
       --touch-policy <TOUCH_POLICY>
           Smartcard touch policy to protect key access
           
           [default: default]
           [possible values: default, always, never, cached]
 
+  -v, --verbose...
+          Increase logging verbosity. Can be specified multiple times
+
       --pin-policy <PIN_POLICY>
           Smartcard pin prompt policy to protect key access
           
           [default: default]
           [possible values: default, never, once, always]
-
-  -v, --verbose...
-          Increase logging verbosity. Can be specified multiple times
 
   -h, --help
           Print help (see a summary with '-h')

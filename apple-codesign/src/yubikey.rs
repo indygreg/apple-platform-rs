@@ -185,7 +185,20 @@ impl From<RawYubiKey> for YubiKey {
 impl YubiKey {
     /// Construct a new instance.
     pub fn new() -> Result<Self, AppleCodesignError> {
-        let yk = RawYubiKey::open()?;
+        Self::new_with_serial(None)
+    }
+
+    /// Construct a new instance, optionally selecting a specific device by
+    /// its serial number.
+    ///
+    /// A serial number is required to disambiguate when multiple YubiKeys
+    /// are connected: [RawYubiKey::open] refuses to choose among several
+    /// devices.
+    pub fn new_with_serial(serial: Option<u32>) -> Result<Self, AppleCodesignError> {
+        let yk = match serial {
+            Some(serial) => RawYubiKey::open_by_serial(Serial::from(serial))?,
+            None => RawYubiKey::open()?,
+        };
         let serial = yk.serial();
         let yk = Arc::new(Mutex::new(yk));
 

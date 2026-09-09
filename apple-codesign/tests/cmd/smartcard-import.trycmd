@@ -39,6 +39,11 @@ Options:
       --smartcard-pin-env <STRING>
           Environment variable holding the smartcard PIN
 
+      --smartcard-serial <SERIAL>
+          Serial number of the smartcard device to use
+          
+          Required to select a device when multiple smartcards are connected.
+
       --keychain-domain <DOMAIN>
           (macOS only) Keychain domain to operate on
           
