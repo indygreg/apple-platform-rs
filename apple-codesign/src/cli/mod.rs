@@ -1426,6 +1426,10 @@ struct Sign {
     #[command(flatten)]
     scoped: ScopedSigningArgs,
 
+    /// Use 16 KiB code signature pages for arm64 Mach-O binaries
+    #[arg(long)]
+    arm64_16k_code_pages: bool,
+
     /// Team name/identifier to include in code signature
     #[arg(long, value_name = "NAME")]
     team_name: Option<String>,
@@ -1557,6 +1561,7 @@ impl CliCommand for Sign {
 
         settings.set_shallow(self.shallow);
         settings.set_for_notarization(self.for_notarization);
+        settings.set_arm64_16k_code_pages(self.arm64_16k_code_pages);
 
         for pattern in &self.exclude {
             settings.add_path_exclusion(pattern)?;
@@ -2157,6 +2162,7 @@ enum Subcommands {
     /// The following signing settings are global and apply to all signed entities:
     ///
     /// * --pem-source
+    /// * --arm64-16k-code-pages
     /// * --team-name
     /// * --timestamp-url
     ///
