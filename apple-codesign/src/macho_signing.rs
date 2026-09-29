@@ -24,6 +24,7 @@ use {
         signing_settings::{DesignatedRequirementMode, SettingsScope, SigningSettings},
     },
     goblin::mach::{
+        constants::cputype::CPU_TYPE_ARM64,
         constants::{SEG_LINKEDIT, SEG_PAGEZERO},
         load_command::{
             CommandVariant, LinkeditDataCommand, SegmentCommand32, SegmentCommand64,
@@ -35,6 +36,14 @@ use {
     scroll::{ctx::SizeWith, IOwrite},
     std::{borrow::Cow, cmp::Ordering, collections::HashMap, io::Write, path::Path},
 };
+
+fn code_page_size(macho: &MachOBinary, settings: &SigningSettings) -> u32 {
+    if settings.arm64_16k_code_pages() && macho.macho.header.cputype() == CPU_TYPE_ARM64 {
+        16384
+    } else {
+        4096
+    }
+}
 
 /// Derive a new Mach-O binary with new signature data.
 fn create_macho_with_signature(
@@ -500,7 +509,7 @@ impl<'data> MachOSigner<'data> {
         };
 
         let platform = 0;
-        let page_size = 4096u32;
+        let page_size = code_page_size(macho, settings);
 
         let (exec_seg_base, exec_seg_limit) = macho.executable_segment_boundary()?;
         let (exec_seg_base, exec_seg_limit) = (Some(exec_seg_base), Some(exec_seg_limit));
@@ -754,11 +763,12 @@ impl<'data> MachOSigner<'data> {
         let mut size = 1024 * code_directory_count;
 
         // Reserve room for the code digests, which are proportional to binary size.
-        size += macho.code_digests_size(settings.digest_type(SettingsScope::Main), 4096)?;
+        let page_size = code_page_size(macho, settings) as usize;
+        size += macho.code_digests_size(settings.digest_type(SettingsScope::Main), page_size)?;
 
         if let Some(digests) = settings.extra_digests(SettingsScope::Main) {
             for digest in digests {
-                size += macho.code_digests_size(*digest, 4096)?;
+                size += macho.code_digests_size(*digest, page_size)?;
             }
         }
 

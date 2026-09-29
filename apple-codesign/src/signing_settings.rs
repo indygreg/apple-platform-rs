@@ -304,6 +304,7 @@ pub struct SigningSettings<'key> {
     path_exclusion_patterns: Vec<Pattern>,
     shallow: bool,
     for_notarization: bool,
+    arm64_16k_code_pages: bool,
 
     // Scope-specific settings.
     // These are BTreeMap so when we filter the keys, keys with higher precedence come
@@ -325,6 +326,16 @@ pub struct SigningSettings<'key> {
 }
 
 impl<'key> SigningSettings<'key> {
+    /// Use 16 KiB code signature pages for arm64 Mach-O binaries.
+    pub fn set_arm64_16k_code_pages(&mut self, enabled: bool) {
+        self.arm64_16k_code_pages = enabled;
+    }
+
+    /// Whether arm64 Mach-O binaries use 16 KiB code signature pages.
+    pub fn arm64_16k_code_pages(&self) -> bool {
+        self.arm64_16k_code_pages
+    }
+
     /// Obtain the signing key to use.
     pub fn signing_key(&self) -> Option<(&'key dyn KeyInfoSigner, &CapturedX509Certificate)> {
         self.signing_key.as_ref().map(|(key, cert)| (*key, cert))
@@ -1274,6 +1285,7 @@ impl<'key> SigningSettings<'key> {
             path_exclusion_patterns: self.path_exclusion_patterns.clone(),
             shallow: self.shallow,
             for_notarization: self.for_notarization,
+            arm64_16k_code_pages: self.arm64_16k_code_pages,
             digest_type: self
                 .digest_type
                 .clone()
