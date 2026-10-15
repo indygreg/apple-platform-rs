@@ -29,8 +29,8 @@ pub enum MachOFileType {
 impl MachOFileType {
     fn to_header_filetype(&self) -> u32 {
         match self {
-            Self::Executable => object::macho::MH_EXECUTE,
-            Self::Dylib => object::macho::MH_DYLIB,
+            Self::Executable => object::macho::MH_EXECUTE.0,
+            Self::Dylib => object::macho::MH_DYLIB.0,
         }
     }
 }

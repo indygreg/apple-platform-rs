@@ -23,7 +23,8 @@ Released on ReleaseDate.
 * `goblin` 0.9 -> 0.10.
 * `md5` 0.7 -> 0.8.
 * `minicbor` 0.25 -> 2.1.
-* `object` 0.26 -> 0.28.
+* `object` updated to 0.40, replacing the vulnerable `ruzstd` 0.8 dependency
+  with 0.9.1 in the lockfile.
 * `oid-registry` 0.7 -> 0.8.
 * `rasn` 0.20 -> 0.28.
 * `scroll` 0.12 -> 0.13.

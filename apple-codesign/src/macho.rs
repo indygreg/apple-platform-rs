@@ -566,12 +566,15 @@ impl MachoTarget {
                 endian,
                 std::mem::size_of::<object::macho::BuildVersionCommand<object::Endianness>>() as _,
             ),
-            platform: object::U32::new(endian, self.platform.into()),
+            platform: object::U32::new(endian, object::macho::Platform(self.platform.into())),
             minos: object::U32::new(
                 endian,
-                semver_to_macho_target_version(&self.minimum_os_version),
+                object::macho::Version(semver_to_macho_target_version(&self.minimum_os_version)),
             ),
-            sdk: object::U32::new(endian, semver_to_macho_target_version(&self.sdk_version)),
+            sdk: object::U32::new(
+                endian,
+                object::macho::Version(semver_to_macho_target_version(&self.sdk_version)),
+            ),
             ntools: object::U32::new(endian, 0),
         };
 
