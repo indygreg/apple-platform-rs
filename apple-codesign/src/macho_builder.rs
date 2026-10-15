@@ -67,10 +67,10 @@ impl Segment {
                 vmsize: U64::new(endian, vm_length as _),
                 fileoff: U64::new(endian, file_offset as _),
                 filesize: U64::new(endian, file_length as _),
-                maxprot: U32::new(endian, 0),
-                initprot: U32::new(endian, 0),
+                maxprot: U32::new(endian, VmProt(0)),
+                initprot: U32::new(endian, VmProt(0)),
                 nsects: U32::new(endian, section_count as _),
-                flags: U32::new(endian, self.flags),
+                flags: U32::new(endian, SegmentFlags(self.flags)),
             };
 
             Ok(bytes_of(&segment).to_vec())
@@ -88,10 +88,10 @@ impl Segment {
                 vmsize: U32::new(endian, vm_length as _),
                 fileoff: U32::new(endian, file_offset as _),
                 filesize: U32::new(endian, file_length as _),
-                maxprot: U32::new(endian, 0),
-                initprot: U32::new(endian, 0),
+                maxprot: U32::new(endian, VmProt(0)),
+                initprot: U32::new(endian, VmProt(0)),
                 nsects: U32::new(endian, section_count as _),
-                flags: U32::new(endian, self.flags),
+                flags: U32::new(endian, SegmentFlags(self.flags)),
             };
 
             Ok(bytes_of(&segment).to_vec())
@@ -154,7 +154,7 @@ impl Section {
                 align: U32::new(endian, alignment as _),
                 reloff: U32::new(endian, 0),
                 nreloc: U32::new(endian, 0),
-                flags: U32::new(endian, self.flags),
+                flags: U32::new(endian, SectionFlags(self.flags)),
                 reserved1: U32::new(endian, 0),
                 reserved2: U32::new(endian, 0),
                 reserved3: U32::new(endian, 0),
@@ -171,7 +171,7 @@ impl Section {
                 align: U32::new(endian, alignment as _),
                 reloff: U32::new(endian, 0),
                 nreloc: U32::new(endian, 0),
-                flags: U32::new(endian, self.flags),
+                flags: U32::new(endian, SectionFlags(self.flags)),
                 reserved1: U32::new(endian, 0),
                 reserved2: U32::new(endian, 0),
             };
@@ -373,11 +373,11 @@ impl MachOBuilder {
             let header = MachHeader64 {
                 magic: U32::new(BigEndian, magic),
                 cputype: U32::new(endian, cpu_type),
-                cpusubtype: U32::new(endian, cpu_sub_type),
-                filetype: U32::new(endian, self.file_type),
+                cpusubtype: U32::new(endian, cpu_sub_type.into()),
+                filetype: U32::new(endian, FileType(self.file_type)),
                 ncmds: U32::new(endian, number_commands),
                 sizeofcmds: U32::new(endian, size_of_commands),
-                flags: U32::new(endian, self.macho_flags),
+                flags: U32::new(endian, FileFlags(self.macho_flags)),
                 reserved: U32::default(),
             };
 
@@ -391,11 +391,11 @@ impl MachOBuilder {
             let header = MachHeader32 {
                 magic: U32::new(BigEndian, magic),
                 cputype: U32::new(endian, cpu_type),
-                cpusubtype: U32::new(endian, cpu_sub_type),
-                filetype: U32::new(endian, self.file_type),
+                cpusubtype: U32::new(endian, cpu_sub_type.into()),
+                filetype: U32::new(endian, FileType(self.file_type)),
                 ncmds: U32::new(endian, number_commands),
                 sizeofcmds: U32::new(endian, size_of_commands),
-                flags: U32::new(endian, self.macho_flags),
+                flags: U32::new(endian, FileFlags(self.macho_flags)),
             };
 
             Ok(bytes_of(&header).to_vec())
@@ -684,5 +684,62 @@ impl MachOBuilder {
         buffer.extend_from_slice(&string_table_data);
 
         Ok(buffer)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use {super::*, crate::macho::Platform, goblin::mach::load_command::CommandVariant};
+
+    #[test]
+    fn write_macho_headers_and_load_commands() {
+        for architecture in [
+            Architecture::I386,
+            Architecture::X86_64,
+            Architecture::Aarch64,
+        ] {
+            for endian in [Endianness::Little, Endianness::Big] {
+                for file_type in [MH_EXECUTE.0, MH_DYLIB.0] {
+                    let mut builder = MachOBuilder::new(architecture, endian, file_type)
+                        .macho_target(MachoTarget {
+                            platform: Platform::MacOs,
+                            minimum_os_version: semver::Version::new(11, 2, 3),
+                            sdk_version: semver::Version::new(12, 4, 5),
+                        });
+                    builder.macho_flags = 0x20;
+                    builder.segments[1].flags = 0x10;
+                    builder.sections[0].flags = 0x8000_0000;
+                    builder.sections[0].data = vec![1, 2, 3, 4];
+
+                    let data = builder.write_macho().unwrap();
+                    let macho = goblin::mach::MachO::parse(&data, 0).unwrap();
+
+                    assert_eq!(macho.is_64, architecture != Architecture::I386);
+                    assert_eq!(macho.little_endian, endian == Endianness::Little);
+                    assert_eq!(macho.header.filetype, file_type);
+                    assert_eq!(macho.header.flags, 0x20);
+
+                    let text = &macho.segments[1];
+                    assert_eq!(text.flags, 0x10);
+                    assert_eq!(text.maxprot, 0);
+                    assert_eq!(text.initprot, 0);
+                    let sections = text.sections().unwrap();
+                    assert_eq!(sections[0].0.flags, 0x8000_0000);
+                    assert_eq!(sections[0].1, &[1, 2, 3, 4]);
+
+                    let target = macho
+                        .load_commands
+                        .iter()
+                        .find_map(|command| match &command.command {
+                            CommandVariant::BuildVersion(target) => Some(target),
+                            _ => None,
+                        })
+                        .unwrap();
+                    assert_eq!(target.platform, 1);
+                    assert_eq!(target.minos, 0x000b_0203);
+                    assert_eq!(target.sdk, 0x000c_0405);
+                }
+            }
+        }
     }
 }
