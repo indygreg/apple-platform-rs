@@ -52,13 +52,13 @@ jobs:
           SOFTHSM2_CONF: ${{ github.workspace }}/softhsm2.conf
 
       - name: Download rcodesign from current build
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: exe-rcodesign-x86_64-unknown-linux-gnu
           path: bins/
 
       - name: Download rcodesign artifact (macOS for signing target)
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: exe-rcodesign-aarch64-apple-darwin
           path: dist/input/
