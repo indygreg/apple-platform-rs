@@ -118,6 +118,9 @@ pub enum AppleCodesignError {
     #[error("malformed team name string in code directory")]
     CodeDirectoryMalformedTeam,
 
+    #[error("malformed digests in code directory")]
+    CodeDirectoryMalformedDigests,
+
     #[error("plist error in code directory: {0}")]
     CodeDirectoryPlist(plist::Error),
 

@@ -160,11 +160,27 @@ pub struct Scatter {
     spare: u64,
 }
 
-fn get_hashes(data: &[u8], offset: usize, count: usize, hash_size: usize) -> Vec<Digest<'_>> {
-    data[offset..offset + (count * hash_size)]
+fn get_hashes(
+    data: &[u8],
+    offset: usize,
+    count: usize,
+    hash_size: usize,
+) -> Result<Vec<Digest<'_>>, AppleCodesignError> {
+    if hash_size == 0 {
+        return Err(AppleCodesignError::CodeDirectoryMalformedDigests);
+    }
+
+    let end = count
+        .checked_mul(hash_size)
+        .and_then(|size| offset.checked_add(size))
+        .ok_or(AppleCodesignError::CodeDirectoryMalformedDigests)?;
+
+    Ok(data
+        .get(offset..end)
+        .ok_or(AppleCodesignError::CodeDirectoryMalformedDigests)?
         .chunks(hash_size)
         .map(|data| Digest { data: data.into() })
-        .collect()
+        .collect())
 }
 
 /// Represents a code directory blob entry.
@@ -334,7 +350,9 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
             };
 
         // Find trailing null in identifier string.
-        let ident = match data[ident_offset as usize..]
+        let ident = match data
+            .get(ident_offset as usize..)
+            .ok_or(AppleCodesignError::CodeDirectoryMalformedIdentifier)?
             .split(|&b| b == 0)
             .map(std::str::from_utf8)
             .next()
@@ -348,7 +366,9 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
         };
 
         let team_name = if let Some(team_offset) = team_offset {
-            match data[team_offset as usize..]
+            match data
+                .get(team_offset as usize..)
+                .ok_or(AppleCodesignError::CodeDirectoryMalformedTeam)?
                 .split(|&b| b == 0)
                 .map(std::str::from_utf8)
                 .next()
@@ -371,14 +391,20 @@ impl<'a> Blob<'a> for CodeDirectoryBlob<'a> {
             digest_offset as usize,
             n_code_slots as usize,
             digest_size as usize,
-        );
+        )?;
+
+        // Special slots are stored in reverse order in front of the code slots.
+        let special_digests_offset = (digest_size as u32)
+            .checked_mul(n_special_slots)
+            .and_then(|size| digest_offset.checked_sub(size))
+            .ok_or(AppleCodesignError::CodeDirectoryMalformedDigests)?;
 
         let special_digests = get_hashes(
             data,
-            (digest_offset - (digest_size as u32 * n_special_slots)) as usize,
+            special_digests_offset as usize,
             n_special_slots as usize,
             digest_size as usize,
-        )
+        )?
         .into_iter()
         .enumerate()
         .map(|(i, h)| (CodeSigningSlot::from(n_special_slots - i as u32), h))
@@ -794,5 +820,108 @@ mod tests {
             CodeSignatureFlags::from_str("linker-signed").unwrap(),
             CodeSignatureFlags::LINKER_SIGNED
         );
+    }
+
+    const HASH_OFFSET: usize = 0x10;
+    const IDENT_OFFSET: usize = 0x14;
+    const N_SPECIAL_SLOTS: usize = 0x18;
+    const N_CODE_SLOTS: usize = 0x1c;
+    const HASH_SIZE: usize = 0x24;
+    const TEAM_OFFSET: usize = 0x30;
+
+    /// A version 0x20400 code directory with an identifier, a team name,
+    /// 2 special slots and 2 code slots of SHA-256 digests.
+    fn code_directory_bytes() -> Vec<u8> {
+        let ident = b"com.example.test\0";
+        let team = b"TEAMID\0";
+        let n_special_slots = 2u32;
+        let n_code_slots = 2u32;
+        let ident_offset = 0x58u32;
+        let team_offset = ident_offset + ident.len() as u32;
+        let digest_offset = team_offset + team.len() as u32 + n_special_slots * 32;
+        let length = digest_offset + n_code_slots * 32;
+
+        let mut data = vec![];
+        data.extend(u32::from(CodeSigningMagic::CodeDirectory).to_be_bytes());
+        data.extend(length.to_be_bytes());
+        data.extend((CodeDirectoryVersion::SupportsExecutableSegment as u32).to_be_bytes());
+        data.extend(0u32.to_be_bytes()); // flags
+        data.extend(digest_offset.to_be_bytes());
+        data.extend(ident_offset.to_be_bytes());
+        data.extend(n_special_slots.to_be_bytes());
+        data.extend(n_code_slots.to_be_bytes());
+        data.extend(0x8000u32.to_be_bytes()); // code_limit
+        data.extend([32, 2, 0, 12]); // digest_size, digest_type, platform, page_size
+        data.extend(0u32.to_be_bytes()); // spare2
+        data.extend(0u32.to_be_bytes()); // scatter_offset
+        data.extend(team_offset.to_be_bytes());
+        data.extend(0u32.to_be_bytes()); // spare3
+        data.extend(0u64.to_be_bytes()); // code_limit_64
+        data.extend(0u64.to_be_bytes()); // exec_seg_base
+        data.extend(0u64.to_be_bytes()); // exec_seg_limit
+        data.extend(0u64.to_be_bytes()); // exec_seg_flags
+        assert_eq!(data.len(), ident_offset as usize);
+        data.extend(ident);
+        data.extend(team);
+        data.extend((0..(n_special_slots + n_code_slots) * 32).map(|i| i as u8));
+        assert_eq!(data.len(), length as usize);
+
+        data
+    }
+
+    /// The error from parsing the test code directory with the u32 header
+    /// field at `offset` set to `value`.
+    fn parse_error(offset: usize, value: u32) -> Option<AppleCodesignError> {
+        let mut data = code_directory_bytes();
+        data[offset..offset + 4].copy_from_slice(&value.to_be_bytes());
+        CodeDirectoryBlob::from_blob_bytes(&data).err()
+    }
+
+    #[test]
+    fn code_directory_from_blob_bytes() {
+        let data = code_directory_bytes();
+        let cd = CodeDirectoryBlob::from_blob_bytes(&data).unwrap();
+
+        assert_eq!(cd.ident, "com.example.test");
+        assert_eq!(cd.team_name.as_deref(), Some("TEAMID"));
+        assert_eq!(cd.code_digests.len(), 2);
+        assert_eq!(cd.special_digests.len(), 2);
+    }
+
+    #[test]
+    fn code_directory_malformed_header() {
+        assert!(matches!(
+            parse_error(IDENT_OFFSET, 0xffff),
+            Some(AppleCodesignError::CodeDirectoryMalformedIdentifier)
+        ));
+        assert!(matches!(
+            parse_error(TEAM_OFFSET, 0xffff),
+            Some(AppleCodesignError::CodeDirectoryMalformedTeam)
+        ));
+
+        for (offset, value) in [
+            // Code slots past the end of the blob.
+            (HASH_OFFSET, 0xfffff),
+            (N_CODE_SLOTS, 5),
+            // Special slots before the start of the blob.
+            (HASH_OFFSET, 0),
+            (N_SPECIAL_SLOTS, 40),
+            (N_SPECIAL_SLOTS, u32::MAX),
+        ] {
+            assert!(
+                matches!(
+                    parse_error(offset, value),
+                    Some(AppleCodesignError::CodeDirectoryMalformedDigests)
+                ),
+                "field {offset:#x} = {value:#x}"
+            );
+        }
+
+        let mut data = code_directory_bytes();
+        data[HASH_SIZE] = 0;
+        assert!(matches!(
+            CodeDirectoryBlob::from_blob_bytes(&data),
+            Err(AppleCodesignError::CodeDirectoryMalformedDigests)
+        ));
     }
 }
