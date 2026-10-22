@@ -379,6 +379,35 @@ fn read_blob_header(data: &[u8]) -> Result<(u32, usize, &[u8]), scroll::Error> {
     Ok((magic, length as usize, &data[8..]))
 }
 
+/// Resolve the data of an entry in a SuperBlob-like index.
+///
+/// `index_end` is the offset just past the index and `offsets` holds the offsets
+/// of all index entries. Entries can be in any order, so the entry at `offset`
+/// ends at the closest offset following it, or at the end of `data`.
+///
+/// Returns `None` if `offset` points into the header or index or past the end
+/// of `data`.
+fn index_entry_data<'a>(
+    data: &'a [u8],
+    index_end: usize,
+    offsets: &[usize],
+    offset: usize,
+) -> Option<&'a [u8]> {
+    if offset < index_end {
+        return None;
+    }
+
+    let end = offsets
+        .iter()
+        .copied()
+        .filter(|o| *o > offset)
+        .min()
+        .unwrap_or(data.len())
+        .min(data.len());
+
+    data.get(offset..end)
+}
+
 pub(crate) fn read_and_validate_blob_header<'a>(
     data: &'a [u8],
     expected_magic: u32,
@@ -616,18 +645,21 @@ impl<'a> Blob<'a> for RequirementSetBlob<'a> {
             ));
         }
 
+        let index_end = *offset;
+        let offsets = indices
+            .iter()
+            .map(|(_, offset)| *offset as usize)
+            .collect::<Vec<_>>();
+
         let mut requirements = HashMap::with_capacity(indices.len());
 
-        for (i, (flavor, offset)) in indices.iter().enumerate() {
+        for (flavor, offset) in &indices {
             let typ = RequirementType::from(*flavor);
 
-            let end_offset = if i == indices.len() - 1 {
-                data.len()
-            } else {
-                indices[i + 1].1 as usize
-            };
-
-            let requirement_data = &data[*offset as usize..end_offset];
+            let requirement_data = index_entry_data(data, index_end, &offsets, *offset as usize)
+                .ok_or(AppleCodesignError::RequirementMalformed(
+                    "requirement offset out of range",
+                ))?;
 
             requirements.insert(typ, RequirementBlob::from_blob_bytes(requirement_data)?);
         }
@@ -1233,22 +1265,25 @@ impl<'a> EmbeddedSignature<'a> {
         // We do parse those here and set the blob length/slice accordingly. However,
         // we take an extra level of precaution by first computing a slice that doesn't
         // overrun into the next blob or past the end of the input buffer. This
-        // helps detect invalid length advertisements in the blob payload.
+        // helps detect invalid length advertisements in the blob payload. Blobs
+        // can appear in any order, so the next blob is the one at the closest
+        // following offset, not the next index entry.
         let mut blob_indices = Vec::with_capacity(count as usize);
         for _ in 0..count {
             blob_indices.push(data.gread_with::<BlobIndex>(offset, scroll::BE)?);
         }
 
+        let index_end = *offset;
+        let offsets = blob_indices
+            .iter()
+            .map(|index| index.offset as usize)
+            .collect::<Vec<_>>();
+
         let mut blobs = Vec::with_capacity(blob_indices.len());
 
         for (i, index) in blob_indices.iter().enumerate() {
-            let end_offset = if i == blob_indices.len() - 1 {
-                data.len()
-            } else {
-                blob_indices[i + 1].offset as usize
-            };
-
-            let full_slice = &data[index.offset as usize..end_offset];
+            let full_slice = index_entry_data(data, index_end, &offsets, index.offset as usize)
+                .ok_or(AppleCodesignError::SuperblobMalformed)?;
             let (magic, blob_length, _) = read_blob_header(full_slice)?;
 
             // Self-reported length can't be greater than the data we have.
@@ -1533,5 +1568,130 @@ impl<'a> EmbeddedSignature<'a> {
         } else {
             Ok(None)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A blob of `length` bytes: the magic and length header followed by zeros.
+    fn blob(magic: CodeSigningMagic, length: usize) -> Vec<u8> {
+        let mut data = vec![0; length];
+        data[0..4].copy_from_slice(&u32::from(magic).to_be_bytes());
+        data[4..8].copy_from_slice(&(length as u32).to_be_bytes());
+        data
+    }
+
+    /// Swap 8-byte index entries `a` and `b` of an index starting at `index_start`.
+    fn swap_index_entries(data: &mut [u8], index_start: usize, a: usize, b: usize) {
+        for i in 0..8 {
+            data.swap(index_start + 8 * a + i, index_start + 8 * b + i);
+        }
+    }
+
+    fn set_index_offset(data: &mut [u8], index_start: usize, entry: usize, offset: u32) {
+        let start = index_start + 8 * entry + 4;
+        data[start..start + 4].copy_from_slice(&offset.to_be_bytes());
+    }
+
+    /// A SuperBlob with a code directory, requirement set and signature blob,
+    /// in that order.
+    fn superblob() -> Vec<u8> {
+        let blobs = [
+            (
+                CodeSigningSlot::CodeDirectory,
+                blob(CodeSigningMagic::CodeDirectory, 16),
+            ),
+            (
+                CodeSigningSlot::RequirementSet,
+                blob(CodeSigningMagic::RequirementSet, 12),
+            ),
+            (
+                CodeSigningSlot::Signature,
+                blob(CodeSigningMagic::BlobWrapper, 8),
+            ),
+        ];
+
+        create_superblob(CodeSigningMagic::EmbeddedSignature, blobs.iter()).unwrap()
+    }
+
+    fn blob_layout(signature: &EmbeddedSignature) -> Vec<(CodeSigningSlot, usize, usize)> {
+        let mut layout = signature
+            .blobs
+            .iter()
+            .map(|blob| (blob.slot, blob.offset, blob.length))
+            .collect::<Vec<_>>();
+        layout.sort_by_key(|(_, offset, _)| *offset);
+
+        layout
+    }
+
+    #[test]
+    fn superblob_index_in_any_order() {
+        let data = superblob();
+        let expected = blob_layout(&EmbeddedSignature::from_bytes(&data).unwrap());
+
+        let mut reordered = data.clone();
+        swap_index_entries(&mut reordered, 12, 1, 2);
+        let signature = EmbeddedSignature::from_bytes(&reordered).unwrap();
+        assert_eq!(blob_layout(&signature), expected);
+
+        // A blob still can't overrun the blob following it.
+        reordered[36 + 7] = 20;
+        assert!(matches!(
+            EmbeddedSignature::from_bytes(&reordered),
+            Err(AppleCodesignError::SuperblobMalformed)
+        ));
+    }
+
+    #[test]
+    fn superblob_index_offset_out_of_range() {
+        let len = superblob().len() as u32;
+
+        // Inside the header and index, or past the end of the data.
+        for (entry, offset) in [(1, 0), (1, 4), (2, len + 1), (0, u32::MAX)] {
+            let mut data = superblob();
+            set_index_offset(&mut data, 12, entry, offset);
+
+            assert!(
+                matches!(
+                    EmbeddedSignature::from_bytes(&data),
+                    Err(AppleCodesignError::SuperblobMalformed)
+                ),
+                "entry {entry} offset {offset:#x}"
+            );
+        }
+    }
+
+    #[test]
+    fn requirement_set_index_in_any_order() {
+        let mut set = RequirementSetBlob::default();
+        for (typ, expression) in [
+            (RequirementType::Designated, "0000000100000001"),
+            (RequirementType::Library, "0000000100000000"),
+        ] {
+            set.set_requirements(
+                typ,
+                RequirementBlob {
+                    data: Cow::Owned(hex::decode(expression).unwrap()),
+                },
+            );
+        }
+        let data = set.to_blob_bytes().unwrap();
+
+        let mut reordered = data.clone();
+        swap_index_entries(&mut reordered, 12, 0, 1);
+        let parsed = RequirementSetBlob::from_blob_bytes(&reordered).unwrap();
+        for (typ, requirement) in &set.requirements {
+            assert_eq!(parsed.requirements[typ].data, requirement.data);
+        }
+
+        let mut out_of_range = data.clone();
+        set_index_offset(&mut out_of_range, 12, 0, data.len() as u32 + 1);
+        assert!(matches!(
+            RequirementSetBlob::from_blob_bytes(&out_of_range),
+            Err(AppleCodesignError::RequirementMalformed(_))
+        ));
     }
 }
