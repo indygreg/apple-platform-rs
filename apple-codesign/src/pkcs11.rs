@@ -15,7 +15,7 @@ use {
     },
     log::{info, warn},
     signature::Signer,
-    std::{collections::HashMap, path::PathBuf},
+    std::{collections::HashMap, path::PathBuf, sync::Mutex},
     x509_certificate::{
         rfc3447::DigestInfo, CapturedX509Certificate, DigestAlgorithm, KeyAlgorithm, KeyInfoSigner,
         Sign, Signature, SignatureAlgorithm, X509CertificateError,
@@ -29,6 +29,12 @@ pub struct Pkcs11PrivateKey {
     key_reference: KeyReference,
     pin: Option<String>,
     certificate: CapturedX509Certificate,
+    /// Logged in session, opened on first use and reused for all subsequent signing operations.
+    ///
+    /// Signing an entity can require multiple signatures (e.g. one per architecture of a universal
+    /// Mach-O binary). Initializing the library and logging in again for each of them fails with
+    /// CKR_USER_ALREADY_LOGGED_IN (or worse) on tokens that keep the login state.
+    session: Mutex<Option<cryptoki::session::Session>>,
 }
 
 /// Reference to a private key in the PKCS11 token
@@ -58,6 +64,7 @@ impl Pkcs11PrivateKey {
             key_reference,
             pin,
             certificate,
+            session: Mutex::new(None),
         }
     }
 
@@ -74,6 +81,7 @@ impl Pkcs11PrivateKey {
             key_reference: KeyReference::Label(key_label),
             pin,
             certificate,
+            session: Mutex::new(None),
         }
     }
 
@@ -90,6 +98,7 @@ impl Pkcs11PrivateKey {
             key_reference: KeyReference::Id(key_id),
             pin,
             certificate,
+            session: Mutex::new(None),
         }
     }
 
@@ -105,6 +114,7 @@ impl Pkcs11PrivateKey {
             key_reference: KeyReference::FromCertificate,
             pin,
             certificate,
+            session: Mutex::new(None),
         }
     }
 
@@ -112,6 +122,20 @@ impl Pkcs11PrivateKey {
     where
         F: FnOnce(&cryptoki::session::Session) -> Result<T, AppleCodesignError>,
     {
+        let mut session = self
+            .session
+            .lock()
+            .map_err(|_| AppleCodesignError::Pkcs11Error("PKCS11 session lock poisoned".into()))?;
+
+        if session.is_none() {
+            *session = Some(self.open_session()?);
+        }
+
+        // The session (and with it the library) is closed when the key is dropped
+        f(session.as_ref().expect("session was opened above"))
+    }
+
+    fn open_session(&self) -> Result<cryptoki::session::Session, AppleCodesignError> {
         let pkcs11 = Pkcs11::new(&self.library_path)?;
         pkcs11.initialize(CInitializeArgs::new(CInitializeFlags::OS_LOCKING_OK))?;
 
@@ -129,10 +153,7 @@ impl Pkcs11PrivateKey {
             session.login(UserType::User, Some(&AuthPin::new(pin.clone().into())))?;
         }
 
-        let result = f(&session)?;
-
-        // Session will be automatically closed when dropped
-        Ok(result)
+        Ok(session)
     }
 
     fn sign_data_with_mechanism(
@@ -321,6 +342,7 @@ impl Clone for Pkcs11PrivateKey {
             key_reference: self.key_reference.clone(),
             pin: self.pin.clone(),
             certificate: self.certificate.clone(),
+            session: Mutex::new(None),
         }
     }
 }
@@ -384,7 +406,67 @@ impl Signer<Signature> for Pkcs11PrivateKey {
             .sign_data_with_mechanism(&input, mechanism)
             .map_err(signature::Error::from_source)?;
 
+        let signature_bytes = match mechanism {
+            // CKM_ECDSA returns the raw concatenation r || s, but X.509 and CMS expect a DER
+            // encoded Ecdsa-Sig-Value (RFC 3279).
+            MechanismType::ECDSA => ecdsa_raw_signature_to_der(&signature_bytes)
+                .map_err(signature::Error::from_source)?,
+            _ => signature_bytes,
+        };
+
         Ok(Signature::from(signature_bytes))
+    }
+}
+
+/// Converts a raw ECDSA signature (r || s, both of the same length) into a DER encoded
+/// `Ecdsa-Sig-Value ::= SEQUENCE { r INTEGER, s INTEGER }`.
+fn ecdsa_raw_signature_to_der(raw: &[u8]) -> Result<Vec<u8>, AppleCodesignError> {
+    if raw.is_empty() || raw.len() % 2 != 0 {
+        return Err(AppleCodesignError::Pkcs11Error(format!(
+            "unexpected length of raw ECDSA signature: {}",
+            raw.len()
+        )));
+    }
+
+    let (r, s) = raw.split_at(raw.len() / 2);
+
+    let mut content = der_unsigned_integer(r);
+    content.extend(der_unsigned_integer(s));
+
+    let mut der = vec![0x30];
+    der.extend(der_length(content.len()));
+    der.extend(content);
+
+    Ok(der)
+}
+
+fn der_unsigned_integer(value: &[u8]) -> Vec<u8> {
+    let first_non_zero = value.iter().position(|b| *b != 0).unwrap_or(value.len());
+    let mut bytes = value[first_non_zero..].to_vec();
+
+    // INTEGER is signed, so positive values with the high bit set need a leading zero byte
+    if bytes.first().map_or(true, |b| b & 0x80 != 0) {
+        bytes.insert(0, 0);
+    }
+
+    let mut der = vec![0x02];
+    der.extend(der_length(bytes.len()));
+    der.extend(bytes);
+    der
+}
+
+fn der_length(length: usize) -> Vec<u8> {
+    if length < 0x80 {
+        vec![length as u8]
+    } else {
+        let bytes = length.to_be_bytes();
+        let first_non_zero = bytes
+            .iter()
+            .position(|b| *b != 0)
+            .unwrap_or(bytes.len() - 1);
+        let mut der = vec![0x80 | (bytes.len() - first_non_zero) as u8];
+        der.extend(&bytes[first_non_zero..]);
+        der
     }
 }
 
@@ -394,22 +476,11 @@ impl Sign for Pkcs11PrivateKey {
     fn sign(&self, message: &[u8]) -> Result<(Vec<u8>, SignatureAlgorithm), X509CertificateError> {
         let algorithm = self.signature_algorithm()?;
 
-        let mechanism = match algorithm {
-            SignatureAlgorithm::EcdsaSha256 => MechanismType::ECDSA,
-            SignatureAlgorithm::RsaSha256 => MechanismType::RSA_PKCS,
-            _ => {
-                return Err(X509CertificateError::Other(format!(
-                    "Unsupported signature algorithm for PKCS11: {:?}",
-                    algorithm
-                )))
-            }
-        };
-
         let signature = self
-            .sign_data_with_mechanism(message, mechanism)
+            .try_sign(message)
             .map_err(|e| X509CertificateError::Other(format!("PKCS11 signing error: {}", e)))?;
 
-        Ok((signature, algorithm))
+        Ok((signature.as_ref().to_vec(), algorithm))
     }
 
     fn key_algorithm(&self) -> Option<KeyAlgorithm> {
@@ -421,12 +492,16 @@ impl Sign for Pkcs11PrivateKey {
     }
 
     fn signature_algorithm(&self) -> Result<SignatureAlgorithm, X509CertificateError> {
-        self.certificate.signature_algorithm().ok_or(
-            X509CertificateError::UnknownSignatureAlgorithm(format!(
+        // The signature algorithm of the certificate is the one its issuer used, the signatures
+        // created here always use SHA-256 with the algorithm of the certificate's key (see try_sign).
+        match self.certificate.key_algorithm() {
+            Some(KeyAlgorithm::Rsa) => Ok(SignatureAlgorithm::RsaSha256),
+            Some(KeyAlgorithm::Ecdsa(_)) => Ok(SignatureAlgorithm::EcdsaSha256),
+            other => Err(X509CertificateError::UnknownSignatureAlgorithm(format!(
                 "{:?}",
-                self.certificate.signature_algorithm_oid()
-            )),
-        )
+                other
+            ))),
+        }
     }
 
     fn private_key_data(&self) -> Option<Zeroizing<Vec<u8>>> {
@@ -481,5 +556,54 @@ impl PrivateKey for Pkcs11PrivateKey {
 impl From<cryptoki::error::Error> for AppleCodesignError {
     fn from(err: cryptoki::error::Error) -> Self {
         AppleCodesignError::Pkcs11Error(format!("PKCS11 error: {}", err))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ecdsa_raw_signature_to_der_encodes_sequence_of_integers() {
+        let raw = [[0x01u8; 32], [0x02u8; 32]].concat();
+
+        let der = ecdsa_raw_signature_to_der(&raw).unwrap();
+
+        let mut expected = vec![0x30, 68, 0x02, 32];
+        expected.extend([0x01u8; 32]);
+        expected.extend([0x02, 32]);
+        expected.extend([0x02u8; 32]);
+        assert_eq!(der, expected);
+    }
+
+    #[test]
+    fn ecdsa_raw_signature_to_der_strips_leading_zeros_and_keeps_integers_positive() {
+        let mut r = vec![0x00, 0x00, 0x7f];
+        r.extend([0xaa; 29]);
+        let mut s = vec![0x80];
+        s.extend([0xbb; 31]);
+        let raw = [r, s].concat();
+
+        let der = ecdsa_raw_signature_to_der(&raw).unwrap();
+
+        let mut expected = vec![0x30, 67, 0x02, 30, 0x7f];
+        expected.extend([0xaa; 29]);
+        expected.extend([0x02, 33, 0x00, 0x80]);
+        expected.extend([0xbb; 31]);
+        assert_eq!(der, expected);
+    }
+
+    #[test]
+    fn ecdsa_raw_signature_to_der_uses_long_form_length_for_p521() {
+        let raw = [[0x01u8; 66], [0x01u8; 66]].concat();
+
+        let der = ecdsa_raw_signature_to_der(&raw).unwrap();
+
+        assert_eq!(&der[..3], &[0x30, 0x81, 136]);
+    }
+
+    #[test]
+    fn ecdsa_raw_signature_to_der_rejects_odd_length() {
+        assert!(ecdsa_raw_signature_to_der(&[0x01, 0x02, 0x03]).is_err());
     }
 }
