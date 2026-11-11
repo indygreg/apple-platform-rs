@@ -409,9 +409,8 @@ impl Signer<Signature> for Pkcs11PrivateKey {
         let signature_bytes = match mechanism {
             // CKM_ECDSA returns the raw concatenation r || s, but X.509 and CMS expect a DER
             // encoded Ecdsa-Sig-Value (RFC 3279).
-            MechanismType::ECDSA => {
-                ecdsa_raw_signature_to_der(&signature_bytes).map_err(signature::Error::from_source)?
-            }
+            MechanismType::ECDSA => ecdsa_raw_signature_to_der(&signature_bytes)
+                .map_err(signature::Error::from_source)?,
             _ => signature_bytes,
         };
 
@@ -461,7 +460,10 @@ fn der_length(length: usize) -> Vec<u8> {
         vec![length as u8]
     } else {
         let bytes = length.to_be_bytes();
-        let first_non_zero = bytes.iter().position(|b| *b != 0).unwrap_or(bytes.len() - 1);
+        let first_non_zero = bytes
+            .iter()
+            .position(|b| *b != 0)
+            .unwrap_or(bytes.len() - 1);
         let mut der = vec![0x80 | (bytes.len() - first_non_zero) as u8];
         der.extend(&bytes[first_non_zero..]);
         der
