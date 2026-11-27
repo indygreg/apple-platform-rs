@@ -1044,6 +1044,10 @@ impl<'a> BomBlock<'a> {
             }
         }
 
+        if bom.block_is_empty(index)? {
+            return Ok(Self::Empty);
+        }
+
         // Multiple block types may parse correctly. Our strategy to tease out
         // false positives is to recursively examine the parsed block and verify
         // all parts parse.
@@ -1284,6 +1288,11 @@ impl<'a> ParsedBom<'a> {
         data.pread_with(0, scroll::BE)
     }
 
+    pub fn block_is_empty(&self, index: usize) -> Result<bool, Error> {
+        let entry = self.blocks.blocks.get(index).ok_or(Error::BadIndex)?;
+        Ok(entry.file_offset == 0 && entry.length == 0)
+    }
+
     /// Attempt to resolve a block at an index as a [BomBlockTreePointer].
     pub fn block_as_tree_pointer(&self, index: usize) -> Result<BomBlockTreePointer, Error> {
         Ok(self.block_data(index)?.pread_with(0, scroll::BE)?)
@@ -1322,6 +1331,10 @@ mod tests {
             .find(|p| p.path() == "./Python 3.9/ReadMe.rtf")
             .unwrap();
         assert_eq!(readme.symbolic_mode(), "-rw-r--r--");
+
+        for i in 0..bom.header.number_of_blocks as usize + 1 {
+            BomBlock::try_parse(&bom, i)?;
+        }
 
         Ok(())
     }
