@@ -897,7 +897,7 @@ fn mgf1_xor(out: &mut [u8], digest: &mut dyn DynDigest, seed: &[u8]) {
     let mut counter = [0u8; 4];
     let mut i = 0;
 
-    const MAX_LEN: u64 = core::u32::MAX as u64 + 1;
+    const MAX_LEN: u64 = u32::MAX as u64 + 1;
     assert!(out.len() as u64 <= MAX_LEN);
 
     while i < out.len() {
